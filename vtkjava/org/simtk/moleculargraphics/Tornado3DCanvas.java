@@ -122,6 +122,7 @@ public class Tornado3DCanvas extends vtkPanel
     boolean firstPaint = true;
     public void paint(Graphics g) {
         super.paint(g);
+        
         // The very first time we paint, turn on fog
         if ( (ren != null) && (firstPaint) && (doFog) ) {
             // TODO - this needs to follow a Render command?
