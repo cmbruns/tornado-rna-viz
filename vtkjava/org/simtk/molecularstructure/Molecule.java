@@ -218,5 +218,48 @@ public class Molecule {
         return new Molecule(bagOfAtoms);
     }
 
-	
+    // Create covalent bonds where it seems that they are needed
+	void createBonds() {
+
+        // Maybe iodine has the largest "ordinary" covalent radius of 1.33
+        double maxCovalentRadius = 1.40;
+
+        // Create a hash for rapid access
+        Hash3D<Atom> atomHash = new Hash3D<Atom>(maxCovalentRadius);
+        for (Atom atom : atoms)
+            atomHash.put(atom.getCoordinates(), atom);
+        for (Atom atom1 : atoms) {
+            double cutoffDistance = (atom1.getCovalentRadius() + maxCovalentRadius) * 1.5;
+            for (Atom atom2 : atomHash.values(atom1.getCoordinates(), cutoffDistance)) {
+                if (atom1.equals(atom2)) continue;
+                
+                // Make sure the bond length is about right
+                double distance = atom1.distance(atom2);
+                double covalentDistance = atom1.getCovalentRadius() + atom2.getCovalentRadius();
+                double vanDerWaalsDistance = atom1.getVanDerWaalsRadius() + atom2.getVanDerWaalsRadius();
+                // Bond length must be at least 3/4 of that expected
+                double minDistance = 0.75 * (covalentDistance);
+                // Bond length must be closer to covalent than to van der Waals distance
+                if (covalentDistance >= vanDerWaalsDistance) continue;
+                double discriminantDistance = vanDerWaalsDistance - covalentDistance;
+                double maxDistance = covalentDistance + 0.25 * discriminantDistance;
+                if (maxDistance > 1.25 * covalentDistance) maxDistance = 1.25 * covalentDistance;
+                if (distance < minDistance) continue;
+                if (distance > maxDistance) continue;
+                
+                // Make sure it is in the same molecule or part
+                if ( (atom1 instanceof PDBAtom) && (atom2 instanceof PDBAtom) ) {
+                    PDBAtom pdbAtom1 = (PDBAtom) atom1;
+                    PDBAtom pdbAtom2 = (PDBAtom) atom2;
+                    // Must be in the same chain
+                    if (pdbAtom1.getChainIdentifier() != pdbAtom2.getChainIdentifier()) continue;
+                    // Must be in the same alternate location group
+                    if (pdbAtom1.getAlternateLocationIndicator() != pdbAtom2.getAlternateLocationIndicator()) continue;
+                }
+                
+                atom1.addBond(atom2);
+                atom2.addBond(atom1);
+            }
+        }
+    }
 }

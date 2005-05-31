@@ -145,23 +145,28 @@ public abstract class Residue extends Molecule {
      */
     // TODO - this only works for PDB atoms right now
     void createBonds() {
+        super.createBonds();
         ATOM1: for (Atom atom : atoms) {
             if (! (atom instanceof PDBAtom)) continue ATOM1;
             PDBAtom atom1 = (PDBAtom) atom;
-            if (! genericBonds.containsKey(atom1.getAtomName())) continue ATOM1;
-            BOND: for ( String a2Name : genericBonds.get(atom1.getAtomName()) ) {
-                if (! atomNames.containsKey(a2Name)) continue BOND;
-                ATOM2: for (Atom atom2 : atomNames.get(a2Name)) {                           
-                    if (! (atom2 instanceof PDBAtom)) continue ATOM2;
-
-                    PDBAtom pdbAtom2 = (PDBAtom) atom2;
-                    if (! (atom1.getAlternateLocationIndicator() == pdbAtom2.getAlternateLocationIndicator()))
-                        continue ATOM2;
-                    
-                    atom1.addBond(atom2);
-                    atom2.addBond(atom1);
+            
+            // Assign bonds from residue dictionary
+            if (genericBonds.containsKey(atom1.getAtomName())) {
+                BOND: for ( String a2Name : genericBonds.get(atom1.getAtomName()) ) {
+                    if (! atomNames.containsKey(a2Name)) continue BOND;
+                    ATOM2: for (Atom atom2 : atomNames.get(a2Name)) {                           
+                        if (! (atom2 instanceof PDBAtom)) continue ATOM2;
+    
+                        PDBAtom pdbAtom2 = (PDBAtom) atom2;
+                        if (! (atom1.getAlternateLocationIndicator() == pdbAtom2.getAlternateLocationIndicator()))
+                            continue ATOM2;
+                        
+                        atom1.addBond(atom2);
+                        atom2.addBond(atom1);
+                    }
                 }
             }
+            
         }
     }
     
