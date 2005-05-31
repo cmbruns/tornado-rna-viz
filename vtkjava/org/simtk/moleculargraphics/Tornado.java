@@ -10,6 +10,9 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
+import java.net.*;
+
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.atomicstructure.Atom;
@@ -35,11 +38,15 @@ implements ResidueSelector
     Panel sequencePanel;
     JLabel messageArea;
 
+    LoadPDBFileAction loadPDBFileAction = new LoadPDBFileAction();
+    
     // Stop auto rotation if the user is trying to do something
     volatile boolean userIsInteracting = false;
     
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
     
+    Residue firstResidue = null;
+    Residue finalResidue = null;
     // Tables for helping sequence window talk to structure window
     Hashtable<Residue, vtkProp> residueHighlightProps = new Hashtable<Residue, vtkProp>();
     // Hashtable<Integer, Residue> positionResidues = new Hashtable<Integer, Residue>();
@@ -54,7 +61,7 @@ implements ResidueSelector
         BALL_AND_STICK,
         ROPE_AND_CYLINDER
     };
-    CartoonType currentCartoonType = CartoonType.ROPE_AND_CYLINDER;
+    CartoonType currentCartoonType = CartoonType.BALL_AND_STICK; // default starting type
     MolecularCartoon currentCartoon = new RopeAndCylinderCartoon();
     MoleculeCollection moleculeCollection = new MoleculeCollection();
 
@@ -63,11 +70,12 @@ implements ResidueSelector
     Cursor waitCursor = new Cursor (Cursor.WAIT_CURSOR);
 
     Tornado() {
-        super("ToRNAdo from SimTK.org");
+        super("toRNAdo from SimTK.org");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         createMenuBar();
 
         JPanel panel = new JPanel();
+        this.setIconImage(new ImageIcon("tornado_icon.gif").getImage());
         
         // With the addition of a separate sequence cartoon, it is probably time
         // for a fancy layout
@@ -181,7 +189,7 @@ implements ResidueSelector
         catch (IOException exc) {}
         System.out.println("" + lineCount + " lines read.");
 
-        // TODO - do something with the information
+        // Compare both base pair computation methods
         HashSet<BasePair> myBasePairs = new HashSet<BasePair>();
         for (BasePair bp : rna.identifyBasePairs()) myBasePairs.add(bp);
         
@@ -312,7 +320,7 @@ implements ResidueSelector
         menu = new JMenu("File");
         menuBar.add(menu);
         menuItem = new JMenuItem("Load PDB Molecule...");
-        menuItem.addActionListener(new LoadPDBFileAction());
+        menuItem.addActionListener(new LoadPDBAction());
         menu.add(menuItem);
 
         menuItem = new JMenuItem("Save PNG Image...");
@@ -347,21 +355,21 @@ implements ResidueSelector
 
         ButtonGroup cartoonGroup = new ButtonGroup();
 
-        checkItem = new JCheckBoxMenuItem("Ball and Stick");
+        checkItem = new JCheckBoxMenuItem("Ball and Stick", new ImageIcon("po4_stick_icon.png"));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new CartoonAction(CartoonType.BALL_AND_STICK));
         checkItem.setState(currentCartoonType == CartoonType.BALL_AND_STICK);
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Space-filling Atoms");
+        checkItem = new JCheckBoxMenuItem("Space-filling Atoms", new ImageIcon("nuc_fill_icon.png"));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new CartoonAction(CartoonType.SPACE_FILLING));
         checkItem.setState(currentCartoonType == CartoonType.SPACE_FILLING);
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Rope and Cylinder");
+        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon("cylinder_icon.png"));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new CartoonAction(CartoonType.ROPE_AND_CYLINDER));
         checkItem.setState(currentCartoonType == CartoonType.ROPE_AND_CYLINDER);
@@ -493,14 +501,21 @@ implements ResidueSelector
             }
 
             // Update residue highlights
+            firstResidue = null;
+            finalResidue = null;
             for (Molecule molecule : moleculeCollection.molecules()) {
                 if (molecule instanceof Biopolymer) {
                     Biopolymer bp = (Biopolymer) molecule;
                     canvas.Lock();
                     canvas.clearResidueHighlights();
+                    boolean isFirstResidue = true;
                     for (Residue residue : bp.residues()) {
+                        if (isFirstResidue)
+                            firstResidue = residue;
                         vtkProp highlight = currentCartoon.highlight(residue, highlightColor);
                         canvas.addResidueHighlight(residue, highlight);                                
+                        isFirstResidue = false;
+                        finalResidue = residue;
                     }
                     canvas.UnLock();
                     break; // only put the sequence of the first molecule with a sequence
@@ -573,6 +588,160 @@ implements ResidueSelector
         }
     }
 
+    class LoadPDBAction implements ActionListener {
+        JDialog dialog = null;
+        JButton loadFileButton = null;
+        JButton webPDBButton = null;
+        JButton cancelButton = null;
+        JTextField idField = null;
+        
+        // JCheckBoxMenuItem bioUnitCheckBox;
+        JComboBox bioUnitList;
+        
+        public void actionPerformed(ActionEvent e) {
+            // If this is the very first call to this action, create the dialog
+            if (dialog == null) {
+                dialog = new JDialog(Tornado.this, "Choose Molecule Source", false);
+                dialog.setLocationRelativeTo(Tornado.this);
+                JPanel contentPanel = new JPanel();
+                contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+                dialog.setContentPane(contentPanel);
+                
+                contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
+                JLabel label = new JLabel("Choose molecule source:");
+                label.setAlignmentX(Component.CENTER_ALIGNMENT);
+                contentPanel.add(label);
+
+                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+                contentPanel.add(new JSeparator());
+                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+
+                loadFileButton = new JButton("From file...");
+                loadFileButton.addActionListener(this);
+                loadFileButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+                contentPanel.add(loadFileButton);
+
+                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+                contentPanel.add(new JSeparator());
+                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+                
+                JPanel webPDBPanel = new JPanel();
+                webPDBPanel.setLayout(new BoxLayout(webPDBPanel, BoxLayout.X_AXIS));
+
+                label = new JLabel(" PDB ID (4 characters): ");
+                webPDBPanel.add(label);
+
+                idField = new JTextField("1MRP", 4);
+                idField.addActionListener(this);
+                webPDBPanel.add(idField);
+
+                webPDBButton = new JButton("From web");
+                webPDBButton.addActionListener(this);
+                webPDBPanel.add(webPDBButton);
+
+                webPDBPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                contentPanel.add(webPDBPanel);
+
+                // contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
+                
+                // bioUnitCheckBox = new JCheckBoxMenuItem("Biological Unit");
+                // bioUnitCheckBox.setState(true);
+                // contentPanel.add(bioUnitCheckBox);
+                
+                String unitOptions[] = {"Biological Unit", "Crystallographic Unit"};
+                bioUnitList = new JComboBox(unitOptions);
+                bioUnitList.setSelectedIndex(0); // biological unit
+                contentPanel.add(bioUnitList);
+                
+                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+                contentPanel.add(new JSeparator());
+                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+
+                cancelButton = new JButton("Cancel");
+                cancelButton.addActionListener(this);
+                cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+                contentPanel.add(cancelButton);
+                contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
+
+                dialog.pack();
+            }
+
+            else if ( e.getSource() == loadFileButton ) {
+                // Load molecule from file using file browser dialog
+                dialog.setVisible(false); // temporarily hide the dialog
+                if (loadPDBFileAction.pdbFileLoaded())
+                    // success
+                    return;
+                else
+                    dialog.setVisible(true);  // Give the user another chance if something went wrong
+            }
+
+            if ( (e.getSource() == webPDBButton) ||
+                 (e.getSource() == idField) ) {
+                // Load PDB molecule from the internet
+                String pdbId = idField.getText().trim().toLowerCase();
+
+                // Force ID to be 4 characters
+                if (pdbId.length() != 4) return;
+
+                String urlBase;
+                String extension;
+                // if (bioUnitCheckBox.getState()) {
+                if (bioUnitList.getSelectedIndex() == 0) { // biological unit
+                    urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/biounit/coordinates/divided/";
+                    extension = "pdb1";
+                }
+                else {
+                    urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/structures/divided/";
+                    extension = "pdb";
+                }
+                
+                String division = pdbId.substring(1, 3);
+                String fullURLString = urlBase + division + "/" + pdbId + "." + extension + ".gz";
+                System.out.println("Web PDB button: " + fullURLString);
+
+                InputStream inStream;
+                try {
+                    setWait("Loading remote PDB structure...");
+                    inStream = new GZIPInputStream((new URL(fullURLString)).openStream());
+                    MoleculeCollection molecules = loadPDBFile(inStream);
+                    dialog.setVisible(false); // success, so close the dialog
+                    return;
+                } catch (IOException exc) {
+                    unSetWait("Remote PDB load error. (" + fullURLString + ")");
+                    String[] options = {"Bummer!"};
+                    JOptionPane.showOptionDialog(null, "Problem reading structure: " + pdbId + ": " + exc, "PDB File Error!",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
+                            null, options, options[0]);
+                }
+                
+                
+                dialog.setVisible(true); // reopen dialog so user can try again
+                return;
+            }
+            
+            if ( e.getSource() == cancelButton ) {
+                dialog.setVisible(false);
+                return;
+            }
+
+            // User selected load molecule menu item
+            else {
+                dialog.setVisible(true);
+            }
+        }
+    }
+
+    class LoadPDBWebAction implements ActionListener {
+        String pdbId;
+        LoadPDBWebAction(String id) {
+            super();
+            pdbId = id;
+        }
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+    
     class LoadPDBFileAction implements ActionListener {
         JFileChooser loadPDBFileChooser;
 
@@ -606,13 +775,17 @@ implements ResidueSelector
         }
         
         public void actionPerformed(ActionEvent e) {
+            pdbFileLoaded();
+        }
+        
+        boolean pdbFileLoaded() { 
+            boolean answer = false;  // start pessimistic
+            
             if (loadPDBFileChooser == null) {
                 loadPDBFileChooser = new JFileChooser();
                 PDBFilter filter = new PDBFilter();
                 loadPDBFileChooser.setFileFilter(filter);
             }
-            
-            // canvas.Lock();
             
             int returnVal = loadPDBFileChooser.showOpenDialog(Tornado.this);
             if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -620,49 +793,17 @@ implements ResidueSelector
                 try {
                     setWait("Loading file " + file.getCanonicalPath() + " ...");
                     FileInputStream inStream = new FileInputStream(file);
-                    MoleculeCollection molecules = new MoleculeCollection();
-                    molecules.loadPDBFormat(inStream);
-
-                    setMessage("Read " + molecules.getAtomCount() + " atoms, in " +
-                            molecules.getMoleculeCount() + " molecules, from file " +
-                            file.getCanonicalPath());
                     
-                    moleculeCollection = molecules;
-                    
-                    // Create graphical representation of the molecule
-                    (new CartoonAction(currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
-
-                    // Center camera on new molecule
-                    Vector3D com = molecules.getCenterOfMass();
-                    canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
-
-                    // Display sequence of first molecule that has a sequence
-                    clearResidues();
-                    Biopolymer bp = null;
-                    for (Molecule molecule : molecules.molecules()) {
-                        if (molecule instanceof Biopolymer) {
-                            bp = (Biopolymer) molecule;
-                            
-                            for (Residue residue : bp.residues())
-                                addResidue(residue);
-                            
-                            break; // only put the sequence of the first molecule with a sequence
-                        }
-                    }
+                    MoleculeCollection molecules = loadPDBFile(inStream);
+                                        
                     unSetWait("Molecule loaded (" + file.getName() + ")");
-                    // TODO - create one subroutine for updating the sequences
-                    // maybe in the ResidueSelector interface
-                    canvas.repaint();
-                    sequencePane.repaint();
-                    sequenceCartoonCanvas.repaint();
-                    repaint();
+                    answer = true;
                     
                     // This is temporary
                     // if ( (bp != null) && file.getName().contains("1x8w") ) {
                     //     compareHbonds("1x8w.pdb2.out", (RNA) bp);
                     // }
-                }
-                
+                }                
                 catch (FileNotFoundException exc) {
                     unSetWait("File not found. (" + file.getName() + ")");
                     String[] options = {"Bummer!"};
@@ -677,11 +818,50 @@ implements ResidueSelector
                             JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
                             null, options, options[0]);
                 }
-
+    
             }
-
-            // canvas.UnLock();
+            return answer;
         }
+    }
+    
+    MoleculeCollection loadPDBFile(InputStream inStream) throws IOException {
+        MoleculeCollection molecules = new MoleculeCollection();
+        molecules.loadPDBFormat(inStream);
+
+        setMessage("Read " + molecules.getAtomCount() + " atoms, in " +
+                molecules.getMoleculeCount() + " molecules");
+        
+        moleculeCollection = molecules;
+        
+        // Create graphical representation of the molecule
+        (new CartoonAction(currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
+
+        // Center camera on new molecule
+        Vector3D com = molecules.getCenterOfMass();
+        canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
+
+        // Display sequence of first molecule that has a sequence
+        clearResidues();
+        Biopolymer bp = null;
+        for (Molecule molecule : molecules.molecules()) {
+            if (molecule instanceof Biopolymer) {
+                bp = (Biopolymer) molecule;
+                
+                for (Residue residue : bp.residues())
+                    addResidue(residue);
+                
+                break; // only put the sequence of the first molecule with a sequence
+            }
+        }
+
+        // TODO - create one subroutine for updating the sequences
+        // maybe in the ResidueSelector interface
+        canvas.repaint();
+        sequencePane.repaint();
+        sequenceCartoonCanvas.repaint();
+        repaint();
+        
+        return molecules;
     }
     
     class SaveImageFileAction implements ActionListener {
@@ -779,12 +959,23 @@ implements ResidueSelector
     
     void highlightNextResidue() {
         Residue nextResidue = null;
-        if (currentHighlightedResidue == null) { // TODO go to first residue
-        }
+        if (currentHighlightedResidue == null) // Go to first residue
+            nextResidue = firstResidue;
         else 
             nextResidue = currentHighlightedResidue.getNextResidue();
 
         if (nextResidue == null) unHighlight();
         else highlight(nextResidue);
+    }
+
+    void highlightPreviousResidue() {
+        Residue previousResidue = null;
+        if (currentHighlightedResidue == null) 
+            previousResidue = finalResidue;
+        else 
+            previousResidue = currentHighlightedResidue.getPreviousResidue();
+
+        if (previousResidue == null) unHighlight();
+        else highlight(previousResidue);
     }
 }
