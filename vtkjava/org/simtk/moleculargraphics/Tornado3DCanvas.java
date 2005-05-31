@@ -22,6 +22,7 @@ public class Tornado3DCanvas extends vtkPanel
  implements MouseMotionListener, MouseListener, ResidueSelector, ComponentListener
 {
     boolean doFog = true;
+    boolean fogLinear = true;
     GL gl;
 
     Color backgroundColor = new Color((float)0.92, (float)0.96, (float)1.0);
@@ -125,16 +126,24 @@ public class Tornado3DCanvas extends vtkPanel
         
         // The very first time we paint, turn on fog
         if ( (ren != null) && (firstPaint) && (doFog) ) {
-            // TODO - this needs to follow a Render command?
+            
+            // This needs to follow a Render command?
             GLCapabilities capabilities = new GLCapabilities();
             capabilities.setHardwareAccelerated(true);
             GLCanvas glCanvas = GLDrawableFactory.getFactory().
                                   createGLCanvas(capabilities);
             gl = glCanvas.getGL();
             Render();
-            gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
-            gl.glFogf(GL.GL_FOG_START, (float)0.0);
-            gl.glFogf(GL.GL_FOG_END, (float)100.0);
+
+            if (fogLinear) { // Linear Fog
+                gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
+                gl.glFogf(GL.GL_FOG_START, (float)0.0);
+                gl.glFogf(GL.GL_FOG_END, (float)100.0);
+            }
+            else { // Exponential Fog
+                gl.glFogi(GL.GL_FOG_MODE, GL.GL_EXP2);
+                gl.glFogf(GL.GL_FOG_DENSITY, 0.2f);
+            }
 
             float[] fogColor = new float[] {
                     (float) (backgroundColor.getRed()/255.0),
@@ -180,7 +189,7 @@ public class Tornado3DCanvas extends vtkPanel
         rw.StereoRenderOff();
     }
     public void setStereoCrossEye() {
-        // TODO
+        // TODO - create cross-eye view using multiple viewports
     }
         
     // Don't show all of the actors every time
@@ -189,13 +198,20 @@ public class Tornado3DCanvas extends vtkPanel
     }
 
     public void myResetCameraClippingRange() {
+        
         if (cam == null) return;
 
-        double distanceToFocus = cam.GetDistance();
-        cam.SetClippingRange(0.75 * distanceToFocus, 1.50 * distanceToFocus);
+        float distanceToFocus = (float) cam.GetDistance();
+        float frontClip = 0.60f * distanceToFocus;
+        float backClip = 2.00f * distanceToFocus;
+        cam.SetClippingRange(frontClip, backClip);
         if ( (doFog) && (gl != null) ) {
-            gl.glFogf(GL.GL_FOG_START, (float)(0.90 * distanceToFocus));
-            gl.glFogf(GL.GL_FOG_END, (float)(1.50 * distanceToFocus));
+            // if (fogLinear) {
+                gl.glFogf(GL.GL_FOG_START, 0.90f * distanceToFocus);
+                gl.glFogf(GL.GL_FOG_END, backClip);
+            // }
+            // else 
+                gl.glFogf(GL.GL_FOG_DENSITY, 0.7f / distanceToFocus);                
         }
     }
 
@@ -265,15 +281,23 @@ public class Tornado3DCanvas extends vtkPanel
         }
 	}
 
+    boolean doPick = true;
     public void mouseClicked(MouseEvent event) {
-        double x = event.getX();
-        double y = getSize().height - event.getY();
-        vtkPropPicker picker = new vtkPropPicker();
-        int pickResult = picker.Pick(x, y, 0, ren);
-        if (pickResult != 0)
-            System.out.println("Picked something");
-        else 
-            System.out.println("Picked nothing");
+        if (doPick) {
+            // TODO causes occasional crash
+            double x = event.getX();
+            double y = getSize().height - event.getY();
+            
+            // vtkPropPicker picker = new vtkPropPicker();
+            vtkPicker picker = new vtkPicker();
+            picker.SetTolerance(0.0f);
+            int pickResult = picker.Pick(x, y, 0, ren);
+            
+            if (pickResult != 0)
+                System.out.println("Picked something");
+            else 
+                System.out.println("Picked nothing");
+        }
     }
     
     public void Azimuth (double a) {
