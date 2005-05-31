@@ -112,57 +112,85 @@ implements MouseMotionListener, ResidueSelector, AdjustmentListener, MouseListen
 
     }
 
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+        if (mouseIsInCartoon(e)) {
+            mouseDragged(e);
+        }
+    }
+    
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {
         setCursor(defaultCursor);
     }
+    
+    boolean mousePressedInCartoon = false;
     public void mousePressed(MouseEvent e) {
-        // Center on selected residue, just as in MouseDragged
-        mouseDragged(e);
+        if (mouseIsInCartoon(e)) {
+            mousePressedInCartoon = true;
+
+            // Center on selected residue, just as in MouseDragged
+            mouseDragged(e);
+        }
+        else {
+            mousePressedInCartoon = false;
+            setCursor(defaultCursor);
+        }
     }
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+        setCursor(defaultCursor);
+    }
     
     public void mouseMoved(MouseEvent e) {
         int mouseX = e.getX();
         int mouseY = e.getY();
         // Is it in the cartoon area?
-        if ( (mouseX >= cartoonLeft) &&
-             (mouseX <= cartoonRight) &&
-             (mouseY >= cartoonTop) &&
-             (mouseY <= cartoonBottom) ) 
-        {
+        if (mouseIsInCartoon(e)) {
+            tornado.userIsInteracting = true;
             setCursor(leftRightCursor);
-            
-            int position = (int) (residueCount * (mouseX - cartoonLeft) / (cartoonRight - cartoonLeft));
-            if (positionResidues.containsKey(position)) {
-                tornado.userIsInteracting = true;
-                Residue residue = positionResidues.get(position);
+            Residue residue = mouseResidue(e);
+            if (residue != null) {
                 tornado.highlight(residue);
                 repaint();
             }
         }
+        else 
+            setCursor(defaultCursor);
     }
 
     public void mouseDragged(MouseEvent e) {
         // Drag on cartoon acts like a scroll bar
-        int mouseX = e.getX();
-        int mouseY = e.getY();
-        // Is it in the cartoon area?
-        if ( (mouseX >= cartoonLeft) &&
-             (mouseX <= cartoonRight) &&
-             (mouseY >= cartoonTop) &&
-             (mouseY <= cartoonBottom) ) 
-        {
+
+        // Did this drag begin in the cartoon area?
+        if (mousePressedInCartoon) {
+            tornado.userIsInteracting = true;
             setCursor(leftRightCursor);
-            
-            int position = (int) (residueCount * (mouseX - cartoonLeft) / (cartoonRight - cartoonLeft));
-            if (positionResidues.containsKey(position)) {
-                tornado.userIsInteracting = true;
-                Residue residue = positionResidues.get(position);
+            Residue residue = mouseResidue(e);
+            if (residue != null) {
                 sequenceCanvas.centerOnResidue(residue);
+                tornado.highlight(residue);
             }
         }
+    }
+    
+    boolean mouseIsInCartoon(MouseEvent e) {
+        int mouseX = e.getX();
+        int mouseY = e.getY();
+        return ( (mouseX >= cartoonLeft) &&
+                 (mouseX <= cartoonRight) &&
+                 (mouseY >= cartoonTop) &&
+                 (mouseY <= cartoonBottom) );         
+    }
+    
+    Residue mouseResidue(MouseEvent e) {
+        // Return an end residue if the mouse is outside of the cartoon to the left or right
+        int mouseX = e.getX();
+        int position = (int) (residueCount * (mouseX - cartoonLeft) / (cartoonRight - cartoonLeft));
+        if (position < 0) position = 0;
+        if (position >= residueCount) position = residueCount - 1;
+        Residue residue = null;
+        if (positionResidues.containsKey(position))
+            residue = positionResidues.get(position);
+        return residue;
     }
 
     public void clearResidues() {
