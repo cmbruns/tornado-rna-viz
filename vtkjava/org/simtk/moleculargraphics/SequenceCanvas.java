@@ -24,7 +24,8 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
     Hashtable<Residue, Integer> residuePositions = new Hashtable<Residue, Integer>();
     Hashtable<Integer, Residue> positionResidues = new Hashtable<Integer, Residue>();
     Graphics myGraphics = null; // Notice when Graphics object is available
-    int highlight = -1;
+    Residue highlightResidue = null;
+    int highlightPosition = -1;
 
     double symbolWidth = 25;
     double symbolHeight = 30;
@@ -85,10 +86,10 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
         g.fillRect(leftPixel, 0, getViewportWidth(), height);
 
         // Draw highlight
-        if (highlight >= 0) {
-            if ( (highlight >= leftPosition) && (highlight <= rightPosition) ) {
-                int leftX = (int) (characterSpacing / 2.0 + highlight * symbolWidth);
-                int rightX = (int) ((highlight + 1) * symbolWidth);
+        if (highlightPosition >= 0) {
+            if ( (highlightPosition >= leftPosition) && (highlightPosition <= rightPosition) ) {
+                int leftX = (int) (characterSpacing / 2.0 + highlightPosition * symbolWidth);
+                int rightX = (int) ((highlightPosition + 1) * symbolWidth);
                 int bottomY = (int) (baseLine);
                 int topY = (int) (bottomY - symbolHeight);
                 g.setColor(Color.yellow);
@@ -185,11 +186,12 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
     }
 
     public void clearResidues() {
+        highlightResidue = null;
         columnCount = 0;
         residueSymbols.clear();
         residuePositions.clear();
         positionResidues.clear();
-        highlight = -1;
+        highlightPosition = -1;
         checkSize(getGraphics());
     }    
     public void addResidue(Residue r) {
@@ -200,14 +202,16 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
     }    
 
     public void highlight(Residue r) {
+        highlightResidue = r;
         if (residuePositions.containsKey(r)) {
-            highlight = residuePositions.get(r);
+            highlightPosition = residuePositions.get(r);
             repaint();
         }
         else unHighlight();
     }
     public void unHighlight() {
-        highlight = -1;
+        highlightResidue = null;
+        highlightPosition = -1;
         repaint();
     }
     public void select(Residue r) {
@@ -230,16 +234,28 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
         }        
     }
 
-    int oldMouseViewportX = 0; // mouse coordinate relative to the viewport
-    boolean mouseIsDragging = false;
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+        mousePressedInSequenceArea = false;
+        mousePressedInNumberArea = false;
+    }
+
+    boolean mousePressedInSequenceArea = false;
+    boolean mousePressedInNumberArea = false;
+    int mousePressedViewportX = -1;
+    int mousePressedBarCenter = -1;
     public void mousePressed(MouseEvent e) {
-        mouseIsDragging = true;
-        int leftPixel = (int) parent.getViewport().getViewRect().getMinX();
-        oldMouseViewportX = e.getX() - leftPixel;
+        mousePressedInSequenceArea = false;
+        mousePressedInNumberArea = false;
+        if (mouseIsInSequenceArea(e)) mousePressedInSequenceArea = true;
+        if (mouseIsInNumberArea(e)) mousePressedInNumberArea = true;
+
+        int leftPixel = viewportLeftPixel();
+        mousePressedViewportX = e.getX() - leftPixel;
+        mousePressedBarCenter = parent.getHorizontalScrollBar().getValue();
     }
     public void mouseReleased(MouseEvent e) {
-        mouseIsDragging = false;
+        mousePressedInSequenceArea = false;
+        mousePressedInNumberArea = false;
     }
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
@@ -249,33 +265,25 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
         int mouseX = e.getX();
         int mouseY = e.getY();
         // Is the mouse in the sequence area?
-        if ( (mouseY >= (baseLine - symbolHeight)) && 
-             (mouseY <= baseLine) &&
-             (mouseX >= (int) (characterSpacing/2.0)) &&
-             (mouseX <= (int) (characterSpacing/2.0 + (columnCount) * symbolWidth)) ) 
-        {
+        if (mouseIsInSequenceArea(e)) {
             setCursor(textCursor);
-            
-            int sequenceIndex = (int)( (mouseX - characterSpacing/2.0)/symbolWidth );
-            if ( (sequenceIndex != highlight ) && (positionResidues.containsKey(sequenceIndex)) ) {
+            Residue residue = mouseResidue(e);
+            if ( (residue != null) && (residue != highlightResidue) ) {
                 tornado.userIsInteracting = true;
-                Residue r = positionResidues.get(sequenceIndex);
-                tornado.highlight(r);
+                tornado.highlight(residue);
                 repaint();
             }
         }
         
         // Is the pointer in the numbering area?
-        else if ( (mouseY > baseLine) &&
-                  (mouseY <= numberBaseLine) ) {
-            setCursor(leftRightCursor);            
-        }
+        else if (mouseIsInNumberArea(e))
+            setCursor(leftRightCursor); 
         
-        else {
+        else
             setCursor(defaultCursor);
-        }
     }
 
+    // keep track of how far past the edge we are
     public void mouseDragged(MouseEvent e) {
         // TODO - drag on sequence selects a range (click selects one residue)
 
@@ -283,28 +291,55 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
         int mouseY = e.getY();
 
         // Compute mouse position relative to viewport
-        int leftPixel = (int) parent.getViewport().getViewRect().getMinX();
-        int mouseViewportX = mouseX - leftPixel;
+        int mouseViewportX = mouseX - viewportLeftPixel();
 
-        // TODO - drag on numbers drags sequence? (maybe numbers section needs to be bigger?)
-        // Is the pointer in the numbering area?
-        if ( (mouseY > baseLine) &&
-             (mouseY <= numberBaseLine) &&
-             (mouseIsDragging)) {
+        // Drag on numbers drags sequence. (maybe numbers section needs to be bigger?)
+        if (mousePressedInNumberArea || mousePressedInSequenceArea) {
 
-            int delta = mouseViewportX - oldMouseViewportX;
-            if (delta != 0) {
-                JScrollBar bar = parent.getHorizontalScrollBar();
-    
-                // middle of scrollbar, not beginning
-                int pixel = bar.getValue() - delta;
-                if (pixel < bar.getMinimum()) pixel = bar.getMinimum();
-                if (pixel > bar.getMaximum()) pixel = bar.getMaximum();            
-                
+            // Apply overdrag logic
+            // When the user drags farther than the sequence will go, 
+            //  going back in the other direction should not move things until
+            //  the mouse is back where the last motion occured
+            int delta = mousePressedViewportX - mouseViewportX;            
+            int pixel = mousePressedBarCenter + delta;
+            
+            JScrollBar bar = parent.getHorizontalScrollBar();
+            int oldPixel = bar.getValue();
+            if (pixel < bar.getMinimum()) pixel = bar.getMinimum();
+            else if (pixel > bar.getMaximum()) pixel = bar.getMaximum(); 
+            if (pixel != oldPixel) {
                 bar.setValue(pixel);
             }
+            // repaint happens automatically in response to scroll change, if any
         }  
-        oldMouseViewportX = mouseViewportX;
+    }
+
+    int viewportLeftPixel() {
+        return (int) parent.getViewport().getViewRect().getMinX();
+    }
+
+    boolean mouseIsInSequenceArea(MouseEvent e) {
+        // Is the mouse in the sequence area?
+        int mouseX = e.getX();
+        int mouseY = e.getY();
+        return ( (mouseY >= (baseLine - symbolHeight)) && 
+                 (mouseY <= baseLine) &&
+                 (mouseX >= (int) (characterSpacing/2.0)) &&
+                 (mouseX <= (int) (characterSpacing/2.0 + (columnCount) * symbolWidth)) 
+                );
+    }
+    
+    boolean mouseIsInNumberArea(MouseEvent e) {
+        // Is the mouse in the sequence area?
+        int mouseX = e.getX();
+        int mouseY = e.getY();
+        return ( (mouseY > baseLine) &&
+                 (mouseY <= numberBaseLine) );
+    }
+    
+    Residue mouseResidue(MouseEvent e) {
+        int sequenceIndex = (int)( (e.getX() - characterSpacing/2.0)/symbolWidth );
+        return positionResidues.get(sequenceIndex);
     }
     
     // Respond to sequence scroll bar event - redraw
