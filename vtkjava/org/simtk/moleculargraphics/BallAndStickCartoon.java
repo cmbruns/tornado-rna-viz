@@ -34,6 +34,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
             Hashtable<String, vtkPoints> elementPoints = new Hashtable<String, vtkPoints>(); // Map all atoms of same element to the same structure
             Hashtable<String, Double> elementRadii = new Hashtable<String, Double>(); // Map element names to sphere radius
             Hashtable<String, Color> elementColors = new Hashtable<String, Color>(); // Map element names to color
+            Hashtable<String, Double> elementCylinderLengths = new Hashtable<String, Double>();
             
             // Notice in case we generate zero graphics primitives
             boolean hasContents = false;
@@ -50,7 +51,10 @@ public class BallAndStickCartoon extends MolecularCartoon {
                 if (!elementPoints.containsKey(elementSymbol)) { // New element type
                     atomPoints = new vtkPoints();
                     elementPoints.put(elementSymbol, atomPoints);
-                    elementRadii.put(elementSymbol, new Double(atom.getRadius() * 0.25 * scaleFactor));
+                    double sphereRadius = atom.getVanDerWaalsRadius() * 0.25 * scaleFactor;
+                    elementRadii.put(elementSymbol, sphereRadius);
+                    // Make each half-bond poke just a bit into the atom sphere
+                    elementCylinderLengths.put(elementSymbol, atom.getCovalentRadius() - 0.75 * sphereRadius);
                     if (clr == null)
                         elementColors.put(elementSymbol, atom.getDefaultColor());
                     else 
@@ -75,8 +79,8 @@ public class BallAndStickCartoon extends MolecularCartoon {
                   points.SetPoints(atomPoints);
                   
                   vtkSphereSource sphere = new vtkSphereSource();
-                  sphere.SetThetaResolution(7);
-                  sphere.SetPhiResolution(7);
+                  sphere.SetThetaResolution(8);
+                  sphere.SetPhiResolution(8);
                   sphere.SetRadius( ((Double)elementRadii.get(elementSymbol)).doubleValue() );
                   
                   vtkGlyph3D spheres = new vtkGlyph3D();
@@ -90,6 +94,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
                   spheresActor.SetMapper(spheresMapper);
                   Color color = (Color) elementColors.get(elementSymbol);
                   spheresActor.GetProperty().SetColor(color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0);
+                  spheresActor.GetProperty().BackfaceCullingOn();
                   
                   assembly.AddPart(spheresActor);
             }
@@ -109,15 +114,21 @@ public class BallAndStickCartoon extends MolecularCartoon {
                 
                 Atom atom1 = molecule.getAtom(a);
                 String element1 = atom1.getElementSymbol();
-                                
+                // double radius1 = elementRadii.get(element1);
+
                 for (Atom atom2 : atom1.getBonds()) {
                     // Note that sometimes atom2 may not be in this "molecule"
                     
-                    Vector3D bondVector = atom2.getCoordinates().minus(atom1.getCoordinates());                    
-                    Vector3D midBond = atom1.getCoordinates().plus(bondVector.scale(0.5));
+                    Vector3D fullBondVector = atom2.getCoordinates().minus(atom1.getCoordinates());
+                    Vector3D unitBondVector = fullBondVector.unit();
+                    double covalentRatio = atom1.getCovalentRadius()/(atom2.getCovalentRadius() + atom1.getCovalentRadius());
+                    Vector3D midBond = atom1.getCoordinates().plus(fullBondVector.scale(covalentRatio));
+                    
+                    Vector3D bondEnd = midBond;
+                    Vector3D bondStart = midBond.minus(unitBondVector.scale(elementCylinderLengths.get(element1)));
+                    // Vector3D bondStart = atom1.getCoordinates().plus(fullBondVector.unit().scale(0.80 * radius1));
 
-                    // This half-bond cylinder will be centered 1/4 of the way between the atoms
-                    Vector3D quarterBond = atom1.getCoordinates().plus(bondVector.scale(0.25));
+                    Vector3D bondMiddle = bondStart.plus(bondEnd).scale(0.5);
 
                     // Segregate bond data by element type
                     if (!elementBonds.containsKey(element1)) {
@@ -127,11 +138,12 @@ public class BallAndStickCartoon extends MolecularCartoon {
                         normals.SetNumberOfComponents(3);
                         elementBondDirections.put(element1, normals);
                     }
+
                     vtkPoints points1 = (vtkPoints) elementBonds.get(element1);
                     vtkFloatArray normals1 = (vtkFloatArray) elementBondDirections.get(element1);
                     
                     // Center point of this half bond
-                    points1.InsertNextPoint(quarterBond.getX(), quarterBond.getY(), quarterBond.getZ());
+                    points1.InsertNextPoint(bondMiddle.getX(), bondMiddle.getY(), bondMiddle.getZ());
 
                     // Direction of this half bond
                     // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
@@ -139,9 +151,9 @@ public class BallAndStickCartoon extends MolecularCartoon {
                     if ( (atom1.getName().compareTo(atom2.getName())) > 0 )
                         atom1First = false;
                     if (atom1First)
-                        normals1.InsertNextTuple3(bondVector.getX(), bondVector.getY(), bondVector.getZ());
+                        normals1.InsertNextTuple3(unitBondVector.getX(), unitBondVector.getY(), unitBondVector.getZ());
                     else
-                        normals1.InsertNextTuple3(-bondVector.getX(), -bondVector.getY(), -bondVector.getZ());
+                        normals1.InsertNextTuple3(-unitBondVector.getX(), -unitBondVector.getY(), -unitBondVector.getZ());
                     
                     bondCount += 0.5;
                 }
@@ -150,6 +162,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
             e = elementBonds.keys();
             while (e.hasMoreElements()) {
                 String elementSymbol = (String) e.nextElement();
+                double sphereRadius = elementRadii.get(elementSymbol);
                   
                 vtkPoints points = (vtkPoints) elementBonds.get(elementSymbol);
                 vtkFloatArray normals = (vtkFloatArray) elementBondDirections.get(elementSymbol);
@@ -160,9 +173,9 @@ public class BallAndStickCartoon extends MolecularCartoon {
 	
 	            // Make a cylinder to use as the basis of all bonds
 	            vtkCylinderSource cylinderSource = new vtkCylinderSource();
-	            cylinderSource.SetResolution(4);
-	            cylinderSource.SetRadius(0.12 * scaleFactor);
-	            cylinderSource.SetHeight(0.505);
+	            cylinderSource.SetResolution(5);
+	            cylinderSource.SetRadius(0.15 * scaleFactor);
+	            cylinderSource.SetHeight(elementCylinderLengths.get(elementSymbol));
 	            cylinderSource.SetCapping(0);
 	            // Rotate the cylinder so that the cylinder axis goes along the normals during glyphing
 	            vtkTransform cylinderTransform = new vtkTransform();
@@ -177,7 +190,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
 	            halfBonds.SetSource(cylinderFilter.GetOutput());
 	
 	            halfBonds.SetVectorModeToUseNormal();
-	            halfBonds.SetScaleModeToScaleByVector();
+	            // halfBonds.SetScaleModeToScaleByVector();
 	
 	            vtkPolyDataMapper bondsMapper = new vtkPolyDataMapper();
 	            bondsMapper.SetInput(halfBonds.GetOutput());
@@ -187,6 +200,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
 	            Color color = (Color) elementColors.get(elementSymbol);
 	            // Color color = Color.yellow;
 	            bondsActor.GetProperty().SetColor(color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0);
+                bondsActor.GetProperty().BackfaceCullingOn();
 	            
 	            if (bondCount > 0) assembly.AddPart(bondsActor);
             }
