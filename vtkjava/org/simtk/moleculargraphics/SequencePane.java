@@ -5,7 +5,7 @@
 package org.simtk.moleculargraphics;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 
 import javax.swing.*;
 
@@ -50,10 +50,29 @@ implements ResidueSelector
         checkSize();
 
         // Respond to space key
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("SPACE"),
-                 "nextResidue");
-        getActionMap().put("nextResidue",
-                new NextResidueAction());
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0),
+                "nextResidue");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
+                "nextResidue");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT, 0),
+                "nextResidue");
+        getActionMap().put("nextResidue", new NextResidueAction());
+
+
+        // Respond to backspace key
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0),
+                "previousResidue");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
+                "previousResidue");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT, 0),
+                "previousResidue");
+        getActionMap().put("previousResidue", new PreviousResidueAction());
        }
 
     public void paint(Graphics g) {
@@ -111,6 +130,12 @@ implements ResidueSelector
         public static final long serialVersionUID = 1L;
         public void actionPerformed(ActionEvent e) {
             tornado.highlightNextResidue();
+        }
+    }
+    class PreviousResidueAction extends AbstractAction {
+        public static final long serialVersionUID = 1L;
+        public void actionPerformed(ActionEvent e) {
+            tornado.highlightPreviousResidue();
         }
     }
 }
