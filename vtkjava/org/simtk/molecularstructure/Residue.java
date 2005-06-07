@@ -31,7 +31,6 @@ public abstract class Residue extends Molecule {
      */
     public Residue() {
         addGenericBonds();
-        createBonds();
     }
 
     public void setNextResidue(Residue r) {nextResidue = r;}
@@ -52,12 +51,12 @@ public abstract class Residue extends Molecule {
      */
     public Residue(PDBAtomSet bagOfAtoms) {
         super(bagOfAtoms);
-        addAtoms(bagOfAtoms);
         addGenericBonds();
-        createBonds();
+        indexAtoms(bagOfAtoms);
+        createGenericBonds();
     }
     
-    protected void addAtoms(PDBAtomSet bagOfAtoms) {
+    protected void indexAtoms(PDBAtomSet bagOfAtoms) {
         if (bagOfAtoms == null) return;
         
         // Inherit residue properties from the first atom in the list
@@ -88,7 +87,7 @@ public abstract class Residue extends Molecule {
         }
     }
     
-    protected void addGenericBonds() {        
+    protected void addGenericBonds() {
     }
     
     public void addGenericBond(String atom1, String atom2) {
@@ -144,8 +143,7 @@ public abstract class Residue extends Molecule {
      * Only do this once for each residue.
      */
     // TODO - this only works for PDB atoms right now
-    void createBonds() {
-        super.createBonds();
+    void createGenericBonds() {
         ATOM1: for (Atom atom : atoms) {
             if (! (atom instanceof PDBAtom)) continue ATOM1;
             PDBAtom atom1 = (PDBAtom) atom;

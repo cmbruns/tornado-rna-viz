@@ -31,6 +31,7 @@ public class Biopolymer extends Molecule {
     public int getResidueCount() {return residues.size();}
 	
 	public Biopolymer() {
+        super();
         addGenericResidueBonds();
         createResidueBonds();
     } // Empty molecule

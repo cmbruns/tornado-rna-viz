@@ -38,6 +38,7 @@ public class Molecule {
         for (Atom atom : atomSet) {
             addAtom(atom);
 		}
+        createBonds();
 	}
 	
     public Vector<Atom> getAtoms() {return atoms;}
@@ -93,7 +94,8 @@ public class Molecule {
 			// Stop parsing after the END record
 			if (PDBLine.substring(0,3).equals("END")) {
 			    reader.reset(); // Leave the END tag for the next guy
-				return Molecule.createFactoryPDBMolecule(currentMoleculeAtoms); // empty molecule
+                Molecule molecule = Molecule.createFactoryPDBMolecule(currentMoleculeAtoms); // empty molecule
+				return molecule;
 			}
 
 			// Lines with atomic coordinates are used to create new atoms
@@ -131,7 +133,8 @@ public class Molecule {
 				    }
 				    else { // Not the same molecule - return
 				        reader.reset(); // Put latest atom back into the stream
-				        return Molecule.createFactoryPDBMolecule(currentMoleculeAtoms);
+				        Molecule molecule = Molecule.createFactoryPDBMolecule(currentMoleculeAtoms);
+                        return molecule;
 				    }
 				}
 			} // ATOM or HETATM record

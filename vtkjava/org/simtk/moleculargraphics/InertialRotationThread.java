@@ -13,11 +13,14 @@ import javax.swing.SwingUtilities;
  */
 public class InertialRotationThread extends Thread {
     volatile boolean pauseRotation = false;
-    volatile boolean rock = true; // Spin instead of rock if false
+    volatile boolean doRock = true; // Spin instead of rock if false
     volatile boolean sitStill = false;
-    double rotationPerFrame = 0.5;
-    double rockRadius = 3.0;
     volatile double currentAngle = 0.0;
+
+    double rotationPerFrame = 0.3;
+    double rockRadius = 3.0;
+    int direction = 1;
+    int millisecondsPerFrame = 100;
 
     // Don't let multiple rotations pile up
     volatile boolean eventPending = false;
@@ -32,17 +35,30 @@ public class InertialRotationThread extends Thread {
     
     public void animate() {
 
-        // this does the update on the main gui thread and
+        // this does the update on the awt event thread and
         // is necessary to keep the main thread from locking
         // up...
         Runnable updateAComponent = new Runnable() {
     	    public void run() { 
 
-                if (rock && (currentAngle > rockRadius) && (rotationPerFrame > 0)) rotationPerFrame *= -1;
-                if (rock && (currentAngle < -rockRadius) && (rotationPerFrame < 0)) rotationPerFrame *= -1;
-                currentAngle += rotationPerFrame;
+                double rockFactor = 1.0;
+                if (doRock) {
+                    if (currentAngle >= rockRadius) direction = -1;
+                    if (currentAngle <= -rockRadius) direction = 1;
+                    
+                    // Make the rocking fast toward the center, slow toward the edges
+                    // Rotation speed should follow a cosine function
 
-                canvas.Azimuth(rotationPerFrame);
+                    rockFactor = 0.50 * (1.0 + Math.cos(0.75 * Math.PI * currentAngle / rockRadius));
+                    if (rockFactor < 0.30) rockFactor = 0.30; // Don't let it go too slowly
+                }
+
+                double actualRotation = rockFactor * rotationPerFrame * direction;
+                
+                currentAngle += actualRotation;
+                
+                canvas.Azimuth(actualRotation);
+                
                 canvas.myResetCameraClippingRange();
                 canvas.repaint();
                 
@@ -50,6 +66,7 @@ public class InertialRotationThread extends Thread {
                 eventPending = false;
             }
         };
+        // Send action to the awt event thread
         SwingUtilities.invokeLater(updateAComponent);
 
     }
@@ -58,7 +75,7 @@ public class InertialRotationThread extends Thread {
         while (true) {
 	        try {
                 // Time step between rotations frames
-	            sleep(100); // milliseconds
+	            sleep(millisecondsPerFrame);
                 
                 // So many ways to avoid doing rotations below...
                 

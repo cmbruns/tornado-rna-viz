@@ -537,7 +537,7 @@ implements ResidueSelector
         public void actionPerformed(ActionEvent e) {
             rotationThread.sitStill = false;
             rotationThread.pauseRotation = false;
-            rotationThread.rock = true;
+            rotationThread.doRock = true;
             rotationThread.currentAngle = 0.0;
             rotationThread.interrupt();
         }
@@ -547,7 +547,7 @@ implements ResidueSelector
         public void actionPerformed(ActionEvent e) {
             rotationThread.sitStill = false;
             rotationThread.pauseRotation = false;
-            rotationThread.rock = false;
+            rotationThread.doRock = false;
             rotationThread.interrupt();
         }
     }
@@ -574,6 +574,17 @@ implements ResidueSelector
         String url;
         BrowserLaunchAction(String u) {url = u;}
         public void actionPerformed(ActionEvent e) {
+            
+            // Show information dialog, so the savvy user will be able to
+            // go to the url manually, in case the browser open fails.
+            JOptionPane.showConfirmDialog(
+                    null, 
+                    "Your browser will open to page " + url + " in a moment\n", 
+                    "Browse to SimTK.org",
+                    JOptionPane.DEFAULT_OPTION, 
+                    JOptionPane.INFORMATION_MESSAGE
+                    );
+
             // TODO - this will only work for windows, make it work for others too
             try {Runtime.getRuntime().exec("cmd /c start " + url);} 
             catch (IOException exc) {                
@@ -698,13 +709,14 @@ implements ResidueSelector
                 
                 String division = pdbId.substring(1, 3);
                 String fullURLString = urlBase + division + "/" + pdbId + "." + extension + ".gz";
-                System.out.println("Web PDB button: " + fullURLString);
 
                 InputStream inStream;
                 try {
                     setWait("Loading remote PDB structure...");
+                    dialog.setCursor(waitCursor);
                     inStream = new GZIPInputStream((new URL(fullURLString)).openStream());
                     MoleculeCollection molecules = loadPDBFile(inStream);
+                    dialog.setCursor(defaultCursor);
                     dialog.setVisible(false); // success, so close the dialog
                     return;
                 } catch (IOException exc) {
