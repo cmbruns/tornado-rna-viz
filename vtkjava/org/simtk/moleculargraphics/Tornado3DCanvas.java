@@ -6,6 +6,7 @@ package org.simtk.moleculargraphics;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.image.*;
 import java.util.Hashtable;
 import vtk.*;
 import java.awt.event.*;
@@ -19,12 +20,14 @@ import org.simtk.molecularstructure.Residue;
  * Three dimensional rendering canvas for molecular structures in Tornado application
  */
 public class Tornado3DCanvas extends vtkPanel 
- implements MouseMotionListener, MouseListener, ResidueSelector, ComponentListener
+ implements MouseMotionListener, MouseListener, ResidueActionListener, ComponentListener
 {
     boolean doFog = true;
     boolean fogLinear = true;
     GL gl;
 
+    // volatile boolean userIsInteracting = false;
+    
     Color backgroundColor = new Color((float)0.92, (float)0.96, (float)1.0);
     
     // Discover version of vtk we are using
@@ -36,7 +39,9 @@ public class Tornado3DCanvas extends vtkPanel
     
     // protected vtkGenericRenderWindowInteractor iren = new vtkGenericRenderWindowInteractor();
     public static final long serialVersionUID = 1L;
-	Tornado tornado;    
+
+    // Tornado tornado;
+    ResidueActionBroadcaster residueActionBroadcaster;
 
     // TODO - create lookup table of residues by atomic positions, or centroids
     Hashtable<Residue, vtkProp> residueHighlights = new Hashtable<Residue, vtkProp>();
@@ -54,9 +59,14 @@ public class Tornado3DCanvas extends vtkPanel
     Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     
-	Tornado3DCanvas(Tornado t) {
+    ClassLoader classLoader;
+    
+	Tornado3DCanvas(ResidueActionBroadcaster b) {
         super();
-	    tornado = t;
+        
+        residueActionBroadcaster = b;
+        classLoader = getClass().getClassLoader();
+	    // tornado = t;
 	    
         // System.out.println("vtk version = " + vtkDoubleVersion);
         
@@ -80,12 +90,52 @@ public class Tornado3DCanvas extends vtkPanel
                 overlayRenderer.SetLayer(0);
             }
 
+            // Create logo image for lower right hand corner
+
+            // TODO make this png work with web start
+            // i.e. read the image from a URL
+            vtkImageData imageData = null;
+            if (false)
+            {
+                Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("simtk2.png"));
+                Dimension logoDimension = new Dimension(logoImage.getWidth(this), logoImage.getHeight(this));
+                PixelGrabber pixelGrabber = new PixelGrabber(logoImage, 0, 0, logoDimension.width, logoDimension.height, true);
+                try {
+                    pixelGrabber.grabPixels();
+                    
+                    Object pixels = pixelGrabber.getPixels();
+                    if (pixels instanceof int[]) {
+                        int intPixels[] = (int[]) pixels;
+                        
+                        imageData = new vtkImageData();
+                        imageData.SetDimensions(logoDimension.width, logoDimension.height, 1);
+                        imageData.SetOrigin(0.0, 0.0, 0.0);
+                        imageData.SetSpacing(1.0, 1.0, 1.0);
+                        imageData.SetScalarTypeToUnsignedChar();
+                        // imageData.AllocateScalars();
+                        vtkDataArray array = imageData.GetPointData().GetScalars();
+                        
+                        int iZ = 0;
+                        for(int iY= 0; iY < logoDimension.height; iY++){
+                            for(int iX = 0; iX < logoDimension.width; iX++){
+                                // TODO this is probably terribly wrong
+                                array.InsertNextTuple1(intPixels[iX * logoDimension.height + iY]);
+                            }
+                        }
+                    }
+                }
+                catch (InterruptedException exc) {}
+                
+            }
+            
             logoReader = new vtkPNGReader();
             logoReader.SetFileName("simtk2.png");
             logoReader.Update();
             int[] logoBounds = logoReader.GetDataExtent();
+
             logoActor = new vtkImageActor();
-            logoActor.SetInput(logoReader.GetOutput());
+            if (imageData != null) logoActor.SetInput(imageData);
+            else logoActor.SetInput(logoReader.GetOutput());
             logoWidth = logoBounds[1] - logoBounds[0] + 1;
             logoHeight = logoBounds[3] - logoBounds[2] + 1;
             overlayRenderer.AddActor(logoActor);
@@ -233,7 +283,7 @@ public class Tornado3DCanvas extends vtkPanel
     public int UnLock() {return super.UnLock();}
     
 	public void mouseDragged(MouseEvent event) {
-        tornado.userIsInteracting = true;
+        residueActionBroadcaster.lubricateUserInteraction();
 	    super.mouseDragged(event);
 
         if (event.isControlDown()) {
@@ -260,7 +310,7 @@ public class Tornado3DCanvas extends vtkPanel
 
         // Don't let pick events accumulate
         if (!pickIsPending) {
-            tornado.userIsInteracting = true;
+            residueActionBroadcaster.lubricateUserInteraction();
 
             double screenX = event.getX();
             double screenY = getSize().height - event.getY();
@@ -306,7 +356,7 @@ public class Tornado3DCanvas extends vtkPanel
     }
     
     public void mousePressed(MouseEvent event) {
-        tornado.userIsInteracting = true;
+        residueActionBroadcaster.lubricateUserInteraction();
         super.mousePressed(event);
     }
     public void mouseReleased(MouseEvent event) {
@@ -343,7 +393,7 @@ public class Tornado3DCanvas extends vtkPanel
     
     public void highlight(Residue r) {
         if (r == currentHighlightedResidue) return;
-        unHighlight();
+        unHighlightResidue();
         if (residueHighlights.containsKey(r)) {
             currentHighlightedResidue = r;
             currentHighlight = residueHighlights.get(r);
@@ -351,7 +401,7 @@ public class Tornado3DCanvas extends vtkPanel
             repaint();
         }
     }
-    public void unHighlight() {
+    public void unHighlightResidue() {
         if (currentHighlight == null) return;
         currentHighlight.SetVisibility(0);
         currentHighlight = null;
@@ -361,8 +411,8 @@ public class Tornado3DCanvas extends vtkPanel
     
     public void select(Residue r) {}
     public void unSelect(Residue r) {}
-    public void addResidue(Residue r) {}    
+    public void add(Residue r) {}    
     public void clearResidues() {}
-    public void centerOnResidue(Residue r) {// TODO
+    public void centerOn(Residue r) {// TODO
     }
 }

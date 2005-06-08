@@ -8,16 +8,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.JScrollBar;
-
-import org.simtk.molecularstructure.Residue;
+import org.simtk.molecularstructure.*;
 
 public class SequenceCanvas extends BufferedCanvas 
-implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListener
+implements ResidueActionListener, MouseMotionListener, AdjustmentListener, MouseListener
 {
     public static final long serialVersionUID = 1L;
 
     SequencePane parent;
-    Tornado tornado;
+    // Tornado tornado;
+    ResidueActionBroadcaster residueActionBroadcaster;
+    // boolean userIsInteracting = false;
 
     Vector<String> residueSymbols = new Vector<String>();
     int columnCount = 0;
@@ -45,15 +46,22 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
     Cursor leftRightCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
     Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
 
-    public SequenceCanvas(String initialSequence, SequencePane p, Tornado t) {
+    public SequenceCanvas(
+            String initialSequence, 
+            SequencePane p, 
+            ResidueActionBroadcaster b)
+    {
         super();
         parent = p;
-        tornado = t;
+        
+        // tornado = t;
+        residueActionBroadcaster = b;
+        
         setBackground(Color.white);
         columnCount = initialSequence.length();
         clearResidues();
         for (int r = 0; r < columnCount; r++)
-            residueSymbols.add("" + initialSequence.charAt(r));
+           residueSymbols.add("" + initialSequence.charAt(r));
         font = new Font("Monospaced", Font.BOLD, 20);
         numberFont = new Font("SanSerif", Font.PLAIN, 9);
         checkSize(getGraphics()); // getGraphics returns null here, but I had to try...
@@ -174,9 +182,9 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
             if (parent.contentPanel != null) {
                 
                 // Test kludge to make that dumb sequence pane the right size
-                Panel p = tornado.sequencePanel;
-                int preferredPanelHeight = p.getPreferredSize().height;
-                p.setSize(p.getSize().width, preferredPanelHeight);
+                // Panel p = tornado.sequencePanel;
+                // int preferredPanelHeight = p.getPreferredSize().height;
+                // p.setSize(p.getSize().width, preferredPanelHeight);
 
                 // parent.contentPanel.revalidate(); // so that container gets resized
                 // tornado.sequencePanel.revalidate();
@@ -194,7 +202,7 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
         highlightPosition = -1;
         checkSize(getGraphics());
     }    
-    public void addResidue(Residue r) {
+    public void add(Residue r) {
         residuePositions.put(r, residueSymbols.size());
         positionResidues.put(residueSymbols.size(), r);
         residueSymbols.add("" + r.getOneLetterCode());
@@ -207,9 +215,9 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
             highlightPosition = residuePositions.get(r);
             repaint();
         }
-        else unHighlight();
+        else unHighlightResidue();
     }
-    public void unHighlight() {
+    public void unHighlightResidue() {
         highlightResidue = null;
         highlightPosition = -1;
         repaint();
@@ -218,7 +226,7 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
     }
     public void unSelect(Residue r) {
     }
-    public void centerOnResidue(Residue r) {
+    public void centerOn(Residue r) {
         if (residuePositions.containsKey(r)) {
             int position = residuePositions.get(r);
             int pixel = (int)(symbolWidth * position + characterSpacing);
@@ -269,8 +277,8 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
             setCursor(textCursor);
             Residue residue = mouseResidue(e);
             if ( (residue != null) && (residue != highlightResidue) ) {
-                tornado.userIsInteracting = true;
-                tornado.highlight(residue);
+                residueActionBroadcaster.lubricateUserInteraction();
+                residueActionBroadcaster.fireHighlight(residue);
                 repaint();
             }
         }
@@ -295,6 +303,7 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
 
         // Drag on numbers drags sequence. (maybe numbers section needs to be bigger?)
         if (mousePressedInNumberArea || mousePressedInSequenceArea) {
+            residueActionBroadcaster.lubricateUserInteraction();
 
             // Apply overdrag logic
             // When the user drags farther than the sequence will go, 
@@ -344,7 +353,7 @@ implements ResidueSelector, MouseMotionListener, AdjustmentListener, MouseListen
     
     // Respond to sequence scroll bar event - redraw
     public void adjustmentValueChanged(AdjustmentEvent e) {
-        tornado.userIsInteracting = true;
+        residueActionBroadcaster.lubricateUserInteraction();
         repaint();
     }
     

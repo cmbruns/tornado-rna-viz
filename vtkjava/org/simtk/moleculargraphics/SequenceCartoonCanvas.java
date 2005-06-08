@@ -17,10 +17,12 @@ import org.simtk.molecularstructure.Residue;
   * Simple rectangular cartoon representation of a macromolecular sequence
  */
 public class SequenceCartoonCanvas extends BufferedCanvas 
-implements MouseMotionListener, ResidueSelector, AdjustmentListener, MouseListener
+implements MouseMotionListener, ResidueActionListener, AdjustmentListener, MouseListener
 {
     public static final long serialVersionUID = 1L;
-    Tornado tornado;
+    // Tornado tornado;
+    ResidueActionBroadcaster residueActionBroadcaster;
+    // boolean userIsInteracting = false;
     SequenceCanvas sequenceCanvas;
 
     Hashtable<Residue, Integer> residuePositions = new Hashtable<Residue, Integer>();
@@ -41,10 +43,11 @@ implements MouseMotionListener, ResidueSelector, AdjustmentListener, MouseListen
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     Cursor leftRightCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
 
-    public SequenceCartoonCanvas(Tornado t, SequenceCanvas s) {
+    public SequenceCartoonCanvas(ResidueActionBroadcaster b, SequenceCanvas s) {
         super();
         sequenceCanvas = s;
-        tornado = t;
+        // tornado = t;
+        residueActionBroadcaster = b;
         setBackground(Color.white);
         checkSize();
         addMouseMotionListener(this);
@@ -145,11 +148,11 @@ implements MouseMotionListener, ResidueSelector, AdjustmentListener, MouseListen
         int mouseY = e.getY();
         // Is it in the cartoon area?
         if (mouseIsInCartoon(e)) {
-            tornado.userIsInteracting = true;
+            residueActionBroadcaster.lubricateUserInteraction();
             setCursor(leftRightCursor);
             Residue residue = mouseResidue(e);
             if (residue != null) {
-                tornado.highlight(residue);
+                residueActionBroadcaster.fireHighlight(residue);
                 repaint();
             }
         }
@@ -162,12 +165,12 @@ implements MouseMotionListener, ResidueSelector, AdjustmentListener, MouseListen
 
         // Did this drag begin in the cartoon area?
         if (mousePressedInCartoon) {
-            tornado.userIsInteracting = true;
+            residueActionBroadcaster.lubricateUserInteraction();
             setCursor(leftRightCursor);
             Residue residue = mouseResidue(e);
             if (residue != null) {
-                sequenceCanvas.centerOnResidue(residue);
-                tornado.highlight(residue);
+                sequenceCanvas.centerOn(residue);
+                residueActionBroadcaster.fireHighlight(residue);
             }
         }
     }
@@ -199,7 +202,7 @@ implements MouseMotionListener, ResidueSelector, AdjustmentListener, MouseListen
         highlight = -1;
         residueCount = 0;
     }    
-    public void addResidue(Residue r) {
+    public void add(Residue r) {
         residuePositions.put(r, residueCount);
         positionResidues.put(residueCount, r);
         residueCount ++;
@@ -210,9 +213,9 @@ implements MouseMotionListener, ResidueSelector, AdjustmentListener, MouseListen
             highlight = residuePositions.get(r);
             repaint();
         }
-        else unHighlight();
+        else unHighlightResidue();
     }
-    public void unHighlight() {
+    public void unHighlightResidue() {
         highlight = -1;
         repaint();
     }
@@ -220,7 +223,7 @@ implements MouseMotionListener, ResidueSelector, AdjustmentListener, MouseListen
     }
     public void unSelect(Residue r) {
     }
-    public void centerOnResidue(Residue r) {} // This sequence does not move
+    public void centerOn(Residue r) {} // This sequence does not move
 
     // Respond to sequence scroll bar event - redraw
     public void adjustmentValueChanged(AdjustmentEvent e) {

@@ -18,6 +18,26 @@ import vtk.*;
  * The JRadioButtons determine the look and feel used by the application.
  */
 public class HelloVtk extends JPanel implements ActionListener {
+    // To supplement those libraries loaded by vtkPanel
+    // when in Java Web Start mode
+    static { 
+        System.loadLibrary("vtkfreetype"); 
+        System.loadLibrary("vtkexpat"); 
+        System.loadLibrary("vtkjpeg"); 
+        System.loadLibrary("vtkzlib"); 
+        System.loadLibrary("vtktiff"); 
+        System.loadLibrary("vtkpng"); 
+        System.loadLibrary("vtkftgl"); 
+        System.loadLibrary("vtkCommon"); 
+        System.loadLibrary("vtkFiltering"); 
+        System.loadLibrary("vtkIO"); 
+        System.loadLibrary("vtkImaging"); 
+        System.loadLibrary("vtkGraphics"); 
+        System.loadLibrary("vtkRendering"); 
+        System.loadLibrary("vtkHybrid"); 
+    }
+
+    
   static JFrame frame;
   vtkCanvas renWin;
   JButton exitButton;

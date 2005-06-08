@@ -29,9 +29,32 @@ import vtk.*;
  *
  */
 public class Tornado extends JFrame 
-implements ResidueSelector 
+implements ResidueActionListener 
 {
+    // To supplement those libraries loaded by vtkPanel
+    // when in Java Web Start mode
+    static { 
+        System.loadLibrary("vtkfreetype"); 
+        System.loadLibrary("vtkexpat"); 
+        System.loadLibrary("vtkjpeg"); 
+        System.loadLibrary("vtkzlib"); 
+        System.loadLibrary("vtktiff"); 
+        System.loadLibrary("vtkpng"); 
+        System.loadLibrary("vtkftgl"); 
+        System.loadLibrary("vtkCommon"); 
+        System.loadLibrary("vtkFiltering"); 
+        System.loadLibrary("vtkIO"); 
+        System.loadLibrary("vtkImaging"); 
+        System.loadLibrary("vtkGraphics"); 
+        System.loadLibrary("vtkRendering"); 
+        System.loadLibrary("vtkHybrid"); 
+        System.loadLibrary("jogl"); 
+        // System.loadLibrary("jogl_cg"); 
+    }
+    
     public static final long serialVersionUID = 1L;
+    
+    ClassLoader classLoader;
     Tornado3DCanvas canvas;
     SequencePane sequencePane;
     SequenceCartoonCanvas sequenceCartoonCanvas;
@@ -41,7 +64,7 @@ implements ResidueSelector
     LoadPDBFileAction loadPDBFileAction = new LoadPDBFileAction();
     
     // Stop auto rotation if the user is trying to do something
-    volatile boolean userIsInteracting = false;
+    // volatile boolean userIsInteracting = false;
     
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
     
@@ -54,6 +77,8 @@ implements ResidueSelector
 
     boolean useRotationThread = true;
     InertialRotationThread rotationThread;
+    
+    boolean drawSecondaryStructure = false;
     
     // TODO - move all 3D cartoon work to Tornado3DCanvas
     enum CartoonType {
@@ -69,13 +94,18 @@ implements ResidueSelector
     Cursor defaultCursor = new Cursor (Cursor.DEFAULT_CURSOR);
     Cursor waitCursor = new Cursor (Cursor.WAIT_CURSOR);
 
+    ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
+    
     Tornado() {
         super("toRNAdo from SimTK.org");
+        
+        classLoader = getClass().getClassLoader();
+        
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         createMenuBar();
 
         JPanel panel = new JPanel();
-        this.setIconImage(new ImageIcon("tornado_icon.gif").getImage());
+        this.setIconImage(new ImageIcon(classLoader.getResource("tornado_icon.gif")).getImage());
         
         // With the addition of a separate sequence cartoon, it is probably time
         // for a fancy layout
@@ -87,15 +117,33 @@ implements ResidueSelector
         gbc.fill = GridBagConstraints.HORIZONTAL; // stretch horizontally
         
         // 3D molecule canvas
-        canvas = new Tornado3DCanvas(this);
+        canvas = new Tornado3DCanvas(residueActionBroadcaster);
         gbc.fill = GridBagConstraints.BOTH; // stretch horizontally and vertically
         gbc.weighty = 1.0;
         gridbag.setConstraints(canvas, gbc);
-        panel.add(canvas, gbc);
 
+        // Secondary structure canvas
+        SecondaryStructureCanvas canvas2D = null;
+        if (drawSecondaryStructure) {
+            canvas2D = new SecondaryStructureCanvas(residueActionBroadcaster);
+
+            canvas.setMinimumSize(new Dimension(10,10));
+            canvas2D.setMinimumSize(new Dimension(10, 10));
+            
+            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                    canvas, canvas2D);
+            splitPane.setResizeWeight(0.67);
+            splitPane.setDividerSize(4);
+            splitPane.setContinuousLayout(true);
+ 
+            panel.add(splitPane, gbc);
+        }
+        else
+            panel.add(canvas, gbc);
+        
         // Sequence area
-        sequencePane = new SequencePane(this);
-        sequenceCartoonCanvas = new SequenceCartoonCanvas(this, sequencePane.getSequenceCanvas());
+        sequencePane = new SequencePane(residueActionBroadcaster);
+        sequenceCartoonCanvas = new SequenceCartoonCanvas(residueActionBroadcaster, sequencePane.getSequenceCanvas());
 
         gbc.fill = GridBagConstraints.HORIZONTAL; // stretch horizontally only
         gbc.weighty = 0.0; // don't stretch vertically
@@ -128,6 +176,14 @@ implements ResidueSelector
                 
         setMessage("No molecules are currently loaded");
         
+        residueActionBroadcaster.addListener(sequencePane);
+        residueActionBroadcaster.addListener(canvas);
+        residueActionBroadcaster.addListener(sequenceCartoonCanvas);
+        residueActionBroadcaster.addListener(this);
+        if (drawSecondaryStructure)
+            residueActionBroadcaster.addListener(canvas2D);            
+        
+        System.out.println("Test");
     }
     
     public static void main(String[] args) {
@@ -355,21 +411,21 @@ implements ResidueSelector
 
         ButtonGroup cartoonGroup = new ButtonGroup();
 
-        checkItem = new JCheckBoxMenuItem("Ball and Stick", new ImageIcon("po4_stick_icon.png"));
+        checkItem = new JCheckBoxMenuItem("Ball and Stick", new ImageIcon(classLoader.getResource("po4_stick_icon.png")));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new CartoonAction(CartoonType.BALL_AND_STICK));
         checkItem.setState(currentCartoonType == CartoonType.BALL_AND_STICK);
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Space-filling Atoms", new ImageIcon("nuc_fill_icon.png"));
+        checkItem = new JCheckBoxMenuItem("Space-filling Atoms", new ImageIcon(classLoader.getResource("nuc_fill_icon.png")));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new CartoonAction(CartoonType.SPACE_FILLING));
         checkItem.setState(currentCartoonType == CartoonType.SPACE_FILLING);
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon("cylinder_icon.png"));
+        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon(classLoader.getResource("cylinder_icon.png")));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new CartoonAction(CartoonType.ROPE_AND_CYLINDER));
         checkItem.setState(currentCartoonType == CartoonType.ROPE_AND_CYLINDER);
@@ -414,7 +470,7 @@ implements ResidueSelector
         stereoscopicOptionsGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Red/Blue glasses", new ImageIcon("rbglasses.GIF"));
+        checkItem = new JCheckBoxMenuItem("Red/Blue glasses", new ImageIcon(classLoader.getResource("rbglasses.png")));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new StereoRedBlueAction());
         stereoscopicOptionsGroup.add(checkItem);
@@ -853,14 +909,14 @@ implements ResidueSelector
         canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
 
         // Display sequence of first molecule that has a sequence
-        clearResidues();
+        residueActionBroadcaster.fireClearResidues();
         Biopolymer bp = null;
         for (Molecule molecule : molecules.molecules()) {
             if (molecule instanceof Biopolymer) {
                 bp = (Biopolymer) molecule;
                 
                 for (Residue residue : bp.residues())
-                    addResidue(residue);
+                    residueActionBroadcaster.fireAdd(residue);
                 
                 break; // only put the sequence of the first molecule with a sequence
             }
@@ -921,73 +977,47 @@ implements ResidueSelector
         }
     }
     
-    Residue currentHighlightedResidue;
     public void highlight(Residue residue) {
-        currentHighlightedResidue = residue;
-        if (residue == null) return;
-        sequencePane.highlight(residue);
-        sequenceCartoonCanvas.highlight(residue);
-        canvas.highlight(residue);
-        setMessage("Residue " + residue.getResidueName() + 
+        if (residue == null) setMessage(" ");
+        else setMessage("Residue " + residue.getResidueName() + 
                 " (" + residue.getOneLetterCode() + ") " + residue.getResidueNumber());
     }
-    public void unHighlight() {
-        currentHighlightedResidue = null;
-        sequencePane.unHighlight();
-        canvas.unHighlight();
-        sequenceCartoonCanvas.unHighlight();
+    public void unHighlightResidue() {
         setMessage(" "); // Use a space, otherwise message panel collapses
     }
-    public void select(Residue r) {
-        if (r == null) return;
-        sequencePane.select(r);
-        sequenceCartoonCanvas.select(r);
-        canvas.select(r);        
-    }
-    public void unSelect(Residue r) {
-        if (r == null) return;
-        sequencePane.unSelect(r);
-        sequenceCartoonCanvas.unSelect(r);
-        canvas.unSelect(r);        
+    public void select(Residue r) {}
+    public void unSelect(Residue r) {}    
+    public void add(Residue r) {}    
+    public void clearResidues() {}
+    public void centerOn(Residue r) {}
+    
+//    void highlightNextResidue() {
+//        Residue nextResidue = null;
+//        if (currentHighlightedResidue == null) // Go to first residue
+//            nextResidue = firstResidue;
+//        else 
+//            nextResidue = currentHighlightedResidue.getNextResidue();
+//
+//        if (nextResidue == null) unHighlightResidue();
+//        else highlight(nextResidue);
+//    }
+//
+//    void highlightPreviousResidue() {
+//        Residue previousResidue = null;
+//        if (currentHighlightedResidue == null) 
+//            previousResidue = finalResidue;
+//        else 
+//            previousResidue = currentHighlightedResidue.getPreviousResidue();
+//
+//        if (previousResidue == null) unHighlightResidue();
+//        else highlight(previousResidue);
+//    }
+    
+    public synchronized boolean userIsInteracting() {
+        return residueActionBroadcaster.userIsInteracting();
     }
     
-    public void addResidue(Residue r) {
-        if (r == null) return;
-        sequencePane.addResidue(r);
-        sequenceCartoonCanvas.addResidue(r);
-        canvas.addResidue(r);
-    }
-    
-    public void clearResidues() {
-        sequencePane.clearResidues();
-        sequenceCartoonCanvas.clearResidues();
-        canvas.clearResidues();
-    }
-    public void centerOnResidue(Residue r) {
-        sequencePane.centerOnResidue(r);
-        sequenceCartoonCanvas.centerOnResidue(r);
-        canvas.centerOnResidue(r);
-    }
-    
-    void highlightNextResidue() {
-        Residue nextResidue = null;
-        if (currentHighlightedResidue == null) // Go to first residue
-            nextResidue = firstResidue;
-        else 
-            nextResidue = currentHighlightedResidue.getNextResidue();
-
-        if (nextResidue == null) unHighlight();
-        else highlight(nextResidue);
-    }
-
-    void highlightPreviousResidue() {
-        Residue previousResidue = null;
-        if (currentHighlightedResidue == null) 
-            previousResidue = finalResidue;
-        else 
-            previousResidue = currentHighlightedResidue.getPreviousResidue();
-
-        if (previousResidue == null) unHighlight();
-        else highlight(previousResidue);
+    public synchronized void flushUserIsInteracting() {
+        residueActionBroadcaster.flushUserInteraction();
     }
 }
