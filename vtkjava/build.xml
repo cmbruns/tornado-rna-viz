@@ -7,7 +7,7 @@
   <property name="jogl.bin.dir" value="/Users/bkeller/src/jogl"/>
   <property name="build.dir" value="out"/>
 
-  <property name="lib" value="${build.dir}:${vtk.bin.dir}/vtk.jar:${vtk.bin.dir}/vtkwrap.jar:${jogl.bin.dir}/jogl.jar"/>
+  <property name="lib" value="${build.dir}:${vtk.bin.dir}/vtk.jar:${jogl.bin.dir}/jogl.jar"/>
 
   <target name="run" depends="compile">
     <java fork="yes" classpath="${lib}" classname="org.simtk.moleculargraphics.Tornado">
