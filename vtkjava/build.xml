@@ -1,0 +1,34 @@
+<project name="HelloVtk" default="run">
+
+  <property name="vtk.bin.dir" value="/Users/bkeller/src/vtkMac"/>
+  <property name="jogl.bin.dir" value="/Users/bkeller/src/jogl"/>
+  <property name="build.dir" value="out"/>
+
+  <property name="lib" value="${build.dir}:${vtk.bin.dir}/vtk.jar:${vtk.bin.dir}/vtkwrap.jar:${jogl.bin.dir}/jogl.jar"/>
+
+  <target name="run" depends="compile">
+    <java fork="yes" classpath="${lib}" classname="org.simtk.moleculargraphics.Tornado">
+      <jvmarg value="-Djava.library.path=${vtk.bin.dir}:${jogl.bin.dir}"/>
+      <jvmarg value="-mx512m"/>
+    </java>
+ </target>
+
+  <target name="runhello" depends="compile">
+    <java fork="yes" classpath="${lib}" classname="HelloVtk">
+      <jvmarg value="-Djava.library.path=${vtk.bin.dir}"/>
+    </java>
+ </target>
+
+  <target name="compile">
+    <mkdir dir="${build.dir}"/>
+    <javac source="1.5" target="1.5" classpath="${lib}" srcdir="." destdir="${build.dir}">
+      <include name="org/**"/>
+      <include name="Jama/**"/>
+      <include name="HelloVtk.java"/>
+    </javac>
+    <copy todir="${build.dir}">
+      <fileset dir="." includes="*"/>
+    </copy>
+  </target>
+
+</project>
