@@ -1,5 +1,7 @@
 <project name="HelloVtk" default="run">
 
+  <property file="build.properties"/>
+
   <property name="vtk.bin.dir" value="/Users/bkeller/src/vtkMac"/>
   <property name="jogl.bin.dir" value="/Users/bkeller/src/jogl"/>
   <property name="build.dir" value="out"/>
