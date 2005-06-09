@@ -2,6 +2,7 @@
 
   <property file="build.properties"/>
 
+  <!-- use these defaults if there is no property file -->
   <property name="vtk.bin.dir" value="/Users/bkeller/src/vtkMac"/>
   <property name="jogl.bin.dir" value="/Users/bkeller/src/jogl"/>
   <property name="build.dir" value="out"/>
