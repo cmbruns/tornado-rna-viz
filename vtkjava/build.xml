@@ -11,7 +11,7 @@
 
   <target name="run" depends="compile">
     <java fork="yes" classpath="${lib}" classname="org.simtk.moleculargraphics.Tornado">
-      <jvmarg value="-Djava.library.path=${vtk.bin.dir}:${jogl.bin.dir}"/>
+      <jvmarg value="-Djava.library.path=${vtk.bin.dir}${path.separator}${jogl.bin.dir}"/>
       <jvmarg value="-mx512m"/>
     </java>
  </target>
