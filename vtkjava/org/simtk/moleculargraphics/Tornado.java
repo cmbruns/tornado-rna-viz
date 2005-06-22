@@ -10,8 +10,9 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
+import java.util.zip.*;
 import java.net.*;
+import javax.jnlp.*;
 
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
@@ -19,6 +20,9 @@ import org.simtk.atomicstructure.Atom;
 import org.simtk.atomicstructure.PDBNitrogen;
 import org.simtk.atomicstructure.PDBOxygen;
 import org.simtk.geometry3d.*;
+import org.simtk.util.*;
+
+import edu.stanford.ejalbert.BrowserLauncher;
 
 import vtk.*;
 
@@ -31,25 +35,10 @@ import vtk.*;
 public class Tornado extends JFrame 
 implements ResidueActionListener 
 {
-    // To supplement those libraries loaded by vtkPanel
-    // when in Java Web Start mode
-    static { 
-        System.loadLibrary("vtkfreetype"); 
-        System.loadLibrary("vtkexpat"); 
-        System.loadLibrary("vtkjpeg"); 
-        System.loadLibrary("vtkzlib"); 
-        System.loadLibrary("vtktiff"); 
-        System.loadLibrary("vtkpng"); 
-        System.loadLibrary("vtkftgl"); 
-        System.loadLibrary("vtkCommon"); 
-        System.loadLibrary("vtkFiltering"); 
-        System.loadLibrary("vtkIO"); 
-        System.loadLibrary("vtkImaging"); 
-        System.loadLibrary("vtkGraphics"); 
-        System.loadLibrary("vtkRendering"); 
-        System.loadLibrary("vtkHybrid"); 
-        System.loadLibrary("jogl"); 
-        // System.loadLibrary("jogl_cg"); 
+    static {
+        // Keep vtk canvas from obscuring swing widgets
+        ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
     }
     
     public static final long serialVersionUID = 1L;
@@ -63,16 +52,11 @@ implements ResidueActionListener
 
     LoadPDBFileAction loadPDBFileAction = new LoadPDBFileAction();
     
-    // Stop auto rotation if the user is trying to do something
-    // volatile boolean userIsInteracting = false;
-    
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
+    Residue currentHighlightedResidue = null;
     
     Residue firstResidue = null;
     Residue finalResidue = null;
-    // Tables for helping sequence window talk to structure window
-    Hashtable<Residue, vtkProp> residueHighlightProps = new Hashtable<Residue, vtkProp>();
-    // Hashtable<Integer, Residue> positionResidues = new Hashtable<Integer, Residue>();
     vtkProp currentHighlight;
 
     boolean useRotationThread = true;
@@ -80,14 +64,6 @@ implements ResidueActionListener
     
     boolean drawSecondaryStructure = false;
     
-    // TODO - move all 3D cartoon work to Tornado3DCanvas
-    enum CartoonType {
-        SPACE_FILLING,
-        BALL_AND_STICK,
-        ROPE_AND_CYLINDER
-    };
-    CartoonType currentCartoonType = CartoonType.BALL_AND_STICK; // default starting type
-    MolecularCartoon currentCartoon = new RopeAndCylinderCartoon();
     MoleculeCollection moleculeCollection = new MoleculeCollection();
 
     Cursor handCursor = new Cursor (Cursor.HAND_CURSOR);
@@ -99,13 +75,16 @@ implements ResidueActionListener
     Tornado() {
         super("toRNAdo from SimTK.org");
         
+        loadNativeLibraries();
+        
         classLoader = getClass().getClassLoader();
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        canvas = new Tornado3DCanvas(residueActionBroadcaster); // must create before menus
         createMenuBar();
 
         JPanel panel = new JPanel();
-        this.setIconImage(new ImageIcon(classLoader.getResource("tornado_icon.gif")).getImage());
+        this.setIconImage(new ImageIcon(classLoader.getResource("resources/images/tornado_icon.gif")).getImage());
         
         // With the addition of a separate sequence cartoon, it is probably time
         // for a fancy layout
@@ -116,8 +95,7 @@ implements ResidueActionListener
         gbc.weightx = 1.0; // Everybody stretches horizontally
         gbc.fill = GridBagConstraints.HORIZONTAL; // stretch horizontally
         
-        // 3D molecule canvas
-        canvas = new Tornado3DCanvas(residueActionBroadcaster);
+        // 3D molecule canvas - must be created before menus are
         gbc.fill = GridBagConstraints.BOTH; // stretch horizontally and vertically
         gbc.weighty = 1.0;
         gridbag.setConstraints(canvas, gbc);
@@ -183,11 +161,40 @@ implements ResidueActionListener
         if (drawSecondaryStructure)
             residueActionBroadcaster.addListener(canvas2D);            
         
-        System.out.println("Test");
     }
     
     public static void main(String[] args) {
+        // Put the menu bar at the top of the screen on the mac
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
         Tornado tornadoFrame = new Tornado();
+    }
+    
+    private void loadNativeLibraries() {
+        // To supplement those libraries loaded by vtkPanel
+        // when in Java Web Start mode
+        loadOneNativeLibrary("vtkfreetype"); 
+        loadOneNativeLibrary("vtkexpat"); 
+        loadOneNativeLibrary("vtkjpeg"); 
+        loadOneNativeLibrary("vtkzlib"); 
+        loadOneNativeLibrary("vtktiff"); 
+        loadOneNativeLibrary("vtkpng"); 
+        loadOneNativeLibrary("vtkftgl"); 
+        loadOneNativeLibrary("vtkCommon"); 
+        loadOneNativeLibrary("vtkFiltering"); 
+        loadOneNativeLibrary("vtkIO"); 
+        loadOneNativeLibrary("vtkImaging"); 
+        loadOneNativeLibrary("vtkGraphics"); 
+        loadOneNativeLibrary("vtkRendering"); 
+        loadOneNativeLibrary("vtkHybrid"); 
+        loadOneNativeLibrary("jogl"); 
+        // loadOneNativeLibrary("jogl_cg"); 
+    }
+    
+    private void loadOneNativeLibrary(String libName) {
+        try {System.loadLibrary(libName);}
+        catch (UnsatisfiedLinkError exc) {
+            System.err.println("Failed to load native library " + libName);
+        }
     }
     
     /**
@@ -359,7 +366,7 @@ implements ResidueActionListener
     void createMenuBar() {
         
         // Prevent the vtkPanel from obscuring the JMenus
-        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+        // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         
         JMenuBar menuBar = new JMenuBar();
         JMenu menu;
@@ -402,6 +409,10 @@ implements ResidueActionListener
         menuItem.setEnabled(false);
         menu.add(menuItem);
 
+        menuItem = new JMenuItem("Relax molecule");
+        menuItem.addActionListener(new RelaxCoordinatesAction());
+        menu.add(menuItem);
+
         
         JMenu viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
@@ -411,24 +422,31 @@ implements ResidueActionListener
 
         ButtonGroup cartoonGroup = new ButtonGroup();
 
-        checkItem = new JCheckBoxMenuItem("Ball and Stick", new ImageIcon(classLoader.getResource("po4_stick_icon.png")));
+        checkItem = new JCheckBoxMenuItem("Ball and Stick", new ImageIcon(classLoader.getResource("resources/images/po4_stick_icon.png")));
         checkItem.setEnabled(true);
-        checkItem.addActionListener(new CartoonAction(CartoonType.BALL_AND_STICK));
-        checkItem.setState(currentCartoonType == CartoonType.BALL_AND_STICK);
+        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.BALL_AND_STICK));
+        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.BALL_AND_STICK);
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Space-filling Atoms", new ImageIcon(classLoader.getResource("nuc_fill_icon.png")));
+        checkItem = new JCheckBoxMenuItem("Space-filling Atoms", new ImageIcon(classLoader.getResource("resources/images/nuc_fill_icon.png")));
         checkItem.setEnabled(true);
-        checkItem.addActionListener(new CartoonAction(CartoonType.SPACE_FILLING));
-        checkItem.setState(currentCartoonType == CartoonType.SPACE_FILLING);
+        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.SPACE_FILLING));
+        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.SPACE_FILLING);
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon(classLoader.getResource("cylinder_icon.png")));
+        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")));
         checkItem.setEnabled(true);
-        checkItem.addActionListener(new CartoonAction(CartoonType.ROPE_AND_CYLINDER));
-        checkItem.setState(currentCartoonType == CartoonType.ROPE_AND_CYLINDER);
+        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.ROPE_AND_CYLINDER));
+        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.ROPE_AND_CYLINDER);
+        cartoonGroup.add(checkItem);
+        menu.add(checkItem);
+
+        checkItem = new JCheckBoxMenuItem("Residue Spheres");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.RESIDUE_SPHERE));
+        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.RESIDUE_SPHERE);
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
@@ -470,7 +488,7 @@ implements ResidueActionListener
         stereoscopicOptionsGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Red/Blue glasses", new ImageIcon(classLoader.getResource("rbglasses.png")));
+        checkItem = new JCheckBoxMenuItem("Red/Blue glasses", new ImageIcon(classLoader.getResource("resources/images/rbglasses.png")));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new StereoRedBlueAction());
         stereoscopicOptionsGroup.add(checkItem);
@@ -501,14 +519,12 @@ implements ResidueActionListener
         
         menuItem = new JMenuItem("  Report a program bug...");
         menuItem.addActionListener(new BrowserLaunchAction
-                // Doesn't work with those "&" characters in the URL...
-                // TODO - get a better url for this
-                ("https://simtk.org/tracker/?group_id=12"));
+                ("https://simtk.org/tracker/?func=add&group_id=12&atid=129"));
         menu.add(menuItem);
 
         menuItem = new JMenuItem("  Request a new program feature...");
         menuItem.addActionListener(new BrowserLaunchAction
-                ("https://simtk.org/tracker/?group_id=12"));
+                ("https://simtk.org/tracker/?func=add&group_id=12&atid=132"));
         menu.add(menuItem);
 
         setJMenuBar(menuBar);
@@ -520,30 +536,40 @@ implements ResidueActionListener
         }
     }
 
+    class RelaxCoordinatesAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            // TODO
+            System.out.println("Hey, this isn't relaxing the coordinates!?!?!");
+        }
+    }
+
     class CartoonAction implements ActionListener {
-        CartoonType type;
-        CartoonAction(CartoonType t) {
+        MolecularCartoon.CartoonType type;
+        CartoonAction(MolecularCartoon.CartoonType t) {
             type = t;
         }
         public void actionPerformed(ActionEvent e) {
             setWait("Calculating geometry...");
             
-            currentCartoonType = type;
+            canvas.currentCartoonType = type;
             switch (type) {
                 case BALL_AND_STICK:
-                    currentCartoon = new BallAndStickCartoon();
+                    canvas.currentCartoon = new BallAndStickCartoon();
                     break;
                 case SPACE_FILLING:
-                    currentCartoon = new AtomSphereCartoon();
+                    canvas.currentCartoon = new AtomSphereCartoon();
                     break;
                 case ROPE_AND_CYLINDER:
-                    currentCartoon = new RopeAndCylinderCartoon();
+                    canvas.currentCartoon = new RopeAndCylinderCartoon();
+                    break;
+                case RESIDUE_SPHERE:
+                    canvas.currentCartoon = new ResidueSphereCartoon();
                     break;
                 default:
-                    currentCartoon = new BallAndStickCartoon();
+                    canvas.currentCartoon = new BallAndStickCartoon();
                     break;
             }
-            vtkAssembly assembly = currentCartoon.represent(moleculeCollection, 1.0, null);
+            vtkAssembly assembly = canvas.currentCartoon.represent(moleculeCollection);
             if (assembly != null) {
                 canvas.Lock();
                 canvas.GetRenderer().RemoveAllProps();
@@ -568,7 +594,7 @@ implements ResidueActionListener
                     for (Residue residue : bp.residues()) {
                         if (isFirstResidue)
                             firstResidue = residue;
-                        vtkProp highlight = currentCartoon.highlight(residue, highlightColor);
+                        vtkProp highlight = canvas.currentCartoon.highlight(residue, highlightColor);
                         canvas.addResidueHighlight(residue, highlight);                                
                         isFirstResidue = false;
                         finalResidue = residue;
@@ -578,6 +604,9 @@ implements ResidueActionListener
                 }
             }
             
+            if (currentHighlightedResidue != null)
+                residueActionBroadcaster.fireHighlight(currentHighlightedResidue);
+
             unSetWait("Geometry computed.");
         }
     }
@@ -627,32 +656,53 @@ implements ResidueActionListener
     }
 
     class BrowserLaunchAction implements ActionListener {
-        String url;
-        BrowserLaunchAction(String u) {url = u;}
+        String urlString;
+        BrowserLaunchAction(String u) {urlString = u;}
         public void actionPerformed(ActionEvent e) {
             
             // Show information dialog, so the savvy user will be able to
             // go to the url manually, in case the browser open fails.
             JOptionPane.showConfirmDialog(
                     null, 
-                    "Your browser will open to page " + url + " in a moment\n", 
+                    "Your browser will open to page " + urlString + " in a moment\n", 
                     "Browse to SimTK.org",
                     JOptionPane.DEFAULT_OPTION, 
                     JOptionPane.INFORMATION_MESSAGE
                     );
 
-            // TODO - this will only work for windows, make it work for others too
-            try {Runtime.getRuntime().exec("cmd /c start " + url);} 
-            catch (IOException exc) {                
-                String[] options = {"Bummer!"};
-                JOptionPane.showOptionDialog(
-                        null, 
-                        "Problem opening browser to page " + url + "\n" + exc, 
-                        "Web URL error!",
-                        JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
-                        null, options, options[0]);
+            // New way
+            URL url;
+            try {url = new URL(urlString);}            
+            catch (MalformedURLException exc) {
+                launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc,
+                "Web URL error!");
+                return;
+            }
+            try {
+                // This only works when started in a web start application
+                BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService");
+                boolean result = bs.showDocument(url);
+            } 
+            catch (UnavailableServiceException exc) {
+                // launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc,
+                // "JNLP Error!");
+                try {BrowserLauncher.openURL(urlString);}
+                catch (IOException exc2) {
+                    launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc2,
+                                             "Web URL error!");
+                }        
             }
         }
+    }
+    
+    void launchErrorConfirmDialog(String msg, String title) {
+        String[] options = {"Bummer!"};
+        JOptionPane.showOptionDialog(
+                null, 
+                msg, 
+                "Web URL error!",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
+                null, options, options[0]);        
     }
 
     class LoadPDBAction implements ActionListener {
@@ -698,7 +748,7 @@ implements ResidueActionListener
                 label = new JLabel(" PDB ID (4 characters): ");
                 webPDBPanel.add(label);
 
-                idField = new JTextField("1MRP", 4);
+                idField = new JTextField("1GID", 4);
                 idField.addActionListener(this);
                 webPDBPanel.add(idField);
 
@@ -753,25 +803,53 @@ implements ResidueActionListener
 
                 String urlBase;
                 String extension;
+                String filePrefix = "";
                 // if (bioUnitCheckBox.getState()) {
                 if (bioUnitList.getSelectedIndex() == 0) { // biological unit
                     urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/biounit/coordinates/divided/";
-                    extension = "pdb1";
+                    extension = "pdb1.gz";
                 }
                 else {
-                    urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/structures/divided/";
-                    extension = "pdb";
+                    urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/structures/divided/pdb/";
+                    extension = "ent.Z";
+                    filePrefix = "pdb";
                 }
                 
                 String division = pdbId.substring(1, 3);
-                String fullURLString = urlBase + division + "/" + pdbId + "." + extension + ".gz";
+                String fullURLString = urlBase + division + "/" + filePrefix + pdbId + "." + extension;
 
                 InputStream inStream;
                 try {
                     setWait("Loading remote PDB structure...");
                     dialog.setCursor(waitCursor);
-                    inStream = new GZIPInputStream((new URL(fullURLString)).openStream());
-                    MoleculeCollection molecules = loadPDBFile(inStream);
+
+                    setWait("Connecting to the PDB ftp site...");
+                    URLConnection urlConnection = (new URL(fullURLString)).openConnection();
+                    inStream = urlConnection.getInputStream();
+                    int fileSize = urlConnection.getContentLength();
+                    
+                    if ( (fullURLString.endsWith(".gz")) )
+                        inStream = new GZIPInputStream(inStream);
+                    if ( (fullURLString.endsWith(".Z")) )
+                        inStream = new UncompressInputStream(inStream);
+
+                    // Monitor load progress
+                    // TODO - this does not appear to work
+                    setWait("Reading structure file...");
+                    ProgressMonitorInputStream progressStream = 
+                            new ProgressMonitorInputStream(
+                                    Tornado.this,
+                                    "Reading " + fullURLString,
+                                    inStream);
+                    ProgressMonitor pm = progressStream.getProgressMonitor(); 
+                    pm.setMaximum(fileSize);
+                    pm.setMinimum(0);
+                    pm.setProgress(10);
+                    pm.setMillisToDecideToPopup(500);
+                    pm.setMillisToPopup(2000);
+                    setWait("Structure File size = " + fileSize + "...");
+                    
+                    MoleculeCollection molecules = loadPDBFile(progressStream);
                     dialog.setCursor(defaultCursor);
                     dialog.setVisible(false); // success, so close the dialog
                     return;
@@ -781,14 +859,17 @@ implements ResidueActionListener
                     JOptionPane.showOptionDialog(null, "Problem reading structure: " + pdbId + ": " + exc, "PDB File Error!",
                             JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
                             null, options, options[0]);
+                    dialog.setCursor(defaultCursor);
                 }
                 
                 
+                dialog.setCursor(defaultCursor);
                 dialog.setVisible(true); // reopen dialog so user can try again
                 return;
             }
             
             if ( e.getSource() == cancelButton ) {
+                dialog.setCursor(defaultCursor);
                 dialog.setVisible(false);
                 return;
             }
@@ -796,6 +877,7 @@ implements ResidueActionListener
             // User selected load molecule menu item
             else {
                 dialog.setVisible(true);
+                dialog.setCursor(defaultCursor);
             }
         }
     }
@@ -902,7 +984,7 @@ implements ResidueActionListener
         moleculeCollection = molecules;
         
         // Create graphical representation of the molecule
-        (new CartoonAction(currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
+        (new CartoonAction(canvas.currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Center camera on new molecule
         Vector3D com = molecules.getCenterOfMass();
@@ -981,37 +1063,19 @@ implements ResidueActionListener
         if (residue == null) setMessage(" ");
         else setMessage("Residue " + residue.getResidueName() + 
                 " (" + residue.getOneLetterCode() + ") " + residue.getResidueNumber());
+        currentHighlightedResidue = residue;
     }
     public void unHighlightResidue() {
         setMessage(" "); // Use a space, otherwise message panel collapses
+        currentHighlightedResidue = null;
     }
     public void select(Residue r) {}
     public void unSelect(Residue r) {}    
     public void add(Residue r) {}    
-    public void clearResidues() {}
+    public void clearResidues() {
+        currentHighlightedResidue = null;
+    }
     public void centerOn(Residue r) {}
-    
-//    void highlightNextResidue() {
-//        Residue nextResidue = null;
-//        if (currentHighlightedResidue == null) // Go to first residue
-//            nextResidue = firstResidue;
-//        else 
-//            nextResidue = currentHighlightedResidue.getNextResidue();
-//
-//        if (nextResidue == null) unHighlightResidue();
-//        else highlight(nextResidue);
-//    }
-//
-//    void highlightPreviousResidue() {
-//        Residue previousResidue = null;
-//        if (currentHighlightedResidue == null) 
-//            previousResidue = finalResidue;
-//        else 
-//            previousResidue = currentHighlightedResidue.getPreviousResidue();
-//
-//        if (previousResidue == null) unHighlightResidue();
-//        else highlight(previousResidue);
-//    }
     
     public synchronized boolean userIsInteracting() {
         return residueActionBroadcaster.userIsInteracting();
