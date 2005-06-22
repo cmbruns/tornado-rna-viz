@@ -6,13 +6,13 @@ package org.simtk.moleculargraphics;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.image.*;
-import java.util.Hashtable;
+import java.util.*;
 import vtk.*;
 import java.awt.event.*;
 import net.java.games.jogl.*;
-
+import java.io.*;
 import org.simtk.molecularstructure.Residue;
+import org.simtk.geometry3d.*;
 
 /** 
  * @author Christopher Bruns
@@ -43,7 +43,6 @@ public class Tornado3DCanvas extends vtkPanel
     // Tornado tornado;
     ResidueActionBroadcaster residueActionBroadcaster;
 
-    // TODO - create lookup table of residues by atomic positions, or centroids
     Hashtable<Residue, vtkProp> residueHighlights = new Hashtable<Residue, vtkProp>();
     vtkProp currentHighlight;
     Residue currentHighlightedResidue;
@@ -60,6 +59,9 @@ public class Tornado3DCanvas extends vtkPanel
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     
     ClassLoader classLoader;
+
+    MolecularCartoon.CartoonType currentCartoonType = MolecularCartoon.CartoonType.BALL_AND_STICK; // default starting type
+    MolecularCartoon currentCartoon = new RopeAndCylinderCartoon();
     
 	Tornado3DCanvas(ResidueActionBroadcaster b) {
         super();
@@ -94,48 +96,39 @@ public class Tornado3DCanvas extends vtkPanel
 
             // TODO make this png work with web start
             // i.e. read the image from a URL
-            vtkImageData imageData = null;
+            String tempImageFileName = null;
+            // This causes rendering crash on Sherm's machine
             if (false)
             {
-                Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("simtk2.png"));
-                Dimension logoDimension = new Dimension(logoImage.getWidth(this), logoImage.getHeight(this));
-                PixelGrabber pixelGrabber = new PixelGrabber(logoImage, 0, 0, logoDimension.width, logoDimension.height, true);
+                Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk2.png"));
+
+                // Create an actual file for the image, then have vtk read the file
+                // I am sick of trying to convert a java image to a vtkImage
                 try {
-                    pixelGrabber.grabPixels();
-                    
-                    Object pixels = pixelGrabber.getPixels();
-                    if (pixels instanceof int[]) {
-                        int intPixels[] = (int[]) pixels;
-                        
-                        imageData = new vtkImageData();
-                        imageData.SetDimensions(logoDimension.width, logoDimension.height, 1);
-                        imageData.SetOrigin(0.0, 0.0, 0.0);
-                        imageData.SetSpacing(1.0, 1.0, 1.0);
-                        imageData.SetScalarTypeToUnsignedChar();
-                        // imageData.AllocateScalars();
-                        vtkDataArray array = imageData.GetPointData().GetScalars();
-                        
-                        int iZ = 0;
-                        for(int iY= 0; iY < logoDimension.height; iY++){
-                            for(int iX = 0; iX < logoDimension.width; iX++){
-                                // TODO this is probably terribly wrong
-                                array.InsertNextTuple1(intPixels[iX * logoDimension.height + iY]);
-                            }
-                        }
-                    }
+                    File tempImageFile = File.createTempFile("simtk2", "png");
+                    FileOutputStream outStream = new FileOutputStream(tempImageFile);
+                    InputStream inStream = classLoader.getResource("resources/images/simtk2.png").openStream();
+                    int nibble;
+                    while ( (nibble = inStream.read()) != -1)
+                        outStream.write(nibble);
+                    inStream.close();
+                    outStream.close();
+                    tempImageFileName = tempImageFile.getAbsolutePath();
+                } catch (IOException exc) {
+                    System.err.println(exc);
                 }
-                catch (InterruptedException exc) {}
-                
             }
             
             logoReader = new vtkPNGReader();
-            logoReader.SetFileName("simtk2.png");
+            if (tempImageFileName != null)
+                logoReader.SetFileName(tempImageFileName);
+            else
+                logoReader.SetFileName("resources/images/simtk2.png");
             logoReader.Update();
             int[] logoBounds = logoReader.GetDataExtent();
 
             logoActor = new vtkImageActor();
-            if (imageData != null) logoActor.SetInput(imageData);
-            else logoActor.SetInput(logoReader.GetOutput());
+            logoActor.SetInput(logoReader.GetOutput());
             logoWidth = logoBounds[1] - logoBounds[0] + 1;
             logoHeight = logoBounds[3] - logoBounds[2] + 1;
             overlayRenderer.AddActor(logoActor);
@@ -283,6 +276,8 @@ public class Tornado3DCanvas extends vtkPanel
     public int UnLock() {return super.UnLock();}
     
 	public void mouseDragged(MouseEvent event) {
+        // TODO - implement mode for model modification
+        
         residueActionBroadcaster.lubricateUserInteraction();
 	    super.mouseDragged(event);
 
@@ -312,42 +307,175 @@ public class Tornado3DCanvas extends vtkPanel
         if (!pickIsPending) {
             residueActionBroadcaster.lubricateUserInteraction();
 
-            double screenX = event.getX();
-            double screenY = getSize().height - event.getY();
-            
-            int pickResult = picker.Pick(screenX, screenY, 0.0, ren);
-            if (pickResult > 0) {
+            pickIsPending = true;
+
+            Residue residue = mouseResidue(event);
+            if (residue != null) {
                 setCursor(crosshairCursor);
-                pickIsPending = true;
-                double[] pickPosition;
-                pickPosition = picker.GetPickPosition();
-                // TODO - select the residue that is under the mouse
+                residueActionBroadcaster.fireHighlight(residue);
             }
             else {
-                // Shows the user that her pointer is not over an object
                 setCursor(defaultCursor);
             }
+            
             pickIsPending = false;
         }
 	}
 
     boolean doPick = true;
     public void mouseClicked(MouseEvent event) {
+        System.out.println("Click");
         if (doPick) {
-            // TODO causes occasional crash
-            double x = event.getX();
-            double y = getSize().height - event.getY();
+            Date startTime = new Date();
             
-            // vtkPropPicker picker = new vtkPropPicker();
-            vtkPicker picker = new vtkPicker();
-            picker.SetTolerance(0.0f);
-            int pickResult = picker.Pick(x, y, 0, ren);
+            Residue residue = mouseResidue(event);
+            if (residue != null) {
+                System.out.println("Residue found");
+                residueActionBroadcaster.fireHighlight(residue);
+            }
+                
+            Date endTime = new Date();
+            long milliseconds = endTime.getTime() - startTime.getTime();
+            System.out.println("pick took " + milliseconds + " milliseconds");
+        }
+    }
+    
+    Residue mouseResidue(MouseEvent e) {        
+        double x = e.getX();
+        double y = getSize().height - e.getY();
+        
+        Residue pickedResidue = null;
+        Vector3D pickedPosition = null;
+        
+        Lock();
+        
+        if (false) { // vtkWorldPointPicker
+            // This method is fast, but often picks positions
+            // that are behind the atom I am trying to pick
+            // Takes 0-20 ms for single duplex atom fill
             
-            if (pickResult != 0)
+            // pickResult is always 0 with vtkWorldPointPicker
+            vtkWorldPointPicker picker = new vtkWorldPointPicker(); // Unrelated to models
+            int pickResult = picker.Pick(x, y, -100, ren);
+            double[] pickedPoint = picker.GetPickPosition();
+            pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+        }
+
+        else if (false) { // vtkPropPicker
+            // This method is fast, but often picks positions
+            // that are behind the atom I am trying to pick
+            // About 200 ms for single duplex, atom fill
+            
+            // pickResult is always 0 with vtkWorldPointPicker
+            vtkPropPicker picker = new vtkPropPicker(); // Unrelated to models
+            int pickResult = picker.Pick(x, y, -100, ren);
+            System.out.println("Picked something");
+            double[] pickedPoint = picker.GetPickPosition();
+            System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+            pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+        }
+        
+        else if (true) { // vtkCellPicker
+            // With vtk 4.4 this seems to pick either the right thing
+            // or nothing at all
+            // About 200 ms for single duplex, atom fill
+            
+            vtkCellPicker picker = new vtkCellPicker(); // Unrelated to models
+            // picker.SetTolerance(0.001);
+            int pickResult = picker.Pick(x, y, -100, ren);
+            if (pickResult != 0) {
                 System.out.println("Picked something");
+                double[] pickedPoint = picker.GetPickPosition();
+                System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+                pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+            }
+        }
+        
+        else if (false) { // vtkPicker            
+            vtkPicker picker = new vtkPicker(); // Unrelated to models
+            picker.SetTolerance(0.0);
+            int pickResult = picker.Pick(x, y, -100, ren);
+            if (pickResult != 0) {
+                System.out.println("Picked something");
+                double[] pickedPoint = picker.GetPickPosition();
+                
+                pickedPoint = picker.GetProp3D().GetPosition();
+                
+                System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+                pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+
+                vtkProp3DCollection props3D = picker.GetProp3Ds();
+                System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
+                
+                vtkActorCollection actors = picker.GetActors();
+                System.out.println("Number of Actors = " + actors.GetNumberOfItems());
+                
+            }
+        }
+        
+        else if (false) { // default picker
+            int pickResult = picker.Pick(x, y, -100, ren);
+            if (pickResult != 0) {
+                System.out.println("Picked something");
+                double[] pickedPoint = picker.GetPickPosition();
+                System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+                pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+                
+                vtkProp3DCollection props3D = picker.GetProp3Ds();
+                System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
+                
+                vtkActorCollection actors = picker.GetActors();
+                System.out.println("Number of Actors = " + actors.GetNumberOfItems());                
+            }
+        }
+
+        else {
+            vtkPropPicker picker = new vtkPropPicker(); // takes about 2 seconds
+            int pickResult = picker.PickProp(x, y, ren);
+    
+            // vtkPicker picker = new vtkPicker(); // I don't understand positions
+    
+    
+            // vtkPointPicker picker = new vtkPointPicker(); // Exact points only?
+            // vtkCellPicker picker = new vtkCellPicker();
+    
+            // picker.SetTolerance(0.1f);
+            // int pickResult = picker.Pick(x, y, 0, ren);
+            
+            // if (pickResult != 0) {
+            if (true) {
+                System.out.println("Picked something");
+    
+                // vtkActor actor = picker.GetActor();
+                // System.out.println("Actor = " + actor); // null for glyph3d?
+                
+    //            vtkAssembly assembly = picker.GetAssembly();
+    //            if (assembly != null) {
+    //                vtkAssemblyPath path = assembly.GetNextPath();
+    //                if (path != null) {
+    //                    vtkAssemblyNode node = path.GetFirstNode();
+    //                    int nodeCount = 1;
+    //                    while ((node = path.GetNextNode()) != null) {
+    //                        nodeCount ++;
+    //                    }
+    //                    // I have never reached this statement...
+    //                    System.out.println("Assembly node count = " + nodeCount);
+    //                }
+    //            }
+    
+                double[] pickedPoint = picker.GetPickPosition();
+                System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+            }
             else 
                 System.out.println("Picked nothing");
         }
+        
+        UnLock();
+
+        if (pickedPosition != null)
+            pickedResidue = currentCartoon.getNearbyResidue(pickedPosition);
+        
+        return pickedResidue;
     }
     
     public void Azimuth (double a) {
@@ -413,6 +541,19 @@ public class Tornado3DCanvas extends vtkPanel
     public void unSelect(Residue r) {}
     public void add(Residue r) {}    
     public void clearResidues() {}
-    public void centerOn(Residue r) {// TODO
+
+    public void centerOn(Residue r) {
+        double  FPoint[] = cam.GetFocalPoint() ;
+        double  PPoint[] = cam.GetPosition();
+
+        Vector3D oldFocalPoint = new Vector3D(FPoint[0], FPoint[1], FPoint[2]);
+        Vector3D newFocalPoint = r.getCenterOfMass();
+        Vector3D focalShift = newFocalPoint.minus(oldFocalPoint);
+
+        Vector3D oldPosition = new Vector3D(PPoint[0], PPoint[1], PPoint[2]);
+        Vector3D newPosition = oldPosition.plus(focalShift);
+        
+        cam.SetFocalPoint(newFocalPoint.getX(),newFocalPoint.getY(),newFocalPoint.getZ());
+        cam.SetPosition(newPosition.getX(),newPosition.getY(),newPosition.getZ());
     }
 }
