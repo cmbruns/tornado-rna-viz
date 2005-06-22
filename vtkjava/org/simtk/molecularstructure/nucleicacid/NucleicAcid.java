@@ -70,10 +70,10 @@ public class NucleicAcid extends Biopolymer {
             }
         }
         HashSet<Residue> residuesAlreadyTested = new HashSet<Residue>(); // only check each residue once
-        for (Vector3D centroid : centroidHash.positions()) {
+        for (BaseVector3D centroid : centroidHash.keySet()) {
             Residue residue = centroidHash.get(centroid);
             residuesAlreadyTested.add(residue);
-            for (Residue otherResidue : centroidHash.values(centroid, centroidDistanceCutoff)) {
+            for (Residue otherResidue : centroidHash.neighborValues(centroid, centroidDistanceCutoff)) {
                 if (residue == otherResidue) continue; // no self hits
                 if (residuesAlreadyTested.contains(otherResidue)) continue;
                 // If we got here there are two residues within 8 Angstroms of one another

@@ -59,7 +59,7 @@ implements Iterable<Residue>
 
     public Plane3D getBasePlane() {
         // 1) compute best plane containing base group atoms
-        Vector<Vector3D> planeAtoms = new Vector<Vector3D>();
+        Vector<BaseVector3D> planeAtoms = new Vector<BaseVector3D>();
         if (residue1 != null) {
             Molecule base = residue1.get(Nucleotide.baseGroup);
             for (int a = 0; a < base.getAtomCount(); a++) {
@@ -82,7 +82,7 @@ implements Iterable<Residue>
      */
     public Vector3D getHelixCenter() {
         // 1) compute best plane containing base group atoms
-        Vector<Vector3D> planeAtoms = new Vector<Vector3D>();
+        Vector<BaseVector3D> planeAtoms = new Vector<BaseVector3D>();
         Molecule base = residue1.get(Nucleotide.baseGroup);
         for (int a = 0; a < base.getAtomCount(); a++) {
             planeAtoms.addElement(base.getAtom(a).getCoordinates());
@@ -94,9 +94,9 @@ implements Iterable<Residue>
         Plane3D basePairPlane = Plane3D.bestPlane3D(planeAtoms);
         
         // 2) compute minor-major axis by comparing C1*->C1* axis to base group centroid
-        Vector3D basePairCentroid = Vector3D.centroid(planeAtoms);
-        Vector3D c11 = residue1.getAtom(" C1*").getCoordinates();
-        Vector3D c12 = residue2.getAtom(" C1*").getCoordinates();
+        Vector3D basePairCentroid = BaseVector3D.centroid(planeAtoms);
+        BaseVector3D c11 = residue1.getAtom(" C1*").getCoordinates();
+        BaseVector3D c12 = residue2.getAtom(" C1*").getCoordinates();
         Vector3D centerC1 = c11.plus(c12).scale(0.5);
         Vector3D approximateMinorMajorDirection = basePairCentroid.minus(centerC1).unit();
 
