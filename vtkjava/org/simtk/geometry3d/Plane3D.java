@@ -34,12 +34,12 @@ public class Plane3D {
      * @return
      */
     
-    public static Plane3D bestPlane3D(Vector<Vector3D> bagOfPoints)   {
+    public static Plane3D bestPlane3D(Vector<BaseVector3D> bagOfPoints)   {
         Vector3D[] coordinates = new Vector3D[0];
         return bestPlane3D(bagOfPoints.toArray(coordinates), null);
     }
 
-    public static Plane3D bestPlane3D(Vector3D[] coordinates, double[] weights)   {
+    public static Plane3D bestPlane3D(BaseVector3D[] coordinates, double[] weights)   {
         // 1) Compute the centroid or mean point
         Vector3D centroid = Vector3D.centroid(coordinates, weights);
         
@@ -51,7 +51,7 @@ public class Plane3D {
                 double totalWeight = 0;
                 double weight = 1.0;
                 for (int p = 0; p < coordinates.length; p++) {
-                    Vector3D point = coordinates[p];
+                    BaseVector3D point = coordinates[p];
                     double deltaJ = point.getElement(j) - centroid.getElement(j);
                     double deltaI = point.getElement(i) - centroid.getElement(i);
                     if (weights != null) weight = weights[p];

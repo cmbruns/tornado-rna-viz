@@ -10,19 +10,19 @@ package org.simtk.geometry3d;
  * A generic cylinder shape in 3 dimensions
  */
 public class Cylinder {
-    Vector3D head;
-    Vector3D tail;
+    BaseVector3D head;
+    BaseVector3D tail;
     double radius;
     
-    public Cylinder(Vector3D hd, Vector3D tl, double rd) {
+    public Cylinder(BaseVector3D hd, BaseVector3D tl, double rd) {
         head = hd;
         tail = tl;
         radius = rd;
     }
-    public Vector3D getHead() {return head;}
-    public Vector3D getTail() {return tail;}
+    public BaseVector3D getHead() {return head;}
+    public BaseVector3D getTail() {return tail;}
     public double getRadius() {return radius;}
-    public Vector3D getMidpoint() {return getHead().plus(getTail()).scale(0.5);}
+    public BaseVector3D getMidpoint() {return getHead().plus(getTail()).scale(0.5);}
     
 
 }

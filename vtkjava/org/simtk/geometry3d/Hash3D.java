@@ -14,34 +14,63 @@ import java.util.*;
   * 
   * Only one object should be placed at each unique position.  If another one is placed
   * at the same location, the one that was there earlier will be gone.
+  * There may be a problem with having the same object at multiple positions.
  */
-public class Hash3D <E> {
+public class Hash3D <V>
+extends Hashtable<BaseVector3D, V>
+// implements Map<Vector3D, V>
+{
+    public static final long serialVersionUID = 2L;
     private double cubeletSize = 1.0;
     private Hashtable<String, Cubelet> cubelets = new Hashtable<String, Cubelet>();
-
-    // private Vector<Vector3D> positions = new Vector<Vector3D>();
-    private Hashtable<Vector3D, E > positionObjects = new Hashtable<Vector3D, E >();
-    private Hashtable<E, Vector3D> objectPositions = new Hashtable<E, Vector3D>();
+    private Hashtable<BaseVector3D, V > positionObjects = this;
     
     public Hash3D(double r) {
         cubeletSize = r;
     }
     
-    public void put(Vector3D position, E object) {
+    @Override
+    public void clear() {
+        cubelets.clear();
+        super.clear();
+    }
+    
+    @Override
+    public Object clone() {
+        Hash3D<V> answer = new Hash3D<V>(cubeletSize);
+        for (BaseVector3D v : positionObjects.keySet())
+            answer.put(v, get(v));
+        return answer;
+    }
+    
+    @Override
+    public V remove(Object key) {
+        if (! (key instanceof Vector3D)) return null;
+
+        Vector3D vec = (Vector3D) key;
+        V value = get(vec);
+        if (value == null) return null;
+        
+        Cubelet cubelet = getCubelet(vec);
+        cubelet.remove(vec);
+
+        return super.remove(key);
+    }
+    
+    @Override
+    public V put(BaseVector3D position, V object) {
+        V answer = get(position);
+        
         Cubelet cubelet = getCubelet(position);
         cubelet.put(position, object);
-        positionObjects.put(position, object);
-        objectPositions.put(object, position);
-    }
-    
-    public Collection<Vector3D> positions() {
-        return positionObjects.keySet();
-    }
-    
-    public E get(Vector3D position) {
-        return positionObjects.get(position);
-    }
 
+        return super.put(position, object);
+    }
+    
+//     public Collection<Vector3D> positions() {
+//         return positionObjects.keySet();
+//     }
+    
     /**
      * Return the closest object to a particular position
      * If no object is within the specified radius, return null.
@@ -49,10 +78,10 @@ public class Hash3D <E> {
      * @param radius
      * @return
      */
-    public E getClosest(Vector3D position, double radius) {
+    public V getClosest(Vector3D position, double radius) {
         // TODO - more efficient implementation, starting with central cubelet
         //  follow expanding shells as required
-        E answer = null;
+        V answer = null;
 
         double radiusSquared = radius * radius; // Absolute cutoff distance
         double minDistanceSquared = radiusSquared + 1; // Distance to the closest thing we have found so far
@@ -61,13 +90,15 @@ public class Hash3D <E> {
         // TODO - terminate when the closest object found is closer than the next cubelet's minimum distance
         
         // TODO - but, for now, just loop over all objects within the radius
-        for (E object : values(position, radius)) {
-            double d = position.distanceSquared(objectPositions.get(object));
+        BaseVector3D closestPoint = null;
+        for (BaseVector3D v : neighborKeys(position, radius)) {
+            double d = position.distanceSquared(v);
             if ((d < radiusSquared) && (d < minDistanceSquared)) {
                 minDistanceSquared = d;
-                answer = object;
+                closestPoint = v;
             }
         }
+        if (closestPoint != null) answer = get(closestPoint);
         
         return answer;
     }
@@ -78,8 +109,23 @@ public class Hash3D <E> {
      * @param radius
      * @return
      */
-    public Collection<E> values(Vector3D position, double radius) {
-        Vector<E> neighbors = new Vector<E>();
+    public Collection<V> neighborValues(BaseVector3D position, double radius) {
+        Vector<V> neighbors = new Vector<V>();
+        for (BaseVector3D v : neighborKeys(position, radius)) {
+            V object = get(v);
+            if (object != null) neighbors.add(object);
+        }
+        return neighbors;
+    }
+
+    /**
+     * Find all objects within a specified radius of a specified point
+     * @param position
+     * @param radius
+     * @return
+     */
+    public Collection<BaseVector3D> neighborKeys(BaseVector3D position, double radius) {
+        Vector<BaseVector3D> neighbors = new Vector<BaseVector3D>();
         double dSquared = radius * radius;
         
         int minX = hashKey(position.getX() - radius);
@@ -95,10 +141,10 @@ public class Hash3D <E> {
                     String key = hashKey(x,y,z);
                     if (!cubelets.containsKey(key)) continue; // no such cubelet
                     Cubelet cubelet = cubelets.get(key);
-                    for (Vector3D v : cubelet.keySet()) {
+                    for (BaseVector3D v : cubelet.keySet()) {
                         // Check distance
                         if (position.distanceSquared(v) > dSquared) continue; // too far apart
-                        neighbors.add(cubelet.get(v));
+                        neighbors.add(v);
                     }
                 }
 
@@ -110,24 +156,24 @@ public class Hash3D <E> {
     }
     
     private String hashKey(int x, int y, int z) {
-        return "" + x + "#" + y + "#" + z;        
+        return "" + x + "#" + y + "#" + z;
     }
     
-    private String hashKey(Vector3D position) {
+    private String hashKey(BaseVector3D position) {
         int x = hashKey(position.getX());
         int y = hashKey(position.getY());
         int z = hashKey(position.getZ());
         return hashKey(x,y,z);
     }
 
-    private Cubelet getCubelet(Vector3D position) {
+    private Cubelet getCubelet(BaseVector3D position) {
         String key = hashKey(position);
         if ( !cubelets.containsKey(key) )
             cubelets.put( key, new Cubelet() );
         return cubelets.get(key);        
     }
 
-    private class Cubelet extends Hashtable<Vector3D, E > {
+    private class Cubelet extends Hashtable<BaseVector3D, V > {
         static final long serialVersionUID = 1L;
     }
 }
