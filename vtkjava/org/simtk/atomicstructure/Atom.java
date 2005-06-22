@@ -14,7 +14,7 @@ import org.simtk.geometry3d.*;
  * Abstract base class for chemical atom, such a a particular nitrogen atom in a molecule
  */
 public abstract class Atom {
-	Vector3D coordinates = null;
+	BaseVector3D coordinates = null;
 	String localName = null; // name should be unique within a residue
 
 	HashSet<Atom> bonds = new HashSet<Atom>();
@@ -40,12 +40,12 @@ public abstract class Atom {
 	 * 
 	 * @return The position in space of this PDBAtom
 	 */
-	public Vector3D getCoordinates() {return coordinates;}
+	public BaseVector3D getCoordinates() {return coordinates;}
 
     /**
      * @param coordinates The coordinates to set.
      */
-    public void setCoordinates(Vector3D coordinates) {
+    public void setCoordinates(BaseVector3D coordinates) {
         this.coordinates = coordinates;
     }
     
