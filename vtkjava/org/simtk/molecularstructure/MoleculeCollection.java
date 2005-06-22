@@ -6,6 +6,7 @@ package org.simtk.molecularstructure;
 
 import java.io.*;
 import java.util.*;
+import java.net.*;
 
 import org.simtk.atomicstructure.*;
 import org.simtk.geometry3d.*;
@@ -42,6 +43,12 @@ public class MoleculeCollection {
 		loadPDBFormat(fileStream);
         fileStream.close();
 	}
+
+    public void loadPDBFormat(URL url) throws IOException {
+        InputStream inStream = url.openStream();
+        loadPDBFormat(inStream);
+        inStream.close();
+    }
 
     public void loadPDBFormat(InputStream is) throws IOException {
         

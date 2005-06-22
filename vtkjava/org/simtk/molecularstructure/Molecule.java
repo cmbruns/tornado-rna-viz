@@ -5,6 +5,7 @@
 package org.simtk.molecularstructure;
 
 import java.io.*;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.*; // Vector
 
@@ -43,8 +44,30 @@ public class Molecule {
 	
     public Vector<Atom> getAtoms() {return atoms;}
     
+    /**
+     * Place all atomic coordinates into a single large array of float values,
+     * using the Vector3DWrapper class to redefine the coordinates
+     * @return
+     */
+    public float[] packCoordinatesIntoFloatArray() {
+        int atomCount = getAtomCount();
+        float[] coordinateArray = new float[3 * atomCount];
+
+        // TODO
+        int arrayIndex = 0;
+        for (Atom atom : getAtoms()) {
+            for (Double coord : atom.getCoordinates()) {
+                coordinateArray[arrayIndex] = coord.floatValue();
+                arrayIndex ++;
+            }
+            atom.setCoordinates(new Vector3DFloatArrayWrapper(coordinateArray, arrayIndex - 3));
+        }
+        
+        return coordinateArray;
+    }
+    
     public Plane3D bestPlane3D() {
-        Vector3D[] coordinates = new Vector3D[getAtomCount()];
+        BaseVector3D[] coordinates = new Vector3D[getAtomCount()];
         double[] masses = new double[getAtomCount()];
         for (int a = 0; a < getAtomCount(); a++) {
             Atom atom = atoms.get(a);
@@ -64,9 +87,18 @@ public class Molecule {
 	public int getAtomCount() {return atoms.size();}
 	public Atom getAtom(int i) {return (Atom) atoms.get(i);}
 	
+    public static Molecule createFactoryPDBMolecule(URL url) throws IOException {
+        InputStream inStream = url.openStream();
+        Molecule molecule = createFactoryPDBMolecule(inStream);        
+        inStream.close();
+        return molecule;
+    }
+
     public static Molecule createFactoryPDBMolecule(String fileName) throws IOException {
 		FileInputStream fileStream = new FileInputStream(fileName);
-		return createFactoryPDBMolecule(fileStream);        
+		Molecule molecule = createFactoryPDBMolecule(fileStream);
+        fileStream.close();
+        return molecule;
     }
 
     static Molecule createFactoryPDBMolecule(InputStream is) throws IOException {
@@ -233,7 +265,7 @@ public class Molecule {
             atomHash.put(atom.getCoordinates(), atom);
         for (Atom atom1 : atoms) {
             double cutoffDistance = (atom1.getCovalentRadius() + maxCovalentRadius) * 1.5;
-            for (Atom atom2 : atomHash.values(atom1.getCoordinates(), cutoffDistance)) {
+            for (Atom atom2 : atomHash.neighborValues(atom1.getCoordinates(), cutoffDistance)) {
                 if (atom1.equals(atom2)) continue;
                 
                 // Make sure the bond length is about right
