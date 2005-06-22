@@ -26,6 +26,11 @@ public class ResidueActionBroadcaster {
             l.add(r);
     }
     
+    public void fireCenterOn(Residue r) {
+        for (ResidueActionListener l : listeners)
+            l.centerOn(r);
+    }
+    
     public void fireClearResidues() {
         for (ResidueActionListener l : listeners)
             l.clearResidues();

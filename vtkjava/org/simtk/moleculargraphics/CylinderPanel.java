@@ -67,13 +67,13 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		 
 		 // Put shapes around each phosphate
 		 // (start with spheres)
-		 Vector3D previousCenter = null;
+		 BaseVector3D previousCenter = null;
 		 for (int r = 0; r < rna.getResidueCount(); r++) {
 		     Residue residue = rna.getResidue(r);
 		     Atom phosphorus = residue.getAtom("P");
 		     if (phosphorus != null) {
 		         // Create sphere at phosphate
-		         Vector3D center = phosphorus.getCoordinates();
+		         BaseVector3D center = phosphorus.getCoordinates();
 		         addSphere(center, 2.0, Color.GREEN, residue);
 		         
 		         // Connect backbone with tubes
@@ -125,7 +125,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 	}
 	
 	int sphereCount = 0;
-	public void addSphere(Vector3D center, double radius, Color color, Residue residue) {
+	public void addSphere(BaseVector3D center, double radius, Color color, Residue residue) {
 	    sphereCount ++;
 	    
 	    vtkSphereSource sphere = new vtkSphereSource();
@@ -155,7 +155,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 	
 	// put another cylinder in the display field
 	int cylinderCount = 0;
-	public void addCylinder(Vector3D head, Vector3D tail, double radius, int resolution, Color color) {
+	public void addCylinder(BaseVector3D head, BaseVector3D tail, double radius, int resolution, Color color) {
 	    cylinderCount ++;
 		vtkCylinderSource cylinder = new vtkCylinderSource();		
 		cylinder.SetResolution(resolution);

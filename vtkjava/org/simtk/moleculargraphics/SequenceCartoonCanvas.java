@@ -117,7 +117,11 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
 
     public void mouseClicked(MouseEvent e) {
         if (mouseIsInCartoon(e)) {
-            mouseDragged(e);
+            if (e.getClickCount() == 2) {
+                // TODO double click should center on position
+                residueActionBroadcaster.fireCenterOn(mouseResidue(e));
+            }
+            else mouseDragged(e);
         }
     }
     
@@ -143,21 +147,24 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         setCursor(defaultCursor);
     }
     
+    boolean mouseMoveHighlights = false;
     public void mouseMoved(MouseEvent e) {
-        int mouseX = e.getX();
-        int mouseY = e.getY();
-        // Is it in the cartoon area?
-        if (mouseIsInCartoon(e)) {
-            residueActionBroadcaster.lubricateUserInteraction();
-            setCursor(leftRightCursor);
-            Residue residue = mouseResidue(e);
-            if (residue != null) {
-                residueActionBroadcaster.fireHighlight(residue);
-                repaint();
+        if (mouseMoveHighlights) {
+            int mouseX = e.getX();
+            int mouseY = e.getY();
+            // Is it in the cartoon area?
+            if (mouseIsInCartoon(e)) {
+                residueActionBroadcaster.lubricateUserInteraction();
+                setCursor(leftRightCursor);
+                Residue residue = mouseResidue(e);
+                if (residue != null) {
+                    residueActionBroadcaster.fireHighlight(residue);
+                    repaint();
+                }
             }
+            else 
+                setCursor(defaultCursor);
         }
-        else 
-            setCursor(defaultCursor);
     }
 
     public void mouseDragged(MouseEvent e) {

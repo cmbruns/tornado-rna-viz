@@ -37,11 +37,11 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
     double defaultCylinderOpacity = 0.5;
     
     // Location of residue representation
-    Hashtable<Residue, Vector3D> residueCenters = new Hashtable<Residue, Vector3D>();
+    Hashtable<Residue, BaseVector3D> residueCenters = new Hashtable<Residue, BaseVector3D>();
     // Location of midpoint of link between this residue and the previous one
-    Hashtable<Residue, Vector3D> residuePreBonds = new Hashtable<Residue, Vector3D>();
+    Hashtable<Residue, BaseVector3D> residuePreBonds = new Hashtable<Residue, BaseVector3D>();
     // Location of midpoint of link between this residue and the subsequent one
-    Hashtable<Residue, Vector3D> residuePostBonds = new Hashtable<Residue, Vector3D>();
+    Hashtable<Residue, BaseVector3D> residuePostBonds = new Hashtable<Residue, BaseVector3D>();
     // Section of double-helix cylinder assigned to a residue
     Hashtable<Residue, SemiCylinder> residueWedges = new Hashtable<Residue, SemiCylinder>();
 
@@ -52,6 +52,11 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
     HashSet<Residue> endResidues = new HashSet<Residue>();
     HashSet<Residue> loopResidues = new HashSet<Residue>();
     
+    @Override
+    public Residue getNearbyResidue(Vector3D v) {
+        return null;
+    }
+
     /**
      * Keep just one copy of the sphere source for residue objects
      * @return
@@ -82,7 +87,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         // Assuming that the residues have already been processed at the molecule level
         if (!residueCenters.containsKey(residue)) {
             // Perhaps this residue is the entire molecule, so residue centers is not populated yet
-            Vector3D center = createResidueCenter(residue);
+            BaseVector3D center = createResidueCenter(residue);
             if (center == null) return null;
         }
         vtkAssembly assembly = new vtkAssembly();
@@ -97,16 +102,16 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         else c = defaultRopeColor;
         sphereActor.GetProperty().SetColor(c.getRed()/255.0, c.getGreen()/255.0, c.getBlue()/255.0);
         
-        Vector3D center = residueCenters.get(residue);
+        BaseVector3D center = residueCenters.get(residue);
         sphereActor.SetPosition(center.getX(), center.getY(), center.getZ());
         assembly.AddPart(sphereActor);
         
         // Put one bond linking toward the previous residue
         if (residuePreBonds.containsKey(residue)) {
-            Vector3D prePoint = residuePreBonds.get(residue);
+            BaseVector3D prePoint = residuePreBonds.get(residue);
             
             // Construct cylinder from center to midway to the previous residue
-            Vector3D midPoint = prePoint;
+            BaseVector3D midPoint = prePoint;
             Cylinder cylinder = new Cylinder(center, midPoint, ropeCylinderRadius * scaleFactor);
             vtkActor cylinderActor = GraphicsCylinder.getVtkCylinder(cylinder, c, defaultRopeResolution);
             cylinderActor.GetProperty().SetColor(c.getRed()/255.0, c.getGreen()/255.0, c.getBlue()/255.0);
@@ -117,10 +122,10 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         
         // Put one bond linking toward the subsequent residue
         if (residuePostBonds.containsKey(residue)) {
-            Vector3D postPoint = residuePostBonds.get(residue);
+            BaseVector3D postPoint = residuePostBonds.get(residue);
             
             // Construct cylinder from center to midway to the previous residue
-            Vector3D midPoint = postPoint;
+            BaseVector3D midPoint = postPoint;
             Cylinder cylinder = new Cylinder(postPoint, center, ropeCylinderRadius * scaleFactor);
             vtkActor cylinderActor = GraphicsCylinder.getVtkCylinder(cylinder, c, defaultRopeResolution);
             cylinderActor.GetProperty().SetColor(c.getRed()/255.0, c.getGreen()/255.0, c.getBlue()/255.0);
@@ -131,6 +136,10 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         return assembly;
     }
 
+    @Override
+    public vtkAssembly represent(Molecule molecule) {
+        return represent(molecule, 1.00, null);
+    }
     public vtkAssembly represent(Molecule molecule, double scaleFactor, Color clr) {
         // Render one residue
         if (molecule instanceof Nucleotide) {
@@ -155,7 +164,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
                 vtkPlane clipPlane = new vtkPlane();
                 Vector3D normal = wedge.getNormal();
                 clipPlane.SetNormal(normal.getX(), normal.getY(), normal.getZ());                
-                Vector3D origin = wedge.getHead();
+                BaseVector3D origin = wedge.getHead();
                 clipPlane.SetOrigin(origin.getX(), origin.getY(), origin.getZ());
                 
                 vtkTransformPolyDataFilter cylinderFilter = GraphicsCylinder.getVtkCylinderFilter(wedge, defaultCylinderResolution);
@@ -269,7 +278,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
             // Create ropes
             // First populate residue positions structure
             Residue previousResidue = null;
-            Vector3D previousCenter = null;
+            BaseVector3D previousCenter = null;
             for (Residue residue : rna.residues()) {
 
                 // Don't draw ropes for strictly internal duplex residues
@@ -279,7 +288,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
                     continue;
                 }
                 
-                Vector3D center = createResidueCenter(residue);
+                BaseVector3D center = createResidueCenter(residue);
                 
                 if (previousResidue != null) {
                     Vector3D midPoint = center.plus(previousCenter).scale(0.5);
@@ -305,9 +314,9 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
     }
 
     // Where to center a sphere for a particular residue
-    Vector3D createResidueCenter(Residue residue) {
+    BaseVector3D createResidueCenter(Residue residue) {
         if (residue == null) return null;
-        Vector3D center = residue.getAtom(" C1*").getCoordinates();
+        BaseVector3D center = residue.getAtom(" C1*").getCoordinates();
 
         // Update residue center to be on edge of cylinder
         if (endResidues.contains(residue)) {

@@ -20,12 +20,22 @@ import org.simtk.geometry3d.*;
  */
 public class BallAndStickCartoon extends MolecularCartoon {
 
+    @Override
+    public Residue getNearbyResidue(Vector3D v) {
+        return null;
+    }
+
+    @Override
     public vtkProp highlight(Residue residue, Color color) {
         // Make it a little bigger than usual
-        vtkAssembly answer = represent(residue, 1.05, color);
+        vtkAssembly answer = represent(residue, 1.20, color);
         return answer;
     }
 
+    @Override
+    public vtkAssembly represent(Molecule molecule) {
+        return represent(molecule, 1.00, null);
+    }
     public vtkAssembly represent(Molecule molecule, double scaleFactor, Color clr) {
 
             vtkAssembly assembly = new vtkAssembly();
@@ -42,7 +52,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
             // Fill elementPoints with arrays of atomic centers
             for (int a = 0; a < molecule.getAtomCount(); a++) {
                 Atom atom = molecule.getAtom(a);
-                Vector3D coord = molecule.getAtom(a).getCoordinates();
+                BaseVector3D coord = molecule.getAtom(a).getCoordinates();
                 String elementSymbol = molecule.getAtom(a).getElementSymbol();
                 
                 vtkPoints atomPoints;

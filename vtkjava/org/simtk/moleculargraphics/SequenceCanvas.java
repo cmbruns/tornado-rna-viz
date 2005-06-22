@@ -227,6 +227,10 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     public void unSelect(Residue r) {
     }
     public void centerOn(Residue r) {
+        
+        // don't center if sequence canvas was the source of the center command
+        if (! yesActuallyCenterOnResidue) return;
+        
         if (residuePositions.containsKey(r)) {
             int position = residuePositions.get(r);
             int pixel = (int)(symbolWidth * position + characterSpacing);
@@ -242,13 +246,22 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         }        
     }
 
+    boolean mousePressedInSequenceArea = false;
+    boolean mousePressedInNumberArea = false;
+    boolean yesActuallyCenterOnResidue = true;
+
     public void mouseClicked(MouseEvent e) {
         mousePressedInSequenceArea = false;
         mousePressedInNumberArea = false;
+        if (e.getClickCount() == 2) {
+            // Double click should center on position
+            yesActuallyCenterOnResidue = false;
+            residueActionBroadcaster.fireCenterOn(mouseResidue(e));
+            // But in this one case, don't actually center in the sequence window
+            yesActuallyCenterOnResidue = true;
+        }
     }
 
-    boolean mousePressedInSequenceArea = false;
-    boolean mousePressedInNumberArea = false;
     int mousePressedViewportX = -1;
     int mousePressedBarCenter = -1;
     public void mousePressed(MouseEvent e) {

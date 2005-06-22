@@ -20,18 +20,31 @@ import org.simtk.molecularstructure.*;
 public class AtomSphereCartoon extends MolecularCartoon {
     
     boolean useSphereActors = false;
+    double maxPickDistance = 5.0; // Angstroms from atom center for pick
+    Hash3D<Residue> residuePositions = new Hash3D<Residue>(maxPickDistance);
+
+    @Override
+    public Residue getNearbyResidue(Vector3D v) {
+        Residue residue = residuePositions.getClosest(v, maxPickDistance);
+        return residue;
+    }
     
     // Produce a renderable highlighted representation of a residue, slightly larger than the original
+    @Override
     public vtkProp highlight(Residue residue, Color color) {
         // Make it a little bigger than usual
-        vtkAssembly answer = represent(residue, 1.05, color);
+        vtkAssembly answer = represent(residue, 1.05, color, 0.70);
         return answer;
     }
     
-    public vtkAssembly represent(Molecule molecule, double scaleFactor, Color clr) {
+    @Override
+    public vtkAssembly represent(Molecule molecule) {
+        return represent(molecule, 1.00, null, 1.00);
+    }
+    public vtkAssembly represent(Molecule molecule, double scaleFactor, Color clr, double opacity) {
 
         // This routine uses glyphs instead of actors, so try something else
-        if (useSphereActors) return super.represent(molecule, scaleFactor, clr);
+        if (useSphereActors) return super.represent(molecule);
         
         vtkAssembly assembly = new vtkAssembly();
         
@@ -44,7 +57,7 @@ public class AtomSphereCartoon extends MolecularCartoon {
 
         for (int a = 0; a < molecule.getAtomCount(); a++) {
             Atom atom = molecule.getAtom(a);
-            Vector3D coord = molecule.getAtom(a).getCoordinates();
+            BaseVector3D coord = molecule.getAtom(a).getCoordinates();
             String elementSymbol = molecule.getAtom(a).getElementSymbol();
             
             vtkPoints atomPoints;
@@ -90,22 +103,41 @@ public class AtomSphereCartoon extends MolecularCartoon {
               spheresActor.SetMapper(spheresMapper);
               Color color = (Color) elementColors.get(elementSymbol);
               spheresActor.GetProperty().SetColor(color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0);
+              spheresActor.GetProperty().SetOpacity(opacity);
               spheresActor.GetProperty().BackfaceCullingOn();
               
               assembly.AddPart(spheresActor);
         }
         
-        if (hasContents) return assembly;
+        if (hasContents) {
+
+            // Map atomic positions to residues for picking
+            if (molecule instanceof Biopolymer) {
+                residuePositions.clear();
+                Biopolymer biopolymer = (Biopolymer) molecule;
+                for (Residue residue : biopolymer.residues()) {
+                    for (Atom atom : residue.getAtoms()) {
+                        residuePositions.put(atom.getCoordinates(), residue);
+                    }
+                }
+            }
+            
+            return assembly;
+        }
         else return null;
     }
-    
+
+    @Override
+    public vtkAssembly represent(Atom atom) {
+        return represent(atom, 1.00, null);
+    }
     public vtkAssembly represent(Atom atom, double scaleFactor, Color clr) {
         if (!useSphereActors) return null; // This method is too slow in rendering big things
 
         vtkAssembly assembly = new vtkAssembly();
         
         // Generate a sphere at the atom position
-        Vector3D center = atom.getCoordinates();
+        BaseVector3D center = atom.getCoordinates();
 
         vtkSphereSource sphere = new vtkSphereSource();
         sphere.SetCenter(center.getX(), center.getY(), center.getZ());

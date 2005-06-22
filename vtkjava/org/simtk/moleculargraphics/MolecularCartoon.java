@@ -10,6 +10,7 @@ import vtk.*;
 
 import org.simtk.atomicstructure.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.geometry3d.*;
 
 /** 
  * @author Christopher Bruns
@@ -22,6 +23,13 @@ import org.simtk.molecularstructure.*;
  */
 abstract public class MolecularCartoon {
 
+    public enum CartoonType {
+        SPACE_FILLING,
+        BALL_AND_STICK,
+        ROPE_AND_CYLINDER,
+        RESIDUE_SPHERE
+    };
+
     /**
      * Create a yellow graphical object that highlights the selected residue
      * @param residue
@@ -32,17 +40,19 @@ abstract public class MolecularCartoon {
     }
     abstract public vtkProp highlight(Residue residue, Color color);
 
+    abstract public Residue getNearbyResidue(Vector3D v);
+    
         /**
      * 
      * Default behavior is for a MoleculeCollection to be the sum of its molecules
      * @param molecules
      * @return returns null if there are no graphics primitives to render
      */
-    public vtkAssembly represent(MoleculeCollection molecules, double scaleFactor, Color clr) {
+    public vtkAssembly represent(MoleculeCollection molecules) {
         boolean hasContents = false;
         vtkAssembly assembly = new vtkAssembly();        
         for (int m = 0; m < molecules.getMoleculeCount(); m++) {
-            vtkAssembly moleculeAssembly = represent(molecules.getMolecule(m), scaleFactor, clr);
+            vtkAssembly moleculeAssembly = represent(molecules.getMolecule(m));
             if (moleculeAssembly != null) {
                 assembly.AddPart(moleculeAssembly);
                 hasContents = true;
@@ -52,7 +62,7 @@ abstract public class MolecularCartoon {
         else return null;
     }
     
-    public vtkAssembly represent(Molecule molecule, double scaleFactor, Color clr) {
+    public vtkAssembly represent(Molecule molecule) {
         boolean hasContents = false;
         vtkAssembly assembly = new vtkAssembly();
         
@@ -61,7 +71,7 @@ abstract public class MolecularCartoon {
         if (molecule instanceof Biopolymer) {
             Biopolymer biopolymer = (Biopolymer) molecule;
             for (int r = 0; r < biopolymer.getResidueCount(); r++) {
-	            vtkAssembly residueAssembly = represent(biopolymer.getResidue(r), scaleFactor, clr);
+	            vtkAssembly residueAssembly = represent(biopolymer.getResidue(r));
 	            if (residueAssembly != null) {
 	                assembly.AddPart(residueAssembly);
 	                hasContents = true;
@@ -70,7 +80,7 @@ abstract public class MolecularCartoon {
         }
         else { // Do atoms instead of residues, especially if this "molecule" is a residue itself
 	        for (int a = 0; a < molecule.getAtomCount(); a++) {
-	            vtkAssembly atomAssembly = represent(molecule.getAtom(a), scaleFactor, clr);
+	            vtkAssembly atomAssembly = represent(molecule.getAtom(a));
 	            if (atomAssembly != null) {
 	                assembly.AddPart(atomAssembly);
 	                hasContents = true;
@@ -82,7 +92,7 @@ abstract public class MolecularCartoon {
         else return null;
     }
 
-    public vtkAssembly represent(Atom atom, double scaleFactor, Color clr) {
+    public vtkAssembly represent(Atom atom) {
         boolean hasContents = false;
         vtkAssembly assembly = new vtkAssembly();        
 
