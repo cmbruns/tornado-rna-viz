@@ -6,8 +6,9 @@
   <property name="vtk.bin.dir" value="/Users/bkeller/src/vtkMac"/>
   <property name="jogl.bin.dir" value="/Users/bkeller/src/jogl"/>
   <property name="build.dir" value="out"/>
+  <property name="webstart.dir" value="webstart"/>
 
-  <property name="lib" value="${build.dir}:${vtk.bin.dir}/vtk.jar:${jogl.bin.dir}/jogl.jar"/>
+  <property name="lib" value="${build.dir}:${webstart.dir}/vtk.jar:${webstart.dir}/jogl.jar:${webstart.dir}/Jama.jar:jnlp.jar"/>
 
   <target name="run" depends="compile">
     <java fork="yes" classpath="${lib}" classname="org.simtk.moleculargraphics.Tornado">
@@ -24,14 +25,18 @@
 
   <target name="compile">
     <mkdir dir="${build.dir}"/>
-    <javac source="1.5" target="1.5" classpath="${lib}" srcdir="." destdir="${build.dir}">
+    <javac source="1.5" target="1.5" classpath="${lib}" srcdir="." destdir="${build.dir}" debug="on">
       <include name="org/**"/>
-      <include name="Jama/**"/>
+      <include name="edu/**"/>
       <include name="HelloVtk.java"/>
     </javac>
-    <copy todir="${build.dir}">
-      <fileset dir="." includes="*"/>
+    <copy todir="${build.dir}/resources">
+      <fileset dir="resources" includes="**"/>
     </copy>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}"/>
   </target>
 
 </project>
