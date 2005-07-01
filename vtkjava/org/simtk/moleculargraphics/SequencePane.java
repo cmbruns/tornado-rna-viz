@@ -9,6 +9,7 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+import org.simtk.util.*;
 import org.simtk.molecularstructure.*;
 
 
@@ -129,11 +130,14 @@ implements ResidueActionListener
         sequenceCanvas.unHighlightResidue();
         currentHighlightedResidue = null;
     }
-    public void select(Residue r) {
+    public void select(Selectable r) {
         sequenceCanvas.select(r);
     }
-    public void unSelect(Residue r) {
+    public void unSelect(Selectable r) {
         sequenceCanvas.unSelect(r);
+    }
+    public void unSelect() {
+        sequenceCanvas.unSelect();
     }
     public void centerOn(Residue r) {
         sequenceCanvas.centerOn(r);

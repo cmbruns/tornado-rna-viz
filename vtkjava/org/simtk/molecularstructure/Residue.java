@@ -9,6 +9,8 @@ import java.util.*;
 import org.simtk.atomicstructure.*;
 import org.simtk.molecularstructure.protein.*;
 import org.simtk.molecularstructure.nucleicacid.*;
+import org.simtk.geometry3d.*;
+import org.simtk.util.*;
 
 /** 
  * @author Christopher Bruns
@@ -16,7 +18,7 @@ import org.simtk.molecularstructure.nucleicacid.*;
  * \brief One monomer residue of a Biopolymer
  *
  */
-public abstract class Residue extends Molecule {
+public abstract class Residue extends Molecule implements Selectable {
     Hashtable<String, HashSet<String> > genericBonds = new Hashtable<String, HashSet<String> >(); // maps atom names of bondable atoms
     char insertionCode = ' ';
     public int residueNumber = 0; // TODO create accessors
@@ -25,6 +27,19 @@ public abstract class Residue extends Molecule {
     // Even if there is a break in the sequence, the next residue train should probably jump over the gap
     Residue nextResidue;
     Residue previousResidue;
+    
+    public Collection<Atom> getHydrogenBondDonors() {
+        return new HashSet<Atom>();
+    }
+    public Collection<Atom> getHydrogenBondAcceptors() {
+        return new HashSet<Atom>();        
+    }
+    
+    /**
+     * Return preferred location of backbone trace in molecular representations
+     */
+    public BaseVector3D getBackbonePosition() {return null;}
+    public BaseVector3D getSideChainPosition() {return null;}
     
     /**
      * Create an empty Residue object with no atoms.

@@ -240,4 +240,44 @@ public class NucleicAcid extends Biopolymer {
         }
         return hairpins;
     }
+    
+    public Collection<HydrogenBond> computeBaseHydrogenBonds() {
+        double maxHydrogenBondDistance = 3.50;
+        Angle minHydrogenBondAngle = new Angle(270, Angle.Units.DEGREES);        
+        Vector<HydrogenBond> answer = new Vector<HydrogenBond>();
+
+        // Create a hash of hydrogen bond donor atoms
+        Hash3D<Atom> donorAtoms = new Hash3D<Atom>(3.50);
+        Hashtable<Atom, Nucleotide> donorNucleotides = new Hashtable<Atom, Nucleotide>();
+        for (Residue residue : residues()) {
+            if (! (residue instanceof Nucleotide)) continue;
+            Nucleotide nucleotide = (Nucleotide) residue;
+            for (Atom atom : nucleotide.getHydrogenBondDonors()) {
+                donorAtoms.put(atom.getCoordinates(), atom);
+                donorNucleotides.put(atom, nucleotide);
+            }
+        }
+        
+        // Loop over acceptor atoms, try to find donors
+        for (Residue residue : residues()) {
+            if (! (residue instanceof Nucleotide)) continue;
+            Nucleotide acceptorNucleotide = (Nucleotide) residue;
+            for (Atom acceptorAtom : acceptorNucleotide.getHydrogenBondAcceptors()) {
+                for (Atom donorAtom : donorAtoms.neighborValues(acceptorAtom.getCoordinates(), maxHydrogenBondDistance) ) {
+                    // This atom pair are now closer than the maximum distance cutoff of 3.5 Angstroms
+                    
+                    // Exclude atoms in the same residue
+                    if ( donorNucleotides.get(donorAtom).equals(acceptorNucleotide) ) continue;
+                    
+                    // Exclude pairs closer than 2.0 Angstroms
+                    if (donorAtom.distance(acceptorAtom) < 2.0) continue;
+                    
+                    // TODO - exclude pairs whose hydrogen bond angles differ by less than 270 degrees
+                    // This is the hard part
+                }
+            }
+        }
+        
+        return answer;
+    }
 }

@@ -9,11 +9,19 @@ import org.simtk.util.*;
 public class Angle extends Number {
 
     static final long serialVersionUID = 1L;
-    static public enum Units{DEGREES, RADIANS};
+    static public enum Units{DEGREES, RADIANS, GRADS, REVS};
     static public enum Range{SIGNED, UNSIGNED, UNLIMITED};
+
+    static double TWO_PI = 2.0 * Math.PI;
+
     static double RADIANS_PER_DEGREE = Math.PI / 180.0;
     static double DEGREES_PER_RADIAN = 180.0 / Math.PI;
-    static double TWO_PI = 2.0 * Math.PI;
+
+    static double RADIANS_PER_GRAD = Math.PI / 200.0;
+    static double GRADS_PER_RADIAN = 200.0 / Math.PI;
+
+    static double RADIANS_PER_REV = TWO_PI;
+    static double REVS_PER_RADIAN = 1.0 / TWO_PI;
 
     private static Range defaultRange = Range.UNSIGNED;
     private static Units defaultUnits = Units.RADIANS;
@@ -29,7 +37,11 @@ public class Angle extends Number {
             radianAngle = angle * RADIANS_PER_DEGREE;
         else if (angleUnits == Angle.Units.RADIANS)
             radianAngle = angle;
-        else radianAngle = angle;
+        else if (angleUnits == Angle.Units.GRADS)
+            radianAngle = angle * RADIANS_PER_GRAD;
+        else if (angleUnits == Angle.Units.REVS)
+            radianAngle = angle * RADIANS_PER_REV;
+        else radianAngle = angle; // should not get here...
 
         restrictToRange();
     }
@@ -88,6 +100,8 @@ public class Angle extends Number {
     public double getValue(Units u) {
         if (u == Units.RADIANS) return radianAngle;
         else if (u == Units.DEGREES) return radianAngle * DEGREES_PER_RADIAN;
+        else if (u == Units.GRADS) return radianAngle * GRADS_PER_RADIAN;
+        else if (u == Units.REVS) return radianAngle * REVS_PER_RADIAN;
         else return radianAngle;
     }
     public void setValue(double a, Units u) {initialize(a, u, angleRange);}
@@ -115,6 +129,8 @@ public class Angle extends Number {
         String answer = (new Double(getValue())).toString();
         if (angleUnits == Units.RADIANS) answer += " radians";
         if (angleUnits == Units.DEGREES) answer += " degrees";
+        if (angleUnits == Units.DEGREES) answer += " grads";
+        if (angleUnits == Units.REVS) answer += " revs";
         return answer;
     }
 

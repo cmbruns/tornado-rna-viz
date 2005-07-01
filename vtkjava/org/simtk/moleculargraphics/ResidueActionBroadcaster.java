@@ -4,40 +4,50 @@
  */
 package org.simtk.moleculargraphics;
 
-import java.util.*;
+import org.simtk.util.*;
 import org.simtk.molecularstructure.*;
 
-public class ResidueActionBroadcaster {
-    HashSet<ResidueActionListener> listeners = new HashSet<ResidueActionListener>();
+public class ResidueActionBroadcaster extends SelectionBroadcaster {
     volatile boolean userIsInteracting = false;
 
     public void fireHighlight(Residue r) {
-        for (ResidueActionListener l : listeners)
+        for (SelectionListener l1 : listeners) {
+            if (! (l1 instanceof ResidueActionListener)) continue;
+            ResidueActionListener l = (ResidueActionListener) l1;
             l.highlight(r);
+        }
     }
 
     public void fireUnHighlightResidue() {
-        for (ResidueActionListener l : listeners)
+        for (SelectionListener l1 : listeners) {
+            if (! (l1 instanceof ResidueActionListener)) continue;
+            ResidueActionListener l = (ResidueActionListener) l1;
             l.unHighlightResidue();
+        }
     }
     
     public void fireAdd(Residue r) {
-        for (ResidueActionListener l : listeners)
+        for (SelectionListener l1 : listeners) {
+            if (! (l1 instanceof ResidueActionListener)) continue;
+            ResidueActionListener l = (ResidueActionListener) l1;
             l.add(r);
+        }
     }
     
     public void fireCenterOn(Residue r) {
-        for (ResidueActionListener l : listeners)
+        for (SelectionListener l1 : listeners) {
+            if (! (l1 instanceof ResidueActionListener)) continue;
+            ResidueActionListener l = (ResidueActionListener) l1;
             l.centerOn(r);
+        }
     }
     
     public void fireClearResidues() {
-        for (ResidueActionListener l : listeners)
+        for (SelectionListener l1 : listeners) {
+            if (! (l1 instanceof ResidueActionListener)) continue;
+            ResidueActionListener l = (ResidueActionListener) l1;
             l.clearResidues();
-    }
-    
-    public void addListener(ResidueActionListener l) {
-        listeners.add(l);
+        }
     }
     
     synchronized public void lubricateUserInteraction() {

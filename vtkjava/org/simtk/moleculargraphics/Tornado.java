@@ -14,6 +14,13 @@ import java.util.zip.*;
 import java.net.*;
 import javax.jnlp.*;
 
+import org.simtk.moleculargraphics.cartoon.AtomSphereCartoon;
+import org.simtk.moleculargraphics.cartoon.BackboneCurveCartoon;
+import org.simtk.moleculargraphics.cartoon.BallAndStickCartoon;
+import org.simtk.moleculargraphics.cartoon.MolecularCartoon;
+import org.simtk.moleculargraphics.cartoon.ResidueSphereCartoon;
+import org.simtk.moleculargraphics.cartoon.RopeAndCylinderCartoon;
+import org.simtk.moleculargraphics.cartoon.WireFrameCartoon;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.atomicstructure.Atom;
@@ -154,12 +161,12 @@ implements ResidueActionListener
                 
         setMessage("No molecules are currently loaded");
         
-        residueActionBroadcaster.addListener(sequencePane);
-        residueActionBroadcaster.addListener(canvas);
-        residueActionBroadcaster.addListener(sequenceCartoonCanvas);
-        residueActionBroadcaster.addListener(this);
+        residueActionBroadcaster.addSelectionListener(sequencePane);
+        residueActionBroadcaster.addSelectionListener(canvas);
+        residueActionBroadcaster.addSelectionListener(sequenceCartoonCanvas);
+        residueActionBroadcaster.addSelectionListener(this);
         if (drawSecondaryStructure)
-            residueActionBroadcaster.addListener(canvas2D);            
+            residueActionBroadcaster.addSelectionListener(canvas2D);            
         
     }
     
@@ -195,6 +202,10 @@ implements ResidueActionListener
         catch (UnsatisfiedLinkError exc) {
             System.err.println("Failed to load native library " + libName);
         }
+    }
+    
+    public void setBackgroundColor(Color c) {
+        canvas.setBackgroundColor(c);
     }
     
     /**
@@ -348,6 +359,8 @@ implements ResidueActionListener
         // pauseRotation();
         if (message == null) setMessage("Please wait...");
         else setMessage(message + " "); // Extra space to preserve message area size
+        
+        // System.err.println(message);
     }
     
     // The wait is over
@@ -413,6 +426,9 @@ implements ResidueActionListener
         menuItem.addActionListener(new RelaxCoordinatesAction());
         menu.add(menuItem);
 
+        menuItem = new JMenuItem("Move highlighted residue");
+        menuItem.addActionListener(new MoveHighlightedResidueAction());
+        menu.add(menuItem);
         
         JMenu viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
@@ -450,6 +466,20 @@ implements ResidueActionListener
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
+        checkItem = new JCheckBoxMenuItem("Backbone Trace");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.BACKBONE_TRACE));
+        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.BACKBONE_TRACE);
+        cartoonGroup.add(checkItem);
+        menu.add(checkItem);
+
+        checkItem = new JCheckBoxMenuItem("Wire Frame");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.WIRE_FRAME));
+        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.WIRE_FRAME);
+        cartoonGroup.add(checkItem);
+        menu.add(checkItem);
+
         menu = new JMenu("Rotation");
         viewMenu.add(menu);
 
@@ -474,6 +504,31 @@ implements ResidueActionListener
         checkItem.addActionListener(new RotateSpinAction());
         checkItem.setState(false);
         rotationGroup.add(checkItem);
+        menu.add(checkItem);
+        
+        menu = new JMenu("Background Color");
+        viewMenu.add(menu);
+        ButtonGroup backgroundGroup = new ButtonGroup();
+
+        checkItem = new JCheckBoxMenuItem("Sky");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new BackgroundColorAction(new Color(0.92f, 0.96f, 1.0f)));
+        checkItem.setState(false);
+        backgroundGroup.add(checkItem);
+        menu.add(checkItem);
+        
+        checkItem = new JCheckBoxMenuItem("White");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new BackgroundColorAction(Color.white));
+        checkItem.setState(false);
+        backgroundGroup.add(checkItem);
+        menu.add(checkItem);
+        
+        checkItem = new JCheckBoxMenuItem("Black");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new BackgroundColorAction(Color.black));
+        checkItem.setState(false);
+        backgroundGroup.add(checkItem);
         menu.add(checkItem);
         
         menu = new JMenu("Stereoscopic 3D");
@@ -536,6 +591,21 @@ implements ResidueActionListener
         }
     }
 
+    class BackgroundColorAction implements ActionListener {
+        Color color;
+        BackgroundColorAction(Color c) {color = c;}
+        public void actionPerformed(ActionEvent e) {
+            setBackgroundColor(color);
+        }
+    }
+
+    class MoveHighlightedResidueAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            // TODO
+            System.out.println("Hey, this isn't moving a residue!?!?!");
+        }
+    }
+
     class RelaxCoordinatesAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             // TODO
@@ -564,6 +634,12 @@ implements ResidueActionListener
                     break;
                 case RESIDUE_SPHERE:
                     canvas.currentCartoon = new ResidueSphereCartoon();
+                    break;
+                case BACKBONE_TRACE:
+                    canvas.currentCartoon = new BackboneCurveCartoon();
+                    break;
+                case WIRE_FRAME:
+                    canvas.currentCartoon = new WireFrameCartoon();
                     break;
                 default:
                     canvas.currentCartoon = new BallAndStickCartoon();
@@ -1069,8 +1145,9 @@ implements ResidueActionListener
         setMessage(" "); // Use a space, otherwise message panel collapses
         currentHighlightedResidue = null;
     }
-    public void select(Residue r) {}
-    public void unSelect(Residue r) {}    
+    public void select(Selectable r) {}
+    public void unSelect(Selectable r) {}    
+    public void unSelect() {}    
     public void add(Residue r) {}    
     public void clearResidues() {
         currentHighlightedResidue = null;

@@ -4,7 +4,9 @@
  */
 package org.simtk.molecularstructure.nucleicacid;
 
+import java.util.*;
 import org.simtk.atomicstructure.*;
+import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 
 /** 
@@ -25,6 +27,49 @@ public class Nucleotide extends Residue {
     static public FunctionalGroup baseGroup = new FunctionalGroup(baseGroupAtomNames);
     static public FunctionalGroup sugarGroup = new FunctionalGroup(sugarGroupAtomNames);
     static public FunctionalGroup phosphateGroup = new FunctionalGroup(phosphateGroupAtomNames);
+    
+    @Override
+    public Collection<Atom> getHydrogenBondDonors() {
+        HashSet<Atom> answer = new HashSet<Atom>();
+        for (Atom a : super.getHydrogenBondDonors())
+            answer.add(a);
+
+        // Note: donor/acceptor status of N1,N3 depends upon exact base
+        // So see those derived classes for additional atoms
+        String donorAtomNames[] = {" O2*", " N2 ", " N4 ", " N6 ", };
+        for (String atomName : donorAtomNames) {
+            Atom a = getAtom(atomName);
+            if (a != null) answer.add(a);
+        }
+        
+        return answer;
+    }
+    @Override
+    public Collection<Atom> getHydrogenBondAcceptors() {
+        HashSet<Atom> answer = new HashSet<Atom>();
+        for (Atom a : super.getHydrogenBondAcceptors())
+            answer.add(a);
+
+        String acceptorAtomNames[] = {" O2*", " N7 ", " O2 ", " O4 ", " O6 "};
+        for (String atomName : acceptorAtomNames) {
+            Atom a = getAtom(atomName);
+            if (a != null) answer.add(a);
+        }
+        
+        return answer;
+    }
+    
+    @Override
+    public BaseVector3D getBackbonePosition() {
+        Atom atom = getAtom(" C5*");
+        if (atom == null) return null;
+        return atom.getCoordinates();
+    }
+
+    @Override
+    public Vector3D getSideChainPosition() {
+        return get(baseGroup).getCenterOfMass();
+    }
     
     public String getResidueName() {return "(unknown nucleotide type)";}
 

@@ -9,6 +9,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.JScrollBar;
 import org.simtk.molecularstructure.*;
+import org.simtk.util.*;
 
 public class SequenceCanvas extends BufferedCanvas 
 implements ResidueActionListener, MouseMotionListener, AdjustmentListener, MouseListener
@@ -46,6 +47,13 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     Cursor leftRightCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
     Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
 
+    // Keep track of selection insertion point
+    Residue insertionResidue = null;
+    boolean insertionResidueRightSide;
+    HashSet<Residue> selectedResidues = new HashSet<Residue>();
+    Color selectionColor = new Color(50, 50, 255);
+    Color highlightColor = new Color(255, 255, 100);
+    
     public SequenceCanvas(
             String initialSequence, 
             SequencePane p, 
@@ -74,6 +82,15 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         paint(g);
     }
     
+    public void highlightPosition(Graphics graphics, int position, Color color) {
+        int leftX = (int) (characterSpacing / 2.0 + position * symbolWidth);
+        int rightX = (int) (leftX + symbolWidth);
+        int bottomY = (int) (baseLine) + 2;
+        int topY = (int) (bottomY - symbolHeight) + 2;
+        graphics.setColor(color);
+        graphics.fillRect(leftX, topY, (rightX - leftX + 1), (bottomY - topY + 1));        
+    }
+    
     public void paint(Graphics onScreenGraphics) {
         checkOffScreen();
         if (offScreenImage == null) return;
@@ -96,19 +113,22 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         // Draw highlight
         if (highlightPosition >= 0) {
             if ( (highlightPosition >= leftPosition) && (highlightPosition <= rightPosition) ) {
-                int leftX = (int) (characterSpacing / 2.0 + highlightPosition * symbolWidth);
-                int rightX = (int) ((highlightPosition + 1) * symbolWidth);
-                int bottomY = (int) (baseLine);
-                int topY = (int) (bottomY - symbolHeight);
-                g.setColor(Color.yellow);
-                g.fillRect(leftX, topY, (rightX - leftX + 1), (bottomY - topY + 1));
+                highlightPosition(g, highlightPosition, highlightColor);
             }
         }
-
+        
         // Draw sequence
         g.setFont(font);
         g.setColor(getForeground());
         for (int r = leftPosition; r <= rightPosition; r++) {
+            // Is it selected?
+            Residue residue = positionResidues.get(r);
+            if (selectedResidues.contains(residue)) {
+                highlightPosition(g, r, selectionColor);
+                g.setColor(getBackground()); // Inverse text color for selected residues
+            }
+            else g.setColor(getForeground()); // Normal text
+            
             g.drawString(residueSymbols.get(r), (int)(characterSpacing + r * symbolWidth), baseLine);
         }
         
@@ -199,6 +219,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         residueSymbols.clear();
         residuePositions.clear();
         positionResidues.clear();
+        selectedResidues.clear();
         highlightPosition = -1;
         checkSize(getGraphics());
     }    
@@ -222,9 +243,15 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         highlightPosition = -1;
         repaint();
     }
-    public void select(Residue r) {
+    public void select(Selectable s) {
+        if (! (s instanceof Residue) ) return;
+        selectedResidues.add((Residue)s);
     }
-    public void unSelect(Residue r) {
+    public void unSelect(Selectable s) {
+        selectedResidues.remove(s);
+    }
+    public void unSelect() {
+        selectedResidues.clear();
     }
     public void centerOn(Residue r) {
         
@@ -253,13 +280,34 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     public void mouseClicked(MouseEvent e) {
         mousePressedInSequenceArea = false;
         mousePressedInNumberArea = false;
+        
+        Residue clickedResidue = mouseResidue(e);
+
         if (e.getClickCount() == 2) {
             // Double click should center on position
             yesActuallyCenterOnResidue = false;
-            residueActionBroadcaster.fireCenterOn(mouseResidue(e));
+            residueActionBroadcaster.fireCenterOn(clickedResidue);
             // But in this one case, don't actually center in the sequence window
             yesActuallyCenterOnResidue = true;
         }
+
+        if (e.isControlDown()) { // Control click preserves other selections
+            if (selectedResidues.contains(clickedResidue))
+                residueActionBroadcaster.fireUnSelect(clickedResidue);
+            else
+                residueActionBroadcaster.fireSelect(clickedResidue);
+        }
+        else { // Normal click - unselect all
+            residueActionBroadcaster.fireUnSelect();
+        }
+        
+        // Set insertion point
+        if (clickedResidue != null) {
+            insertionResidue = clickedResidue;
+            insertionResidueRightSide = mouseResidueRightSide(e);
+        }
+        
+        repaint();
     }
 
     int mousePressedViewportX = -1;
@@ -267,6 +315,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     public void mousePressed(MouseEvent e) {
         mousePressedInSequenceArea = false;
         mousePressedInNumberArea = false;
+
         if (mouseIsInSequenceArea(e)) mousePressedInSequenceArea = true;
         if (mouseIsInNumberArea(e)) mousePressedInNumberArea = true;
 
@@ -288,12 +337,13 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         // Is the mouse in the sequence area?
         if (mouseIsInSequenceArea(e)) {
             setCursor(textCursor);
-            Residue residue = mouseResidue(e);
-            if ( (residue != null) && (residue != highlightResidue) ) {
-                residueActionBroadcaster.lubricateUserInteraction();
-                residueActionBroadcaster.fireHighlight(residue);
-                repaint();
-            }
+
+//            Residue residue = mouseResidue(e);
+//            if ( (residue != null) && (residue != highlightResidue) ) {
+//                residueActionBroadcaster.lubricateUserInteraction();
+//                residueActionBroadcaster.fireHighlight(residue);
+//                repaint();
+//            }
         }
         
         // Is the pointer in the numbering area?
@@ -359,9 +409,27 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
                  (mouseY <= numberBaseLine) );
     }
     
+    /**
+     * Which residue is the mouse over?
+     * @param e
+     * @return
+     */
     Residue mouseResidue(MouseEvent e) {
         int sequenceIndex = (int)( (e.getX() - characterSpacing/2.0)/symbolWidth );
         return positionResidues.get(sequenceIndex);
+    }
+    
+    /**
+     * Which side of the residue is the mouse near?
+     * @param e
+     * @return
+     */
+    boolean mouseResidueRightSide(MouseEvent e) {
+        double pos = (e.getX() - characterSpacing/2.0)/symbolWidth;
+        double remainder = pos - (int) pos;
+        if (pos >= 0.5) return true;
+        if (pos < 0) return true;
+        return false;
     }
     
     // Respond to sequence scroll bar event - redraw

@@ -21,6 +21,7 @@ import org.simtk.molecularstructure.protein.*;
  */
 public class Molecule {
 	protected Vector<Atom> atoms = new Vector<Atom>();
+    // protected Vector<Bond> bonds = new Vector<Bond>();
 	// Vector bonds = new Vector();
 
     Vector3D centerOfMass = new Vector3D();
@@ -41,7 +42,17 @@ public class Molecule {
 		}
         createBonds();
 	}
-	
+
+    /**
+     * Change the position of the molecule by the specified amount
+     * @param t amount to translate
+     */
+    public void translate(BaseVector3D t) {
+        for (Atom a : getAtoms()) {
+            a.translate(t);
+        }
+    }
+    
     public Vector<Atom> getAtoms() {return atoms;}
     
     /**
@@ -292,6 +303,7 @@ public class Molecule {
                     if (pdbAtom1.getAlternateLocationIndicator() != pdbAtom2.getAlternateLocationIndicator()) continue;
                 }
                 
+                // bonds.add(new Bond(atom1, atom2));
                 atom1.addBond(atom2);
                 atom2.addBond(atom1);
             }

@@ -7,6 +7,7 @@ package org.simtk.moleculargraphics;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Hashtable;
+import org.simtk.util.*;
 
 import org.simtk.molecularstructure.Residue;
 
@@ -226,9 +227,11 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         highlight = -1;
         repaint();
     }
-    public void select(Residue r) {
+    public void select(Selectable s) {
     }
-    public void unSelect(Residue r) {
+    public void unSelect(Selectable s) {
+    }
+    public void unSelect() {
     }
     public void centerOn(Residue r) {} // This sequence does not move
 

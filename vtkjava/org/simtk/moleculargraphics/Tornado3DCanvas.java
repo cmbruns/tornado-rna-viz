@@ -5,14 +5,19 @@
 package org.simtk.moleculargraphics;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import vtk.*;
 import java.awt.event.*;
 import net.java.games.jogl.*;
 import java.io.*;
-import org.simtk.molecularstructure.Residue;
+
+import org.simtk.moleculargraphics.cartoon.MolecularCartoon;
+import org.simtk.moleculargraphics.cartoon.RopeAndCylinderCartoon;
+import org.simtk.molecularstructure.*;
 import org.simtk.geometry3d.*;
+import org.simtk.util.*;
 
 /** 
  * @author Christopher Bruns
@@ -22,6 +27,15 @@ import org.simtk.geometry3d.*;
 public class Tornado3DCanvas extends vtkPanel 
  implements MouseMotionListener, MouseListener, ResidueActionListener, ComponentListener
 {
+    enum MouseDragAction {
+        NONE,
+        CAMERA_ROTATE,
+        CAMERA_TRANSLATE,
+        CAMERA_ZOOM,
+        OBJECT_TRANSLATE
+    }
+    MouseDragAction mouseDragAction = MouseDragAction.CAMERA_ROTATE;
+    
     boolean doFog = true;
     boolean fogLinear = true;
     GL gl;
@@ -100,14 +114,14 @@ public class Tornado3DCanvas extends vtkPanel
             // This causes rendering crash on Sherm's machine
             if (false)
             {
-                Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk2.png"));
+                Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk3.simtk3"));
 
                 // Create an actual file for the image, then have vtk read the file
                 // I am sick of trying to convert a java image to a vtkImage
                 try {
-                    File tempImageFile = File.createTempFile("simtk2", "png");
+                    File tempImageFile = File.createTempFile("simtk3", "png");
                     FileOutputStream outStream = new FileOutputStream(tempImageFile);
-                    InputStream inStream = classLoader.getResource("resources/images/simtk2.png").openStream();
+                    InputStream inStream = classLoader.getResource("resources/images/simtk3.png").openStream();
                     int nibble;
                     while ( (nibble = inStream.read()) != -1)
                         outStream.write(nibble);
@@ -123,7 +137,7 @@ public class Tornado3DCanvas extends vtkPanel
             if (tempImageFileName != null)
                 logoReader.SetFileName(tempImageFileName);
             else
-                logoReader.SetFileName("resources/images/simtk2.png");
+                logoReader.SetFileName("resources/images/simtk3.png");
             logoReader.Update();
             int[] logoBounds = logoReader.GetDataExtent();
 
@@ -160,7 +174,29 @@ public class Tornado3DCanvas extends vtkPanel
         
         addComponentListener(this);
         
+        // Required for fog to work?
         createTestObject();
+    }
+    
+    public void setBackgroundColor(Color c) {
+        backgroundColor = c;
+
+        if (ren != null) {
+            ren.SetBackground(
+                    backgroundColor.getRed()/255.0,
+                    backgroundColor.getGreen()/255.0,
+                    backgroundColor.getBlue()/255.0);
+        }
+
+        if (gl != null) {
+            float[] fogColor = new float[] {
+                    (float) (backgroundColor.getRed()/255.0),
+                    (float) (backgroundColor.getGreen()/255.0),
+                    (float) (backgroundColor.getBlue()/255.0)
+            };
+            
+            gl.glFogfv(GL.GL_FOG_COLOR, fogColor);
+        }
     }
     
     boolean firstPaint = true;
@@ -279,7 +315,21 @@ public class Tornado3DCanvas extends vtkPanel
         // TODO - implement mode for model modification
         
         residueActionBroadcaster.lubricateUserInteraction();
-	    super.mouseDragged(event);
+        
+        // Reimpliment interactor
+        int x = event.getX();
+        int y = event.getY();
+
+        if (mouseDragAction == MouseDragAction.CAMERA_ROTATE) // rotate
+            rotateCameraXY(x - lastX, lastY - y);
+        else if (mouseDragAction == MouseDragAction.CAMERA_TRANSLATE) // translate
+            translateCameraXY(x - lastX, lastY - y);
+        else if (mouseDragAction == MouseDragAction.CAMERA_ZOOM) // zoom
+            zoomCamera(Math.pow(1.02,(y - lastY)));
+        else if (mouseDragAction == MouseDragAction.OBJECT_TRANSLATE) // zoom
+            translateMoleculeXY(currentHighlightedResidue, x - lastX, lastY -y);
+
+	    // super.mouseDragged(event);
 
         if (event.isControlDown()) {
             // System.out.println("Control key is down");
@@ -288,8 +338,10 @@ public class Tornado3DCanvas extends vtkPanel
             // System.out.println("Control key is NOT down");
         }
         
-        if (cam == null) return;
-        myResetCameraClippingRange();
+        // myResetCameraClippingRange();
+        repaint();
+        lastX = x;
+        lastY = y;
 	}
 	
     boolean pickIsPending = false;
@@ -472,8 +524,7 @@ public class Tornado3DCanvas extends vtkPanel
         
         UnLock();
 
-        if (pickedPosition != null)
-            pickedResidue = currentCartoon.getNearbyResidue(pickedPosition);
+        // TODO
         
         return pickedResidue;
     }
@@ -485,7 +536,22 @@ public class Tornado3DCanvas extends vtkPanel
     
     public void mousePressed(MouseEvent event) {
         residueActionBroadcaster.lubricateUserInteraction();
-        super.mousePressed(event);
+
+        rw.SetDesiredUpdateRate(5.0);
+        lastX = event.getX();
+        lastY = event.getY();
+        
+        if ( event.isControlDown() ) 
+            mouseDragAction = MouseDragAction.OBJECT_TRANSLATE;
+        else if ((event.getModifiers()==InputEvent.BUTTON2_MASK) ||
+            (event.getModifiers()==(InputEvent.BUTTON1_MASK | InputEvent.SHIFT_MASK)))
+            mouseDragAction = MouseDragAction.CAMERA_TRANSLATE;
+        else if (event.getModifiers()==InputEvent.BUTTON3_MASK)
+            mouseDragAction = MouseDragAction.CAMERA_ZOOM;
+        else 
+            mouseDragAction = MouseDragAction.CAMERA_ROTATE;
+        
+        // super.mousePressed(event);
     }
     public void mouseReleased(MouseEvent event) {
         super.mouseReleased(event);
@@ -537,8 +603,9 @@ public class Tornado3DCanvas extends vtkPanel
         repaint();
     }
     
-    public void select(Residue r) {}
-    public void unSelect(Residue r) {}
+    public void select(Selectable r) {}
+    public void unSelect(Selectable r) {}
+    public void unSelect() {}
     public void add(Residue r) {}    
     public void clearResidues() {}
 
@@ -555,5 +622,113 @@ public class Tornado3DCanvas extends vtkPanel
         
         cam.SetFocalPoint(newFocalPoint.getX(),newFocalPoint.getY(),newFocalPoint.getZ());
         cam.SetPosition(newPosition.getX(),newPosition.getY(),newPosition.getZ());
+    }
+    
+    /**
+     * Rotate the camera about the focal point
+     * @param rotX angle in degrees
+     * @param rotY angle in degrees
+     */
+    void rotateCameraXY(double rotX, double rotY) {
+        cam.Azimuth(-rotX);
+        cam.Elevation(-rotY);
+        cam.OrthogonalizeViewUp();
+        resetCameraClippingRange();
+        if (this.LightFollowCamera == 1)
+          {
+            lgt.SetPosition(cam.GetPosition());
+            lgt.SetFocalPoint(cam.GetFocalPoint());
+          }
+    }
+    void zoomCamera(double zoomFactor) {
+        if (cam.GetParallelProjection() == 1)
+          {
+            cam.SetParallelScale(cam.GetParallelScale()/zoomFactor);
+          }
+        else
+          {
+            cam.Dolly(zoomFactor);
+            resetCameraClippingRange();
+          }
+    }
+    void translateCameraXY(double tX, double tY) {
+        // Apply tX, tY in pixels
+        
+        Vector3D translation = screenToWorldTranslation(tX, tY);
+        
+        double  FPoint[]; // focal point
+        double  PPoint[]; // camera position
+
+        // get the current focal point and position
+        FPoint = cam.GetFocalPoint();
+        PPoint = cam.GetPosition();
+        
+        cam.SetFocalPoint(
+                          FPoint[0] - translation.getX(),
+                          FPoint[1] - translation.getY(),
+                          FPoint[2] - translation.getZ());
+        cam.SetPosition(
+                        PPoint[0] - translation.getX(),
+                        PPoint[1] - translation.getY(),
+                        PPoint[2] - translation.getZ());
+        myResetCameraClippingRange();
+    }
+    
+    /**
+     * Tranlate molecule in screen coordinates
+     * @param mol molecule to move
+     * @param tX pixels to move horizontally
+     * @param tY pixels to move vertically
+     */
+    void translateMoleculeXY(Molecule mol, double tX, double tY) {
+        if (mol == null) return;
+        Vector3D translation = screenToWorldTranslation(tX, tY);
+        mol.translate(translation);
+        currentCartoon.updateCoordinates(mol);
+    }
+    
+    /**
+     * Compute the translation in world coordinates that corresponds to the change in screen
+     * coordinates.
+     * @param event
+     * @return
+     */
+    Vector3D screenToWorldTranslation(double tX, double tY) {        
+        double arbitraryScale = 1.0; // was 0.5 in vtkPanel
+        
+        double  FPoint[];
+        double  PPoint[];
+        double  APoint[] = new double[3];
+        double  RPoint[];
+        double focalDepth;
+        
+        // get the current focal point and position
+        FPoint = cam.GetFocalPoint();
+        PPoint = cam.GetPosition();
+        
+        // calculate the focal depth since we'll be using it a lot
+        ren.SetWorldPoint(FPoint[0],FPoint[1],FPoint[2],1.0);
+        ren.WorldToDisplay();
+        focalDepth = ren.GetDisplayPoint()[2];
+        
+        APoint[0] = rw.GetSize()[0]/2.0 + (tX);
+        APoint[1] = rw.GetSize()[1]/2.0 + (tY);
+        APoint[2] = focalDepth;
+        ren.SetDisplayPoint(APoint);
+        ren.DisplayToWorld();
+        RPoint = ren.GetWorldPoint();
+        if (RPoint[3] != 0.0)
+          {
+            RPoint[0] = RPoint[0]/RPoint[3];
+            RPoint[1] = RPoint[1]/RPoint[3];
+            RPoint[2] = RPoint[2]/RPoint[3];
+          }
+        
+        Vector3D translation = new Vector3D(
+                (RPoint[0]-FPoint[0]) * arbitraryScale,
+                (RPoint[1]-FPoint[1]) * arbitraryScale,
+                (RPoint[2]-FPoint[2]) * arbitraryScale
+            );
+        return translation;
     }
 }

@@ -16,7 +16,6 @@ import org.simtk.geometry3d.*;
 public abstract class Atom {
 	BaseVector3D coordinates = null;
 	String localName = null; // name should be unique within a residue
-
 	HashSet<Atom> bonds = new HashSet<Atom>();
 	
 	// Force derived classes to set values
@@ -51,5 +50,9 @@ public abstract class Atom {
     
     public double distance(Atom atom2) {
         return coordinates.distance(atom2.coordinates);
+    }
+    
+    public void translate(BaseVector3D v) {
+        setCoordinates(getCoordinates().plus(v));
     }
 }

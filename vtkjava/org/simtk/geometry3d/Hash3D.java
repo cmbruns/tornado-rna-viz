@@ -78,7 +78,7 @@ extends Hashtable<BaseVector3D, V>
      * @param radius
      * @return
      */
-    public V getClosest(Vector3D position, double radius) {
+    public V getClosest(BaseVector3D position, double radius) {
         // TODO - more efficient implementation, starting with central cubelet
         //  follow expanding shells as required
         V answer = null;

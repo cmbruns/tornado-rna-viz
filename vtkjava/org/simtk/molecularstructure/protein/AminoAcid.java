@@ -4,8 +4,11 @@
  */
 package org.simtk.molecularstructure.protein;
 
+import org.simtk.atomicstructure.Atom;
 import org.simtk.atomicstructure.PDBAtom;
 import org.simtk.atomicstructure.PDBAtomSet;
+import org.simtk.geometry3d.BaseVector3D;
+import org.simtk.geometry3d.Vector3D;
 import org.simtk.molecularstructure.*;
 
 /** 
@@ -21,6 +24,33 @@ abstract public class AminoAcid extends Residue {
     abstract public String getThreeLetterCode();
     abstract public String getResidueName();
 
+    static String[] sideChainAtomNames = {
+        " CA ", " CB ", " CG ", " CG1", " CG2", " OG ", " OG1", " SG ", 
+        " CD ", " CD1", " CD2", " OD ", " OD1", " OD2", " ND ", " ND1", " ND2", " SD ",
+        " CE ", " CE1", " CE2", " OE ", " OE1", " OE2", " NE ", " NE1", " NE2",
+        " NZ ", " CZ ", " OH ", " NH1", " NH2"};
+    static String[] backboneAtomNames = {" N  ", " CA ", " C  ", " O  ", " OXT"};
+
+    static public FunctionalGroup sideChainGroup = new FunctionalGroup(sideChainAtomNames);
+    static public FunctionalGroup backboneGroup = new FunctionalGroup(backboneAtomNames);
+
+    @Override
+    public BaseVector3D getBackbonePosition() {
+        Atom atom = getAtom(" CA ");
+        if (atom == null) return null;
+        return atom.getCoordinates();
+    }
+
+    @Override
+    public Vector3D getSideChainPosition() {
+        Molecule sideChain = get(sideChainGroup);
+        if (sideChain.getAtomCount() >= 1)
+            return get(sideChainGroup).getCenterOfMass();
+        // TODO - handle glycine and other no side chain cases
+        //  by estimating position of fake CA
+        else return null;
+    }
+    
     protected void addGenericBonds() {
         super.addGenericBonds();
         // Backbone

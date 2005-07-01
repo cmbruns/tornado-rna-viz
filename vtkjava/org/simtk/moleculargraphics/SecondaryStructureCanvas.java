@@ -6,6 +6,7 @@ package org.simtk.moleculargraphics;
 
 import java.awt.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.util.*;
 
 public class SecondaryStructureCanvas extends BufferedCanvas 
 implements ResidueActionListener
@@ -17,13 +18,14 @@ implements ResidueActionListener
         residueActionBroadcaster = b;
         setBackground(Color.white);
     }
-    
+
     public void add(Residue residue) {}
     public void clearResidues() {}
     public void highlight(Residue residue) {}
     public void unHighlightResidue() {}
-    public void select(Residue residue) {}
-    public void unSelect(Residue residue) {}
+    public void select(Selectable s) {}
+    public void unSelect(Selectable s) {}
+    public void unSelect() {}
     public void centerOn(Residue residue) {}
     
     public void paint(Graphics g) {

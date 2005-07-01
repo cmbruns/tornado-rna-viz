@@ -1,9 +1,9 @@
 <jnlp spec="1.0+"
-  codebase="file:///C:/cygwin/home/cmbruns/eclipse/vtkjava/webstart"
+  codebase="http://simtk.org/cmbruns/java"
   href="Tornado.jnlp"
 >
   <information>
-    <title>Test toRNAdo RNA Visualization</title>
+    <title>toRNAdo RNA visualization prototype</title>
     <vendor>Stanford National Center for Biomedical Computation</vendor>
     <homepage href="http://simtk.org/" />
     <description>View RNA structures</description>
@@ -14,10 +14,17 @@
     <jar href="Tornado.jar"/>
     <jar href="vtk.jar"/>
     <jar href="Jama.jar"/>
-    <extension name="Java OpenGL Bindings" href="jogl.jnlp"/>
+    <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
+    <!-- <extension name="Java OpenGL Bindings" href="jogl.jnlp"/> -->
   </resources>
   <resources os="Windows">
-    <nativelib href="winlibs.jar"/>
+    <nativelib href="vtk42_win.jar"/>
+  </resources>
+  <resources os="Linux">
+    <nativelib href="vtk42linux.jar"/>
+  </resources>
+  <resources os="Mac OS X">
+    <nativelib href="vtkmac.jar"/>
   </resources>
   <security>
     <all-permissions/>

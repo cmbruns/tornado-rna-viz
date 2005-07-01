@@ -5,6 +5,7 @@
 package org.simtk.moleculargraphics;
 
 import org.simtk.molecularstructure.Residue;
+import org.simtk.util.*;
 
 /**
  *  
@@ -13,7 +14,7 @@ import org.simtk.molecularstructure.Residue;
   * Methods by which grapical representations of biopolymer sequences (e.g. DNA, protein) can
   * display sets of selected residues, and individual residues with the current focus.
  */
-public interface ResidueActionListener {
+public interface ResidueActionListener extends SelectionListener {
 
     
     /**
@@ -30,20 +31,6 @@ public interface ResidueActionListener {
      */
     public void unHighlightResidue();
 
-    
-    /**
-     * Color or otherwise indicate that the selected residue has been added to the selection list.
-     * The suggested color is light blue.
-     * @param r
-     */
-    public void select(Residue r);
-
-    
-    /**
-     * Remove coloring or other indication that the residue is in the selection list.
-     * @param r
-     */
-    public void unSelect(Residue r);
     
     public void add(Residue r);
     public void clearResidues();
