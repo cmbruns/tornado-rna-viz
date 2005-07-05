@@ -213,7 +213,8 @@ implements ResidueActionListener
      * @param fileName
      */
     public void compareHbonds(String fileName, RNA rna) {
-        HashSet<BasePair> loadedBasePairs = new HashSet<BasePair>();
+        // HashSet<BasePair> loadedBasePairs = new HashSet<BasePair>();
+        HashSet loadedBasePairs = new HashSet();
         
         BufferedReader reader;
         try {
@@ -242,10 +243,10 @@ implements ResidueActionListener
                 token = tokenizer.nextToken(); // residue index
                 token = tokenizer.nextToken(); // chain
                 token = tokenizer.nextToken(); // first residue number
-                int firstResidueNumber = new Integer(token);
+                int firstResidueNumber = (new Integer(token)).intValue();
                 token = tokenizer.nextToken(); // one letter codes
                 token = tokenizer.nextToken(); // second residue number
-                int secondResidueNumber = new Integer(token);
+                int secondResidueNumber = (new Integer(token)).intValue();
 
                 // Only care about distant ones
                 if ( (secondResidueNumber - firstResidueNumber) < 3 ) continue LINE;
@@ -264,8 +265,14 @@ implements ResidueActionListener
         System.out.println("" + lineCount + " lines read.");
 
         // Compare both base pair computation methods
-        HashSet<BasePair> myBasePairs = new HashSet<BasePair>();
-        for (BasePair bp : rna.identifyBasePairs()) myBasePairs.add(bp);
+        // HashSet<BasePair> myBasePairs = new HashSet<BasePair>();
+        HashSet myBasePairs = new HashSet();
+        // for (BasePair bp : rna.identifyBasePairs()) myBasePairs.add(bp);
+        for (Iterator i = rna.identifyBasePairs().iterator();
+            i.hasNext();) {
+            BasePair bp = (BasePair) (i.next());
+            myBasePairs.add(bp);
+        }
         
         // How many are in common?
         int commonCount = 0;
@@ -273,7 +280,9 @@ implements ResidueActionListener
         int uniqueToLoadedCount = 0;
         System.out.println("Unique to Tornado: ");
         reportBasePairGeometry(myBasePairs);
-        for (BasePair bp : myBasePairs) {
+        // for (BasePair bp : myBasePairs) {
+        for (Iterator i = myBasePairs.iterator(); i.hasNext();) {
+            BasePair bp = (BasePair) i.next();
             if (loadedBasePairs.contains(bp)) commonCount++;
             else {
                 uniqueToSelfCount ++;
@@ -281,7 +290,9 @@ implements ResidueActionListener
         }
         System.out.println("Unique to RNAMLView: ");
         reportBasePairGeometry(loadedBasePairs);
-        for (BasePair bp : loadedBasePairs) {
+        // for (BasePair bp : loadedBasePairs) {
+        for (Iterator i = loadedBasePairs.iterator(); i.hasNext();) {
+            BasePair bp = (BasePair) i.next();
             if (myBasePairs.contains(bp)) {}
             else {
                 uniqueToLoadedCount ++;
@@ -293,13 +304,15 @@ implements ResidueActionListener
         System.out.println("" + uniqueToSelfCount + " base pairs unique to Tornado.");
 
     }
-    void reportBasePairGeometry(HashSet<BasePair> basePairs) {
-        TreeSet<Double> centroidDistances = new TreeSet<Double>();
-        TreeSet<Double> planeAngles = new TreeSet<Double>();
-        TreeSet<Double> planeDistances = new TreeSet<Double>();
-        TreeSet<Double> atomDistances = new TreeSet<Double>();
+    void reportBasePairGeometry(HashSet basePairs) {
+        TreeSet centroidDistances = new TreeSet();
+        TreeSet planeAngles = new TreeSet();
+        TreeSet planeDistances = new TreeSet();
+        TreeSet atomDistances = new TreeSet();
 
-        for (BasePair bp : basePairs) {
+        // for (BasePair bp : basePairs) {
+        for (Iterator i = basePairs.iterator(); i.hasNext();) {
+            BasePair bp = (BasePair) i.next();
             Molecule base1 = bp.getResidue1().get(Nucleotide.baseGroup);
             Molecule base2 = bp.getResidue2().get(Nucleotide.baseGroup);
             Vector3D centroid1 = base1.getCenterOfMass();
@@ -308,47 +321,51 @@ implements ResidueActionListener
             Plane3D plane2 = base2.bestPlane3D();
             
             double distance = centroid1.distance(centroid2);
-            centroidDistances.add(distance);
+            centroidDistances.add(new Double(distance));
             System.out.println("   centroid distance = " + distance);
             
             double angle = Math.abs(Math.acos(plane1.getNormal().dot(plane2.getNormal())) * 180.0 / Math.PI);
             if (angle > 90) angle = 180 - angle;
-            planeAngles.add(angle);
+            planeAngles.add(new Double(angle));
             System.out.println("   plane angle = " + angle + " degrees.");
             
             double planeDistance1 = plane1.distance(centroid2);
             double planeDistance2 = plane2.distance(centroid1);
-            planeDistances.add(planeDistance1);
-            planeDistances.add(planeDistance2);
+            planeDistances.add(new Double(planeDistance1));
+            planeDistances.add(new Double(planeDistance2));
             System.out.println("   plane distances are " + planeDistance1 + " and " + planeDistance2);
     
             // Touching criterion
             double minDistance = 1000;
-            for (Atom atom1 : bp.getResidue1().getAtoms()) {
+            // for (Atom atom1 : bp.getResidue1().getAtoms()) {
+            for (Iterator i1 = bp.getResidue1().getAtoms().iterator(); i1.hasNext();) {
+                Atom atom1 = (Atom) i1.next();
                 if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
-                for (Atom atom2 : bp.getResidue2().getAtoms()) {
+                // for (Atom atom2 : bp.getResidue2().getAtoms()) {
+                for (Iterator i2 = bp.getResidue2().getAtoms().iterator(); i2.hasNext();) {
+                    Atom atom2 = (Atom) i2.next();
                     if (! ((atom2 instanceof PDBOxygen) || (atom2 instanceof PDBNitrogen))) continue;
                     double testDistance = atom1.distance(atom2);
                     if (testDistance < minDistance) minDistance = testDistance;
                 }
             }
-            atomDistances.add(minDistance);
+            atomDistances.add(new Double(minDistance));
             System.out.println("   closest atomic distance = " + minDistance);
         }
 
         
         int cutoffIndex = (int)((centroidDistances.size() - 1.0) * 0.95);
 
-        double cutoffDistance = (Double) centroidDistances.toArray()[cutoffIndex];
+        double cutoffDistance = ((Double) centroidDistances.toArray()[cutoffIndex]).doubleValue();
         System.out.println("Cutoff centroid distance = " + cutoffDistance);
         
-        double cutoffAngle = (Double) (planeAngles.toArray()[cutoffIndex]);
+        double cutoffAngle = ((Double) (planeAngles.toArray()[cutoffIndex])).doubleValue();
         System.out.println("Cutoff plane angle = " + cutoffAngle);
 
-        double cutoffPlaneDistance = (Double) (planeDistances.toArray()[2 * cutoffIndex]);
+        double cutoffPlaneDistance = ((Double) (planeDistances.toArray()[2 * cutoffIndex])).doubleValue();
         System.out.println("Cutoff plane distance = " + cutoffPlaneDistance);
 
-        double cutoffAtomDistance = (Double) (atomDistances.toArray()[cutoffIndex]);
+        double cutoffAtomDistance = ((Double) (atomDistances.toArray()[cutoffIndex])).doubleValue();
         System.out.println("Cutoff atom distance = " + cutoffAtomDistance);
     }
     
@@ -422,13 +439,13 @@ implements ResidueActionListener
         menuItem.setEnabled(false);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Relax molecule");
-        menuItem.addActionListener(new RelaxCoordinatesAction());
-        menu.add(menuItem);
+        // menuItem = new JMenuItem("Relax molecule");
+        // menuItem.addActionListener(new RelaxCoordinatesAction());
+        // menu.add(menuItem);
 
-        menuItem = new JMenuItem("Move highlighted residue");
-        menuItem.addActionListener(new MoveHighlightedResidueAction());
-        menu.add(menuItem);
+        // menuItem = new JMenuItem("Move highlighted residue");
+        // menuItem.addActionListener(new MoveHighlightedResidueAction());
+        // menu.add(menuItem);
         
         JMenu viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
@@ -622,29 +639,22 @@ implements ResidueActionListener
             setWait("Calculating geometry...");
             
             canvas.currentCartoonType = type;
-            switch (type) {
-                case BALL_AND_STICK:
-                    canvas.currentCartoon = new BallAndStickCartoon();
-                    break;
-                case SPACE_FILLING:
-                    canvas.currentCartoon = new AtomSphereCartoon();
-                    break;
-                case ROPE_AND_CYLINDER:
-                    canvas.currentCartoon = new RopeAndCylinderCartoon();
-                    break;
-                case RESIDUE_SPHERE:
-                    canvas.currentCartoon = new ResidueSphereCartoon();
-                    break;
-                case BACKBONE_TRACE:
-                    canvas.currentCartoon = new BackboneCurveCartoon();
-                    break;
-                case WIRE_FRAME:
-                    canvas.currentCartoon = new WireFrameCartoon();
-                    break;
-                default:
-                    canvas.currentCartoon = new BallAndStickCartoon();
-                    break;
-            }
+
+            if (canvas.currentCartoonType == MolecularCartoon.CartoonType.BALL_AND_STICK)
+                canvas.currentCartoon = new BallAndStickCartoon();
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.SPACE_FILLING)
+                canvas.currentCartoon = new AtomSphereCartoon();
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.ROPE_AND_CYLINDER)
+                canvas.currentCartoon = new RopeAndCylinderCartoon();
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.RESIDUE_SPHERE)
+                canvas.currentCartoon = new ResidueSphereCartoon();
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.BACKBONE_TRACE)
+                canvas.currentCartoon = new BackboneCurveCartoon();
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.WIRE_FRAME)
+                canvas.currentCartoon = new WireFrameCartoon();
+            else
+                canvas.currentCartoon = new BallAndStickCartoon();
+
             vtkAssembly assembly = canvas.currentCartoon.represent(moleculeCollection);
             if (assembly != null) {
                 canvas.Lock();
@@ -661,13 +671,17 @@ implements ResidueActionListener
             // Update residue highlights
             firstResidue = null;
             finalResidue = null;
-            for (Molecule molecule : moleculeCollection.molecules()) {
+            // for (Molecule molecule : moleculeCollection.molecules()) {
+            for (Iterator i = moleculeCollection.molecules().iterator(); i.hasNext();) {
+                Molecule molecule = (Molecule) i.next();
                 if (molecule instanceof Biopolymer) {
                     Biopolymer bp = (Biopolymer) molecule;
                     canvas.Lock();
                     canvas.clearResidueHighlights();
                     boolean isFirstResidue = true;
-                    for (Residue residue : bp.residues()) {
+                    // for (Residue residue : bp.residues()) {
+                    for (Iterator i2 = bp.residues().iterator(); i2.hasNext();) {
+                        Residue residue = (Residue) i2.next();
                         if (isFirstResidue)
                             firstResidue = residue;
                         vtkProp highlight = canvas.currentCartoon.highlight(residue, highlightColor);
@@ -1069,12 +1083,17 @@ implements ResidueActionListener
         // Display sequence of first molecule that has a sequence
         residueActionBroadcaster.fireClearResidues();
         Biopolymer bp = null;
-        for (Molecule molecule : molecules.molecules()) {
+        // for (Molecule molecule : molecules.molecules()) {
+        for (Iterator i1 = molecules.molecules().iterator(); i1.hasNext();) {
+            Molecule molecule = (Molecule) i1.next();
             if (molecule instanceof Biopolymer) {
                 bp = (Biopolymer) molecule;
                 
-                for (Residue residue : bp.residues())
+                // for (Residue residue : bp.residues())
+                for (Iterator i2 = bp.residues().iterator(); i2.hasNext(); ) {
+                    Residue residue = (Residue) i2.next();
                     residueActionBroadcaster.fireAdd(residue);
+                }
                 
                 break; // only put the sequence of the first molecule with a sequence
             }
