@@ -27,12 +27,13 @@ import org.simtk.util.*;
 public class Tornado3DCanvas extends vtkPanel 
  implements MouseMotionListener, MouseListener, ResidueActionListener, ComponentListener
 {
-    enum MouseDragAction {
-        NONE,
-        CAMERA_ROTATE,
-        CAMERA_TRANSLATE,
-        CAMERA_ZOOM,
-        OBJECT_TRANSLATE
+    // was enum in Java 1.5, converted for Java 1.4 compatibility
+    static class MouseDragAction {
+        static MouseDragAction NONE = new MouseDragAction();
+        static MouseDragAction CAMERA_ROTATE = new MouseDragAction();
+        static MouseDragAction CAMERA_TRANSLATE = new MouseDragAction();
+        static MouseDragAction CAMERA_ZOOM = new MouseDragAction();
+        static MouseDragAction OBJECT_TRANSLATE = new MouseDragAction();
     }
     MouseDragAction mouseDragAction = MouseDragAction.CAMERA_ROTATE;
     
@@ -57,7 +58,8 @@ public class Tornado3DCanvas extends vtkPanel
     // Tornado tornado;
     ResidueActionBroadcaster residueActionBroadcaster;
 
-    Hashtable<Residue, vtkProp> residueHighlights = new Hashtable<Residue, vtkProp>();
+    // Hashtable<Residue, vtkProp> residueHighlights = new Hashtable<Residue, vtkProp>();
+    Hashtable residueHighlights = new Hashtable();
     vtkProp currentHighlight;
     Residue currentHighlightedResidue;
     
@@ -564,7 +566,12 @@ public class Tornado3DCanvas extends vtkPanel
    }
     
     public void clearResidueHighlights() {
-        for (vtkProp highlight : residueHighlights.values()) {
+        vtkProp highlight;
+        for (Iterator i = residueHighlights.values().iterator();
+             i.hasNext();
+        ) {
+            highlight = (vtkProp) (i.next());
+        // for (vtkProp highlight : residueHighlights.values()) {
 
             // try {ren.RemoveViewProp(highlight);}
             // catch (NoSuchMethodError exc) {
@@ -590,7 +597,7 @@ public class Tornado3DCanvas extends vtkPanel
         unHighlightResidue();
         if (residueHighlights.containsKey(r)) {
             currentHighlightedResidue = r;
-            currentHighlight = residueHighlights.get(r);
+            currentHighlight = (vtkProp) residueHighlights.get(r);
             currentHighlight.SetVisibility(1);
             repaint();
         }
