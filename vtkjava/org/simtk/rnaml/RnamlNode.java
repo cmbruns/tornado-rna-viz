@@ -4,9 +4,7 @@
  */
 package org.simtk.rnaml;
 
-import java.util.Collection;
-import java.util.Vector;
-
+import java.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -23,9 +21,10 @@ public class RnamlNode {
         privateNode = n;
     }
 
-    Collection<RnamlNode> get(String nodeName) {
-        Vector<RnamlNode> answer = new Vector<RnamlNode>();
-        for (Node node : new IterableNodeList(privateNode.getChildNodes())) {
+    Collection get(String nodeName) {
+        Vector answer = new Vector();
+        for (Iterator iterNode = (new IterableNodeList(privateNode.getChildNodes())).iterator(); iterNode.hasNext(); ) {
+            Node node = (Node) iterNode.next();
             if (node.getNodeName().equals(nodeName))
                 answer.add(new RnamlNode(node));
         }
@@ -33,7 +32,8 @@ public class RnamlNode {
     }
 
     RnamlNode get1(String nodeName) {
-        for (Node node : new IterableNodeList(privateNode.getChildNodes())) {
+        for (Iterator iterNode = (new IterableNodeList(privateNode.getChildNodes())).iterator(); iterNode.hasNext(); ) {
+            Node node = (Node) iterNode.next();
             if (node.getNodeName().equals(nodeName)) return new RnamlNode(node);
         }
         return null;
@@ -44,7 +44,7 @@ public class RnamlNode {
     }
     
     int getInt() {
-        return new Integer(getText());
+        return (new Integer(getText())).intValue();
     }
 
     void printNodeHierarchy() {
@@ -55,7 +55,8 @@ public class RnamlNode {
         for (int i = 0; i < indentLevel; i++) indent = indent + " ";
 
         System.out.println(indent + privateNode.getNodeName());
-        for ( Node node : new IterableNodeList(privateNode.getChildNodes()) ) {
+        for (Iterator iterNode = (new IterableNodeList(privateNode.getChildNodes())).iterator(); iterNode.hasNext(); ) {
+            Node node = (Node) iterNode.next();
             if (node.getNodeType() == Node.TEXT_NODE) continue;
             printNodeHierarchy(indentLevel + 2);
         }        
@@ -91,8 +92,10 @@ public class RnamlNode {
         // Final rnaml node is the correct one.
         // I don't know what the first one is
         RnamlNode rnaml = null;
-        for (RnamlNode node : doc.get("rnaml"))
+        for (Iterator iterNode = (doc.get("rnaml")).iterator(); iterNode.hasNext(); ) {
+            RnamlNode node = (RnamlNode) iterNode.next();
             rnaml = node;
+        }
         
         return rnaml;
     }

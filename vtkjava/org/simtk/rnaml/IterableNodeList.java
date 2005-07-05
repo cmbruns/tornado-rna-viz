@@ -7,19 +7,19 @@ package org.simtk.rnaml;
 import java.util.Iterator;
 import org.w3c.dom.*;
 
-public class IterableNodeList implements NodeList, Iterable<Node> {
+public class IterableNodeList implements NodeList, Iterable {
 
     private NodeList nodeList;
     IterableNodeList(NodeList n) {nodeList = n;}
     
-    public Iterator<Node> iterator() {
+    public Iterator iterator() {
         return new NodeIterator(nodeList);
     }
 
     public int getLength() {return nodeList.getLength();}
     public Node item(int i) {return nodeList.item(i);}
     
-    class NodeIterator implements Iterator<Node> {
+    class NodeIterator implements Iterator {
         NodeList iNodeList;
         int currentIndex = -1;
         NodeIterator(NodeList n) {
@@ -29,7 +29,7 @@ public class IterableNodeList implements NodeList, Iterable<Node> {
             if (currentIndex < (iNodeList.getLength()) - 1) return true;
             else return false;
         }
-        public Node next() {
+        public Object next() {
             currentIndex ++;
             return iNodeList.item(currentIndex);
         }

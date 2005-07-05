@@ -16,17 +16,17 @@ public class Valine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'V';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Val";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "valine";
     }

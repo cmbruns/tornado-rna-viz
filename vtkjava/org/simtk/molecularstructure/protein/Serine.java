@@ -16,17 +16,17 @@ public class Serine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'S';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Ser";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "serine";
     }

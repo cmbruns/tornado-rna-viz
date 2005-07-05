@@ -16,17 +16,17 @@ public class Methionine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'M';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Met";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "methionine";
     }

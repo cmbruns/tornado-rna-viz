@@ -19,20 +19,20 @@ import org.simtk.util.*;
  *
  */
 public abstract class Residue extends Molecule implements Selectable {
-    Hashtable<String, HashSet<String> > genericBonds = new Hashtable<String, HashSet<String> >(); // maps atom names of bondable atoms
+    Hashtable genericBonds = new Hashtable(); // maps atom names of bondable atoms
     char insertionCode = ' ';
     public int residueNumber = 0; // TODO create accessors
-    Hashtable<String, Vector<Atom> > atomNames = new Hashtable<String, Vector<Atom> >();
+    Hashtable atomNames = new Hashtable();
 
     // Even if there is a break in the sequence, the next residue train should probably jump over the gap
     Residue nextResidue;
     Residue previousResidue;
     
-    public Collection<Atom> getHydrogenBondDonors() {
-        return new HashSet<Atom>();
+    public Collection getHydrogenBondDonors() {
+        return new HashSet();
     }
-    public Collection<Atom> getHydrogenBondAcceptors() {
-        return new HashSet<Atom>();        
+    public Collection getHydrogenBondAcceptors() {
+        return new HashSet();        
     }
     
     /**
@@ -76,13 +76,13 @@ public abstract class Residue extends Molecule implements Selectable {
         
         // Inherit residue properties from the first atom in the list
         if (bagOfAtoms.size() > 0) {
-            PDBAtom atom = bagOfAtoms.get(0);
+            PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
             insertionCode = atom.getInsertionCode();
             residueNumber = atom.getResidueIndex();
         }
         
         for (int a = 0; a < bagOfAtoms.size(); a++) {
-            PDBAtom atom = bagOfAtoms.get(a);
+            PDBAtom atom = (PDBAtom) bagOfAtoms.get(a);
             // atoms.add(atom);
             
             // Create index for lookup by atom name
@@ -94,11 +94,11 @@ public abstract class Residue extends Molecule implements Selectable {
             String fullAtomName = atomName + ":";
             if (insertionCode != ' ') {fullAtomName = fullAtomName + insertionCode;}
             
-            if (! atomNames.containsKey(atomName)) atomNames.put(atomName, new Vector<Atom>());
-            atomNames.get(atomName).add(atom);
+            if (! atomNames.containsKey(atomName)) atomNames.put(atomName, new Vector());
+            ((Vector)atomNames.get(atomName)).add(atom);
 
-            if (! atomNames.containsKey(fullAtomName)) atomNames.put(fullAtomName, new Vector<Atom>());
-            atomNames.get(fullAtomName).add(atom);
+            if (! atomNames.containsKey(fullAtomName)) atomNames.put(fullAtomName, new Vector());
+            ((Vector)atomNames.get(fullAtomName)).add(atom);
         }
     }
     
@@ -107,12 +107,12 @@ public abstract class Residue extends Molecule implements Selectable {
     
     public void addGenericBond(String atom1, String atom2) {
         if (!genericBonds.containsKey(atom1))
-            genericBonds.put(atom1, new HashSet<String>());
+            genericBonds.put(atom1, new HashSet());
         if (!genericBonds.containsKey(atom2))
-            genericBonds.put(atom2, new HashSet<String>());
+            genericBonds.put(atom2, new HashSet());
 
-        genericBonds.get(atom1).add(atom2);
-        genericBonds.get(atom2).add(atom1);
+        ((HashSet)genericBonds.get(atom1)).add(atom2);
+        ((HashSet)genericBonds.get(atom2)).add(atom1);
     }
     
     public Molecule get(FunctionalGroup fg) {
@@ -159,15 +159,18 @@ public abstract class Residue extends Molecule implements Selectable {
      */
     // TODO - this only works for PDB atoms right now
     void createGenericBonds() {
-        ATOM1: for (Atom atom : atoms) {
+        ATOM1: for (Iterator a1 = atoms.iterator(); a1.hasNext(); ) {
+            Atom atom = (Atom) a1.next();
             if (! (atom instanceof PDBAtom)) continue ATOM1;
             PDBAtom atom1 = (PDBAtom) atom;
             
             // Assign bonds from residue dictionary
             if (genericBonds.containsKey(atom1.getAtomName())) {
-                BOND: for ( String a2Name : genericBonds.get(atom1.getAtomName()) ) {
+                BOND: for (Iterator b2 = ((HashSet)genericBonds.get(atom1.getAtomName())).iterator(); b2.hasNext(); ) {
+                    String a2Name = (String) b2.next();
                     if (! atomNames.containsKey(a2Name)) continue BOND;
-                    ATOM2: for (Atom atom2 : atomNames.get(a2Name)) {                           
+                    ATOM2: for (Iterator a2 = ((Vector)atomNames.get(a2Name)).iterator(); a2.hasNext(); ) {
+                        Atom atom2 = (Atom) a2.next();
                         if (! (atom2 instanceof PDBAtom)) continue ATOM2;
     
                         PDBAtom pdbAtom2 = (PDBAtom) atom2;
@@ -194,7 +197,7 @@ public abstract class Residue extends Molecule implements Selectable {
      */
     public Atom getAtom(String atomName) {
         if (!atomNames.containsKey(atomName)) return null;
-        return atomNames.get(atomName).firstElement();
+        return (Atom) ((Vector)atomNames.get(atomName)).firstElement();
     }
     
     

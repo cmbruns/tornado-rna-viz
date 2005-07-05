@@ -16,17 +16,14 @@ public class Arginine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
     public char getOneLetterCode() {
         return 'R';
     }
 
-    @Override
     public String getThreeLetterCode() {
         return "Arg";
     }
 
-    @Override
     public String getResidueName() {
         return "arginine";
     }

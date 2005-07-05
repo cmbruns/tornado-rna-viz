@@ -38,26 +38,25 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
     double defaultCylinderOpacity = 0.5;
     
     // Location of residue representation
-    Hashtable<Residue, BaseVector3D> residueCenters = new Hashtable<Residue, BaseVector3D>();
+    Hashtable residueCenters = new Hashtable();
     // Location of midpoint of link between this residue and the previous one
-    Hashtable<Residue, BaseVector3D> residuePreBonds = new Hashtable<Residue, BaseVector3D>();
+    Hashtable residuePreBonds = new Hashtable();
     // Location of midpoint of link between this residue and the subsequent one
-    Hashtable<Residue, BaseVector3D> residuePostBonds = new Hashtable<Residue, BaseVector3D>();
+    Hashtable residuePostBonds = new Hashtable();
     // Section of double-helix cylinder assigned to a residue
-    Hashtable<Residue, SemiCylinder> residueWedges = new Hashtable<Residue, SemiCylinder>();
+    Hashtable residueWedges = new Hashtable();
 
-    Hashtable<Double, vtkSphereSource> residueSphereSources = new Hashtable<Double, vtkSphereSource>();
+    Hashtable residueSphereSources = new Hashtable();
     
     // Note which residues are internal to duplexes, at the ends of duplexes, or in loops
-    HashSet<Residue> duplexResidues = new HashSet<Residue>();
-    HashSet<Residue> endResidues = new HashSet<Residue>();
-    HashSet<Residue> loopResidues = new HashSet<Residue>();
+    HashSet duplexResidues = new HashSet();
+    HashSet endResidues = new HashSet();
+    HashSet loopResidues = new HashSet();
     
     /**
      * Update graphical primitives to reflect a change in atomic positions
      *
      */
-    @Override
     public void updateCoordinates() {
         // TODO
     }
@@ -67,18 +66,19 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
      * @return
      */
     vtkSphereSource getResidueSphereSource(double scale) {
+        Double scaleObject = new Double(scale);
         // Only intialize it the first time
-        if (!residueSphereSources.containsKey(scale)) {
+        if (!residueSphereSources.containsKey(scaleObject)) {
             vtkSphereSource source = new vtkSphereSource();
             source.SetRadius(residueSphereRadius * scale);
             source.SetPhiResolution(defaultRopeResolution);
             source.SetThetaResolution(defaultRopeResolution);
-            residueSphereSources.put(scale, source);
+            residueSphereSources.put(scaleObject, source);
         }
-        return residueSphereSources.get(scale);
+        return (vtkSphereSource) residueSphereSources.get(scaleObject);
     }
     
-    public vtkProp3D highlight(Residue residue, Color color) {
+    public vtkProp highlight(Residue residue, Color color) {
         return represent(residue, 1.05, color);
     }
 
@@ -107,13 +107,13 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         else c = defaultRopeColor;
         sphereActor.GetProperty().SetColor(c.getRed()/255.0, c.getGreen()/255.0, c.getBlue()/255.0);
         
-        BaseVector3D center = residueCenters.get(residue);
+        BaseVector3D center = (BaseVector3D) residueCenters.get(residue);
         sphereActor.SetPosition(center.getX(), center.getY(), center.getZ());
         assembly.AddPart(sphereActor);
         
         // Put one bond linking toward the previous residue
         if (residuePreBonds.containsKey(residue)) {
-            BaseVector3D prePoint = residuePreBonds.get(residue);
+            BaseVector3D prePoint = (BaseVector3D) residuePreBonds.get(residue);
             
             // Construct cylinder from center to midway to the previous residue
             BaseVector3D midPoint = prePoint;
@@ -127,7 +127,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         
         // Put one bond linking toward the subsequent residue
         if (residuePostBonds.containsKey(residue)) {
-            BaseVector3D postPoint = residuePostBonds.get(residue);
+            BaseVector3D postPoint = (BaseVector3D) residuePostBonds.get(residue);
             
             // Construct cylinder from center to midway to the previous residue
             BaseVector3D midPoint = postPoint;
@@ -141,7 +141,6 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         return assembly;
     }
 
-    @Override
     public vtkAssembly represent(Molecule molecule) {
         return represent(molecule, 1.00, null);
     }
@@ -156,7 +155,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
                 color = defaultCylinderColor;            
             // Create a wedge shape for each helical residue
             if (residueWedges.containsKey(residue)) {
-                SemiCylinder startWedge = residueWedges.get(residue); // not yet scaled
+                SemiCylinder startWedge = (SemiCylinder) residueWedges.get(residue); // not yet scaled
                 // Scale size of wedge by scale factor
                 Vector3D direction = startWedge.getHead().minus(startWedge.getTail()).scale(scaleFactor);
                 SemiCylinder wedge = new SemiCylinder(
@@ -240,24 +239,29 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
             Color color = clr;
             if (clr == null)
                 color = defaultCylinderColor;            
-            Vector<Hairpin> hairpins = rna.identifyHairpins();
-            for (Hairpin pin : hairpins) {
+            Vector hairpins = rna.identifyHairpins();
+            for (Iterator i = hairpins.iterator(); i.hasNext(); ) {
+                Hairpin pin = (Hairpin) i.next();
                 vtkActor cylinderActor = doubleHelixCylinderActor(pin, color, defaultCylinderResolution);
                 cylinderActor.GetProperty().SetOpacity(defaultCylinderOpacity);
                 assembly.AddPart(cylinderActor);
             }
             
             // Divide residues into 3 classes
-            for (Hairpin pin : hairpins) {
-                for (BasePair bp : pin) {
-                    for (Residue residue : bp) {
+            for (Iterator i = hairpins.iterator(); i.hasNext(); ) {
+                Hairpin pin = (Hairpin) i.next();
+                for (Iterator i2 = pin.iterator(); i2.hasNext(); ) {
+                    BasePair bp = (BasePair) i2.next();
+                    for (Iterator i3 = bp.iterator(); i3.hasNext(); ) {
+                        Residue residue = (Residue) i3.next();
                         // First put cylinder residues into one class
                         duplexResidues.add(residue);
                     }
                 }
             }
             // Now distinguish end and loop residues
-            for (Residue residue : rna.residues()) {
+            for (Iterator i = rna.residues().iterator(); i.hasNext(); ) {
+                Residue residue = (Residue) i.next();
                 if (! duplexResidues.contains(residue)) {
                     loopResidues.add(residue);
                 }
@@ -284,7 +288,8 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
             // First populate residue positions structure
             Residue previousResidue = null;
             BaseVector3D previousCenter = null;
-            for (Residue residue : rna.residues()) {
+            for (Iterator i = rna.residues().iterator(); i.hasNext(); ) {
+                Residue residue = (Residue) i.next();
 
                 // Don't draw ropes for strictly internal duplex residues
                 if ( duplexResidues.contains(residue) &&
@@ -305,7 +310,8 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
                 previousCenter = center;
             }                        
             // Recursively use residue level rendering routine
-            for (Residue residue : rna.residues()) {
+            for (Iterator i = rna.residues().iterator(); i.hasNext(); ) {
+                Residue residue = (Residue) i.next();
                 if (residue instanceof Nucleotide) {
                     vtkAssembly rope = representRope((Nucleotide)residue, scaleFactor, clr);
                     if (rope != null) {
@@ -326,7 +332,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         // Update residue center to be on edge of cylinder
         if (endResidues.contains(residue)) {
             if (residueWedges.containsKey(residue)) {
-                SemiCylinder wedge = residueWedges.get(residue);
+                SemiCylinder wedge = (SemiCylinder) residueWedges.get(residue);
                 Vector3D cylinderCenter = wedge.getHead().plus(wedge.getTail()).scale(0.5);
                 Vector3D cylinderAxis = wedge.getHead().minus(wedge.getTail()).unit();
                 Vector3D normal = wedge.getNormal();
@@ -354,11 +360,11 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
      * @param v a list of base pairs to be used to define the helix.
      * @return a cylinder that approximates the location of the base stack.
      */
-    public Cylinder doubleHelixCylinder(Vector<BasePair> v) {
+    public Cylinder doubleHelixCylinder(Vector v) {
         if (v.size() < 1) return null;
 
         // Remember where each residue goes in the cylinder
-        Hashtable<BasePair, Vector3D> basePairCentroids = new Hashtable<BasePair, Vector3D>();
+        Hashtable basePairCentroids = new Hashtable();
         
         // Average the direction of the base plane normals
         // Make the helix axis pass through the centroid of the base pair helix center guesses
@@ -387,14 +393,15 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         Line3D helixAxis = new Line3D(helixDirection, helixOffset);
                 
         // Find ends of helix
-        TreeMap<Double, BasePair> alphaBasePairs = new TreeMap<Double, BasePair>();
-        Vector3D somePoint = basePairCentroids.values().iterator().next();
+        TreeMap alphaBasePairs = new TreeMap();
+        Vector3D somePoint = (Vector3D) basePairCentroids.values().iterator().next();
         double minAlpha = somePoint.dot(helixAxis.getDirection());
         double maxAlpha = minAlpha;
-        for (BasePair bp : basePairCentroids.keySet()) {
-            Vector3D cylinderPoint = basePairCentroids.get(bp);
+        for (Iterator i = basePairCentroids.keySet().iterator(); i.hasNext(); ) {
+            BasePair bp = (BasePair) i.next();
+            Vector3D cylinderPoint = (Vector3D) basePairCentroids.get(bp);
             double alpha = cylinderPoint.dot(helixAxis.getDirection());
-            alphaBasePairs.put(alpha, bp);
+            alphaBasePairs.put(new Double(alpha), bp);
             if (alpha > maxAlpha) maxAlpha = alpha;
             if (alpha < minAlpha) minAlpha = alpha;
         }
@@ -412,19 +419,20 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         // Determine range of alpha for each base pair
         Double previousAlpha = null;
         BasePair previousBasePair = null;
-        Hashtable<BasePair, Double> basePairStartAlphas = new Hashtable<BasePair, Double>();
-        Hashtable<BasePair, Double> basePairEndAlphas = new Hashtable<BasePair, Double>();
-        Hashtable<Residue, Vector3D> residueNormals = new Hashtable<Residue, Vector3D>();
-        for (Double alpha : alphaBasePairs.keySet()) {
-            BasePair basePair = alphaBasePairs.get(alpha);
+        Hashtable basePairStartAlphas = new Hashtable();
+        Hashtable basePairEndAlphas = new Hashtable();
+        Hashtable residueNormals = new Hashtable();
+        for (Iterator i = alphaBasePairs.keySet().iterator(); i.hasNext(); ) {
+            double alpha = ((Double) i.next()).doubleValue();
+            BasePair basePair = (BasePair) alphaBasePairs.get(new Double(alpha));
             
-            Double startAlpha;
+            double startAlpha;
             if (previousAlpha == null) startAlpha = minAlpha;
-            else startAlpha = (alpha + previousAlpha) / 2;
-            basePairStartAlphas.put(basePair, startAlpha);
+            else startAlpha = (alpha + previousAlpha.doubleValue()) / 2;
+            basePairStartAlphas.put(basePair, new Double(startAlpha));
             
             if (previousBasePair != null)
-                basePairEndAlphas.put(previousBasePair, startAlpha);
+                basePairEndAlphas.put(previousBasePair, new Double(startAlpha));
             
             // Create cylinder slicing plane using vector between residue atoms
             Atom atom1 = basePair.getResidue1().getAtom(" C1*");
@@ -435,22 +443,23 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
             residueNormals.put(basePair.getResidue1(), direction);
             residueNormals.put(basePair.getResidue2(), direction.scale(-1));
             
-            previousAlpha = alpha;
+            previousAlpha = new Double(alpha);
             previousBasePair = basePair;
         }
-        basePairEndAlphas.put(previousBasePair, maxAlpha);  
+        basePairEndAlphas.put(previousBasePair, new Double(maxAlpha));  
         // Actually create semicylinders for each residue
-        for (BasePair basePair : basePairStartAlphas.keySet()) {
-            double startAlpha = basePairStartAlphas.get(basePair);
-            double endAlpha = basePairEndAlphas.get(basePair);
+        for (Iterator i = basePairStartAlphas.keySet().iterator(); i.hasNext(); ) {
+            BasePair basePair = (BasePair) i.next();
+            double startAlpha = ((Double)basePairStartAlphas.get(basePair)).doubleValue();
+            double endAlpha = ((Double)basePairEndAlphas.get(basePair)).doubleValue();
 
             Vector3D head = helixAxis.getDirection().scale(endAlpha).plus(helixAxis.getOrigin());
             Vector3D tail = helixAxis.getDirection().scale(startAlpha).plus(helixAxis.getOrigin());
 
             Residue residue1 = basePair.getResidue1();
             Residue residue2 = basePair.getResidue2();
-            Vector3D normal1 = residueNormals.get(residue1);
-            Vector3D normal2 = residueNormals.get(residue2);
+            Vector3D normal1 = (Vector3D) residueNormals.get(residue1);
+            Vector3D normal2 = (Vector3D) residueNormals.get(residue2);
             SemiCylinder semiCylinder1 = new SemiCylinder(head, tail, cylinderRadius, normal1);
             SemiCylinder semiCylinder2 = new SemiCylinder(head, tail, cylinderRadius, normal2);
             residueWedges.put(residue1, semiCylinder1);

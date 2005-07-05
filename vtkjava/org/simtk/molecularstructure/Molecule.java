@@ -20,7 +20,7 @@ import org.simtk.molecularstructure.protein.*;
  * \brief A single molecule structure.
  */
 public class Molecule {
-	protected Vector<Atom> atoms = new Vector<Atom>();
+	protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();
 	// Vector bonds = new Vector();
 
@@ -37,7 +37,9 @@ public class Molecule {
 
     public Molecule() {} // Empty molecule
 	public Molecule(PDBAtomSet atomSet) {
-        for (Atom atom : atomSet) {
+        // for (Atom atom : atomSet) {
+        for (Iterator i = atomSet.iterator(); i.hasNext();) {
+            Atom atom = (Atom) i.next();
             addAtom(atom);
 		}
         createBonds();
@@ -48,12 +50,13 @@ public class Molecule {
      * @param t amount to translate
      */
     public void translate(BaseVector3D t) {
-        for (Atom a : getAtoms()) {
+        for (Iterator i = getAtoms().iterator(); i.hasNext(); ) {
+            Atom a = (Atom) i.next();
             a.translate(t);
         }
     }
     
-    public Vector<Atom> getAtoms() {return atoms;}
+    public Vector getAtoms() {return atoms;}
     
     /**
      * Place all atomic coordinates into a single large array of float values,
@@ -66,8 +69,10 @@ public class Molecule {
 
         // TODO
         int arrayIndex = 0;
-        for (Atom atom : getAtoms()) {
-            for (Double coord : atom.getCoordinates()) {
+        for (Iterator i = getAtoms().iterator(); i.hasNext(); ) {
+            Atom atom = (Atom) i.next();
+            for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
+                Double coord = (Double) i2.next();
                 coordinateArray[arrayIndex] = coord.floatValue();
                 arrayIndex ++;
             }
@@ -81,7 +86,7 @@ public class Molecule {
         BaseVector3D[] coordinates = new Vector3D[getAtomCount()];
         double[] masses = new double[getAtomCount()];
         for (int a = 0; a < getAtomCount(); a++) {
-            Atom atom = atoms.get(a);
+            Atom atom = (Atom) atoms.get(a);
             coordinates[a] = atom.getCoordinates();
             masses[a] = atom.getMass();
         }
@@ -192,7 +197,7 @@ public class Molecule {
         if (bagOfAtoms.size() == 0) return null;
         
         // Determine if molecule is protein, nucleic acid, biopolymer, or other
-        HashSet<String> residues = new HashSet<String>();
+        HashSet residues = new HashSet();
         int solventCount = 0;
         int proteinCount = 0;
         int nucleicCount = 0;
@@ -271,12 +276,16 @@ public class Molecule {
         double maxCovalentRadius = 1.40;
 
         // Create a hash for rapid access
-        Hash3D<Atom> atomHash = new Hash3D<Atom>(maxCovalentRadius);
-        for (Atom atom : atoms)
+        Hash3D atomHash = new Hash3D(maxCovalentRadius);
+        for (Iterator a = atoms.iterator(); a.hasNext(); ) {
+            Atom atom = (Atom) a.next();
             atomHash.put(atom.getCoordinates(), atom);
-        for (Atom atom1 : atoms) {
+        }
+        for (Iterator a1 = atoms.iterator(); a1.hasNext(); ) {
+            Atom atom1 = (Atom) a1.next();
             double cutoffDistance = (atom1.getCovalentRadius() + maxCovalentRadius) * 1.5;
-            for (Atom atom2 : atomHash.neighborValues(atom1.getCoordinates(), cutoffDistance)) {
+            for (Iterator a2 = atomHash.neighborValues(atom1.getCoordinates(), cutoffDistance).iterator(); a2.hasNext(); ) {
+                Atom atom2 = (Atom) a2.next();
                 if (atom1.equals(atom2)) continue;
                 
                 // Make sure the bond length is about right

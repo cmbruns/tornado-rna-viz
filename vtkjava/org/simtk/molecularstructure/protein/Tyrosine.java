@@ -16,17 +16,17 @@ public class Tyrosine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'Y';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Tyr";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "tyrosine";
     }

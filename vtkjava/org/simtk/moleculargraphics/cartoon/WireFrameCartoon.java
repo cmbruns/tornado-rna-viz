@@ -7,6 +7,7 @@ package org.simtk.moleculargraphics.cartoon;
 import vtk.*;
 
 import java.awt.*;
+import java.util.*;
 
 import org.simtk.atomicstructure.*;
 import org.simtk.geometry3d.*;
@@ -31,7 +32,6 @@ public class WireFrameCartoon extends MolecularCartoon {
         lineSource.SetPoint2(0.5, 0.0, 0.0);
     }
     
-    @Override
     public vtkAssembly represent(Molecule molecule) {
         vtkAssembly answer = new vtkAssembly();
         
@@ -49,7 +49,8 @@ public class WireFrameCartoon extends MolecularCartoon {
         lut.SetSaturationRange(0.5, 0.5);
         lut.Build();
         
-        for (Atom atom : molecule.getAtoms()) {
+        for (Iterator i1 = molecule.getAtoms().iterator(); i1.hasNext(); ) {
+            Atom atom = (Atom) i1.next();
             BaseVector3D c = atom.getCoordinates();
 
             // TODO make colors work
@@ -74,7 +75,8 @@ public class WireFrameCartoon extends MolecularCartoon {
                 lineScalars.InsertNextValue(colorScalar);
             }
             // For bonded atoms, draw a line for each bond
-            else for (Atom atom2 : atom.getBonds()) {
+            else for (Iterator i2 = atom.getBonds().iterator(); i2.hasNext(); ) {
+                Atom atom2 = (Atom) i2.next();
                 Vector3D midpoint = c.plus(atom2.getCoordinates()).scale(0.5); // middle of bond
                 Vector3D b = c.plus(midpoint).scale(0.5); // middle of half-bond
                 Vector3D n = midpoint.minus(c); // direction/length vector

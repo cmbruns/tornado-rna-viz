@@ -16,17 +16,17 @@ public class Tryptophan extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'W';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Trp";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "tryptophan";
     }

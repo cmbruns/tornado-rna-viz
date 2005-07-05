@@ -16,17 +16,14 @@ public class Glutamine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
     public char getOneLetterCode() {
         return 'Q';
     }
 
-    @Override
     public String getThreeLetterCode() {
         return "Gln";
     }
 
-    @Override
     public String getResidueName() {
         return "glutamine";
     }

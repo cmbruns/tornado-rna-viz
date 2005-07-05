@@ -5,6 +5,7 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.Color;
+import java.util.*;
 
 import vtk.*;
 
@@ -22,15 +23,67 @@ import org.simtk.geometry3d.*;
  * generate actual 3D graphics primitives.
  */
 abstract public class MolecularCartoon {
+    protected Hashtable atomPositions = new Hashtable();
 
-    public enum CartoonType {
-        SPACE_FILLING,
-        BALL_AND_STICK,
-        ROPE_AND_CYLINDER,
-        RESIDUE_SPHERE,
-        BACKBONE_TRACE,
-        WIRE_FRAME
+    // replaced Java 1.5 enum with Java 1.4 compliant
+    public static class CartoonType {
+        static public CartoonType SPACE_FILLING = new CartoonType();
+        static public CartoonType BALL_AND_STICK = new CartoonType();
+        static public CartoonType ROPE_AND_CYLINDER = new CartoonType();
+        static public CartoonType RESIDUE_SPHERE = new CartoonType();
+        static public CartoonType BACKBONE_TRACE = new CartoonType();
+        static public CartoonType WIRE_FRAME = new CartoonType();
     };
+
+    /**
+     * Update graphics primitives related to atom objects
+     * @param mol
+     */
+    public void updateAtomCoordinates() {
+        HashSet vtkObjects = new HashSet();
+        
+        for (Iterator ai = atomPositions.keySet().iterator(); ai.hasNext();) {
+            Atom a = (Atom) ai.next();
+            Vector atomPrimitives = (Vector) atomPositions.get(a);
+            for (Iterator pi = atomPrimitives.iterator(); pi.hasNext();) {
+                GraphicsPrimitivePosition p = (GraphicsPrimitivePosition) pi.next();
+                vtkObject o = p.update(a.getCoordinates());
+                if (o != null)
+                    vtkObjects.add(o);
+                p.update(a.getCoordinates());
+            }
+        }
+        
+        for (Iterator i = vtkObjects.iterator(); i.hasNext();) {
+            vtkObject object = (vtkObject) i.next();
+            object.Modified();
+        }
+    }
+    /**
+     * Update graphics primitives related to atom objects
+     * @param mol
+     */
+    public void updateAtomCoordinates(Molecule mol) {
+        HashSet vtkObjects = new HashSet();
+        
+        for (Iterator ai = mol.getAtoms().iterator(); ai.hasNext();) {
+            Atom a = (Atom) ai.next();
+            if (! atomPositions.containsKey(a) ) continue;
+            Vector atomPrimitives = (Vector) atomPositions.get(a);
+            for (Iterator pi = atomPrimitives.iterator(); pi.hasNext();) {
+                GraphicsPrimitivePosition p = (GraphicsPrimitivePosition) pi.next();
+                vtkObject o = p.update(a.getCoordinates());
+                if (o != null)
+                    vtkObjects.add(o);
+                p.update(a.getCoordinates());
+            }
+        }
+        
+        for (Iterator i = vtkObjects.iterator(); i.hasNext();) {
+            vtkObject object = (vtkObject) i.next();
+            object.Modified();
+        }
+    }
 
     /**
      * Update graphical primitives to reflect a change in atomic positions

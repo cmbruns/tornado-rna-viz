@@ -4,11 +4,8 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.atomicstructure.Atom;
-import org.simtk.atomicstructure.PDBAtom;
-import org.simtk.atomicstructure.PDBAtomSet;
-import org.simtk.geometry3d.BaseVector3D;
-import org.simtk.geometry3d.Vector3D;
+import org.simtk.atomicstructure.*;
+import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 
 /** 
@@ -34,15 +31,13 @@ abstract public class AminoAcid extends Residue {
     static public FunctionalGroup sideChainGroup = new FunctionalGroup(sideChainAtomNames);
     static public FunctionalGroup backboneGroup = new FunctionalGroup(backboneAtomNames);
 
-    @Override
     public BaseVector3D getBackbonePosition() {
         Atom atom = getAtom(" CA ");
         if (atom == null) return null;
         return atom.getCoordinates();
     }
 
-    @Override
-    public Vector3D getSideChainPosition() {
+    public BaseVector3D getSideChainPosition() {
         Molecule sideChain = get(sideChainGroup);
         if (sideChain.getAtomCount() >= 1)
             return get(sideChainGroup).getCenterOfMass();
@@ -109,7 +104,7 @@ abstract public class AminoAcid extends Residue {
     
     static public AminoAcid createFactoryAminoAcid(PDBAtomSet bagOfAtoms) {
         // Distinguish among subclasses
-        PDBAtom atom = bagOfAtoms.get(0);
+        PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
         String residueName = atom.getResidueName().trim().toUpperCase();
         
         if (residueName.equals("ALA")) {return new Alanine(bagOfAtoms);}

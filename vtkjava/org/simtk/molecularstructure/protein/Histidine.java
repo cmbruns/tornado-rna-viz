@@ -16,17 +16,17 @@ public class Histidine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'H';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "His";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "histidine";
     }

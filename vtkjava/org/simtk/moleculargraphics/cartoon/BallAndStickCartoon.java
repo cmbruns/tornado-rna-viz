@@ -20,31 +20,16 @@ import org.simtk.geometry3d.*;
  */
 public class BallAndStickCartoon extends MolecularCartoon {
     // TODO - update bond positions
-    Hashtable< Atom, Vector<GraphicsPrimitivePosition> > atomPositions = 
-        new Hashtable< Atom, Vector<GraphicsPrimitivePosition> >();
-    Hashtable< Bond, Vector<GraphicsPrimitivePosition> > bondPositions = 
-        new Hashtable< Bond, Vector<GraphicsPrimitivePosition> >();
+    Hashtable bondPositions = 
+        new Hashtable();
 
     /**
      * Update graphical primitives to reflect a change in atomic positions
      *
      */
-    @Override
     public void updateCoordinates() {
-        HashSet<vtkObject> vtkObjects = new HashSet<vtkObject>();
-        
-        for (Atom a : atomPositions.keySet()) {
-            for (GraphicsPrimitivePosition p : atomPositions.get(a)) {
-                vtkObject o = p.update(a.getCoordinates());
-                if (o != null)
-                    vtkObjects.add(o);
-                p.update(a.getCoordinates());
-            }
-        }
-        
-        for (vtkObject object : vtkObjects) {
-            object.Modified();
-        }
+        updateAtomCoordinates();
+        // TODO - update bonds
     }
     
     /**
@@ -52,32 +37,16 @@ public class BallAndStickCartoon extends MolecularCartoon {
      * 
      * molecule argument specifies the (subset of) atoms that have changed.
      */
-    @Override
     public void updateCoordinates(Molecule mol) {
-        HashSet<vtkObject> vtkObjects = new HashSet<vtkObject>();
-        
-        for (Atom a : mol.getAtoms()) {
-            if (! atomPositions.containsKey(a) ) continue;
-            for (GraphicsPrimitivePosition p : atomPositions.get(a)) {
-                vtkObject o = p.update(a.getCoordinates());
-                if (o != null)
-                    vtkObjects.add(o);
-            }
-        }
-        
-        for (vtkObject object : vtkObjects) {
-            object.Modified();
-        }
+        updateAtomCoordinates(mol);
     }
     
-    @Override
     public vtkProp highlight(Residue residue, Color color) {
         // Make it a little bigger than usual
         vtkAssembly answer = represent(residue, 1.20, color);
         return answer;
     }
 
-    @Override
     public vtkAssembly represent(Molecule molecule) {
         return represent(molecule, 1.00, null);
     }
@@ -86,10 +55,10 @@ public class BallAndStickCartoon extends MolecularCartoon {
             vtkAssembly assembly = new vtkAssembly();
             
             // Store each atom type in a separate vtkPoints structure
-            Hashtable<String, vtkPoints> elementPoints = new Hashtable<String, vtkPoints>(); // Map all atoms of same element to the same structure
-            Hashtable<String, Double> elementRadii = new Hashtable<String, Double>(); // Map element names to sphere radius
-            Hashtable<String, Color> elementColors = new Hashtable<String, Color>(); // Map element names to color
-            Hashtable<String, Double> elementCylinderLengths = new Hashtable<String, Double>();
+            Hashtable elementPoints = new Hashtable(); // Map all atoms of same element to the same structure
+            Hashtable elementRadii = new Hashtable(); // Map element names to sphere radius
+            Hashtable elementColors = new Hashtable(); // Map element names to color
+            Hashtable elementCylinderLengths = new Hashtable();
             
             // Notice in case we generate zero graphics primitives
             boolean hasContents = false;
@@ -107,9 +76,9 @@ public class BallAndStickCartoon extends MolecularCartoon {
                     atomPoints = new vtkPoints();
                     elementPoints.put(elementSymbol, atomPoints);
                     double sphereRadius = atom.getVanDerWaalsRadius() * 0.25 * scaleFactor;
-                    elementRadii.put(elementSymbol, sphereRadius);
+                    elementRadii.put(elementSymbol, new Double(sphereRadius));
                     // Make each half-bond poke just a bit into the atom sphere
-                    elementCylinderLengths.put(elementSymbol, atom.getCovalentRadius() - 0.75 * sphereRadius);
+                    elementCylinderLengths.put(elementSymbol, new Double(atom.getCovalentRadius() - 0.75 * sphereRadius));
                     if (clr == null)
                         elementColors.put(elementSymbol, atom.getDefaultColor());
                     else 
@@ -119,15 +88,16 @@ public class BallAndStickCartoon extends MolecularCartoon {
                 atomPoints = (vtkPoints) elementPoints.get(elementSymbol);               
                 atomPoints.InsertNextPoint(coord.getX(), coord.getY(), coord.getZ());
                 
-                if (! (atomPositions.containsKey(atom))) atomPositions.put(atom, new Vector<GraphicsPrimitivePosition>());
-                atomPositions.get(atom).add( new VTKPointPosition(atomPoints, atomPoints.GetNumberOfPoints() - 1) );
+                if (! (atomPositions.containsKey(atom))) atomPositions.put(atom, new Vector());
+                Vector atomPrimitives = (Vector) atomPositions.get(atom);
+                atomPrimitives.add( new VTKPointPosition(atomPoints, atomPoints.GetNumberOfPoints() - 1) );
                 
                 hasContents = true;
             }
 
             // Generate one Glyph3D for each set of atoms of the same element
             // Why? because it is faster than the first way I tried rendering atoms with 4000 sphere actors
-            Enumeration<String> e = elementPoints.keys();
+            Enumeration e = elementPoints.keys();
             while (e.hasMoreElements()) {
                   String elementSymbol = (String) e.nextElement();
                   // System.out.println(elementSymbol);
@@ -161,8 +131,8 @@ public class BallAndStickCartoon extends MolecularCartoon {
             
             // Generate sticks for bonds
             // Generate one half-bond poking out of each atom with a bond
-            Hashtable<String, vtkPoints> elementBonds = new Hashtable<String, vtkPoints>();
-            Hashtable<String, vtkFloatArray> elementBondDirections = new Hashtable<String, vtkFloatArray>();            
+            Hashtable elementBonds = new Hashtable();
+            Hashtable elementBondDirections = new Hashtable();            
             // vtkPoints points = new vtkPoints();
             // vtkFloatArray normals = new vtkFloatArray();
             // normals.SetNumberOfComponents(3);
@@ -175,7 +145,8 @@ public class BallAndStickCartoon extends MolecularCartoon {
                 String element1 = atom1.getElementSymbol();
                 // double radius1 = elementRadii.get(element1);
 
-                for (Atom atom2 : atom1.getBonds()) {
+                for (Iterator i = atom1.getBonds().iterator(); i.hasNext();) {
+                    Atom atom2 = (Atom) i.next();
                     // Note that sometimes atom2 may not be in this "molecule"
                     
                     Vector3D fullBondVector = atom2.getCoordinates().minus(atom1.getCoordinates());
@@ -184,7 +155,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
                     Vector3D midBond = atom1.getCoordinates().plus(fullBondVector.scale(covalentRatio));
                     
                     Vector3D bondEnd = midBond;
-                    Vector3D bondStart = midBond.minus(unitBondVector.scale(elementCylinderLengths.get(element1)));
+                    Vector3D bondStart = midBond.minus(unitBondVector.scale( ((Double)(elementCylinderLengths.get(element1))).doubleValue()) );
                     // Vector3D bondStart = atom1.getCoordinates().plus(fullBondVector.unit().scale(0.80 * radius1));
 
                     Vector3D bondMiddle = bondStart.plus(bondEnd).scale(0.5);
@@ -204,8 +175,9 @@ public class BallAndStickCartoon extends MolecularCartoon {
                     // Center point of this half bond
                     points1.InsertNextPoint(bondMiddle.getX(), bondMiddle.getY(), bondMiddle.getZ());
 
-                    if (! (atomPositions.containsKey(atom1))) atomPositions.put(atom1, new Vector<GraphicsPrimitivePosition>());
-                    atomPositions.get(atom1).add( new VTKPointPosition(points1, points1.GetNumberOfPoints() - 1) );
+                    if (! (atomPositions.containsKey(atom1))) atomPositions.put(atom1, new Vector());
+                    Vector atomPrimitives = (Vector) atomPositions.get(atom1);
+                    atomPrimitives.add( new VTKPointPosition(points1, points1.GetNumberOfPoints() - 1) );
                     
                     // Direction of this half bond
                     // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
@@ -224,7 +196,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
             e = elementBonds.keys();
             while (e.hasMoreElements()) {
                 String elementSymbol = (String) e.nextElement();
-                double sphereRadius = elementRadii.get(elementSymbol);
+                double sphereRadius = ((Double)elementRadii.get(elementSymbol)).doubleValue();
                   
                 vtkPoints points = (vtkPoints) elementBonds.get(elementSymbol);
                 vtkFloatArray normals = (vtkFloatArray) elementBondDirections.get(elementSymbol);
@@ -237,7 +209,7 @@ public class BallAndStickCartoon extends MolecularCartoon {
 	            vtkCylinderSource cylinderSource = new vtkCylinderSource();
 	            cylinderSource.SetResolution(5);
 	            cylinderSource.SetRadius(0.15 * scaleFactor);
-	            cylinderSource.SetHeight(elementCylinderLengths.get(elementSymbol));
+	            cylinderSource.SetHeight( ((Double)elementCylinderLengths.get(elementSymbol)).doubleValue() );
 	            cylinderSource.SetCapping(0);
 	            // Rotate the cylinder so that the cylinder axis goes along the normals during glyphing
 	            vtkTransform cylinderTransform = new vtkTransform();

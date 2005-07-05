@@ -16,17 +16,14 @@ public class Aspartate extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
     public char getOneLetterCode() {
         return 'D';
     }
 
-    @Override
     public String getThreeLetterCode() {
         return "Asp";
     }
 
-    @Override
     public String getResidueName() {
         return "aspartate";
     }

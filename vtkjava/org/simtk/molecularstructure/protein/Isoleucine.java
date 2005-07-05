@@ -16,17 +16,17 @@ public class Isoleucine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'I';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Ile";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "isoleucine";
     }

@@ -4,7 +4,7 @@
  */
 package org.simtk.util;
 
-import java.util.HashSet;
+import java.util.*;
 
 /**
  *  
@@ -14,11 +14,26 @@ import java.util.HashSet;
   * to learn about the seletion through this object.
  */
 public class SelectionBroadcaster {
-    protected HashSet<SelectionListener> listeners = new HashSet<SelectionListener>();
+    protected HashSet listeners = new HashSet();
 
     public void addSelectionListener(SelectionListener l) {listeners.add(l);}
 
-    public void fireSelect(Selectable s) {for (SelectionListener l : listeners) l.select(s);}
-    public void fireUnSelect() {for (SelectionListener l : listeners) l.unSelect();}
-    public void fireUnSelect(Selectable s) {for (SelectionListener l : listeners) l.unSelect(s);}
+    public void fireSelect(Selectable s) {
+        for (Iterator i = listeners.iterator(); i.hasNext(); ) {
+            SelectionListener l = (SelectionListener) i.next();
+            l.select(s);
+        }
+    }
+    public void fireUnSelect() {
+        for (Iterator i = listeners.iterator(); i.hasNext(); ) {
+            SelectionListener l = (SelectionListener) i.next();
+            l.unSelect();
+        }
+    }
+    public void fireUnSelect(Selectable s) {
+        for (Iterator i = listeners.iterator(); i.hasNext(); ) {
+            SelectionListener l = (SelectionListener) i.next();
+            l.unSelect(s);
+        }
+    }
 }

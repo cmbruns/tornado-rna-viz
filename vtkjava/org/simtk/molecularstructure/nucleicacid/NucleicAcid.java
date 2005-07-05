@@ -39,7 +39,7 @@ public class NucleicAcid extends Biopolymer {
     //      plane of the other.
     //    4) Touching: Some pair of atoms between the two bases must be within 
     //      3.5 Angstroms of one another.
-    public Vector<BasePair> identifyBasePairs() {
+    public Vector identifyBasePairs() {
         // Adjustable parameters
         int minSequenceDistance = 3;
         double centroidDistanceCutoff = 8.70;
@@ -47,9 +47,9 @@ public class NucleicAcid extends Biopolymer {
         double planeHeightCutoff = 3.20;
         double atomicDistance = 3.20;
         
-        Vector<BasePair> basePairs = new Vector<BasePair>();
-        Hashtable<Residue, Vector3D> residueCentroids = new Hashtable<Residue, Vector3D>();
-        Hashtable<Residue, Plane3D> residuePlanes = new Hashtable<Residue, Plane3D>();
+        Vector basePairs = new Vector();
+        Hashtable residueCentroids = new Hashtable();
+        Hashtable residuePlanes = new Hashtable();
 
         // for debugging only  cmb
         int closePairCount = 0;
@@ -57,8 +57,10 @@ public class NucleicAcid extends Biopolymer {
         int samePlaneCount = 0;
 
         // Close in space
-        Hash3D<Residue> centroidHash = new Hash3D<Residue>(4.0);
-        for (Residue residue : this.residues()) {
+        Hash3D centroidHash = new Hash3D(4.0);
+        // for (Residue residue : this.residues()) {
+        for (Iterator i = this.residues().iterator(); i.hasNext();) {
+            Residue residue = (Residue) i.next();
             if (residue instanceof Nucleotide) {
                 Molecule base = residue.get(Nucleotide.baseGroup);
                 Vector3D centroid = base.getCenterOfMass();
@@ -69,11 +71,13 @@ public class NucleicAcid extends Biopolymer {
                 centroidHash.put(centroid, residue);
             }
         }
-        HashSet<Residue> residuesAlreadyTested = new HashSet<Residue>(); // only check each residue once
-        for (BaseVector3D centroid : centroidHash.keySet()) {
-            Residue residue = centroidHash.get(centroid);
+        HashSet residuesAlreadyTested = new HashSet(); // only check each residue once
+        for (Iterator iterCentroid = centroidHash.keySet().iterator(); iterCentroid.hasNext(); ) {
+            BaseVector3D centroid = (BaseVector3D) iterCentroid.next();
+            Residue residue = (Residue) centroidHash.get(centroid);
             residuesAlreadyTested.add(residue);
-            for (Residue otherResidue : centroidHash.neighborValues(centroid, centroidDistanceCutoff)) {
+            for (Iterator iterOtherResidue = centroidHash.neighborValues(centroid, centroidDistanceCutoff).iterator(); iterOtherResidue.hasNext(); ) {
+                Residue otherResidue = (Residue) iterOtherResidue.next();
                 if (residue == otherResidue) continue; // no self hits
                 if (residuesAlreadyTested.contains(otherResidue)) continue;
                 // If we got here there are two residues within 8 Angstroms of one another
@@ -85,23 +89,25 @@ public class NucleicAcid extends Biopolymer {
                 if (deltaNumber < minSequenceDistance) continue; // too close in sequence
                 
                 // Are the two planes within 20 degrees of parallel?
-                double planeAngle = residuePlanes.get(residue).getNormal().dot(residuePlanes.get(otherResidue).getNormal());
+                double planeAngle = ((Plane3D)residuePlanes.get(residue)).getNormal().dot(((Plane3D)residuePlanes.get(otherResidue)).getNormal());
                 if (planeAngle < 0) planeAngle = -planeAngle;
                 if ( planeAngle < Math.cos(interplaneAngleCutoff * Math.PI/180) ) continue; // angle is too large
                 parallelCount ++;
                 
                 // Are the two bases in the same plane?
-                if ( residuePlanes.get(residue).distance(residueCentroids.get(otherResidue)) > planeHeightCutoff)
+                if ( ((Plane3D)residuePlanes.get(residue)).distance(((BaseVector3D)residueCentroids.get(otherResidue))) > planeHeightCutoff)
                     continue; // out of plane
-                if ( residuePlanes.get(otherResidue).distance(residueCentroids.get(residue)) > planeHeightCutoff)
+                if ( ((Plane3D)(residuePlanes.get(otherResidue))).distance((BaseVector3D)(residueCentroids.get(residue))) > planeHeightCutoff)
                     continue; // out of plane
                 samePlaneCount ++;
                 
                 // Atomic touching criterion - polar atoms
                 double minDistance = 1000;
-                for (Atom atom1 : residue.getAtoms()) {
+                for (Iterator iterAtom1 = residue.getAtoms().iterator(); iterAtom1.hasNext(); ) {
+                    Atom atom1 = (Atom) iterAtom1.next();
                     if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
-                    for (Atom atom2 : otherResidue.getAtoms()) {
+                    for (Iterator iterAtom2 = otherResidue.getAtoms().iterator(); iterAtom2.hasNext(); ) {
+                        Atom atom2 = (Atom) iterAtom2.next();
                         if (! ((atom2 instanceof PDBOxygen) || (atom2 instanceof PDBNitrogen))) continue;
                         double testDistance = atom1.distance(atom2);
                         if (testDistance < minDistance) minDistance = testDistance;
@@ -122,7 +128,7 @@ public class NucleicAcid extends Biopolymer {
     /**
      * @return
      */
-    public Vector<Hairpin> identifyHairpins() {
+    public Vector identifyHairpins() {
         //        Identify base pairs using method outlined in another feature request.
         //        Cluster the base pairs into possible hairpins.  Two base pairs are clusterable if all of the following criteria are
         //        met:
@@ -139,31 +145,33 @@ public class NucleicAcid extends Biopolymer {
         double interplaneAngleCutoff = 20.0;
         int minBasePairCount = 3;
                 
-        Vector<BasePair> basePairs = identifyBasePairs();
+        Vector basePairs = identifyBasePairs();
         
         // First index the base pairs
-        Hashtable<Integer, Vector<BasePair> > residueNumberPairs = new Hashtable<Integer, Vector<BasePair> >();
-        Hashtable<Integer, Vector<BasePair> > pairSumPairs = new Hashtable<Integer, Vector<BasePair> >();        
-        Hashtable<BasePair, Plane3D> pairPlanes = new Hashtable<BasePair, Plane3D>();
-        for (BasePair pair : basePairs) {
-            int number1 = pair.getResidue1().getResidueNumber();
-            int number2 = pair.getResidue2().getResidueNumber();
-            if (!residueNumberPairs.containsKey(number1)) residueNumberPairs.put(number1, new Vector<BasePair>());
-            if (!residueNumberPairs.containsKey(number2)) residueNumberPairs.put(number2, new Vector<BasePair>());
-            residueNumberPairs.get(number1).add(pair);
-            residueNumberPairs.get(number2).add(pair);
+        Hashtable residueNumberPairs = new Hashtable();
+        Hashtable pairSumPairs = new Hashtable();        
+        Hashtable pairPlanes = new Hashtable();
+        for (Iterator iterPair = basePairs.iterator(); iterPair.hasNext(); ) {
+            BasePair pair = (BasePair) iterPair.next();
+            Integer number1 = new Integer (pair.getResidue1().getResidueNumber());
+            Integer number2 = new Integer (pair.getResidue2().getResidueNumber());
+            if (!residueNumberPairs.containsKey(number1)) residueNumberPairs.put(number1, new Vector());
+            if (!residueNumberPairs.containsKey(number2)) residueNumberPairs.put(number2, new Vector());
+            ((Vector)residueNumberPairs.get(number1)).add(pair);
+            ((Vector)residueNumberPairs.get(number2)).add(pair);
 
-            int hairpinPhase = number1 + number2;
-            if (!pairSumPairs.containsKey(hairpinPhase)) pairSumPairs.put(hairpinPhase, new Vector<BasePair>());
-            pairSumPairs.get(number1+number2).add(pair);
+            Integer hairpinPhase = new Integer(number1.intValue() + number2.intValue());
+            if (!pairSumPairs.containsKey(hairpinPhase)) pairSumPairs.put(hairpinPhase, new Vector());
+            ((Vector)pairSumPairs.get(hairpinPhase)).add(pair);
 
             pairPlanes.put(pair, pair.getBasePlane());
         }
         
         // Identify pairs of BasePairs that can be in the same hairpin
-        HashSet<BasePair> testedPairs = new HashSet<BasePair>(); // examine each base pair only once
-        Hashtable<BasePair, Vector<BasePair> > pairPairs = new Hashtable<BasePair, Vector<BasePair> >();
-        for (BasePair pair : basePairs) {
+        HashSet testedPairs = new HashSet(); // examine each base pair only once
+        Hashtable pairPairs = new Hashtable();
+        for (Iterator iterPair = basePairs.iterator(); iterPair.hasNext(); ) {
+            BasePair pair = (BasePair) iterPair.next();
             testedPairs.add(pair);
             // for antiparallel helices, sum the residue numbers to get the phase of the hairpin (subtract for parallel)
             // We are only looking for antiparallel double helices.
@@ -174,8 +182,10 @@ public class NucleicAcid extends Biopolymer {
             for (int phase = hairpinPhase - sequenceDistanceCutoff;
                  phase <= hairpinPhase + sequenceDistanceCutoff;
                  phase ++) {
-                if (!pairSumPairs.containsKey(phase)) continue;
-                for (BasePair otherPair : pairSumPairs.get(phase)) {
+                Integer phaseObject = new Integer(phase);
+                if (!pairSumPairs.containsKey(phaseObject)) continue;
+                for (Iterator iterOtherPair = ((Vector)pairSumPairs.get(phaseObject)).iterator(); iterOtherPair.hasNext(); ) {
+                    BasePair otherPair = (BasePair) iterOtherPair.next();
                     // Make sure that we have not made this comparison before
                     if (otherPair == pair) continue;
                     if (testedPairs.contains(otherPair)) continue;
@@ -189,36 +199,38 @@ public class NucleicAcid extends Biopolymer {
                     if (diff2 > sequenceDistanceCutoff) continue;
                     
                     // Make sure the two BasePair planes are parallel
-                    double planeAngle = Math.abs(pairPlanes.get(pair).getNormal().dot(pairPlanes.get(otherPair).getNormal()));
+                    double planeAngle = Math.abs(((Plane3D)pairPlanes.get(pair)).getNormal().dot(((Plane3D)pairPlanes.get(otherPair)).getNormal()));
                     if (planeAngle < Math.cos(interplaneAngleCutoff * Math.PI/180.0)) continue;
                     
                     // Passed! these two base pairs can be in the same hairpin
                     // Add relationship in both directions, since we will not be coming back this way
-                    if (!pairPairs.containsKey(pair)) pairPairs.put(pair, new Vector<BasePair>());
-                    if (!pairPairs.containsKey(otherPair)) pairPairs.put(otherPair, new Vector<BasePair>());
-                    pairPairs.get(pair).add(otherPair);
-                    pairPairs.get(otherPair).add(pair);                    
+                    if (!pairPairs.containsKey(pair)) pairPairs.put(pair, new Vector());
+                    if (!pairPairs.containsKey(otherPair)) pairPairs.put(otherPair, new Vector());
+                    ((Vector)pairPairs.get(pair)).add(otherPair);
+                    ((Vector)pairPairs.get(otherPair)).add(pair);                    
                 }
             }
         }
         
         // Now use single linkage clustering to make hairpins
-        Vector<Hairpin> hairpins = new Vector<Hairpin>();
-        HashSet<BasePair> unassignedPairs = new HashSet<BasePair>();
-        HashSet<BasePair> assignedPairs = new HashSet<BasePair>();
-        for (BasePair pair : pairPairs.keySet())
+        Vector hairpins = new Vector();
+        HashSet unassignedPairs = new HashSet();
+        HashSet assignedPairs = new HashSet();
+        for (Iterator iterPair = pairPairs.keySet().iterator(); iterPair.hasNext(); ) {
+            BasePair pair = (BasePair) iterPair.next();
             unassignedPairs.add(pair);
+        }
         while (! unassignedPairs.isEmpty()) {
             Hairpin hairpin = new Hairpin();
-            BasePair startPair = unassignedPairs.iterator().next();
+            BasePair startPair = (BasePair) unassignedPairs.iterator().next();
 
             // Pairs whose nieghbor list has not been examined
-            HashSet<BasePair> freshPairs = new HashSet<BasePair>();
-            HashSet<BasePair> stalePairs = new HashSet<BasePair>();
+            HashSet freshPairs = new HashSet();
+            HashSet stalePairs = new HashSet();
 
             freshPairs.add(startPair);
             while (!freshPairs.isEmpty()) {
-                BasePair freshPair = freshPairs.iterator().next();
+                BasePair freshPair = (BasePair) freshPairs.iterator().next();
 
                 hairpin.add(freshPair);
                 unassignedPairs.remove(freshPair);
@@ -231,7 +243,8 @@ public class NucleicAcid extends Biopolymer {
                 // System.out.println("" + freshPair);
                 
                 // Examine neighbors
-                for (BasePair testPair : pairPairs.get(freshPair)) {
+                for (Iterator iterTestPair = ((Vector)pairPairs.get(freshPair)).iterator(); iterTestPair.hasNext(); ) {
+                    BasePair testPair = (BasePair) iterTestPair.next();
                     if (stalePairs.contains(testPair)) continue;
                     else freshPairs.add(testPair);
                 }                
@@ -241,29 +254,34 @@ public class NucleicAcid extends Biopolymer {
         return hairpins;
     }
     
-    public Collection<HydrogenBond> computeBaseHydrogenBonds() {
+    public Collection computeBaseHydrogenBonds() {
         double maxHydrogenBondDistance = 3.50;
         Angle minHydrogenBondAngle = new Angle(270, Angle.Units.DEGREES);        
-        Vector<HydrogenBond> answer = new Vector<HydrogenBond>();
+        Vector answer = new Vector();
 
         // Create a hash of hydrogen bond donor atoms
-        Hash3D<Atom> donorAtoms = new Hash3D<Atom>(3.50);
-        Hashtable<Atom, Nucleotide> donorNucleotides = new Hashtable<Atom, Nucleotide>();
-        for (Residue residue : residues()) {
+        Hash3D donorAtoms = new Hash3D(3.50);
+        Hashtable donorNucleotides = new Hashtable();
+        for (Iterator iterResidue = residues().iterator(); iterResidue.hasNext(); ) {
+            Residue residue = (Residue) iterResidue.next();
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide nucleotide = (Nucleotide) residue;
-            for (Atom atom : nucleotide.getHydrogenBondDonors()) {
+            for (Iterator iterAtom = nucleotide.getHydrogenBondDonors().iterator(); iterAtom.hasNext(); ) {
+                Atom atom = (Atom) iterAtom.next();
                 donorAtoms.put(atom.getCoordinates(), atom);
                 donorNucleotides.put(atom, nucleotide);
             }
         }
         
         // Loop over acceptor atoms, try to find donors
-        for (Residue residue : residues()) {
+        for (Iterator iterResidue = residues().iterator(); iterResidue.hasNext(); ) {
+            Residue residue = (Residue) iterResidue.next();
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide acceptorNucleotide = (Nucleotide) residue;
-            for (Atom acceptorAtom : acceptorNucleotide.getHydrogenBondAcceptors()) {
-                for (Atom donorAtom : donorAtoms.neighborValues(acceptorAtom.getCoordinates(), maxHydrogenBondDistance) ) {
+            for (Iterator iterAcceptorAtom = acceptorNucleotide.getHydrogenBondAcceptors().iterator(); iterAcceptorAtom.hasNext(); ) {
+                Atom acceptorAtom = (Atom) iterAcceptorAtom.next();
+                for (Iterator iterDonorAtom = donorAtoms.neighborValues(acceptorAtom.getCoordinates(), maxHydrogenBondDistance).iterator(); iterDonorAtom.hasNext(); ) {
+                    Atom donorAtom = (Atom) iterDonorAtom.next();
                     // This atom pair are now closer than the maximum distance cutoff of 3.5 Angstroms
                     
                     // Exclude atoms in the same residue

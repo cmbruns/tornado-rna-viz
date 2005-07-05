@@ -61,15 +61,17 @@ public class RNAMLTest {
         RnamlNode range = sequence.get1("numbering-system").get1("numbering-range");
         int rangeStart = range.get1("start").getInt();
         int rangeEnd = range.get1("end").getInt();
-        Hashtable<Integer, Integer> sequenceNumbers = new Hashtable<Integer, Integer>();
+        Hashtable sequenceNumbers = new Hashtable();
         String numberTable = sequence.get1("numbering-table").getText();
         int indexNumber = rangeStart;
-        for (String number : numberTable.split("\\s+")) {
+        String numbers[] = numberTable.split("\\s+");
+        for (int iterNumber = 0; iterNumber < numbers.length; iterNumber++ ) {
+            String number = numbers[iterNumber];
             // Ignore initial empty string
             if (number.length() < 1) continue;
 
-            int pdbNumber = new Integer(number);
-            sequenceNumbers.put(indexNumber, pdbNumber);
+            Integer pdbNumber = new Integer(number);
+            sequenceNumbers.put(new Integer(indexNumber), pdbNumber);
 
             indexNumber ++;
         }
@@ -86,13 +88,14 @@ public class RNAMLTest {
         RnamlNode structure = molecule.get1("structure");
         RnamlNode model = structure.get1("model");
         RnamlNode annotation = model.get1("str-annotation");
-        for (RnamlNode basePair : annotation.get("base-pair")) {
-
+        
+        for (Iterator iterBasePair = annotation.get("base-pair").iterator(); iterBasePair.hasNext(); ) {
+            RnamlNode basePair = (RnamlNode) iterBasePair.next();
             // Sequence residue numbers
             RnamlNode base1pos = basePair.get1("base-id-5p").get1("base-id").get1("position");
             RnamlNode base2pos = basePair.get1("base-id-3p").get1("base-id").get1("position");
-            int b1 = sequenceNumbers.get(base1pos.getInt());
-            int b2 = sequenceNumbers.get(base2pos.getInt());
+            Integer b1 = (Integer) sequenceNumbers.get(new Integer(base1pos.getInt()));
+            Integer b2 = (Integer) sequenceNumbers.get(new Integer(base2pos.getInt()));
             
             // Type of base pair
             String pairType1 = basePair.get1("edge-5p").getText();

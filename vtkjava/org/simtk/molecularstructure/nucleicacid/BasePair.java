@@ -14,7 +14,7 @@ import org.simtk.molecularstructure.*;
  * Represents a base-pair interaction between two residues in a nucleic acid structure
  */
 public class BasePair 
-implements Iterable<Residue>
+implements Iterable
 {
     Nucleotide residue1;
     Nucleotide residue2;
@@ -59,7 +59,7 @@ implements Iterable<Residue>
 
     public Plane3D getBasePlane() {
         // 1) compute best plane containing base group atoms
-        Vector<BaseVector3D> planeAtoms = new Vector<BaseVector3D>();
+        Vector planeAtoms = new Vector();
         if (residue1 != null) {
             Molecule base = residue1.get(Nucleotide.baseGroup);
             for (int a = 0; a < base.getAtomCount(); a++) {
@@ -82,7 +82,7 @@ implements Iterable<Residue>
      */
     public Vector3D getHelixCenter() {
         // 1) compute best plane containing base group atoms
-        Vector<BaseVector3D> planeAtoms = new Vector<BaseVector3D>();
+        Vector planeAtoms = new Vector();
         Molecule base = residue1.get(Nucleotide.baseGroup);
         for (int a = 0; a < base.getAtomCount(); a++) {
             planeAtoms.addElement(base.getAtom(a).getCoordinates());
@@ -116,14 +116,14 @@ implements Iterable<Residue>
         return "BasePair " + residue1.getResidueNumber() + ":" + residue2.getResidueNumber();
     }
 
-    public Iterator<Residue> iterator() {
-        return new Iterator<Residue>() {
+    public Iterator iterator() {
+        return new Iterator() {
             int residueIndex = 1;
             public boolean hasNext() {
                 if (residueIndex <= 2) return true;
                 return false;
             }
-            public Residue next() {
+            public Object next() {
                 Residue answer = null;
                 if (residueIndex == 1) answer = residue1;
                 else if (residueIndex == 2) answer = residue2;

@@ -15,7 +15,7 @@ import vtk.*;
 
 public class ResidueSphereCartoon extends MolecularCartoon {
     
-    Hashtable<Double, vtkSphereSource> sphereSources = new Hashtable<Double, vtkSphereSource>();
+    Hashtable sphereSources = new Hashtable();
     
     Color defaultColor = new Color(100, 100, 255); // Blue
 
@@ -27,18 +27,15 @@ public class ResidueSphereCartoon extends MolecularCartoon {
      * Update graphical primitives to reflect a change in atomic positions
      *
      */
-    @Override
     public void updateCoordinates() {
         // TODO
     }
     
-    @Override
     public vtkProp highlight(Residue residue, Color color) {
         return represent(residue, 1.05, color);
     }
 
     // One sphere per residue
-    @Override
     public vtkAssembly represent(Molecule molecule) {
         return represent(molecule, 1.00, null);
     }
@@ -60,9 +57,9 @@ public class ResidueSphereCartoon extends MolecularCartoon {
             if (residue instanceof AminoAcid) radius = aminoAcidSphereRadius * scaleFactor;
             if (residue instanceof Nucleotide) radius = nucleotideSphereRadius * scaleFactor;
             
-            if (! sphereSources.containsKey(radius))
-                sphereSources.put(radius, newSphereSource(radius));
-            vtkSphereSource sphereSource = sphereSources.get(radius);
+            if (! sphereSources.containsKey(new Double(radius)))
+                sphereSources.put(new Double(radius), newSphereSource(radius));
+            vtkSphereSource sphereSource = (vtkSphereSource) sphereSources.get(new Double(radius));
             assembly.AddPart(getGlyphs(vPoints, sphereSource, clr));
             hasContents = true;
             return assembly;
@@ -72,9 +69,10 @@ public class ResidueSphereCartoon extends MolecularCartoon {
         // if so, do residues
         else if (molecule instanceof Biopolymer) {
             Biopolymer biopolymer = (Biopolymer) molecule;
-            Hashtable<Double, vtkPoints> spherePoints = new Hashtable<Double, vtkPoints>();
+            Hashtable spherePoints = new Hashtable();
 
-            for (Residue residue : biopolymer.residues()) {
+            for (Iterator i = biopolymer.residues().iterator(); i.hasNext();) {
+                Residue residue = (Residue) i.next();
                 
                 if (Residue.isSolvent(residue.getResidueName())) continue;
 
@@ -83,20 +81,22 @@ public class ResidueSphereCartoon extends MolecularCartoon {
                 double radius = defaultSphereRadius * scaleFactor;
                 if (residue instanceof AminoAcid) radius = aminoAcidSphereRadius * scaleFactor;
                 if (residue instanceof Nucleotide) radius = nucleotideSphereRadius * scaleFactor;
+                Double radiusObject = new Double(radius);
 
-                if (! spherePoints.containsKey(radius))
-                    spherePoints.put(radius, new vtkPoints());
-                vtkPoints vPoints = spherePoints.get(radius);
+                if (! spherePoints.containsKey(radiusObject))
+                    spherePoints.put(radiusObject, new vtkPoints());
+                vtkPoints vPoints = (vtkPoints) spherePoints.get(radiusObject);
                 vPoints.InsertNextPoint(centerOfMass.getX(), centerOfMass.getY(), centerOfMass.getZ());
 
                 hasContents = true;
             }
 
-            for (double radius : spherePoints.keySet()) {
-                vtkPoints vPoints = spherePoints.get(radius);
-                if (! sphereSources.containsKey(radius))
-                    sphereSources.put(radius, newSphereSource(radius));
-                vtkSphereSource source = sphereSources.get(radius);
+            for (Iterator i = spherePoints.keySet().iterator(); i.hasNext(); ) {
+                Double radiusObject = (Double) i.next();
+                vtkPoints vPoints = (vtkPoints) spherePoints.get(radiusObject);
+                if (! sphereSources.containsKey(radiusObject))
+                    sphereSources.put(radiusObject, newSphereSource(radiusObject.doubleValue()));
+                vtkSphereSource source = (vtkSphereSource) sphereSources.get(radiusObject);
                 assembly.AddPart(getGlyphs(vPoints, source, clr));
             }
         }

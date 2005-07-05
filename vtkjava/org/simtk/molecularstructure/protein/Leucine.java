@@ -16,17 +16,17 @@ public class Leucine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'L';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Leu";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "leucine";
     }

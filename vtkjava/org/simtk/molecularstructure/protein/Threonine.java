@@ -16,17 +16,17 @@ public class Threonine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'T';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Thr";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "threonine";
     }

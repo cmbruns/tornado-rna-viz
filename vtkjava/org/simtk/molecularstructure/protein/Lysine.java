@@ -16,17 +16,17 @@ public class Lysine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'K';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Lys";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "lysine";
     }

@@ -16,17 +16,14 @@ public class Asparagine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
     public char getOneLetterCode() {
         return 'N';
     }
 
-    @Override
     public String getThreeLetterCode() {
         return "Asn";
     }
 
-    @Override
     public String getResidueName() {
         return "asparagine";
     }

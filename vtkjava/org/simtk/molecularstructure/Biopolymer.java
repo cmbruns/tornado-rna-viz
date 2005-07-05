@@ -14,19 +14,19 @@ import org.simtk.atomicstructure.*;
  * \brief A macromolecular heteropolymer, such as protein or DNA
  */
 public class Biopolymer extends Molecule {
-	Vector<Residue> residues = new Vector<Residue>();
-    Hashtable<String, Residue> residueNumbers = new Hashtable<String, Residue>();
+	Vector residues = new Vector();
+    Hashtable residueNumbers = new Hashtable();
     // maps atom names of bondable atoms that bond one residue to the next
-    Hashtable<String, HashSet<String> > genericResidueBonds = new Hashtable<String, HashSet<String> >(); 
+    Hashtable genericResidueBonds = new Hashtable(); 
 
 	// Distinguish between array index of residues and their sequence "number"
-	public Residue getResidue(int i) {return residues.get(i);} // array index
-    public Vector<Residue> residues() {return residues;}
+	public Residue getResidue(int i) {return (Residue) residues.get(i);} // array index
+    public Vector residues() {return residues;}
 
     // sequence number
     public Residue getResidueByNumber(int i) {return getResidueByNumber(new Integer(i).toString());}
     public Residue getResidueByNumber(int i, char insertionCode) {return getResidueByNumber(new Integer(i).toString() + insertionCode);}
-    public Residue getResidueByNumber(String n) {return residueNumbers.get(n);}
+    public Residue getResidueByNumber(String n) {return (Residue) residueNumbers.get(n);}
 
     public int getResidueCount() {return residues.size();}
 	
@@ -80,7 +80,9 @@ public class Biopolymer extends Molecule {
         
         // Connect residues in a doubly linked list
         Residue previousResidue = null;
-        for (Residue residue : residues) {
+        for (Iterator i = residues.iterator(); i.hasNext(); ) {
+            Residue residue = (Residue) i.next();
+        // for (Residue residue : residues) {
             if (previousResidue != null) {
                 residue.setPreviousResidue(previousResidue);
                 previousResidue.setNextResidue(residue);
@@ -92,8 +94,8 @@ public class Biopolymer extends Molecule {
     protected void addGenericResidueBond(String atom1, String atom2) {
         // Don't add bond in both directions; these bonds have a direction
         if (!genericResidueBonds.containsKey(atom1))
-            genericResidueBonds.put(atom1, new HashSet<String>());
-        genericResidueBonds.get(atom1).add(atom2);
+            genericResidueBonds.put(atom1, new HashSet());
+        ((HashSet)genericResidueBonds.get(atom1)).add(atom2);
     }
     
     protected void addGenericResidueBonds() {
@@ -105,12 +107,15 @@ public class Biopolymer extends Molecule {
      */
     protected void createResidueBonds() {
         Residue previousResidue = null;
-        for (Residue residue : residues) {
+        for (Iterator r1 = residues.iterator(); r1.hasNext(); ) {
+            Residue residue = (Residue) r1.next();
             if (previousResidue != null) {
-                for (String firstAtomName : genericResidueBonds.keySet()) {
+                for (Iterator s2 = genericResidueBonds.keySet().iterator(); s2.hasNext(); ) {
+                    String firstAtomName = (String) s2.next();
                     Atom firstAtom = previousResidue.getAtom(firstAtomName);
                     if (firstAtom != null) {
-                        for (String secondAtomName : genericResidueBonds.get(firstAtomName)) {
+                        for (Iterator s3 = ((HashSet)genericResidueBonds.get(firstAtomName)).iterator(); s3.hasNext(); ) {
+                            String secondAtomName = (String) s3.next();
                             Atom secondAtom = residue.getAtom(secondAtomName);
                             if (secondAtom != null) {
                                 // TODO check distance

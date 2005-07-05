@@ -8,7 +8,6 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
-import org.simtk.atomicstructure.*;
 import org.simtk.geometry3d.*;
 
 /**
@@ -17,8 +16,8 @@ import org.simtk.geometry3d.*;
  * A collection of one or more molecules, as might be found in a PDB file.
  */
 public class MoleculeCollection {
-    Vector<Atom> atoms = new Vector<Atom>();
-    Vector<Molecule> molecules = new Vector<Molecule>();
+    Vector atoms = new Vector();
+    Vector molecules = new Vector();
 
     Vector3D centerOfMass = new Vector3D();
     double mass = 0;
@@ -31,7 +30,7 @@ public class MoleculeCollection {
         return centerOfMass;
     }
     
-    public Vector<Molecule> molecules() {return molecules;}
+    public Vector molecules() {return molecules;}
     
     public int getMoleculeCount() {return molecules.size();}
     public Molecule getMolecule(int i) {return (Molecule) molecules.elementAt(i);}

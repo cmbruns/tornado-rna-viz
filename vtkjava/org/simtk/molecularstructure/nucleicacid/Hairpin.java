@@ -6,6 +6,6 @@ package org.simtk.molecularstructure.nucleicacid;
 
 import java.util.*;
 
-public class Hairpin extends Vector<BasePair> {
+public class Hairpin extends Vector {
     static final long serialVersionUID = 1L;
 }

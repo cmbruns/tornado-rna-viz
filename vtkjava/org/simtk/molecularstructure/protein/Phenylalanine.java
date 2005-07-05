@@ -16,17 +16,17 @@ public class Phenylalanine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
+    
     public char getOneLetterCode() {
         return 'F';
     }
 
-    @Override
+    
     public String getThreeLetterCode() {
         return "Phe";
     }
 
-    @Override
+    
     public String getResidueName() {
         return "phenylalanine";
     }

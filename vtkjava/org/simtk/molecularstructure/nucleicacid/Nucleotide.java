@@ -5,6 +5,7 @@
 package org.simtk.molecularstructure.nucleicacid;
 
 import java.util.*;
+
 import org.simtk.atomicstructure.*;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
@@ -28,30 +29,36 @@ public class Nucleotide extends Residue {
     static public FunctionalGroup sugarGroup = new FunctionalGroup(sugarGroupAtomNames);
     static public FunctionalGroup phosphateGroup = new FunctionalGroup(phosphateGroupAtomNames);
     
-    @Override
-    public Collection<Atom> getHydrogenBondDonors() {
-        HashSet<Atom> answer = new HashSet<Atom>();
-        for (Atom a : super.getHydrogenBondDonors())
+    public Collection getHydrogenBondDonors() {
+        HashSet answer = new HashSet();
+
+        for (Iterator i = super.getHydrogenBondDonors().iterator(); i.hasNext(); ) {
+            Atom a = (Atom) i.next();
             answer.add(a);
+        }
 
         // Note: donor/acceptor status of N1,N3 depends upon exact base
         // So see those derived classes for additional atoms
         String donorAtomNames[] = {" O2*", " N2 ", " N4 ", " N6 ", };
-        for (String atomName : donorAtomNames) {
+        for (int i = 0; i < donorAtomNames.length; i++) {
+            String atomName = donorAtomNames[i];
             Atom a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         
         return answer;
     }
-    @Override
-    public Collection<Atom> getHydrogenBondAcceptors() {
-        HashSet<Atom> answer = new HashSet<Atom>();
-        for (Atom a : super.getHydrogenBondAcceptors())
+    public Collection getHydrogenBondAcceptors() {
+        HashSet answer = new HashSet();
+
+        for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
+            Atom a = (Atom) i.next();
             answer.add(a);
+        }
 
         String acceptorAtomNames[] = {" O2*", " N7 ", " O2 ", " O4 ", " O6 "};
-        for (String atomName : acceptorAtomNames) {
+        for (int i = 0; i < acceptorAtomNames.length; i++) {
+            String atomName = acceptorAtomNames[i];
             Atom a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
@@ -59,15 +66,13 @@ public class Nucleotide extends Residue {
         return answer;
     }
     
-    @Override
     public BaseVector3D getBackbonePosition() {
         Atom atom = getAtom(" C5*");
         if (atom == null) return null;
         return atom.getCoordinates();
     }
 
-    @Override
-    public Vector3D getSideChainPosition() {
+    public BaseVector3D getSideChainPosition() {
         return get(baseGroup).getCenterOfMass();
     }
     

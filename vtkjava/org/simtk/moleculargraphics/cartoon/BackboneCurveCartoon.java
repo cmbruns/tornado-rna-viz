@@ -5,7 +5,7 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.*;
-
+import java.util.*;
 import vtk.*;
 
 import org.simtk.geometry3d.*;
@@ -36,17 +36,14 @@ public class BackboneCurveCartoon extends MolecularCartoon {
      * Update graphical primitives to reflect a change in atomic positions
      *
      */
-    @Override
     public void updateCoordinates() {
         // TODO
     }
 
-    @Override
-    public vtkAssembly highlight(Residue residue, Color color) {
+    public vtkProp highlight(Residue residue, Color color) {
         return null; // TODO
     }
 
-    @Override
     public vtkAssembly represent(Molecule molecule) {
         return represent(molecule, 1.00, null, 1.00);
     }
@@ -56,7 +53,8 @@ public class BackboneCurveCartoon extends MolecularCartoon {
         
         vtkPoints linePoints = new vtkPoints();
         vtkPoints lineNormals = new vtkPoints();
-        for (Residue residue : biopolymer.residues()) {
+        for (Iterator i = biopolymer.residues().iterator(); i.hasNext();) {
+            Residue residue = (Residue) i.next();
             BaseVector3D backbonePosition = residue.getBackbonePosition();
             BaseVector3D sideChainPosition = residue.getSideChainPosition();
             if ( (backbonePosition != null) && (sideChainPosition != null) ) {

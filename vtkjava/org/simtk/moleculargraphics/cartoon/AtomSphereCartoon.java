@@ -20,29 +20,13 @@ import org.simtk.molecularstructure.*;
 public class AtomSphereCartoon extends MolecularCartoon {
     
     boolean useSphereActors = false;
-    Hashtable< Atom, Vector<GraphicsPrimitivePosition> > atomPositions = 
-        new Hashtable< Atom, Vector<GraphicsPrimitivePosition> >();
 
     /**
      * Update graphical primitives to reflect a change in atomic positions
      *
      */
-    @Override
     public void updateCoordinates() {
-        HashSet<vtkObject> vtkObjects = new HashSet<vtkObject>();
-        
-        for (Atom a : atomPositions.keySet()) {
-            for (GraphicsPrimitivePosition p : atomPositions.get(a)) {
-                vtkObject o = p.update(a.getCoordinates());
-                if (o != null)
-                    vtkObjects.add(o);
-                p.update(a.getCoordinates());
-            }
-        }
-        
-        for (vtkObject object : vtkObjects) {
-            object.Modified();
-        }
+        updateAtomCoordinates();
     }
     
     /**
@@ -50,33 +34,17 @@ public class AtomSphereCartoon extends MolecularCartoon {
      * 
      * molecule argument specifies the (subset of) atoms that have changed.
      */
-    @Override
     public void updateCoordinates(Molecule mol) {
-        HashSet<vtkObject> vtkObjects = new HashSet<vtkObject>();
-        
-        for (Atom a : mol.getAtoms()) {
-            if (! atomPositions.containsKey(a) ) continue;
-            for (GraphicsPrimitivePosition p : atomPositions.get(a)) {
-                vtkObject o = p.update(a.getCoordinates());
-                if (o != null)
-                    vtkObjects.add(o);
-            }
-        }
-        
-        for (vtkObject object : vtkObjects) {
-            object.Modified();
-        }
+        updateAtomCoordinates(mol);
     }
     
     // Produce a renderable highlighted representation of a residue, slightly larger than the original
-    @Override
     public vtkProp highlight(Residue residue, Color color) {
         // Make it a little bigger than usual
         vtkAssembly answer = represent(residue, 1.05, color, 0.70);
         return answer;
     }
     
-    @Override
     public vtkAssembly represent(Molecule molecule) {
         return represent(molecule, 1.00, null, 1.00);
     }
@@ -88,9 +56,9 @@ public class AtomSphereCartoon extends MolecularCartoon {
         vtkAssembly assembly = new vtkAssembly();
         
         // Store each atom type in a separate vtkPoints structure
-        Hashtable<String, vtkPoints> elementPoints = new Hashtable<String, vtkPoints>(); // Map all atoms of same element to the same structure
-        Hashtable<String, Double> elementRadii = new Hashtable<String, Double>(); // Map element names to sphere radius
-        Hashtable<String, Color> elementColors = new Hashtable<String, Color>(); // Map element names to color
+        Hashtable elementPoints = new Hashtable(); // Map all atoms of same element to the same structure
+        Hashtable elementRadii = new Hashtable(); // Map element names to sphere radius
+        Hashtable elementColors = new Hashtable(); // Map element names to color
         
         boolean hasContents = false;
 
@@ -113,14 +81,15 @@ public class AtomSphereCartoon extends MolecularCartoon {
             
             atomPoints.InsertNextPoint(coord.getX(), coord.getY(), coord.getZ());
 
-            if (! (atomPositions.containsKey(atom))) atomPositions.put(atom, new Vector<GraphicsPrimitivePosition>());
-            atomPositions.get(atom).add( new VTKPointPosition(atomPoints, atomPoints.GetNumberOfPoints() - 1) );
+            if (! (atomPositions.containsKey(atom))) atomPositions.put(atom, new Vector());
+            Vector atomPrimitives = (Vector) atomPositions.get(atom);
+            atomPrimitives.add( new VTKPointPosition(atomPoints, atomPoints.GetNumberOfPoints() - 1) );
             
             hasContents = true;
         }
 
         String elementSymbol = "";
-        Enumeration<String> e = elementPoints.keys();
+        Enumeration e = elementPoints.keys();
         while (e.hasMoreElements()) {
               elementSymbol = (String) e.nextElement();
               // System.out.println(elementSymbol);
@@ -158,7 +127,6 @@ public class AtomSphereCartoon extends MolecularCartoon {
         else return null;
     }
 
-    @Override
     public vtkAssembly represent(Atom atom) {
         return represent(atom, 1.00, null);
     }
@@ -173,8 +141,9 @@ public class AtomSphereCartoon extends MolecularCartoon {
         vtkSphereSource sphere = new vtkSphereSource();
         sphere.SetCenter(center.getX(), center.getY(), center.getZ());
         
-        if (! (atomPositions.containsKey(atom))) atomPositions.put(atom, new Vector<GraphicsPrimitivePosition>());
-        atomPositions.get(atom).add( new VTKSpherePosition(sphere) );
+        if (! (atomPositions.containsKey(atom))) atomPositions.put(atom, new Vector());
+        Vector atomPrimitives = (Vector) atomPositions.get(atom);
+        atomPrimitives.add( new VTKSpherePosition(sphere) );
         
         sphere.SetRadius(atom.getRadius() * scaleFactor);
         sphere.SetPhiResolution(20);

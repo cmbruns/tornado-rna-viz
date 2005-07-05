@@ -16,17 +16,14 @@ public class Glycine extends AminoAcid {
         super(bagOfAtoms);
     }
 
-    @Override
     public char getOneLetterCode() {
         return 'G';
     }
 
-    @Override
     public String getThreeLetterCode() {
         return "Gly";
     }
 
-    @Override
     public String getResidueName() {
         return "glycine";
     }
