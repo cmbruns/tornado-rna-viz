@@ -21,10 +21,10 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     ResidueActionBroadcaster residueActionBroadcaster;
     // boolean userIsInteracting = false;
 
-    Vector<String> residueSymbols = new Vector<String>();
+    Vector residueSymbols = new Vector();
     int columnCount = 0;
-    Hashtable<Residue, Integer> residuePositions = new Hashtable<Residue, Integer>();
-    Hashtable<Integer, Residue> positionResidues = new Hashtable<Integer, Residue>();
+    Hashtable residuePositions = new Hashtable();
+    Hashtable positionResidues = new Hashtable();
     Graphics myGraphics = null; // Notice when Graphics object is available
     Residue highlightResidue = null;
     int highlightPosition = -1;
@@ -50,7 +50,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     // Keep track of selection insertion point
     Residue insertionResidue = null;
     boolean insertionResidueRightSide;
-    HashSet<Residue> selectedResidues = new HashSet<Residue>();
+    HashSet selectedResidues = new HashSet();
     Color selectionColor = new Color(50, 50, 255);
     Color highlightColor = new Color(255, 255, 100);
     
@@ -122,21 +122,21 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         g.setColor(getForeground());
         for (int r = leftPosition; r <= rightPosition; r++) {
             // Is it selected?
-            Residue residue = positionResidues.get(r);
+            Residue residue = (Residue) positionResidues.get(new Integer(r));
             if (selectedResidues.contains(residue)) {
                 highlightPosition(g, r, selectionColor);
                 g.setColor(getBackground()); // Inverse text color for selected residues
             }
             else g.setColor(getForeground()); // Normal text
             
-            g.drawString(residueSymbols.get(r), (int)(characterSpacing + r * symbolWidth), baseLine);
+            g.drawString((String) residueSymbols.get(r), (int)(characterSpacing + r * symbolWidth), baseLine);
         }
         
         // Draw numbers
         g.setFont(numberFont);
         g.setColor(getForeground());
         for (int r = leftPosition; r <= rightPosition; r++) {
-            Residue res = positionResidues.get(r);
+            Residue res = (Residue) positionResidues.get(new Integer(r));
             if (res != null) {
                 int residueNumber = res.getResidueNumber();
                 
@@ -224,8 +224,8 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         checkSize(getGraphics());
     }    
     public void add(Residue r) {
-        residuePositions.put(r, residueSymbols.size());
-        positionResidues.put(residueSymbols.size(), r);
+        residuePositions.put(r, new Integer(residueSymbols.size()));
+        positionResidues.put(new Integer(residueSymbols.size()), r);
         residueSymbols.add("" + r.getOneLetterCode());
         columnCount ++;        
     }    
@@ -233,7 +233,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     public void highlight(Residue r) {
         highlightResidue = r;
         if (residuePositions.containsKey(r)) {
-            highlightPosition = residuePositions.get(r);
+            highlightPosition = ((Integer)residuePositions.get(r)).intValue();
             repaint();
         }
         else unHighlightResidue();
@@ -259,7 +259,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         if (! yesActuallyCenterOnResidue) return;
         
         if (residuePositions.containsKey(r)) {
-            int position = residuePositions.get(r);
+            int position = ((Integer)residuePositions.get(r)).intValue();
             int pixel = (int)(symbolWidth * position + characterSpacing);
 
             JScrollBar bar = parent.getHorizontalScrollBar();
@@ -416,7 +416,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
      */
     Residue mouseResidue(MouseEvent e) {
         int sequenceIndex = (int)( (e.getX() - characterSpacing/2.0)/symbolWidth );
-        return positionResidues.get(sequenceIndex);
+        return (Residue) positionResidues.get(new Integer(sequenceIndex));
     }
     
     /**
@@ -462,8 +462,8 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     public Residue getFirstVisibleResidue() {
         int leftPixel = (int) parent.getViewport().getViewRect().getMinX();        
         int leftPosition = (int)((leftPixel - characterSpacing/2.0) / symbolWidth);
-        if (positionResidues.containsKey(leftPosition))
-            return positionResidues.get(leftPosition);
+        if (positionResidues.containsKey(new Integer(leftPosition)))
+            return (Residue) positionResidues.get(new Integer(leftPosition));
         else return null;
     }
 }

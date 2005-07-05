@@ -26,8 +26,8 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
     // boolean userIsInteracting = false;
     SequenceCanvas sequenceCanvas;
 
-    Hashtable<Residue, Integer> residuePositions = new Hashtable<Residue, Integer>();
-    Hashtable<Integer, Residue> positionResidues = new Hashtable<Integer, Residue>();
+    Hashtable residuePositions = new Hashtable();
+    Hashtable positionResidues = new Hashtable();
     int highlight = -1;
     int residueCount = 0;
 
@@ -94,7 +94,7 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         g.setColor(cartoonVisibleColor);
         Residue leftResidue = sequenceCanvas.getFirstVisibleResidue();
         if ( (leftResidue != null) && (residuePositions.containsKey(leftResidue)) ) {
-            int leftPosition = residuePositions.get(leftResidue);
+            int leftPosition = ((Integer)residuePositions.get(leftResidue)).intValue();
             double leftFraction = leftPosition/(residueCount - 1.0);
             int leftPixel = cartoonLeft + (int)(leftFraction * cartoonWidth);
             g.fillRect(leftPixel, cartoonTop, (int)(cartoonWidth * visibleRatio + 0.5), cartoonHeight - 2);            
@@ -199,8 +199,8 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         if (position < 0) position = 0;
         if (position >= residueCount) position = residueCount - 1;
         Residue residue = null;
-        if (positionResidues.containsKey(position))
-            residue = positionResidues.get(position);
+        if (positionResidues.containsKey(new Integer(position)));
+            residue = (Residue) positionResidues.get(new Integer(position));
         return residue;
     }
 
@@ -211,14 +211,14 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         residueCount = 0;
     }    
     public void add(Residue r) {
-        residuePositions.put(r, residueCount);
-        positionResidues.put(residueCount, r);
+        residuePositions.put(r, new Integer(residueCount));
+        positionResidues.put(new Integer(residueCount), r);
         residueCount ++;
     }    
 
     public void highlight(Residue r) {
         if (residuePositions.containsKey(r)) {
-            highlight = residuePositions.get(r);
+            highlight = ((Integer)residuePositions.get(r)).intValue();
             repaint();
         }
         else unHighlightResidue();

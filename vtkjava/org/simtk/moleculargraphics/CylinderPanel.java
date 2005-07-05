@@ -29,8 +29,8 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 	JButton exitButton;
 	vtkRenderer renderer;
 	
-	Hashtable<vtkProp3D, String> vtkPropNames = new Hashtable<vtkProp3D, String>();
-	Hashtable<vtkProp3D, Residue> vtkPropObjects = new Hashtable<vtkProp3D, Residue>();
+	Hashtable vtkPropNames = new Hashtable();
+	Hashtable vtkPropObjects = new Hashtable();
 	
 	Cursor handCursor = new Cursor (Cursor.HAND_CURSOR);
 	Cursor defaultCursor = new Cursor (Cursor.DEFAULT_CURSOR);
