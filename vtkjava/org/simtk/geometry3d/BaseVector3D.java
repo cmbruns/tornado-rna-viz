@@ -11,7 +11,7 @@ import java.util.*;
  *
  * A point or direction vector in three dimensions.
  */
-abstract public class BaseVector3D implements Iterable<Double> {
+abstract public class BaseVector3D implements Iterable {
     abstract public void setX(double d);
     abstract public void setY(double d);
     abstract public void setZ(double d);
@@ -24,9 +24,9 @@ abstract public class BaseVector3D implements Iterable<Double> {
      * 
      * Compute the centroid or mean point
      */
-    public static Vector3D centroid(Vector<BaseVector3D> bagOfPoints) {
+    public static Vector3D centroid(Vector bagOfPoints) {
         BaseVector3D[] coordinates = new BaseVector3D[0];
-        return centroid(bagOfPoints.toArray(coordinates), null);
+        return centroid((BaseVector3D[]) (bagOfPoints.toArray(coordinates)), null);
     }
     
     public static Vector3D centroid(BaseVector3D[] coordinates, double[] weights)   {
@@ -131,17 +131,17 @@ abstract public class BaseVector3D implements Iterable<Double> {
         return answer;
     }
     
-    public Iterator<Double> iterator() {
+    public Iterator iterator() {
         return new VectorIterator(this);        
     }
-    class VectorIterator implements Iterator<Double> {
+    class VectorIterator implements Iterator {
         int coordinateIndex;
         BaseVector3D vector3d;
         VectorIterator(BaseVector3D v) {
             coordinateIndex = -1;
             vector3d = v;
         }
-        public Double next() {
+        public Object next() {
             coordinateIndex ++;
             if (coordinateIndex < 0) return null;
             if (coordinateIndex > 2) return null;

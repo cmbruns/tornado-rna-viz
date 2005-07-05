@@ -26,7 +26,7 @@ public class Line3D {
     public Vector3D getDirection() {return direction;}
     public Vector3D getOrigin() {return origin;}
 	
-	public static Line3D bestLine3D(Vector<BaseVector3D> bagOfPoints)	{
+	public static Line3D bestLine3D(Vector bagOfPoints)	{
         // 1) Compute the centroid or mean point
         Vector3D centroid = BaseVector3D.centroid(bagOfPoints);
 		

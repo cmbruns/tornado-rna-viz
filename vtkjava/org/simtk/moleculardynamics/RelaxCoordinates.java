@@ -7,6 +7,7 @@ package org.simtk.moleculardynamics;
 import java.net.*;
 import java.io.*;
 import java.nio.ByteOrder;
+import java.util.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.atomicstructure.*;
 
@@ -47,8 +48,12 @@ public class RelaxCoordinates {
             boolean swapBytes = (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN);
             
             int coordinateIndex = 0;
-            for (Atom atom : molecule.getAtoms()) {
-                for (Double coordinate : atom.getCoordinates()) {
+            // for (Atom atom : molecule.getAtoms()) {
+            for (Iterator i = molecule.getAtoms().iterator(); i.hasNext(); ) {
+                Atom atom = (Atom) i.next();
+                // for (Double coordinate : atom.getCoordinates()) {
+                for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
+                    Double coordinate = (Double) i.next();
                     // Set reference coordinates once
                     referenceCoordinates[coordinateIndex] = coordinate.floatValue();
                     coordinateIndex ++;

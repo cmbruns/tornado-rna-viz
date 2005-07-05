@@ -9,19 +9,32 @@ import org.simtk.util.*;
 public class Angle extends Number {
 
     static final long serialVersionUID = 1L;
-    static public enum Units{DEGREES, RADIANS, GRADS, REVS};
-    static public enum Range{SIGNED, UNSIGNED, UNLIMITED};
 
-    static double TWO_PI = 2.0 * Math.PI;
+    // static public enum Units{DEGREES, RADIANS, GRADS, REVS};
+    static public class Units {
+        static public Units RADIANS = new Units();
+        static public Units DEGREES = new Units();
+        static public Units GRADS = new Units();
+        static public Units REVS = new Units();
+    }
 
-    static double RADIANS_PER_DEGREE = Math.PI / 180.0;
-    static double DEGREES_PER_RADIAN = 180.0 / Math.PI;
+    // static public enum Range{SIGNED, UNSIGNED, UNLIMITED};
+    static public class Range {
+        static public Range SIGNED = new Range();
+        static public Range UNSIGNED = new Range();
+        static public Range UNLIMITED = new Range();
+    }
 
-    static double RADIANS_PER_GRAD = Math.PI / 200.0;
-    static double GRADS_PER_RADIAN = 200.0 / Math.PI;
+    static public double TWO_PI = 2.0 * Math.PI;
 
-    static double RADIANS_PER_REV = TWO_PI;
-    static double REVS_PER_RADIAN = 1.0 / TWO_PI;
+    static public double RADIANS_PER_DEGREE = Math.PI / 180.0;
+    static public double DEGREES_PER_RADIAN = 180.0 / Math.PI;
+
+    static public double RADIANS_PER_GRAD = Math.PI / 200.0;
+    static public double GRADS_PER_RADIAN = 200.0 / Math.PI;
+
+    static public double RADIANS_PER_REV = TWO_PI;
+    static public double REVS_PER_RADIAN = 1.0 / TWO_PI;
 
     private static Range defaultRange = Range.UNSIGNED;
     private static Units defaultUnits = Units.RADIANS;
@@ -54,19 +67,17 @@ public class Angle extends Number {
 
         double angle = radians;
         
-        switch(range) {
-        case SIGNED:
+        // switch(range) {
+        // case SIGNED:
+        if (range == Range.SIGNED) {
             minAngle = -Math.PI;
             maxAngle = Math.PI;
-            break;
-        case UNSIGNED:
+        }
+        else if (range == Range.UNSIGNED) {
             minAngle = 0.0;
             maxAngle = TWO_PI;
-            break;
-        case UNLIMITED:
-        default:
-            return angle;
         }
+        else if (range == Range.UNLIMITED) {return angle;}
         
         // Within range? No adjustment
         if ( (angle >= minAngle) && (angle < maxAngle) ) return angle;
@@ -124,7 +135,6 @@ public class Angle extends Number {
         return new Angle(getValue(angleUnits) - a2.getValue(angleUnits), angleUnits, angleRange);
     }
 
-    @Override
     public String toString() {
         String answer = (new Double(getValue())).toString();
         if (angleUnits == Units.RADIANS) answer += " radians";
@@ -134,7 +144,6 @@ public class Angle extends Number {
         return answer;
     }
 
-    @Override
     public boolean equals(Object obj) {
         if (obj instanceof Angle)
             return (this == (Angle) obj);
@@ -151,9 +160,8 @@ public class Angle extends Number {
         return (this == a2);
     }
     
-    @Override
     public int hashCode() {
-        Double d = restrictToRange(radianAngle, Range.UNSIGNED);
+        Double d = new Double(restrictToRange(radianAngle, Range.UNSIGNED));
         return d.hashCode();
     }
 

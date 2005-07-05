@@ -16,7 +16,7 @@ import org.simtk.geometry3d.*;
 public abstract class Atom {
 	BaseVector3D coordinates = null;
 	String localName = null; // name should be unique within a residue
-	HashSet<Atom> bonds = new HashSet<Atom>();
+	HashSet bonds = new HashSet();
 	
 	// Force derived classes to set values
 	public abstract double getVanDerWaalsRadius();
@@ -33,7 +33,7 @@ public abstract class Atom {
 	public void addBond(Atom atom2) {
 	    bonds.add(atom2);
 	}
-	public HashSet<Atom> getBonds() {return bonds;}
+	public HashSet getBonds() {return bonds;}
 	
 	/**
 	 * 

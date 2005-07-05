@@ -18,7 +18,7 @@ public class Plane3D {
      * Distance between a point and a plane
      * @return
      */
-    public double distance(Vector3D p) {
+    public double distance(BaseVector3D p) {
         double pointAlpha = p.dot(normal);
         double planeAlpha = origin.dot(normal);
         double distance = pointAlpha - planeAlpha;
@@ -34,9 +34,9 @@ public class Plane3D {
      * @return
      */
     
-    public static Plane3D bestPlane3D(Vector<BaseVector3D> bagOfPoints)   {
+    public static Plane3D bestPlane3D(Vector bagOfPoints)   {
         Vector3D[] coordinates = new Vector3D[0];
-        return bestPlane3D(bagOfPoints.toArray(coordinates), null);
+        return bestPlane3D((BaseVector3D[])bagOfPoints.toArray(coordinates), null);
     }
 
     public static Plane3D bestPlane3D(BaseVector3D[] coordinates, double[] weights)   {

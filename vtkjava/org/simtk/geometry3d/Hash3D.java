@@ -16,39 +16,39 @@ import java.util.*;
   * at the same location, the one that was there earlier will be gone.
   * There may be a problem with having the same object at multiple positions.
  */
-public class Hash3D <V>
-extends Hashtable<BaseVector3D, V>
+public class Hash3D
+extends Hashtable
 // implements Map<Vector3D, V>
 {
     public static final long serialVersionUID = 2L;
     private double cubeletSize = 1.0;
-    private Hashtable<String, Cubelet> cubelets = new Hashtable<String, Cubelet>();
-    private Hashtable<BaseVector3D, V > positionObjects = this;
+    private Hashtable cubelets = new Hashtable();
+    private Hashtable positionObjects = this;
     
     public Hash3D(double r) {
         cubeletSize = r;
     }
     
-    @Override
     public void clear() {
         cubelets.clear();
         super.clear();
     }
     
-    @Override
     public Object clone() {
-        Hash3D<V> answer = new Hash3D<V>(cubeletSize);
-        for (BaseVector3D v : positionObjects.keySet())
+        Hash3D answer = new Hash3D(cubeletSize);
+        // for (BaseVector3D v : positionObjects.keySet())
+        for (Iterator i = positionObjects.keySet().iterator(); i.hasNext();) {
+            BaseVector3D v = (BaseVector3D) i.next();
             answer.put(v, get(v));
+        }
         return answer;
     }
     
-    @Override
-    public V remove(Object key) {
+    public Object remove(Object key) {
         if (! (key instanceof Vector3D)) return null;
 
         Vector3D vec = (Vector3D) key;
-        V value = get(vec);
+        Object value = get(vec);
         if (value == null) return null;
         
         Cubelet cubelet = getCubelet(vec);
@@ -57,9 +57,8 @@ extends Hashtable<BaseVector3D, V>
         return super.remove(key);
     }
     
-    @Override
-    public V put(BaseVector3D position, V object) {
-        V answer = get(position);
+    public Object put(BaseVector3D position, Object object) {
+        Object answer = get(position);
         
         Cubelet cubelet = getCubelet(position);
         cubelet.put(position, object);
@@ -78,10 +77,10 @@ extends Hashtable<BaseVector3D, V>
      * @param radius
      * @return
      */
-    public V getClosest(BaseVector3D position, double radius) {
+    public Object getClosest(BaseVector3D position, double radius) {
         // TODO - more efficient implementation, starting with central cubelet
         //  follow expanding shells as required
-        V answer = null;
+        Object answer = null;
 
         double radiusSquared = radius * radius; // Absolute cutoff distance
         double minDistanceSquared = radiusSquared + 1; // Distance to the closest thing we have found so far
@@ -91,7 +90,9 @@ extends Hashtable<BaseVector3D, V>
         
         // TODO - but, for now, just loop over all objects within the radius
         BaseVector3D closestPoint = null;
-        for (BaseVector3D v : neighborKeys(position, radius)) {
+        // for (BaseVector3D v : neighborKeys(position, radius)) {
+        for (Iterator i = neighborKeys(position, radius).iterator(); i.hasNext(); ) {
+            BaseVector3D v = (BaseVector3D) i.next();
             double d = position.distanceSquared(v);
             if ((d < radiusSquared) && (d < minDistanceSquared)) {
                 minDistanceSquared = d;
@@ -109,10 +110,12 @@ extends Hashtable<BaseVector3D, V>
      * @param radius
      * @return
      */
-    public Collection<V> neighborValues(BaseVector3D position, double radius) {
-        Vector<V> neighbors = new Vector<V>();
-        for (BaseVector3D v : neighborKeys(position, radius)) {
-            V object = get(v);
+    public Collection neighborValues(BaseVector3D position, double radius) {
+        Vector neighbors = new Vector();
+        // for (BaseVector3D v : neighborKeys(position, radius)) {
+        for (Iterator i = neighborKeys(position, radius).iterator(); i.hasNext(); ) {
+            BaseVector3D v = (BaseVector3D) i.next();
+            Object object = get(v);
             if (object != null) neighbors.add(object);
         }
         return neighbors;
@@ -124,8 +127,8 @@ extends Hashtable<BaseVector3D, V>
      * @param radius
      * @return
      */
-    public Collection<BaseVector3D> neighborKeys(BaseVector3D position, double radius) {
-        Vector<BaseVector3D> neighbors = new Vector<BaseVector3D>();
+    public Collection neighborKeys(BaseVector3D position, double radius) {
+        Vector neighbors = new Vector();
         double dSquared = radius * radius;
         
         int minX = hashKey(position.getX() - radius);
@@ -140,8 +143,10 @@ extends Hashtable<BaseVector3D, V>
                 for (int z = minZ; z <= maxZ; z ++) {
                     String key = hashKey(x,y,z);
                     if (!cubelets.containsKey(key)) continue; // no such cubelet
-                    Cubelet cubelet = cubelets.get(key);
-                    for (BaseVector3D v : cubelet.keySet()) {
+                    Cubelet cubelet = (Cubelet) cubelets.get(key);
+                    // for (BaseVector3D v : cubelet.keySet()) {
+                    for (Iterator i = cubelet.keySet().iterator(); i.hasNext(); ) {
+                        BaseVector3D v = (BaseVector3D) i.next();
                         // Check distance
                         if (position.distanceSquared(v) > dSquared) continue; // too far apart
                         neighbors.add(v);
@@ -170,10 +175,10 @@ extends Hashtable<BaseVector3D, V>
         String key = hashKey(position);
         if ( !cubelets.containsKey(key) )
             cubelets.put( key, new Cubelet() );
-        return cubelets.get(key);        
+        return (Cubelet) cubelets.get(key);        
     }
 
-    private class Cubelet extends Hashtable<BaseVector3D, V > {
+    private class Cubelet extends Hashtable {
         static final long serialVersionUID = 1L;
     }
 }

@@ -10,7 +10,6 @@ public class Bond {
     
     public Bond(Atom a1, Atom a2) {atom1 = a1; atom2 = a2;}
 
-    @Override
     public boolean equals(Object o) {
         if (! (o instanceof Bond)) return false;
         Bond bond2 = (Bond) o;
@@ -21,7 +20,6 @@ public class Bond {
                 (atom1.equals(bond2.atom2)) ) return true;
         return false;
     }
-    @Override
     public int hashCode() {
         // Must be symmetric with respect to atom1 vs. atom2
         return atom1.hashCode() + atom2.hashCode();

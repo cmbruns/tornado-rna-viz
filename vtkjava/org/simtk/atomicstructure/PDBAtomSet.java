@@ -12,7 +12,7 @@ import java.util.Vector;
  * Simple container for manipulating sets of PDBAtoms
  *
  */
-public class PDBAtomSet extends Vector<PDBAtom> {
-    public PDBAtom get(int i) {return (PDBAtom) super.get(i);}
+public class PDBAtomSet extends Vector {
+    // public PDBAtom get(int i) {return (PDBAtom) super.get(i);}
     static final long serialVersionUID = 10L; // compiler warned so I created this CMB
 }
