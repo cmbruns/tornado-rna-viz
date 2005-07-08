@@ -10,7 +10,8 @@
   </information>
   <offline-allowed/>
   <resources>
-    <j2se version="1.5+" />
+    <j2se version="1.4+" />
+    <property name="apple.laf.useScreenMenuBar" value="true"/>
     <jar href="Tornado.jar"/>
     <jar href="vtk.jar"/>
     <jar href="Jama.jar"/>
