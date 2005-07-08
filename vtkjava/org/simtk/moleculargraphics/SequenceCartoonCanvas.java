@@ -1,4 +1,31 @@
 /*
+ * Copyright (c) 2005, Stanford University. All rights reserved. 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions
+ * are met: 
+ *  - Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ *  - Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *    documentation and/or other materials provided with the distribution. 
+ *  - Neither the name of the Stanford University nor the names of its 
+ *    contributors may be used to endorse or promote products derived 
+ *    from this software without specific prior written permission. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE. 
+ */
+
+/*
  * Created on May 19, 2005
  *
  */
@@ -6,7 +33,7 @@ package org.simtk.moleculargraphics;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Hashtable;
+import java.util.*;
 import org.simtk.util.*;
 
 import org.simtk.molecularstructure.Residue;
@@ -44,6 +71,8 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     Cursor leftRightCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
 
+    Color selectionColor = new Color(50, 50, 255);
+
     public SequenceCartoonCanvas(ResidueActionBroadcaster b, SequenceCanvas s) {
         super();
         sequenceCanvas = s;
@@ -72,11 +101,111 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         if (residueCount <= 0) return;
         
         cartoonLeft = cartoonMargin;
-        int cartoonWidth = d.width - 2 * cartoonMargin;
+
+        // int cartoonWidth = d.width - 2 * cartoonMargin;
         
-        if (cartoonWidth <= 0) return;
+        // if (cartoonWidth <= 0) return;
         
         // Notice if sequence does not fill its viewport window
+        // double sequenceWidth = sequenceCanvas.getSequenceWidth();
+        // double windowWidth = sequenceCanvas.getViewportWidth();
+        // double visibleRatio = windowWidth / sequenceWidth;
+        // if (visibleRatio > 1.0) { // Entire sequence is shown
+        //     cartoonWidth = (int) (cartoonWidth / visibleRatio);
+        //     visibleRatio = 1.0;
+        // }
+        
+        // Draw rectangular background of sequence cartoon
+        cartoonRight = cartoonLeft + cartoonWidth() - 1;
+        g.setColor(cartoonBackgroundColor);
+        g.fillRect(cartoonLeft, cartoonTop, cartoonWidth(), cartoonHeight - 2);
+
+        // Draw lighter rectangle where sequence is visible
+        g.setColor(cartoonVisibleColor);
+        Residue leftResidue = sequenceCanvas.getFirstVisibleResidue();
+        Residue rightResidue = sequenceCanvas.getFinalVisibleResidue();
+        if (    (leftResidue != null) && 
+                (residuePositions.containsKey(leftResidue)) &&
+                (rightResidue != null) && 
+                (residuePositions.containsKey(rightResidue))
+             ) {
+            int leftPosition = ((Integer)residuePositions.get(leftResidue)).intValue();
+            int rightPosition = ((Integer)residuePositions.get(rightResidue)).intValue();
+            
+            // double leftFraction = leftPosition/(residueCount - 1.0);
+
+            int leftPixel = positionPixel(leftPosition - 0.5);
+            int rightPixel = positionPixel(rightPosition + 0.5);
+
+            g.fillRect(leftPixel, cartoonTop, rightPixel - leftPixel + 1, cartoonHeight - 2);            
+        }
+        
+        // Draw highlight
+        if (highlight >= 0) {
+            int highlightLeft = positionPixel(highlight - 0.5);
+            int highlightRight = positionPixel(highlight + 0.5);
+            int highlightWidth = highlightRight - highlightLeft + 1;
+            if (highlightWidth < 1) highlightWidth = 1;
+            
+            g.setColor(Color.yellow);
+            g.fillRect(highlightLeft, cartoonTop, highlightWidth, cartoonHeight - 2);
+        }
+        
+        // Draw selection
+        // Sort selected residues into contiguous ranges
+        HashSet processedSelections = new HashSet();
+        Vector selectStarts = new Vector();
+        Vector selectEnds = new Vector();
+        for (Iterator i = residueActionBroadcaster.getSelected().iterator(); i.hasNext(); ) {
+            Residue r = (Residue) i.next();
+            if (processedSelections.contains(r)) continue; // skip residues we already saw
+            processedSelections.add(r);
+
+            // Find start of this selected range
+            Residue f = r;
+            while (true) {
+                if (f.getPreviousResidue() == null) break;
+                if ( ! residueActionBroadcaster.getSelected().contains(f.getPreviousResidue())) break;
+                f = f.getPreviousResidue();
+                processedSelections.add(f);
+            }
+
+            // Find end of this selected range
+            Residue e = r;
+            while (true) {
+                if (e.getNextResidue() == null) break;
+                if ( ! residueActionBroadcaster.getSelected().contains(e.getNextResidue())) break;
+                e = e.getNextResidue();
+                processedSelections.add(e);
+            }
+            
+            Integer startPosition = (Integer) residuePositions.get(e);
+            Integer endPosition = (Integer) residuePositions.get(f);
+            if ( (startPosition != null) && (endPosition != null) ) {
+                selectEnds.add(startPosition);
+                selectStarts.add(endPosition);
+            }
+        }
+
+        // Paint a rectangle for each selection
+        g.setColor(selectionColor);
+        for (int i = 0; i < selectStarts.size(); i++) {
+            int start = ((Integer)selectStarts.get(i)).intValue();
+            int end = ((Integer)selectEnds.get(i)).intValue();
+            int startPixel = positionPixel(start - 0.5);
+            int endPixel = positionPixel(end + 0.5);
+            g.fillRect(startPixel, cartoonTop, (endPixel - startPixel + 1), cartoonHeight - 2);            
+        }
+        
+        // Finally draw cartoon outline
+        g.setColor(getForeground());
+        g.drawRect(cartoonLeft, cartoonTop, cartoonWidth(), cartoonHeight - 2);
+
+    }
+    
+    int cartoonWidth() {
+        Dimension d = getSize();
+        double cartoonWidth = d.width - 2 * cartoonMargin;
         double sequenceWidth = sequenceCanvas.getSequenceWidth();
         double windowWidth = sequenceCanvas.getViewportWidth();
         double visibleRatio = windowWidth / sequenceWidth;
@@ -84,36 +213,10 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
             cartoonWidth = (int) (cartoonWidth / visibleRatio);
             visibleRatio = 1.0;
         }
-        
-        // Draw rectangular background of sequence cartoon
-        cartoonRight = cartoonLeft + cartoonWidth - 1;
-        g.setColor(cartoonBackgroundColor);
-        g.fillRect(cartoonLeft, cartoonTop, cartoonWidth, cartoonHeight - 2);
-
-        // TODO - draw lighter rectangle where sequence is visible
-        g.setColor(cartoonVisibleColor);
-        Residue leftResidue = sequenceCanvas.getFirstVisibleResidue();
-        if ( (leftResidue != null) && (residuePositions.containsKey(leftResidue)) ) {
-            int leftPosition = ((Integer)residuePositions.get(leftResidue)).intValue();
-            double leftFraction = leftPosition/(residueCount - 1.0);
-            int leftPixel = cartoonLeft + (int)(leftFraction * cartoonWidth);
-            g.fillRect(leftPixel, cartoonTop, (int)(cartoonWidth * visibleRatio + 0.5), cartoonHeight - 2);            
-        }
-        
-        // Draw highlight
-        if (highlight >= 0) {
-            int highlightLeft = cartoonLeft + (int)((highlight) * cartoonWidth / residueCount);
-            int highlightWidth = cartoonWidth / residueCount;
-            if (highlightWidth < 1) highlightWidth = 1;
-            
-            g.setColor(Color.yellow);
-            g.fillRect(highlightLeft, cartoonTop, highlightWidth, cartoonHeight - 2);
-        }
-        
-        // Finally draw cartoon outline
-        g.setColor(getForeground());
-        g.drawRect(cartoonLeft, cartoonTop, cartoonWidth, cartoonHeight - 2);
-
+        return (int)cartoonWidth;
+    }
+    int positionPixel(double position) {
+        return (int)(cartoonLeft + ((position + 0.5) * cartoonWidth() / residueCount));
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -228,10 +331,13 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         repaint();
     }
     public void select(Selectable s) {
+        repaint();
     }
     public void unSelect(Selectable s) {
+        repaint();
     }
     public void unSelect() {
+        repaint();
     }
     public void centerOn(Residue r) {} // This sequence does not move
 

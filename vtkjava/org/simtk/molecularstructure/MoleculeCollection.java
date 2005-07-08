@@ -1,4 +1,31 @@
 /*
+ * Copyright (c) 2005, Stanford University. All rights reserved. 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions
+ * are met: 
+ *  - Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ *  - Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *    documentation and/or other materials provided with the distribution. 
+ *  - Neither the name of the Stanford University nor the names of its 
+ *    contributors may be used to endorse or promote products derived 
+ *    from this software without specific prior written permission. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE. 
+ */
+
+/*
  * Created on Apr 21, 2005
  *
  */
@@ -21,6 +48,10 @@ public class MoleculeCollection {
 
     Vector3D centerOfMass = new Vector3D();
     double mass = 0;
+    
+    private String mTitle = "";
+    public String getTitle() {return mTitle;}
+    public void setTitle(String t) {mTitle = t;}
 
     public double getMass() {
         return mass;
@@ -52,6 +83,40 @@ public class MoleculeCollection {
     public void loadPDBFormat(InputStream is) throws IOException {
         
 		LineNumberReader reader = new LineNumberReader(new InputStreamReader(is));
+        
+        // TODO read header information, specfically the name(s) of the molecules
+        String PDBLine;
+        String title = "";
+        reader.mark(200);
+        FILE_LINE: while ((PDBLine = reader.readLine()) != null) {
+
+            // Stop parsing after the END record
+            if (PDBLine.substring(0,3).equals("END")) {
+                reader.reset(); // Leave the END tag for the next guy
+                return;
+            }
+
+            // If we get to ATOM records, we need to stop and send the stream to the Molecule parser
+            else if ((PDBLine.substring(0,6).equals("ATOM  ")) || (PDBLine.substring(0,6).equals("HETATM"))) {
+                // Oops, we passed the header, and are now in the coordinates
+                // Pass this off to the Molecule parser
+                reader.reset();
+                break;
+            }
+
+            // If we get to ATOM records, we need to stop and send the stream to the Molecule parser
+            else if (PDBLine.substring(0,6).equals("TITLE ")) {
+                String titlePart = PDBLine.substring(10,60).trim();
+                if (titlePart.length() > 0) {
+                    if (title.length() > 0) title = title + " " + titlePart;
+                    else title = titlePart;
+                }
+            }
+
+            reader.mark(200); // Commit to reading this far into the file
+        }
+        if (title.length() > 0) setTitle(title);
+        
 		Molecule mol = Molecule.createFactoryPDBMolecule(reader);
 
 		// TODO do something more proactive if there are no molecules (such as throw an exception)

@@ -1,10 +1,38 @@
 /*
+ * Copyright (c) 2005, Stanford University. All rights reserved. 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions
+ * are met: 
+ *  - Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ *  - Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *    documentation and/or other materials provided with the distribution. 
+ *  - Neither the name of the Stanford University nor the names of its 
+ *    contributors may be used to endorse or promote products derived 
+ *    from this software without specific prior written permission. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE. 
+ */
+
+/*
  * Created on Apr 24, 2005
  *
  */
 package org.simtk.moleculargraphics;
 
 import java.awt.*;
+import java.awt.image.*;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -13,8 +41,7 @@ import java.awt.event.*;
 import net.java.games.jogl.*;
 import java.io.*;
 
-import org.simtk.moleculargraphics.cartoon.MolecularCartoon;
-import org.simtk.moleculargraphics.cartoon.RopeAndCylinderCartoon;
+import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.geometry3d.*;
 import org.simtk.util.*;
@@ -59,13 +86,14 @@ public class Tornado3DCanvas extends vtkPanel
     ResidueActionBroadcaster residueActionBroadcaster;
 
     // Hashtable<Residue, vtkProp> residueHighlights = new Hashtable<Residue, vtkProp>();
-    Hashtable residueHighlights = new Hashtable();
+    // Hashtable residueHighlights = new Hashtable();
     vtkProp currentHighlight;
     Residue currentHighlightedResidue;
     
     boolean useLogoOverlay = true;
     
     vtkRenderer overlayRenderer;
+    vtkImageData logoImageData = null;
     vtkPNGReader logoReader;
     vtkImageActor logoActor;
     int logoWidth;
@@ -76,8 +104,8 @@ public class Tornado3DCanvas extends vtkPanel
     
     ClassLoader classLoader;
 
-    MolecularCartoon.CartoonType currentCartoonType = MolecularCartoon.CartoonType.BALL_AND_STICK; // default starting type
-    MolecularCartoon currentCartoon = new RopeAndCylinderCartoon();
+    MolecularCartoon.CartoonType currentCartoonType = MolecularCartoon.CartoonType.WIRE_FRAME; // default starting type
+    MolecularCartoonNewWay currentCartoon = new WireFrameCartoon();
     
 	Tornado3DCanvas(ResidueActionBroadcaster b) {
         super();
@@ -116,6 +144,7 @@ public class Tornado3DCanvas extends vtkPanel
             // This causes rendering crash on Sherm's machine
             if (false)
             {
+                // Write Java image to temp file, so vtk can read it from a file
                 Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk3.simtk3"));
 
                 // Create an actual file for the image, then have vtk read the file
@@ -134,6 +163,62 @@ public class Tornado3DCanvas extends vtkPanel
                     System.err.println(exc);
                 }
             }
+            else if (true) {
+                // TODO create vtk image pixel by pixel
+                // Write Java image to temp file, so vtk can read it from a file
+                Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk3.png"));
+                MediaTracker tracker = new MediaTracker(this);
+                tracker.addImage(logoImage, 0);
+                try {tracker.waitForAll();}
+                catch (InterruptedException e) {}
+                
+                int w = logoImage.getWidth(this);
+                int h = logoImage.getHeight(this);
+                PixelGrabber pixelGrabber = new PixelGrabber(logoImage, 0, 0, w, h, true);
+
+                // System.out.println("Reading pixel data, width = "+w+", height = "+h);
+                try{pixelGrabber.grabPixels();}
+                catch (Exception e){System.out.println("PixelGrabber exception");}
+                int pixels[] = (int[]) pixelGrabber.getPixels();
+
+                logoImageData = new vtkImageData();
+                logoImageData.SetDimensions(w, h, 1);
+                logoImageData.SetScalarTypeToUnsignedChar();
+                logoImageData.SetNumberOfScalarComponents(4);
+                logoImageData.AllocateScalars();
+                
+                int pixelCount = 0;
+                int opaquePixelCount = 0;
+                for (int x = 0; x < w; x++) {
+                    for (int y = 0; y < h; y++) {
+                        int pixel = y * w + x;
+                        int color = pixels[pixel];
+
+                        int alpha = (color & 0xFF000000) >> 24;
+                        int red   = (color & 0x00FF0000) >> 16;
+                        int green = (color & 0x0000FF00) >> 8;
+                        int blue  = (color & 0x000000FF);
+
+                        pixelCount ++;
+                        if (alpha > 0) opaquePixelCount ++;
+                        
+                        int iy = h - 1 - y;
+                        
+                        // SetScalarComponentFromDouble causes no such method error
+                        logoImageData.SetScalarComponentFromFloat(x, iy, 0, 3, alpha);
+                        logoImageData.SetScalarComponentFromFloat(x, iy, 0, 0, red);
+                        logoImageData.SetScalarComponentFromFloat(x, iy, 0, 1, green);
+                        logoImageData.SetScalarComponentFromFloat(x, iy, 0, 2, blue);
+                        // TODO
+                    }
+                }
+                logoWidth = w;
+                logoHeight = h;
+                
+                // System.out.println(""+pixelCount+" pixels found");
+                // System.out.println(""+opaquePixelCount+" opaque pixels found");
+                // TODO
+            }
             
             logoReader = new vtkPNGReader();
             if (tempImageFileName != null)
@@ -144,9 +229,16 @@ public class Tornado3DCanvas extends vtkPanel
             int[] logoBounds = logoReader.GetDataExtent();
 
             logoActor = new vtkImageActor();
-            logoActor.SetInput(logoReader.GetOutput());
-            logoWidth = logoBounds[1] - logoBounds[0] + 1;
-            logoHeight = logoBounds[3] - logoBounds[2] + 1;
+
+            if (logoImageData != null) {
+                logoActor.SetInput(logoImageData);
+            }
+            else {
+                logoActor.SetInput(logoReader.GetOutput());
+                logoWidth = logoBounds[1] - logoBounds[0] + 1;
+                logoHeight = logoBounds[3] - logoBounds[2] + 1;
+            }
+
             overlayRenderer.AddActor(logoActor);
         }
         
@@ -245,7 +337,10 @@ public class Tornado3DCanvas extends vtkPanel
         if ((overlayRenderer != null) && (overlayRenderer.GetActiveCamera() != null)) {
             // Keep the logo small
             overlayRenderer.GetActiveCamera().SetParallelScale(getHeight()/2);
-            if (logoReader != null)
+            
+            if (logoImageData != null)
+                logoImageData.SetOrigin(getWidth()/2 - logoWidth, -getHeight()/2, 0);
+            else if (logoReader != null)
                 // Keep the logo in the lower right corner
                 logoReader.SetDataOrigin(getWidth()/2 - logoWidth, -getHeight()/2, 0);
         }
@@ -378,19 +473,18 @@ public class Tornado3DCanvas extends vtkPanel
 
     boolean doPick = true;
     public void mouseClicked(MouseEvent event) {
-        System.out.println("Click");
         if (doPick) {
             Date startTime = new Date();
             
             Residue residue = mouseResidue(event);
             if (residue != null) {
-                System.out.println("Residue found");
+                // System.out.println("Residue found");
                 residueActionBroadcaster.fireHighlight(residue);
             }
                 
             Date endTime = new Date();
             long milliseconds = endTime.getTime() - startTime.getTime();
-            System.out.println("pick took " + milliseconds + " milliseconds");
+            // System.out.println("pick took " + milliseconds + " milliseconds");
         }
     }
     
@@ -423,9 +517,9 @@ public class Tornado3DCanvas extends vtkPanel
             // pickResult is always 0 with vtkWorldPointPicker
             vtkPropPicker picker = new vtkPropPicker(); // Unrelated to models
             int pickResult = picker.Pick(x, y, -100, ren);
-            System.out.println("Picked something");
+            // System.out.println("Picked something");
             double[] pickedPoint = picker.GetPickPosition();
-            System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+            // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
             pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
         }
         
@@ -438,9 +532,9 @@ public class Tornado3DCanvas extends vtkPanel
             // picker.SetTolerance(0.001);
             int pickResult = picker.Pick(x, y, -100, ren);
             if (pickResult != 0) {
-                System.out.println("Picked something");
+                // System.out.println("Picked something");
                 double[] pickedPoint = picker.GetPickPosition();
-                System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+                // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
                 pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
             }
         }
@@ -450,19 +544,19 @@ public class Tornado3DCanvas extends vtkPanel
             picker.SetTolerance(0.0);
             int pickResult = picker.Pick(x, y, -100, ren);
             if (pickResult != 0) {
-                System.out.println("Picked something");
+                // System.out.println("Picked something");
                 double[] pickedPoint = picker.GetPickPosition();
                 
                 pickedPoint = picker.GetProp3D().GetPosition();
                 
-                System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+                // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
                 pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
 
                 vtkProp3DCollection props3D = picker.GetProp3Ds();
-                System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
+                // System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
                 
                 vtkActorCollection actors = picker.GetActors();
-                System.out.println("Number of Actors = " + actors.GetNumberOfItems());
+                // System.out.println("Number of Actors = " + actors.GetNumberOfItems());
                 
             }
         }
@@ -470,16 +564,16 @@ public class Tornado3DCanvas extends vtkPanel
         else if (false) { // default picker
             int pickResult = picker.Pick(x, y, -100, ren);
             if (pickResult != 0) {
-                System.out.println("Picked something");
+                // System.out.println("Picked something");
                 double[] pickedPoint = picker.GetPickPosition();
                 System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
                 pickedPosition = new Vector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
                 
                 vtkProp3DCollection props3D = picker.GetProp3Ds();
-                System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
+                // System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
                 
                 vtkActorCollection actors = picker.GetActors();
-                System.out.println("Number of Actors = " + actors.GetNumberOfItems());                
+                // System.out.println("Number of Actors = " + actors.GetNumberOfItems());                
             }
         }
 
@@ -498,7 +592,7 @@ public class Tornado3DCanvas extends vtkPanel
             
             // if (pickResult != 0) {
             if (true) {
-                System.out.println("Picked something");
+                // System.out.println("Picked something");
     
                 // vtkActor actor = picker.GetActor();
                 // System.out.println("Actor = " + actor); // null for glyph3d?
@@ -518,10 +612,11 @@ public class Tornado3DCanvas extends vtkPanel
     //            }
     
                 double[] pickedPoint = picker.GetPickPosition();
-                System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
+                // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
             }
-            else 
-                System.out.println("Picked nothing");
+            else {
+                // System.out.println("Picked nothing");
+            }
         }
         
         UnLock();
@@ -565,42 +660,38 @@ public class Tornado3DCanvas extends vtkPanel
     public void mouseExited(MouseEvent event) {
    }
     
-    public void clearResidueHighlights() {
-        vtkProp highlight;
-        for (Iterator i = residueHighlights.values().iterator();
-             i.hasNext();
-        ) {
-            highlight = (vtkProp) (i.next());
-        // for (vtkProp highlight : residueHighlights.values()) {
-
-            // try {ren.RemoveViewProp(highlight);}
-            // catch (NoSuchMethodError exc) {
-            //     ren.RemoveProp(highlight);
-            // }
-            ren.RemoveProp(highlight);
-        }
-        residueHighlights.clear();
-    }
-    
-    public void addResidueHighlight(Residue r, vtkProp h) {
-        if (h == null) return;
-        h.SetVisibility(0);
-        residueHighlights.put(r, h);
-
-        // try{ren.AddViewProp(h);}
-        // catch(NoSuchMethodError exc){ren.AddProp(h);}
-        ren.AddProp(h);
-    }
+//    public void clearResidueHighlights() {
+//        vtkProp highlight;
+//        for (Iterator i = residueHighlights.values().iterator();
+//             i.hasNext();
+//        ) {
+//            highlight = (vtkProp) (i.next());
+//        // for (vtkProp highlight : residueHighlights.values()) {
+//
+//            // try {ren.RemoveViewProp(highlight);}
+//            // catch (NoSuchMethodError exc) {
+//            //     ren.RemoveProp(highlight);
+//            // }
+//            ren.RemoveProp(highlight);
+//        }
+//        residueHighlights.clear();
+//    }
+//    
+//    public void addResidueHighlight(Residue r, vtkProp h) {
+//        if (h == null) return;
+//        h.SetVisibility(0);
+//        residueHighlights.put(r, h);
+//
+//        // try{ren.AddViewProp(h);}
+//        // catch(NoSuchMethodError exc){ren.AddProp(h);}
+//        ren.AddProp(h);
+//    }
     
     public void highlight(Residue r) {
         if (r == currentHighlightedResidue) return;
         unHighlightResidue();
-        if (residueHighlights.containsKey(r)) {
-            currentHighlightedResidue = r;
-            currentHighlight = (vtkProp) residueHighlights.get(r);
-            currentHighlight.SetVisibility(1);
-            repaint();
-        }
+        currentCartoon.highlight(r);
+        repaint();
     }
     public void unHighlightResidue() {
         if (currentHighlight == null) return;
@@ -610,9 +701,15 @@ public class Tornado3DCanvas extends vtkPanel
         repaint();
     }
     
-    public void select(Selectable r) {}
-    public void unSelect(Selectable r) {}
-    public void unSelect() {}
+    public void select(Selectable r) {
+        currentCartoon.select(r);
+    }
+    public void unSelect(Selectable r) {
+        currentCartoon.unSelect(r);
+    }
+    public void unSelect() {
+        currentCartoon.unSelect();
+    }
     public void add(Residue r) {}    
     public void clearResidues() {}
 
@@ -691,7 +788,8 @@ public class Tornado3DCanvas extends vtkPanel
         if (mol == null) return;
         Vector3D translation = screenToWorldTranslation(tX, tY);
         mol.translate(translation);
-        currentCartoon.updateCoordinates(mol);
+        // TODO - turn this back on
+        // currentCartoon.updateCoordinates(mol);
     }
     
     /**

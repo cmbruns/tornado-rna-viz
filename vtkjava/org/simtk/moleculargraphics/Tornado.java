@@ -1,4 +1,31 @@
 /*
+ * Copyright (c) 2005, Stanford University. All rights reserved. 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions
+ * are met: 
+ *  - Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ *  - Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *    documentation and/or other materials provided with the distribution. 
+ *  - Neither the name of the Stanford University nor the names of its 
+ *    contributors may be used to endorse or promote products derived 
+ *    from this software without specific prior written permission. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE. 
+ */
+
+/*
  * Created on Apr 24, 2005
  *
  */
@@ -14,18 +41,10 @@ import java.util.zip.*;
 import java.net.*;
 import javax.jnlp.*;
 
-import org.simtk.moleculargraphics.cartoon.AtomSphereCartoon;
-import org.simtk.moleculargraphics.cartoon.BackboneCurveCartoon;
-import org.simtk.moleculargraphics.cartoon.BallAndStickCartoon;
-import org.simtk.moleculargraphics.cartoon.MolecularCartoon;
-import org.simtk.moleculargraphics.cartoon.ResidueSphereCartoon;
-import org.simtk.moleculargraphics.cartoon.RopeAndCylinderCartoon;
-import org.simtk.moleculargraphics.cartoon.WireFrameCartoon;
+import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
 import org.simtk.molecularstructure.nucleicacid.*;
-import org.simtk.atomicstructure.Atom;
-import org.simtk.atomicstructure.PDBNitrogen;
-import org.simtk.atomicstructure.PDBOxygen;
 import org.simtk.geometry3d.*;
 import org.simtk.util.*;
 
@@ -49,6 +68,7 @@ implements ResidueActionListener
     }
     
     public static final long serialVersionUID = 1L;
+    static String tornadoVersion = "0.48";
     
     ClassLoader classLoader;
     Tornado3DCanvas canvas;
@@ -79,8 +99,9 @@ implements ResidueActionListener
 
     ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
     
+    String titleBase = "toRNAdo";
     Tornado() {
-        super("toRNAdo from SimTK.org");
+        super("toRNAdo: (no structures currently loaded)");
         
         loadNativeLibraries();
         
@@ -405,6 +426,14 @@ implements ResidueActionListener
 
         menu = new JMenu("Tornado");
         menuBar.add(menu);
+
+        menuItem = new JMenuItem("About Tornado");
+        menuItem.setEnabled(true);
+        menuItem.addActionListener(new AboutTornadoAction());
+        menu.add(menuItem);
+
+        menu.add(new JSeparator());
+
         menuItem = new JMenuItem("Exit Tornado");
         menuItem.addActionListener(new QuitAction());
         menu.add(menuItem);
@@ -450,6 +479,8 @@ implements ResidueActionListener
         JMenu viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
 
+
+        
         menu = new JMenu("Molecule Style");
         viewMenu.add(menu);
 
@@ -469,12 +500,41 @@ implements ResidueActionListener
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")));
-        checkItem.setEnabled(true);
-        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.ROPE_AND_CYLINDER));
-        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.ROPE_AND_CYLINDER);
-        cartoonGroup.add(checkItem);
-        menu.add(checkItem);
+
+//        checkItem = new JCheckBoxMenuItem("Nucleotide sticks (test only!)");
+//        checkItem.setEnabled(true);
+//        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.NUCLEOTIDE_STICK));
+//        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_STICK);
+//        cartoonGroup.add(checkItem);
+//        menu.add(checkItem);
+//
+//        checkItem = new JCheckBoxMenuItem("Nucleotide stick caps (test only!)");
+//        checkItem.setEnabled(true);
+//        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.NUCLEOTIDE_STICK_CAPS));
+//        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_STICK_CAPS);
+//        cartoonGroup.add(checkItem);
+//        menu.add(checkItem);
+
+//        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")));
+//        checkItem.setEnabled(true);
+//        checkItem.addActionListener(new CartoonAction(MolecularCartoon1.CartoonType.ROPE_AND_CYLINDER));
+//        checkItem.setState(canvas.currentCartoonType == MolecularCartoon1.CartoonType.ROPE_AND_CYLINDER);
+//        cartoonGroup.add(checkItem);
+//        menu.add(checkItem);
+//
+//          checkItem = new JCheckBoxMenuItem("Duplex Cylinders (for testing only!)");
+//          checkItem.setEnabled(true);
+//          checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.DUPLEX_CYLINDER));
+//          checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.DUPLEX_CYLINDER);
+//          cartoonGroup.add(checkItem);
+//          menu.add(checkItem);
+//
+          checkItem = new JCheckBoxMenuItem("Residue wedges (for testing only!)");
+          checkItem.setEnabled(true);
+          checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.NUCLEOTIDE_WEDGE));
+          checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_WEDGE);
+          cartoonGroup.add(checkItem);
+          menu.add(checkItem);
 
         checkItem = new JCheckBoxMenuItem("Residue Spheres");
         checkItem.setEnabled(true);
@@ -490,13 +550,15 @@ implements ResidueActionListener
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Wire Frame");
+        checkItem = new JCheckBoxMenuItem("Line Drawing");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.WIRE_FRAME));
         checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.WIRE_FRAME);
         cartoonGroup.add(checkItem);
         menu.add(checkItem);
 
+        
+        
         menu = new JMenu("Rotation");
         viewMenu.add(menu);
 
@@ -530,7 +592,7 @@ implements ResidueActionListener
         checkItem = new JCheckBoxMenuItem("Sky");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new BackgroundColorAction(new Color(0.92f, 0.96f, 1.0f)));
-        checkItem.setState(false);
+        checkItem.setState(true);
         backgroundGroup.add(checkItem);
         menu.add(checkItem);
         
@@ -580,8 +642,10 @@ implements ResidueActionListener
         
         menu = new JMenu("Help");
         menuBar.add(menu);
+
         menuItem = new JMenuItem("About Tornado");
-        menuItem.setEnabled(false);
+        menuItem.setEnabled(true);
+        menuItem.addActionListener(new AboutTornadoAction());
         menu.add(menuItem);
 
         menu.add(new JSeparator());
@@ -640,22 +704,37 @@ implements ResidueActionListener
             
             canvas.currentCartoonType = type;
 
-            if (canvas.currentCartoonType == MolecularCartoon.CartoonType.BALL_AND_STICK)
+            if (false) ;
+
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.BALL_AND_STICK)
                 canvas.currentCartoon = new BallAndStickCartoon();
             else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.SPACE_FILLING)
-                canvas.currentCartoon = new AtomSphereCartoon();
-            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.ROPE_AND_CYLINDER)
-                canvas.currentCartoon = new RopeAndCylinderCartoon();
+                canvas.currentCartoon = new AtomSphereCartoon(1.0);
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.BOND_STICK)
+                canvas.currentCartoon = new BondStickCartoon(0.15);
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_STICK)
+                canvas.currentCartoon = new NucleotideStickCartoon(0.50);
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_STICK_CAPS)
+                canvas.currentCartoon = new NucleotideStickCaps(0.50);
+//          else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.ROPE_AND_CYLINDER)
+//          canvas.currentCartoon = new RopeAndCylinderCartoon();
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.DUPLEX_CYLINDER)
+                canvas.currentCartoon = new DuplexCylinderCartoon();
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_WEDGE)
+                canvas.currentCartoon = new DuplexResidueWedge(8.0);
             else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.RESIDUE_SPHERE)
                 canvas.currentCartoon = new ResidueSphereCartoon();
             else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.BACKBONE_TRACE)
-                canvas.currentCartoon = new BackboneCurveCartoon();
-            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.WIRE_FRAME)
-                canvas.currentCartoon = new WireFrameCartoon();
-            else
-                canvas.currentCartoon = new BallAndStickCartoon();
+                canvas.currentCartoon = new BackboneCurveCartoon(0.50);
 
-            vtkAssembly assembly = canvas.currentCartoon.represent(moleculeCollection);
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.WIRE_FRAME)
+                canvas.currentCartoon = new WireFrameCartoon();                
+            else
+                throw new RuntimeException("Unexpected cartoon type asked for" + canvas.currentCartoonType);
+
+            canvas.currentCartoon.show(moleculeCollection);
+            vtkAssembly assembly = canvas.currentCartoon.getAssembly();
+            
             if (assembly != null) {
                 canvas.Lock();
                 canvas.GetRenderer().RemoveAllProps();
@@ -669,30 +748,30 @@ implements ResidueActionListener
             }
 
             // Update residue highlights
-            firstResidue = null;
-            finalResidue = null;
-            // for (Molecule molecule : moleculeCollection.molecules()) {
-            for (Iterator i = moleculeCollection.molecules().iterator(); i.hasNext();) {
-                Molecule molecule = (Molecule) i.next();
-                if (molecule instanceof Biopolymer) {
-                    Biopolymer bp = (Biopolymer) molecule;
-                    canvas.Lock();
-                    canvas.clearResidueHighlights();
-                    boolean isFirstResidue = true;
-                    // for (Residue residue : bp.residues()) {
-                    for (Iterator i2 = bp.residues().iterator(); i2.hasNext();) {
-                        Residue residue = (Residue) i2.next();
-                        if (isFirstResidue)
-                            firstResidue = residue;
-                        vtkProp highlight = canvas.currentCartoon.highlight(residue, highlightColor);
-                        canvas.addResidueHighlight(residue, highlight);                                
-                        isFirstResidue = false;
-                        finalResidue = residue;
-                    }
-                    canvas.UnLock();
-                    break; // only put the sequence of the first molecule with a sequence
-                }
-            }
+//            firstResidue = null;
+//            finalResidue = null;
+//            // for (Molecule molecule : moleculeCollection.molecules()) {
+//            for (Iterator i = moleculeCollection.molecules().iterator(); i.hasNext();) {
+//                Molecule molecule = (Molecule) i.next();
+//                if (molecule instanceof Biopolymer) {
+//                    Biopolymer bp = (Biopolymer) molecule;
+//                    canvas.Lock();
+//                    // canvas.clearResidueHighlights();
+//                    boolean isFirstResidue = true;
+//                    // for (Residue residue : bp.residues()) {
+//                    for (Iterator i2 = bp.residues().iterator(); i2.hasNext();) {
+//                        Residue residue = (Residue) i2.next();
+//                        if (isFirstResidue)
+//                            firstResidue = residue;
+//                        // vtkProp highlight = canvas.currentCartoon.highlight(residue, highlightColor);
+//                        // canvas.addResidueHighlight(residue, highlight);                                
+//                        isFirstResidue = false;
+//                        finalResidue = residue;
+//                    }
+//                    canvas.UnLock();
+//                    break; // only put the sequence of the first molecule with a sequence
+//                }
+//            }
             
             if (currentHighlightedResidue != null)
                 residueActionBroadcaster.fireHighlight(currentHighlightedResidue);
@@ -940,6 +1019,8 @@ implements ResidueActionListener
                     setWait("Structure File size = " + fileSize + "...");
                     
                     MoleculeCollection molecules = loadPDBFile(progressStream);
+                    updateTitleBar();
+                    
                     dialog.setCursor(defaultCursor);
                     dialog.setVisible(false); // success, so close the dialog
                     return;
@@ -1039,6 +1120,8 @@ implements ResidueActionListener
                     unSetWait("Molecule loaded (" + file.getName() + ")");
                     answer = true;
                     
+                    updateTitleBar();
+                    
                     // This is temporary
                     // if ( (bp != null) && file.getName().contains("1x8w") ) {
                     //     compareHbonds("1x8w.pdb2.out", (RNA) bp);
@@ -1072,6 +1155,8 @@ implements ResidueActionListener
                 molecules.getMoleculeCount() + " molecules");
         
         moleculeCollection = molecules;
+        
+        updateTitleBar();
         
         // Create graphical representation of the molecule
         (new CartoonAction(canvas.currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
@@ -1108,7 +1193,7 @@ implements ResidueActionListener
         
         return molecules;
     }
-    
+
     class SaveImageFileAction implements ActionListener {
         JFileChooser saveImageFileChooser;
 
@@ -1154,6 +1239,41 @@ implements ResidueActionListener
         }
     }
     
+    class AboutTornadoAction implements ActionListener {
+        String aboutString = 
+            " toRNAdo version " + tornadoVersion + "\n"+
+             " Copyright (c) 2005, Stanford University. All rights reserved. \n"+
+             " Redistribution and use in source and binary forms, with or without \n"+
+             " modification, are permitted provided that the following conditions\n"+
+             " are met: \n"+
+             "  - Redistributions of source code must retain the above copyright \n"+
+             "    notice, this list of conditions and the following disclaimer. \n"+
+             "  - Redistributions in binary form must reproduce the above copyright \n"+
+             "    notice, this list of conditions and the following disclaimer in the \n"+
+             "    documentation and/or other materials provided with the distribution. \n"+
+             "  - Neither the name of the Stanford University nor the names of its \n"+
+             "    contributors may be used to endorse or promote products derived \n"+
+             "    from this software without specific prior written permission. \n"+
+             " THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \n"+
+             " \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n"+
+             " LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS \n"+
+             " FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE \n"+
+             " COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,\n"+
+             " INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, \n"+
+             " BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; \n"+
+             " LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER \n"+
+             " CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT\n"+
+             " LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN \n"+
+             " ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE \n"+
+             " POSSIBILITY OF SUCH DAMAGE.";
+            
+        
+        public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(null, aboutString, "About toRNAdo", 
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    
     public void highlight(Residue residue) {
         if (residue == null) setMessage(" ");
         else setMessage("Residue " + residue.getResidueName() + 
@@ -1179,5 +1299,18 @@ implements ResidueActionListener
     
     public synchronized void flushUserIsInteracting() {
         residueActionBroadcaster.flushUserInteraction();
+    }
+    
+    public void updateTitleBar() {
+        // Set title
+        if ( (moleculeCollection != null) && (moleculeCollection.molecules().size() > 0) ) {
+            if (moleculeCollection.getTitle().length() > 0)
+                Tornado.this.setTitle(titleBase + ": "+ moleculeCollection.getTitle());
+            else
+                Tornado.this.setTitle(titleBase + ": (unknown molecule)");
+        }
+        else 
+            Tornado.this.setTitle(titleBase + ": (no molecules currently loaded)");
+        Tornado.this.repaint();
     }
 }

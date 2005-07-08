@@ -1,4 +1,31 @@
 /*
+ * Copyright (c) 2005, Stanford University. All rights reserved. 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions
+ * are met: 
+ *  - Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ *  - Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *    documentation and/or other materials provided with the distribution. 
+ *  - Neither the name of the Stanford University nor the names of its 
+ *    contributors may be used to endorse or promote products derived 
+ *    from this software without specific prior written permission. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE. 
+ */
+
+/*
  * Created on May 1, 2005
  *
  */
@@ -7,10 +34,10 @@ package org.simtk.moleculargraphics.cartoon;
 import java.awt.Color;
 import java.util.*;
 
-import org.simtk.atomicstructure.*;
 import org.simtk.geometry3d.*;
 import org.simtk.moleculargraphics.GraphicsCylinder;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 
 import vtk.*;
@@ -21,7 +48,7 @@ import vtk.*;
  * Graphical representation of an RNA molecule that shows cylinders where the double
  * helices are, and a backbone trace where other residues are.
  */
-public class RopeAndCylinderCartoon extends MolecularCartoon {
+public class RopeAndCylinderCartoon extends MolecularCartoonFirstTry {
 
     // Size of ropes connecting the barrels
     double ropeRadius = 0.6;
@@ -209,6 +236,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
                 // the beginning and end of the polygons and triangulate them.
                 vtkTriangleFilter cutTriangles = new vtkTriangleFilter();
                 cutTriangles.SetInput(cutPoly);
+                
                 vtkPolyDataMapper cutMapper = new vtkPolyDataMapper();
                 cutMapper.SetInput(cutPoly);
                 cutMapper.SetInput(cutTriangles.GetOutput());
@@ -241,7 +269,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
                 color = defaultCylinderColor;            
             Vector hairpins = rna.identifyHairpins();
             for (Iterator i = hairpins.iterator(); i.hasNext(); ) {
-                Hairpin pin = (Hairpin) i.next();
+                Duplex pin = (Duplex) i.next();
                 vtkActor cylinderActor = doubleHelixCylinderActor(pin, color, defaultCylinderResolution);
                 cylinderActor.GetProperty().SetOpacity(defaultCylinderOpacity);
                 assembly.AddPart(cylinderActor);
@@ -249,8 +277,8 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
             
             // Divide residues into 3 classes
             for (Iterator i = hairpins.iterator(); i.hasNext(); ) {
-                Hairpin pin = (Hairpin) i.next();
-                for (Iterator i2 = pin.iterator(); i2.hasNext(); ) {
+                Duplex pin = (Duplex) i.next();
+                for (Iterator i2 = pin.basePairs().iterator(); i2.hasNext(); ) {
                     BasePair bp = (BasePair) i2.next();
                     for (Iterator i3 = bp.iterator(); i3.hasNext(); ) {
                         Residue residue = (Residue) i3.next();
@@ -346,7 +374,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         return center;
     }
     
-    public vtkActor doubleHelixCylinderActor(Hairpin h, Color color, int resolution) {
+    public vtkActor doubleHelixCylinderActor(Duplex h, Color color, int resolution) {
         Cylinder helixCylinder = doubleHelixCylinder(h);
         vtkActor cylinderActor =  GraphicsCylinder.getVtkCylinder(helixCylinder, color, resolution);
         return cylinderActor;
@@ -360,8 +388,8 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
      * @param v a list of base pairs to be used to define the helix.
      * @return a cylinder that approximates the location of the base stack.
      */
-    public Cylinder doubleHelixCylinder(Vector v) {
-        if (v.size() < 1) return null;
+    public Cylinder doubleHelixCylinder(Duplex h) {
+        if (h.basePairs().size() < 1) return null;
 
         // Remember where each residue goes in the cylinder
         Hashtable basePairCentroids = new Hashtable();
@@ -371,8 +399,9 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
         Vector3D helixDirection = new Vector3D(0,0,0);
         Vector3D helixCentroid = new Vector3D(0,0,0);
         // Vector<Vector3D> cylinderPoints = new Vector<Vector3D>();
-        for (int p = 0; p < v.size(); p++) {
-            BasePair bp = (BasePair) v.get(p);
+        for (Iterator iterBasePair = h.basePairs().iterator(); iterBasePair.hasNext(); ) {
+        // for (int p = 0; p < h.basePairs().size(); p++) {
+            BasePair bp = (BasePair) iterBasePair.next();
             
             // Accumulate normals
             Vector3D normal = bp.getBasePlane().getNormal();
@@ -387,7 +416,7 @@ public class RopeAndCylinderCartoon extends MolecularCartoon {
             // cylinderPoints.addElement(helixCenter);
         }
         helixDirection = helixDirection.unit();
-        helixCentroid = helixCentroid.scale(1.0/v.size());
+        helixCentroid = helixCentroid.scale(1.0/h.basePairs().size());
         Vector3D helixOffset = helixCentroid.minus(helixDirection.scale(helixDirection.dot(helixCentroid)));
         
         Line3D helixAxis = new Line3D(helixDirection, helixOffset);

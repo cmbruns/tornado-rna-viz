@@ -1,4 +1,31 @@
 /*
+ * Copyright (c) 2005, Stanford University. All rights reserved. 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions
+ * are met: 
+ *  - Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ *  - Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *    documentation and/or other materials provided with the distribution. 
+ *  - Neither the name of the Stanford University nor the names of its 
+ *    contributors may be used to endorse or promote products derived 
+ *    from this software without specific prior written permission. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE. 
+ */
+
+/*
  * Created on May 17, 2005
  *
  */
@@ -50,9 +77,12 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     // Keep track of selection insertion point
     Residue insertionResidue = null;
     boolean insertionResidueRightSide;
-    HashSet selectedResidues = new HashSet();
+    // HashSet selectedResidues = new HashSet();
+    HashSet temporarilySelectedResidues = new HashSet(); // During mouse drag, don't commit yet
     Color selectionColor = new Color(50, 50, 255);
     Color highlightColor = new Color(255, 255, 100);
+
+    AutoScrollThread autoScrollThread = new AutoScrollThread();
     
     public SequenceCanvas(
             String initialSequence, 
@@ -76,6 +106,8 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         addMouseMotionListener(this);
         addMouseListener(this);
         parent.getHorizontalScrollBar().addAdjustmentListener(this);
+        
+        autoScrollThread.start();
     }
 
     public void update(Graphics g) {
@@ -123,7 +155,9 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         for (int r = leftPosition; r <= rightPosition; r++) {
             // Is it selected?
             Residue residue = (Residue) positionResidues.get(new Integer(r));
-            if (selectedResidues.contains(residue)) {
+            if (residueActionBroadcaster.getSelected().contains(residue)
+                    || temporarilySelectedResidues.contains(residue)
+            ) {
                 highlightPosition(g, r, selectionColor);
                 g.setColor(getBackground()); // Inverse text color for selected residues
             }
@@ -219,7 +253,6 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         residueSymbols.clear();
         residuePositions.clear();
         positionResidues.clear();
-        selectedResidues.clear();
         highlightPosition = -1;
         checkSize(getGraphics());
     }    
@@ -245,13 +278,13 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     }
     public void select(Selectable s) {
         if (! (s instanceof Residue) ) return;
-        selectedResidues.add((Residue)s);
+        repaint();
     }
     public void unSelect(Selectable s) {
-        selectedResidues.remove(s);
+        repaint();
     }
     public void unSelect() {
-        selectedResidues.clear();
+        repaint();
     }
     public void centerOn(Residue r) {
         
@@ -292,7 +325,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         }
 
         if (e.isControlDown()) { // Control click preserves other selections
-            if (selectedResidues.contains(clickedResidue))
+            if (residueActionBroadcaster.getSelected().contains(clickedResidue))
                 residueActionBroadcaster.fireUnSelect(clickedResidue);
             else
                 residueActionBroadcaster.fireSelect(clickedResidue);
@@ -307,25 +340,51 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
             insertionResidueRightSide = mouseResidueRightSide(e);
         }
         
+        temporarilySelectedResidues.clear();
+
         repaint();
     }
 
     int mousePressedViewportX = -1;
     int mousePressedBarCenter = -1;
+    Residue mousePressedResidue = null;
+    boolean mousePressedResidueRightSide = false;
     public void mousePressed(MouseEvent e) {
         mousePressedInSequenceArea = false;
         mousePressedInNumberArea = false;
 
-        if (mouseIsInSequenceArea(e)) mousePressedInSequenceArea = true;
+        if ( (! e.isControlDown()) && (! e.isShiftDown()) ) {
+            residueActionBroadcaster.fireUnSelect();
+        }
+        
+        if (mouseIsInSequenceArea(e)) {
+            mousePressedInSequenceArea = true;
+            mousePressedResidue = mouseResidue(e);
+            mousePressedResidueRightSide = mouseResidueRightSide(e);
+        }
+        else mousePressedResidue = null;
+        
         if (mouseIsInNumberArea(e)) mousePressedInNumberArea = true;
 
         int leftPixel = viewportLeftPixel();
         mousePressedViewportX = e.getX() - leftPixel;
         mousePressedBarCenter = parent.getHorizontalScrollBar().getValue();
+
+        temporarilySelectedResidues.clear();
     }
     public void mouseReleased(MouseEvent e) {
         mousePressedInSequenceArea = false;
         mousePressedInNumberArea = false;
+
+        // Commit new selection, if any
+        for (Iterator i = temporarilySelectedResidues.iterator(); i.hasNext(); ) {
+            Residue r = (Residue) i.next();
+            if (r != null)
+                residueActionBroadcaster.fireSelect(r);
+        }
+        
+        temporarilySelectedResidues.clear();
+        ceaseAutoScroll();
     }
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
@@ -355,8 +414,10 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     }
 
     // keep track of how far past the edge we are
+    Residue previousDragResidue = null;
+    long previousAutoscrollTime = 0;
     public void mouseDragged(MouseEvent e) {
-        // TODO - drag on sequence selects a range (click selects one residue)
+        // Drag on sequence selects a range (click selects one residue)
 
         int mouseX = e.getX();
         int mouseY = e.getY();
@@ -365,7 +426,8 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         int mouseViewportX = mouseX - viewportLeftPixel();
 
         // Drag on numbers drags sequence. (maybe numbers section needs to be bigger?)
-        if (mousePressedInNumberArea || mousePressedInSequenceArea) {
+        // if (mousePressedInNumberArea || mousePressedInSequenceArea) {
+        if (mousePressedInNumberArea) {
             residueActionBroadcaster.lubricateUserInteraction();
 
             // Apply overdrag logic
@@ -384,10 +446,79 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
             }
             // repaint happens automatically in response to scroll change, if any
         }  
+        else if (mousePressedInSequenceArea) {
+            if (mousePressedResidue == null) return;
+            
+            // Select a range
+            Residue currentResidue = mouseResidue(e);
+            if (currentResidue == null) {
+                temporarilySelectedResidues.clear();
+            }
+            else if ( (currentResidue == previousDragResidue) && (currentResidue != mousePressedResidue) ) {
+                // No change
+                return;
+            }
+            else { // New end or first residue is under pointer
+                // Figure out new extent
+
+                // figure out which residue is first: current or mousePressed
+                Residue firstResidue, lastResidue;
+                boolean showPressedResidue = false;
+                int res1Pos = ((Integer)residuePositions.get(mousePressedResidue)).intValue();
+                int res2Pos = ((Integer)residuePositions.get(currentResidue)).intValue();
+                if (res1Pos < res2Pos) {
+                    firstResidue = mousePressedResidue; 
+                    lastResidue = currentResidue;
+                    if (mousePressedResidueRightSide) showPressedResidue = false;
+                    else showPressedResidue = true;
+                }
+                else if (res1Pos > res2Pos){
+                    firstResidue = currentResidue;                   
+                    lastResidue = mousePressedResidue;
+                    if (mousePressedResidueRightSide) showPressedResidue = true;
+                    else showPressedResidue = false;
+                }
+                else {
+                    firstResidue = mousePressedResidue;
+                    lastResidue = currentResidue;
+                    // Only one residue dragged
+                    if (mousePressedResidueRightSide == mouseResidueRightSide(e))
+                        showPressedResidue = false;
+                    else showPressedResidue = true;
+                }
+
+                temporarilySelectedResidues.clear();
+                for (Residue res = firstResidue; res != null; res = res.getNextResidue()) {
+                    if ( (res != mousePressedResidue) || showPressedResidue )
+                        temporarilySelectedResidues.add(res);
+                    if (res == lastResidue) break;
+                }
+            }
+
+            // Scroll if pointer is outside of window
+            // This goes too fast
+            // Want to keep it to at least 50 milliseconds between moves
+            if (mouseX < viewportLeftPixel()) { // left of window
+                doAutoScroll(-1);
+            }
+            else if (mouseX > viewportRightPixel()) { // right of window
+                doAutoScroll(1);
+            }
+            else { // in window
+                ceaseAutoScroll();
+            }
+            
+            previousDragResidue = currentResidue;
+            repaint();
+        }
     }
 
     int viewportLeftPixel() {
         return (int) parent.getViewport().getViewRect().getMinX();
+    }
+
+    int viewportRightPixel() {
+        return (int) parent.getViewport().getViewRect().getMaxX();
     }
 
     boolean mouseIsInSequenceArea(MouseEvent e) {
@@ -427,8 +558,9 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     boolean mouseResidueRightSide(MouseEvent e) {
         double pos = (e.getX() - characterSpacing/2.0)/symbolWidth;
         double remainder = pos - (int) pos;
-        if (pos >= 0.5) return true;
-        if (pos < 0) return true;
+        // System.out.println("pos = "+pos);
+        if (remainder >= 0.5) return true;
+        if (remainder < 0) return true;
         return false;
     }
     
@@ -465,5 +597,48 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         if (positionResidues.containsKey(new Integer(leftPosition)))
             return (Residue) positionResidues.get(new Integer(leftPosition));
         else return null;
+    }
+    public Residue getFinalVisibleResidue() {
+        int rightPixel = (int) parent.getViewport().getViewRect().getMaxX();        
+        int rightPosition = (int)((rightPixel - characterSpacing/2.0) / symbolWidth);
+
+        // if (getViewportWidth() >= getSequenceWidth()) rightPosition = columnCount - 1;
+
+        if (positionResidues.containsKey(new Integer(rightPosition)))
+            return (Residue) positionResidues.get(new Integer(rightPosition));
+        else
+            return (Residue) positionResidues.get(new Integer(columnCount - 1));
+    }
+
+    void doAutoScroll(int direction) {
+        if (autoScrollThread == null) return;
+        autoScrollThread.doAutoScroll = true;
+        autoScrollThread.direction = direction;
+        autoScrollThread.interrupt();
+    }
+    void ceaseAutoScroll() {        
+        if (autoScrollThread == null) return;
+        autoScrollThread.doAutoScroll = false;
+        autoScrollThread.interrupt();
+    }
+    class AutoScrollThread extends Thread {
+        volatile boolean doAutoScroll = false;
+        volatile int direction = 1;
+        public void run() {
+            while (true) {
+                try {
+                    if (!doAutoScroll) sleep(30000);
+                    else {
+                        sleep(40);
+                        JScrollBar bar = parent.getHorizontalScrollBar();
+                        if (direction < 0)
+                            bar.setValue(bar.getValue() - bar.getUnitIncrement(direction));                    
+                        if (direction > 0)
+                            bar.setValue(bar.getValue() + bar.getUnitIncrement(direction));                    
+                    }
+                }
+                catch (InterruptedException exc) {}
+            }
+        }
     }
 }
