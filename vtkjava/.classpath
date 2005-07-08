@@ -16,7 +16,7 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Program Files/vtk44cmb/bin/vtk.jar">
+	<classpathentry kind="lib" path="C:/Program Files/vtk42/bin/vtk.jar">
 		<attributes>
 		</attributes>
 	</classpathentry>
