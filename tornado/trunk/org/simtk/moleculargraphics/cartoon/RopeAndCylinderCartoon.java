@@ -48,7 +48,7 @@ import vtk.*;
  * Graphical representation of an RNA molecule that shows cylinders where the double
  * helices are, and a backbone trace where other residues are.
  */
-public class RopeAndCylinderCartoon extends MolecularCartoonFirstTry {
+public class RopeAndCylinderCartoon extends MolecularCartoon {
 
     // Size of ropes connecting the barrels
     double ropeRadius = 0.6;

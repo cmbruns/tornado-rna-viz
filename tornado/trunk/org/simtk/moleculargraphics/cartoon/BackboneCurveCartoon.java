@@ -69,7 +69,7 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
     private Hashtable colorIndices = new Hashtable();
 
     NucleotideStickCartoon baseRods;
-    NucleotideStickCaps baseCaps;
+    // NucleotideStickCaps baseCaps;
     BackboneSpheres studs;
     
     vtkAssembly assembly = new vtkAssembly();
@@ -90,42 +90,42 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
         lut.SetTableValue(invisibleColorIndex, 0.0, 0.0, 0.0, 0.0);        
 
         baseRods = new NucleotideStickCartoon(baseRodRadius);
-        baseCaps = new NucleotideStickCaps(baseRodRadius);
+        // baseCaps = new NucleotideStickCaps(baseRodRadius);
         studs = new BackboneSpheres(ribbonThickness/2.0 + studElevation);
         
         assembly.AddPart(baseRods.getActor());
-        assembly.AddPart(baseCaps.getActor());
+        // assembly.AddPart(baseCaps.getActor());
         assembly.AddPart(studs.getActor());
     }
     
     public void select(Selectable s) {
         baseRods.select(s);
-        baseCaps.select(s);
+        // baseCaps.select(s);
         studs.select(s);
     }
     public void unSelect(Selectable s) {
         baseRods.unSelect(s);
-        baseCaps.unSelect(s);
+        // baseCaps.unSelect(s);
         studs.unSelect(s);
     }
     public void unSelect() {
         baseRods.unSelect();
-        baseCaps.unSelect();
+        // baseCaps.unSelect();
         studs.unSelect();
     }
     public void highlight(Molecule m) {
         baseRods.highlight(m);
-        baseCaps.highlight(m);
+        // baseCaps.highlight(m);
         studs.highlight(m);
     }
     public void hide(Molecule m) {
         baseRods.hide(m);
-        baseCaps.hide(m);
+        // baseCaps.hide(m);
         studs.hide(m);
     }
     public void clear() {
         baseRods.clear();
-        baseCaps.clear();
+        // baseCaps.clear();
         studs.clear();
     }
     public vtkAssembly getAssembly() {return assembly;}
@@ -134,7 +134,7 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
     
     public void show(Molecule m) {
         baseRods.show(m);
-        baseCaps.show(m);
+        // baseCaps.show(m);
         studs.show(m);
         
         addMolecule(m);

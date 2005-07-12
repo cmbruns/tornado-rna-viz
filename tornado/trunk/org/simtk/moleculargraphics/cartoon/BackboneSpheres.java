@@ -39,6 +39,7 @@ import org.simtk.molecularstructure.*;
 import vtk.*;
 
 public class BackboneSpheres extends GlyphCartoon {
+    int stickResolution = 5;
     double stickRadius = 1.00;
     private int baseColorIndex = 150;
     private Hashtable colorIndices = new Hashtable();
@@ -46,14 +47,25 @@ public class BackboneSpheres extends GlyphCartoon {
     public BackboneSpheres(double r) {
         super();
 
+        stickRadius = r;        
+        initialize();
+    }
+    
+    public BackboneSpheres(double r, int res) {
+        super();
+
         stickRadius = r;
-        
-        // Make a cylinder to use as the basis of all bonds
+        stickResolution = res;
+        initialize();
+    }
+    
+    private void initialize() {
+        // Make a sphere to use as the basis of all positions
         vtkSphereSource sphereSource = new vtkSphereSource();
         sphereSource.SetPhiResolution(8);
-        sphereSource.SetThetaResolution(8);
+        sphereSource.SetThetaResolution(stickResolution);
         sphereSource.SetRadius(stickRadius);
-                
+
         // Use lines as the glyph primitive
         setGlyphSource(sphereSource.GetOutput());
         // lineGlyph.SetSource(sphereSource.GetOutput());
@@ -61,7 +73,7 @@ public class BackboneSpheres extends GlyphCartoon {
         scaleNone();  // Do not adjust size
         colorByScalar(); // Take color from glyph scalar
 
-        glyphActor.GetProperty().BackfaceCullingOn();
+        glyphActor.GetProperty().BackfaceCullingOn();        
     }
 
     public void show(Molecule molecule) {
@@ -103,7 +115,6 @@ public class BackboneSpheres extends GlyphCartoon {
         // Don't add things that have already been added
         if (glyphColors.containsKey(residue)) return;
 
-        // Put end of rod in the middle of the Watson-Crick face
         BaseVector3D backbonePosition = residue.getBackbonePosition();
         
         if (backbonePosition == null) return;

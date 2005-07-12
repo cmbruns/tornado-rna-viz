@@ -26,28 +26,69 @@
  */
 
 /*
- * Created on Jul 6, 2005
+ * Created on Apr 28, 2005
  *
  */
 package org.simtk.moleculargraphics.cartoon;
 
-abstract public class MolecularCartoon {
-    // replaced Java 1.5 enum with Java 1.4 compliant
-    public static class CartoonType {
-        static public CartoonType SPACE_FILLING = new CartoonType();
-        static public CartoonType BALL_AND_STICK = new CartoonType();
+import org.simtk.util.*;
+import org.simtk.molecularstructure.*;
+import vtk.*;
 
-        static public CartoonType ROPE_AND_CYLINDER = new CartoonType();
-        static public CartoonType ROPE_AND_CYLINDER2 = new CartoonType();
-        static public CartoonType DUPLEX_CYLINDER = new CartoonType();
-        static public CartoonType NUCLEOTIDE_WEDGE = new CartoonType();
+/** 
+ * @author Christopher Bruns
+ * 
+ * Tubes connecting backbone, plus rods for nucleotides
+ */
+public class TubeAndStickTrace extends MolecularCartoonNewWay {
+    double backboneRadius = 1.50;
+    double rodRadius = 0.50;
 
-        static public CartoonType RESIDUE_SPHERE = new CartoonType();
-        static public CartoonType BOND_STICK = new CartoonType();
-        static public CartoonType BACKBONE_TRACE = new CartoonType();
-        static public CartoonType BACKBONE_STICK = new CartoonType();
-        static public CartoonType TUBE_AND_STICK = new CartoonType();
-        static public CartoonType NUCLEOTIDE_STICK = new CartoonType();
-        static public CartoonType WIRE_FRAME = new CartoonType();
-    };
+    int stickResolution = 5;
+
+    BackboneStick tubes;
+    NucleotideStickCartoon rods;
+    
+    vtkAssembly assembly = new vtkAssembly();
+    
+    public TubeAndStickTrace(double r1, double r2) {
+        backboneRadius = r1;
+        rodRadius = r2;
+
+        tubes = new BackboneStick(backboneRadius);
+        rods = new NucleotideStickCartoon(rodRadius);
+        
+        assembly.AddPart(tubes.getAssembly());
+        assembly.AddPart(rods.getActor());
+    }
+    
+    public void select(Selectable s) {
+        tubes.select(s);
+        rods.select(s);
+    }
+    public void unSelect(Selectable s) {
+        tubes.unSelect(s);
+        rods.unSelect(s);
+    }
+    public void unSelect() {
+        tubes.unSelect();
+        rods.unSelect();
+    }
+    public void highlight(Molecule m) {
+        tubes.highlight(m);
+        rods.highlight(m);
+    }
+    public void hide(Molecule m) {
+        tubes.hide(m);
+        rods.hide(m);
+    }
+    public void show(Molecule m) {
+        tubes.show(m);
+        rods.show(m);
+    }
+    public void clear() {
+        tubes.clear();
+        rods.clear();
+    }
+    public vtkAssembly getAssembly() {return assembly;}
 }

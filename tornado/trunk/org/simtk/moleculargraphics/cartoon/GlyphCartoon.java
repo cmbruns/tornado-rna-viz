@@ -56,7 +56,7 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
     GlyphIndex glyphColors = new GlyphIndex();
 
     // Glyph positions
-    private vtkPolyData lineData = new vtkPolyData();
+    vtkPolyData lineData = new vtkPolyData();
     vtkPoints linePoints = new vtkPoints(); // bond centers
     vtkFloatArray lineNormals = new vtkFloatArray(); // bond directions/lengths
     vtkFloatArray lineScalars = new vtkFloatArray();

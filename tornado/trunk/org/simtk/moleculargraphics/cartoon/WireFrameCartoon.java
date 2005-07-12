@@ -65,6 +65,8 @@ public class WireFrameCartoon extends GlyphCartoon {
 
         scaleByNormal();  // Do not adjust size
         colorByScalar(); // Take color from glyph scalar
+        
+        glyphActor.GetProperty().SetLineWidth(2.0);
     }
     
     void addMolecule(Molecule molecule, Vector parentObjects) {

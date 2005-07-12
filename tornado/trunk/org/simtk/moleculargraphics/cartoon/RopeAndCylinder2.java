@@ -26,28 +26,59 @@
  */
 
 /*
- * Created on Jul 6, 2005
+ * Created on Apr 28, 2005
  *
  */
 package org.simtk.moleculargraphics.cartoon;
 
-abstract public class MolecularCartoon {
-    // replaced Java 1.5 enum with Java 1.4 compliant
-    public static class CartoonType {
-        static public CartoonType SPACE_FILLING = new CartoonType();
-        static public CartoonType BALL_AND_STICK = new CartoonType();
+import org.simtk.util.*;
+import org.simtk.molecularstructure.*;
+import vtk.*;
 
-        static public CartoonType ROPE_AND_CYLINDER = new CartoonType();
-        static public CartoonType ROPE_AND_CYLINDER2 = new CartoonType();
-        static public CartoonType DUPLEX_CYLINDER = new CartoonType();
-        static public CartoonType NUCLEOTIDE_WEDGE = new CartoonType();
+/** 
+ * @author Christopher Bruns
+ * 
+ * Rope and cylinder RNA structure, using modular components
+ */
+public class RopeAndCylinder2 extends MolecularCartoonNewWay {
 
-        static public CartoonType RESIDUE_SPHERE = new CartoonType();
-        static public CartoonType BOND_STICK = new CartoonType();
-        static public CartoonType BACKBONE_TRACE = new CartoonType();
-        static public CartoonType BACKBONE_STICK = new CartoonType();
-        static public CartoonType TUBE_AND_STICK = new CartoonType();
-        static public CartoonType NUCLEOTIDE_STICK = new CartoonType();
-        static public CartoonType WIRE_FRAME = new CartoonType();
-    };
+    DuplexCylinderCartoon duplexes = new DuplexCylinderCartoon();
+    TubeAndStickTrace ropes = new TubeAndStickTrace(1.50, 0.50);
+    
+    vtkAssembly assembly = new vtkAssembly();
+    
+    public RopeAndCylinder2() {
+        assembly.AddPart(duplexes.getAssembly());
+        assembly.AddPart(ropes.getAssembly());
+    }
+    
+    public void select(Selectable s) {
+        duplexes.select(s);
+        ropes.select(s);
+    }
+    public void unSelect(Selectable s) {
+        duplexes.unSelect(s);
+        ropes.unSelect(s);
+    }
+    public void unSelect() {
+        duplexes.unSelect();
+        ropes.unSelect();
+    }
+    public void highlight(Molecule m) {
+        duplexes.highlight(m);
+        ropes.highlight(m);
+    }
+    public void hide(Molecule m) {
+        duplexes.hide(m);
+        ropes.hide(m);
+    }
+    public void show(Molecule m) {
+        duplexes.show(m);
+        ropes.show(m);
+    }
+    public void clear() {
+        duplexes.clear();
+        ropes.clear();
+    }
+    public vtkAssembly getAssembly() {return assembly;}
 }

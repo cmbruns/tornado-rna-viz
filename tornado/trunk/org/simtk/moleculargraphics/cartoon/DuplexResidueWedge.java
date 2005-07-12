@@ -34,7 +34,6 @@ package org.simtk.moleculargraphics.cartoon;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
-import org.simtk.molecularstructure.atom.*;
 
 import java.awt.Color;
 import java.util.*;
@@ -78,7 +77,6 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         // Cut the cylinder in half
         // Set the plane to use in cutting the cylinder in half
         vtkPlane clipPlane = new vtkPlane();
-        // TODO If this doesn't work, try putting normal along Y-axis
         clipPlane.SetNormal(0.0, 1.0, 0.0);                
         clipPlane.SetOrigin(0.0, 0.0, 0.0);
 
@@ -87,7 +85,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         clipper.SetClipFunction(clipPlane); 
         clipper.GenerateClipScalarsOn();
         clipper.GenerateClippedOutputOn();
-        clipper.SetValue(0.5);
+        // clipper.SetValue(0.5); // causes plane to be placed a bit wrong
         
         // Close up place where clip was
         vtkCutter cutEdges = new vtkCutter();
@@ -111,8 +109,14 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         appendFilter.AddInput(clipper.GetClippedOutput());
         appendFilter.AddInput(cutTriangles.GetOutput());
         
+        // Resmooth the surface shading after the append filter chunked it
+        vtkPolyDataNormals dataNormals = new vtkPolyDataNormals();
+        dataNormals.SetFeatureAngle(80.0); // Angles smaller than this are smoothed
+        dataNormals.SetInput(appendFilter.GetOutput());
+
+        
         // Use lines as the glyph primitive
-        setGlyphSource(appendFilter.GetOutput());
+        setGlyphSource(dataNormals.GetOutput());
         // lineGlyph.SetSource(sphereSource.GetOutput());
 
         scaleNone();  // Do not adjust size
@@ -135,48 +139,64 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
             Cylinder duplexCylinder = DuplexCylinderCartoon.doubleHelixCylinder(duplex);
             Vector3D duplexDirection = duplexCylinder.getHead().minus(duplexCylinder.getTail()).unit();
             Line3D duplexAxis = new Line3D(duplexDirection, duplexCylinder.getTail());
-            for (Iterator iterResidue = duplex.residues().iterator(); iterResidue.hasNext(); ) {
-                Nucleotide residue = (Nucleotide) iterResidue.next();
+
+            for (Iterator iterBasePair = duplex.basePairs().iterator(); iterBasePair.hasNext(); ) {
+                BasePair basePair = (BasePair) iterBasePair.next();
+                // Nucleotide residue = (Nucleotide) iterResidue.next();
+
+                Nucleotide residue1 = basePair.getResidue1();
+                Nucleotide residue2 = basePair.getResidue2();
 
                 // Put residue position on cylinder axis
-                BaseVector3D baseCentroid = residue.get(Nucleotide.baseGroup).getCenterOfMass();
+                BaseVector3D baseCentroid1 = residue1.get(Nucleotide.baseGroup).getCenterOfMass();
+                BaseVector3D baseCentroid2 = residue2.get(Nucleotide.baseGroup).getCenterOfMass();
+                BaseVector3D baseCentroid = baseCentroid1.plus(baseCentroid2).scale(0.5);
                 BaseVector3D helixCenter = duplexAxis.getClosestPoint(baseCentroid);
 
                 // Put residue normal perpendicular to helix axis, along base-pair direction
-                BaseVector3D backbonePosition = residue.getBackbonePosition();
-                Atom watsonCrickAtom;
-                if (residue instanceof Purine)
-                    watsonCrickAtom = residue.getAtom(" N1 ");
-                else 
-                    watsonCrickAtom = residue.getAtom(" N3 ");
-                if (watsonCrickAtom == null) continue;                
-                BaseVector3D watsonCrickPosition = watsonCrickAtom.getCoordinates();
-                BaseVector3D residueDirection = watsonCrickPosition.minus(backbonePosition);
-
-                // Make it perpendicular to the helix axis
-                // TODO residueDirection = residueDirection.minus(duplexAxis.getDirection().scale(duplexAxis.getDirection().dot(residueDirection))).unit();
-                // residueDirection = residueDirection.cross(duplexAxis.getDirection()).unit();
-                residueDirection = duplexDirection;
-
-                Vector currentObjects = new Vector(); // assign molecular object on which to index this wedge
-                currentObjects.add(molecule);
-                currentObjects.add(duplex);
-                currentObjects.add(residue);
+                BaseVector3D backbonePosition1 = residue1.getBackbonePosition();
+                BaseVector3D backbonePosition2 = residue2.getBackbonePosition();
                 
-                Color color = residue.getDefaultColor();
-                if (! (colorIndices.containsKey(color))) {
-                    colorIndices.put(color, new Integer(baseColorIndex));
-                    lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-                    baseColorIndex ++;
-                }
-                int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
+                BaseVector3D residueDirection = backbonePosition2.minus(backbonePosition1);
 
-                linePoints.InsertNextPoint(helixCenter.getX(), helixCenter.getY(), helixCenter.getZ());
-                lineNormals.InsertNextTuple3(residueDirection.getX(), residueDirection.getY(), residueDirection.getZ());
+                Vector3D thirdDirection = duplexDirection.cross(residueDirection).unit();
+                // Make it all neatly orthogonal
+                residueDirection = thirdDirection.cross(duplexDirection);                
+
+                Residue residues[] = {residue1, residue2};
+                
+                for (int i = 0; i < 2; i++) {
+                    Residue residue = residues[i];
+                    
+                    Vector currentObjects = new Vector(); // assign molecular object on which to index this wedge
+                    currentObjects.add(molecule);
+                    currentObjects.add(duplex);
+                    currentObjects.add(residue);
+                    
+                    Color color = residue.getDefaultColor();
+                    if (! (colorIndices.containsKey(color))) {
+                        colorIndices.put(color, new Integer(baseColorIndex));
+                        lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
+                        baseColorIndex ++;
+                    }
+                    int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
     
-                glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
-                lineScalars.InsertNextValue(colorScalar);
-
+                    linePoints.InsertNextPoint(helixCenter.getX(), helixCenter.getY(), helixCenter.getZ());
+                    lineNormals.InsertNextTuple3(residueDirection.getX(), residueDirection.getY(), residueDirection.getZ());
+                    
+                    // Tensors for full orientation
+                    // Vector3D otherDirection = duplexDirection.cross(residueDirection).unit();
+                    tensors.InsertNextTuple9(duplexDirection.getX(),duplexDirection.getY(),duplexDirection.getZ(),
+                            residueDirection.getX(),residueDirection.getY(),residueDirection.getZ(),
+                            thirdDirection.getX(),thirdDirection.getY(),thirdDirection.getZ()); // TODO
+        
+                    glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
+                    lineScalars.InsertNextValue(colorScalar);
+                    
+                    // Reverse the orientation for the other residue
+                    residueDirection = residueDirection.scale(-1.0);
+                    duplexDirection = duplexDirection.scale(-1.0);
+                }
             }
         }
     }

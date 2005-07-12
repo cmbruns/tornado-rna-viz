@@ -40,13 +40,20 @@ import vtk.*;
   * Use TensorGlyph instead of Glyph3D, so that full orientation can be specified.
  */
 abstract public class TensorGlyphCartoon extends GlyphCartoon {
+
     private vtkTensorGlyph tensorGlyph = new vtkTensorGlyph();
+    vtkFloatArray tensors = new vtkFloatArray();
+
     TensorGlyphCartoon() {
         tensorGlyph.ExtractEigenvaluesOff();  // Treat as a rotation matrix, not as something with eigenvalues
         tensorGlyph.ThreeGlyphsOff();
         tensorGlyph.SymmetricOff();
 
+        tensors.SetNumberOfComponents(9);
+        lineData.GetPointData().SetTensors(tensors);
+        
         // disconnect the vtkGlyph3D, which is replaced by TensorGlyph in this derived class
+        tensorGlyph.SetInput(lineData);
         glyphMapper.SetInput(tensorGlyph.GetOutput());
     }
 

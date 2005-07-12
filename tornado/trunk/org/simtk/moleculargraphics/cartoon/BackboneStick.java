@@ -32,42 +32,46 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.Color;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.nucleicacid.*;
-import org.simtk.molecularstructure.atom.*;
 import vtk.*;
 
-public class NucleotideStickCartoon extends GlyphCartoon {
-    double stickLength = 6.0;
-    double stickRadius = 0.50;
+public class BackboneStick extends GlyphCartoon {
     double sphereFudge = 1.05; // spheres aren't quit flush with cylinder for some reason
-    int cylinderResolution = 8;
-
+    int stickResolution = 5;
+    double stickLength = 3.0;
+    double stickRadius = 1.50;
     private int baseColorIndex = 150;
     private Hashtable colorIndices = new Hashtable();
 
-    public NucleotideStickCartoon(double r) {
+    public BackboneStick(double r) {
         super();
+        stickRadius = r;        
+        initialize();
+    }
 
+    public BackboneStick(double r, int res) {
+        super();
         stickRadius = r;
-        
+        stickResolution = res;
+        initialize();
+    }
+
+    private void initialize() {
         // Make a cylinder to use as the basis of all bonds
         vtkCylinderSource cylinderSource = new vtkCylinderSource();
-        cylinderSource.SetResolution(cylinderResolution);
+        cylinderSource.SetResolution(stickResolution);
         cylinderSource.SetRadius(stickRadius);
         cylinderSource.SetHeight(stickLength);
         cylinderSource.SetCapping(0);
-
+        
         // Cap the ends of the cylinder with spheres
         vtkSphereSource sphereSource1 = new vtkSphereSource();
         sphereSource1.SetRadius(stickRadius * sphereFudge);
         sphereSource1.SetPhiResolution(6);
-        sphereSource1.SetThetaResolution(cylinderResolution);
+        sphereSource1.SetThetaResolution(stickResolution);
 
         // Rotate the spheres so it lines up just right with the cylinder
         vtkTransform sphere1Transform = new vtkTransform();
@@ -83,7 +87,7 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         vtkSphereSource sphereSource2 = new vtkSphereSource();
         sphereSource2.SetRadius(stickRadius * sphereFudge);
         sphereSource2.SetPhiResolution(6);
-        sphereSource2.SetThetaResolution(cylinderResolution);
+        sphereSource2.SetThetaResolution(stickResolution);
 
         // Rotate the spheres so it lines up just right with the cylinder
         vtkTransform sphere2Transform = new vtkTransform();
@@ -99,7 +103,7 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         vtkAppendPolyData append = new vtkAppendPolyData();
         append.AddInput(cylinderSource.GetOutput());
         append.AddInput(sphere1Filter.GetOutput());
-        // append.AddInput(sphereSource2.GetOutput()); // not needed for backbone rep.
+        append.AddInput(sphere2Filter.GetOutput());
         
         // Rotate the cylinder so that the cylinder axis goes along the normals during glyphing
         vtkTransform cylinderTransform = new vtkTransform();
@@ -110,15 +114,15 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         cylinderFilter.SetInput(append.GetOutput());
         cylinderFilter.SetTransform(cylinderTransform);
         
+        // Use lines as the glyph primitive
         setGlyphSource(cylinderFilter.GetOutput());
         // lineGlyph.SetSource(sphereSource.GetOutput());
 
         scaleNone();  // Do not adjust size
-        orientByNormal();
         colorByScalar(); // Take color from glyph scalar
+        orientByNormal();
 
         glyphActor.GetProperty().BackfaceCullingOn();
-
     }
 
     public void show(Molecule molecule) {
@@ -141,35 +145,35 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof Nucleotide) {
-            Nucleotide nucleotide = (Nucleotide) molecule;
+        if (molecule instanceof Residue) {
+            Residue residue = (Residue) molecule;
             currentObjects.remove(currentObjects.size() - 1); 
-            addNucleotide(nucleotide, currentObjects);
+            addResidue(residue, currentObjects);
         }
-        else if (molecule instanceof NucleicAcid) {
-            NucleicAcid nucleicAcid = (NucleicAcid) molecule;
-            for (Iterator iterResidue = nucleicAcid.residues().iterator(); iterResidue.hasNext(); ) {
-                addMolecule((Nucleotide) iterResidue.next(), currentObjects);
+        else if (molecule instanceof Biopolymer) {
+            Biopolymer biopolymer = (Biopolymer) molecule;
+            for (Iterator iterResidue = biopolymer.residues().iterator(); iterResidue.hasNext(); ) {
+                addMolecule((Residue) iterResidue.next(), currentObjects);
             }
         }
     }
     
-    void addNucleotide(Nucleotide nucleotide, Vector parentObjects) {
-        if (nucleotide == null) return;
+    void addResidue(Residue residue, Vector parentObjects) {
+        if (residue == null) return;
         
         // Don't add things that have already been added
-        if (glyphColors.containsKey(nucleotide)) return;
+        if (glyphColors.containsKey(residue)) return;
 
-        // Put end of rod in the middle of the Watson-Crick face
-        Atom sideChainAtom;
-        if (nucleotide instanceof Purine)
-            sideChainAtom = nucleotide.getAtom(" N1 ");
-        else sideChainAtom = nucleotide.getAtom(" N3 ");
+        BaseVector3D backbonePosition = residue.getBackbonePosition();        
+        if (backbonePosition == null) return;
 
-        Atom backboneAtom = nucleotide.getAtom(" C5*");
-        
-        if ( (sideChainAtom == null) || (backboneAtom == null) ) return;
+        BaseVector3D nextPosition = null;
+        if (residue.getNextResidue() != null) 
+            nextPosition = residue.getNextResidue().getBackbonePosition();
 
+        BaseVector3D previousPosition = null;
+        if (residue.getPreviousResidue() != null) 
+            previousPosition = residue.getPreviousResidue().getBackbonePosition();
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -177,32 +181,52 @@ public class NucleotideStickCartoon extends GlyphCartoon {
             for (int i = 0; i < parentObjects.size(); i++)
                 currentObjects.add(parentObjects.get(i));
         }
-        currentObjects.add(nucleotide);
+        currentObjects.add(residue);
 
-        // Extend rod one Angstrom past the Watson-Crick face atom
-        BaseVector3D rodStart = backboneAtom.getCoordinates();
-        Vector3D rodDirection = sideChainAtom.getCoordinates().minus(rodStart);
-        double rodLength = rodDirection.length() + 1.0;
-        rodDirection = rodDirection.unit();
-        Vector3D rodEnd = rodStart.plus(rodDirection.scale(rodLength));
-        
-        BaseVector3D c = rodStart;
-
-        Vector3D n = rodDirection; // direction vector
-
-        // Use sticks to tile path from atom center, c, to bond rodEnd
-        int numberOfSticks = (int) Math.ceil(rodLength / stickLength);
-
-        Vector3D startStickCenter = c.plus(n.scale(stickLength * 0.5));
-        Vector3D endStickCenter = rodEnd.minus(n.scale(stickLength * 0.5));
-
-        Color color = nucleotide.getDefaultColor();
+        Color color = residue.getDefaultColor();
         if (! (colorIndices.containsKey(color))) {
             colorIndices.put(color, new Integer(baseColorIndex));
             lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
             baseColorIndex ++;
         }
-        int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
+        int colorScalar = ((Integer) colorIndices.get(color)).intValue();
+
+        if (previousPosition != null) {
+            // Point midway between two residues
+            Vector3D midPosition = backbonePosition.plus(previousPosition).scale(0.5);
+            
+            // Direction of this half bond
+            // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
+            if (residue.getResidueNumber() > residue.getPreviousResidue().getResidueNumber())
+                tileSticks(backbonePosition, midPosition, currentObjects, colorScalar);
+            else
+                tileSticks(midPosition, backbonePosition, currentObjects, colorScalar);
+        }
+
+        if (nextPosition != null) {
+            // Point midway between two residues
+            Vector3D midPosition = backbonePosition.plus(nextPosition).scale(0.5);
+
+            // Direction of this half bond
+            // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
+            if (residue.getResidueNumber() > residue.getNextResidue().getResidueNumber())
+                tileSticks(backbonePosition, midPosition, currentObjects, colorScalar);
+            else
+                tileSticks(midPosition, backbonePosition, currentObjects, colorScalar);
+        }
+    }
+    
+    private void tileSticks(BaseVector3D segmentStart, BaseVector3D segmentEnd, Vector currentObjects, int colorScalar) {
+        Vector3D segmentDirection = segmentEnd.minus(segmentStart);
+
+        // Use sticks to tile path from atom center, c, to bond midpoint
+        int numberOfSticks = (int) Math.ceil(segmentDirection.length() / stickLength);
+
+        // Scale to unit length.  NOTE - effect of this on calculations above and below
+        segmentDirection = segmentDirection.unit();
+        
+        Vector3D startStickCenter = segmentStart.plus(segmentDirection.scale(stickLength * 0.5));
+        Vector3D endStickCenter = segmentEnd.minus(segmentDirection.scale(stickLength * 0.5));
 
         Vector3D stickCenterVector = endStickCenter.minus(startStickCenter);
         for (int s = 0; s < numberOfSticks; s++) {
@@ -212,12 +236,10 @@ public class NucleotideStickCartoon extends GlyphCartoon {
             Vector3D stickCenter = startStickCenter.plus(stickCenterVector.scale(alpha));
         
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
-            lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());
+            lineNormals.InsertNextTuple3(segmentDirection.getX(), segmentDirection.getY(), segmentDirection.getZ());
 
             glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
-            lineScalars.InsertNextValue(colorScalar);
-        }
-                
+            lineScalars.InsertNextValue(colorScalar);                
+        }        
     }
-    
 }
