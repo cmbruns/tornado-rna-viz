@@ -62,6 +62,8 @@ public class Tornado extends JFrame
 implements ResidueActionListener 
 {
     static {
+        loadNativeLibraries();
+        
         // Keep vtk canvas from obscuring swing widgets
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
@@ -103,7 +105,7 @@ implements ResidueActionListener
     Tornado() {
         super("toRNAdo: (no structures currently loaded)");
         
-        loadNativeLibraries();
+        // loadNativeLibraries();
         
         classLoader = getClass().getClassLoader();
         
@@ -197,7 +199,7 @@ implements ResidueActionListener
         Tornado tornadoFrame = new Tornado();
     }
     
-    private void loadNativeLibraries() {
+    private static void loadNativeLibraries() {
         // To supplement those libraries loaded by vtkPanel
         // when in Java Web Start mode
         loadOneNativeLibrary("vtkfreetype"); 
@@ -216,12 +218,21 @@ implements ResidueActionListener
         loadOneNativeLibrary("vtkHybrid"); 
         loadOneNativeLibrary("jogl"); 
         // loadOneNativeLibrary("jogl_cg"); 
+
+        
+        loadOneNativeLibrary("vtkCommonJava"); 
+        loadOneNativeLibrary("vtkFilteringJava"); 
+        loadOneNativeLibrary("vtkIOJava"); 
+        loadOneNativeLibrary("vtkImagingJava"); 
+        loadOneNativeLibrary("vtkGraphicsJava"); 
+        loadOneNativeLibrary("vtkRenderingJava"); 
+        loadOneNativeLibrary("vtkHybridJava");
     }
     
-    private void loadOneNativeLibrary(String libName) {
+    private static void loadOneNativeLibrary(String libName) {
         try {System.loadLibrary(libName);}
         catch (UnsatisfiedLinkError exc) {
-            System.err.println("Failed to load native library " + libName);
+            System.err.println("Failed to load native library " + libName + " : " + exc);
         }
     }
     
@@ -515,13 +526,13 @@ implements ResidueActionListener
 //        cartoonGroup.add(checkItem);
 //        menu.add(checkItem);
 
-//        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")));
-//        checkItem.setEnabled(true);
-//        checkItem.addActionListener(new CartoonAction(MolecularCartoon1.CartoonType.ROPE_AND_CYLINDER));
-//        checkItem.setState(canvas.currentCartoonType == MolecularCartoon1.CartoonType.ROPE_AND_CYLINDER);
-//        cartoonGroup.add(checkItem);
-//        menu.add(checkItem);
-//
+        checkItem = new JCheckBoxMenuItem("Rope and Cylinder", new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")));
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.ROPE_AND_CYLINDER2));
+        checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.ROPE_AND_CYLINDER2);
+        cartoonGroup.add(checkItem);
+        menu.add(checkItem);
+
 //          checkItem = new JCheckBoxMenuItem("Duplex Cylinders (for testing only!)");
 //          checkItem.setEnabled(true);
 //          checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.DUPLEX_CYLINDER));
@@ -529,12 +540,20 @@ implements ResidueActionListener
 //          cartoonGroup.add(checkItem);
 //          menu.add(checkItem);
 //
-          checkItem = new JCheckBoxMenuItem("Residue wedges (for testing only!)");
-          checkItem.setEnabled(true);
-          checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.NUCLEOTIDE_WEDGE));
-          checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_WEDGE);
-          cartoonGroup.add(checkItem);
-          menu.add(checkItem);
+//          checkItem = new JCheckBoxMenuItem("Residue wedges (for testing only!)");
+//          checkItem.setEnabled(true);
+//          checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.NUCLEOTIDE_WEDGE));
+//          checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_WEDGE);
+//          cartoonGroup.add(checkItem);
+//          menu.add(checkItem);
+
+//      checkItem = new JCheckBoxMenuItem("Tube and stick (for testing only!)");
+//      checkItem.setEnabled(true);
+//      checkItem.addActionListener(new CartoonAction(MolecularCartoon.CartoonType.TUBE_AND_STICK));
+//      checkItem.setState(canvas.currentCartoonType == MolecularCartoon.CartoonType.TUBE_AND_STICK);
+//      cartoonGroup.add(checkItem);
+//      menu.add(checkItem);
+
 
         checkItem = new JCheckBoxMenuItem("Residue Spheres");
         checkItem.setEnabled(true);
@@ -714,10 +733,10 @@ implements ResidueActionListener
                 canvas.currentCartoon = new BondStickCartoon(0.15);
             else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_STICK)
                 canvas.currentCartoon = new NucleotideStickCartoon(0.50);
-            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_STICK_CAPS)
-                canvas.currentCartoon = new NucleotideStickCaps(0.50);
 //          else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.ROPE_AND_CYLINDER)
 //          canvas.currentCartoon = new RopeAndCylinderCartoon();
+          else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.ROPE_AND_CYLINDER2)
+          canvas.currentCartoon = new RopeAndCylinder2();
             else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.DUPLEX_CYLINDER)
                 canvas.currentCartoon = new DuplexCylinderCartoon();
             else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.NUCLEOTIDE_WEDGE)
@@ -726,6 +745,10 @@ implements ResidueActionListener
                 canvas.currentCartoon = new ResidueSphereCartoon();
             else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.BACKBONE_TRACE)
                 canvas.currentCartoon = new BackboneCurveCartoon(0.50);
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.BACKBONE_STICK)
+                canvas.currentCartoon = new BackboneStick(1.50);
+            else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.TUBE_AND_STICK)
+                canvas.currentCartoon = new TubeAndStickTrace(1.50, 0.5);
 
             else if (canvas.currentCartoonType == MolecularCartoon.CartoonType.WIRE_FRAME)
                 canvas.currentCartoon = new WireFrameCartoon();                
