@@ -34,6 +34,7 @@ package org.simtk.molecularstructure.nucleicacid;
 import java.util.*;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.util.*;
 
 /** 
  * @author Christopher Bruns
@@ -41,7 +42,7 @@ import org.simtk.molecularstructure.*;
  * Represents a base-pair interaction between two residues in a nucleic acid structure
  */
 public class BasePair 
-implements Iterable
+implements MyIterable
 {
     Nucleotide residue1;
     Nucleotide residue2;
