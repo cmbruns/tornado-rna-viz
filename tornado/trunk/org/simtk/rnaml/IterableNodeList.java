@@ -31,10 +31,11 @@
  */
 package org.simtk.rnaml;
 
-import java.util.Iterator;
+import java.util.*;
 import org.w3c.dom.*;
+import org.simtk.util.*;
 
-public class IterableNodeList implements NodeList, Iterable {
+public class IterableNodeList implements NodeList, MyIterable {
 
     private NodeList nodeList;
     IterableNodeList(NodeList n) {nodeList = n;}
