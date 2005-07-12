@@ -39,7 +39,7 @@ import java.awt.Color;
  * oxygen atom
  */
 public class PDBOxygen extends PDBAtom {
-    static Color color = new Color(255, 90, 110);
+    static Color color = new Color(255, 90, 115);
     public PDBOxygen(String PDBLine) {super(PDBLine);}
 	public double getMass() {return 16.00;} // guess value for unknown
     public String getElementSymbol() {return "O";}
