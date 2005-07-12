@@ -32,13 +32,14 @@
 package org.simtk.geometry3d;
 
 import java.util.*;
+import org.simtk.util.*;
 
 /**
  * @author Christopher Bruns
  *
  * A point or direction vector in three dimensions.
  */
-abstract public class BaseVector3D implements Iterable {
+abstract public class BaseVector3D implements MyIterable {
     abstract public void setX(double d);
     abstract public void setY(double d);
     abstract public void setZ(double d);
