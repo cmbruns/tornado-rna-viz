@@ -25,7 +25,7 @@
 
   <target name="compile">
     <mkdir dir="${build.dir}"/>
-    <javac source="1.5" target="1.5" classpath="${lib}" srcdir="." destdir="${build.dir}" debug="on">
+    <javac source="1.4" target="1.4" classpath="${lib}" srcdir="." destdir="${build.dir}" debug="on">
       <include name="org/**"/>
       <include name="edu/**"/>
       <include name="HelloVtk.java"/>

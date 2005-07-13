@@ -170,7 +170,7 @@ implements ResidueActionListener
         gridbag.setConstraints(messageArea, gbc);
         panel.add(messageArea, gbc);
 		
-        add(panel, BorderLayout.CENTER);
+        getContentPane().add(panel, BorderLayout.CENTER);
         
         pack();
         
