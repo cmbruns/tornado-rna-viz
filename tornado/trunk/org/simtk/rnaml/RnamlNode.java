@@ -67,7 +67,8 @@ public class RnamlNode {
     }
 
     String getText() {
-        return privateNode.getTextContent();
+        // return privateNode.getTextContent(); // Java 1.5 specific
+        return privateNode.getNodeValue();
     }
     
     int getInt() {

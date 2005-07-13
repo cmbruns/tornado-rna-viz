@@ -135,8 +135,8 @@ implements ResidueActionListener
         if (drawSecondaryStructure) {
             canvas2D = new SecondaryStructureCanvas(residueActionBroadcaster);
 
-            canvas.setMinimumSize(new Dimension(10,10));
-            canvas2D.setMinimumSize(new Dimension(10, 10));
+            // canvas.setMinimumSize(new Dimension(10,10));
+            // canvas2D.setMinimumSize(new Dimension(10, 10));
             
             JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                     canvas, canvas2D);
@@ -259,12 +259,12 @@ implements ResidueActionListener
             boolean parsingBasePairs = false; // Are we in the base-pair stanza?
             LINE: while ((line = reader.readLine()) != null) {
                 lineCount ++;
-                if (line.contains("BEGIN_base-pair")) {
+                if (line.indexOf("BEGIN_base-pair") >= 0) {
                     parsingBasePairs = true;
                     continue LINE;
                 }
                 if (!parsingBasePairs) continue LINE;
-                if (line.contains("END_base-pair")) {
+                if (line.indexOf ("END_base-pair") >= 0) {
                     parsingBasePairs = false;
                     break LINE;
                 }

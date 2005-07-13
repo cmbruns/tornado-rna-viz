@@ -230,9 +230,12 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
              (d.width != desiredWidth)) ) {
             Dimension preferredSize = new Dimension(desiredWidth, desiredHeight);
             setSize(preferredSize);
-            setPreferredSize(preferredSize);
-            setMinimumSize(preferredSize);
-            setMaximumSize(preferredSize);
+
+            // Java 1.5 specific
+            // setPreferredSize(preferredSize);
+            // setMinimumSize(preferredSize);
+            // setMaximumSize(preferredSize);
+
             if (parent.contentPanel != null) {
                 
                 // Test kludge to make that dumb sequence pane the right size
