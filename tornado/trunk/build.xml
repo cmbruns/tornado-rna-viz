@@ -50,6 +50,8 @@
   <target name="macbundle" depends="jar">
     <property name="mac.bundle.name" value="Tornado"/>
 
+    <delete dir="${build.dir}/${mac.bundle.name}.app"/>
+
     <taskdef name="jarbundler" 
              classpath="mac/jarbundler-1.4.jar"
              classname="com.loomcom.ant.tasks.jarbundler.JarBundler" />
@@ -57,11 +59,14 @@
     <jarbundler dir="${build.dir}"
               name="${mac.bundle.name}"
               aboutmenuname="${mac.bundle.name}"
+              icon="mac/Tornado.icns"
               mainclass="org.simtk.moleculargraphics.Tornado" 
               jars="${jar.build.dir}/${jar.name} ${webstart.dir}/vtk.jar ${webstart.dir}/jogl.jar ${webstart.dir}/Jama.jar jnlp.jar"
               antialiasedgraphics="true"
               antialiasedtext="true" 
               jvmversion="1.4+"
+              screenmenu="true"
+              version="0.47"
     />
     <copy todir="${build.dir}/${mac.bundle.name}.app/Contents/Resources/Java">
       <fileset dir="mac/native">
