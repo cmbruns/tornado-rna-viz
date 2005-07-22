@@ -43,6 +43,7 @@ import java.io.*;
 
 import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
 import org.simtk.geometry3d.*;
 import org.simtk.util.*;
 
@@ -52,7 +53,7 @@ import org.simtk.util.*;
  * Three dimensional rendering canvas for molecular structures in Tornado application
  */
 public class Tornado3DCanvas extends vtkPanel 
- implements MouseMotionListener, MouseListener, ResidueActionListener, ComponentListener
+ implements MouseMotionListener, MouseListener, ResidueActionListener, ComponentListener, KeyListener
 {
     // was enum in Java 1.5, converted for Java 1.4 compatibility
     static class MouseDragAction {
@@ -63,6 +64,8 @@ public class Tornado3DCanvas extends vtkPanel
         static MouseDragAction OBJECT_TRANSLATE = new MouseDragAction();
     }
     MouseDragAction mouseDragAction = MouseDragAction.CAMERA_ROTATE;
+    
+    HashSet currentlyDepressedKeyboardKeys = new HashSet();
     
     boolean doFog = true;
     boolean fogLinear = true;
@@ -89,6 +92,7 @@ public class Tornado3DCanvas extends vtkPanel
     // Hashtable residueHighlights = new Hashtable();
     vtkProp currentHighlight;
     Residue currentHighlightedResidue;
+    Molecule selectedAtoms = new Molecule();
     
     boolean useLogoOverlay = true;
     
@@ -107,7 +111,12 @@ public class Tornado3DCanvas extends vtkPanel
     MolecularCartoon.CartoonType currentCartoonType = MolecularCartoon.CartoonType.WIRE_FRAME; // default starting type
     MolecularCartoonNewWay currentCartoon = new WireFrameCartoon();
     
-	Tornado3DCanvas(ResidueActionBroadcaster b) {
+    private Color selectionColor;
+    public void setSelectionColor(Color c) {
+        selectionColor = c;
+    }
+
+    Tornado3DCanvas(ResidueActionBroadcaster b) {
         super();
         
         residueActionBroadcaster = b;
@@ -205,10 +214,10 @@ public class Tornado3DCanvas extends vtkPanel
                         int iy = h - 1 - y;
                         
                         // SetScalarComponentFromDouble causes no such method error
-                        logoImageData.SetScalarComponentFromFloat(x, iy, 0, 3, alpha);
-                        logoImageData.SetScalarComponentFromFloat(x, iy, 0, 0, red);
-                        logoImageData.SetScalarComponentFromFloat(x, iy, 0, 1, green);
-                        logoImageData.SetScalarComponentFromFloat(x, iy, 0, 2, blue);
+                        logoImageData.SetScalarComponentFromDouble(x, iy, 0, 3, alpha);
+                        logoImageData.SetScalarComponentFromDouble(x, iy, 0, 0, red);
+                        logoImageData.SetScalarComponentFromDouble(x, iy, 0, 1, green);
+                        logoImageData.SetScalarComponentFromDouble(x, iy, 0, 2, blue);
                         // TODO
                     }
                 }
@@ -275,6 +284,7 @@ public class Tornado3DCanvas extends vtkPanel
     public void setBackgroundColor(Color c) {
         backgroundColor = c;
 
+        Lock();
         if (ren != null) {
             ren.SetBackground(
                     backgroundColor.getRed()/255.0,
@@ -291,11 +301,34 @@ public class Tornado3DCanvas extends vtkPanel
             
             gl.glFogfv(GL.GL_FOG_COLOR, fogColor);
         }
+        UnLock();
     }
     
     boolean firstPaint = true;
+    
+    Stopwatch fpsStopWatch = new Stopwatch();
+    int frameCount = 0;
+    DoubleRing fpsRing = new DoubleRing(10);
+    
     public void paint(Graphics g) {
+
+        if (ren == null) return;
+
+        if (ren.VisibleActorCount() <= 0) return;
+
+        Lock();
+
+        fpsStopWatch.restart();
+
         super.paint(g);
+        
+        long renderTime = fpsStopWatch.getMilliseconds();
+        fpsRing.push(renderTime);
+        frameCount ++;
+        if (frameCount > 10) {
+            frameCount = 0;
+            // System.err.println("Frames per second (rendering only) = " + 1000.0/fpsRing.mean());
+        }
         
         // The very first time we paint, turn on fog
         if ( (ren != null) && (firstPaint) && (doFog) ) {
@@ -306,7 +339,7 @@ public class Tornado3DCanvas extends vtkPanel
             GLCanvas glCanvas = GLDrawableFactory.getFactory().
                                   createGLCanvas(capabilities);
             gl = glCanvas.getGL();
-            Render();
+            // Render();
 
             if (fogLinear) { // Linear Fog
                 gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
@@ -330,11 +363,16 @@ public class Tornado3DCanvas extends vtkPanel
 
             firstPaint = false;
         }
+        UnLock();
     }
     
     public void componentResized(ComponentEvent e) 
     {
+        // System.err.println("resize");
+        
         if ((overlayRenderer != null) && (overlayRenderer.GetActiveCamera() != null)) {
+            Lock();
+
             // Keep the logo small
             overlayRenderer.GetActiveCamera().SetParallelScale(getHeight()/2);
             
@@ -343,6 +381,13 @@ public class Tornado3DCanvas extends vtkPanel
             else if (logoReader != null)
                 // Keep the logo in the lower right corner
                 logoReader.SetDataOrigin(getWidth()/2 - logoWidth, -getHeight()/2, 0);
+
+            UnLock();
+            
+            // Cause update
+            myResetCameraClippingRange(); // somehow this is needed for screen update
+            
+            // repaint();
         }
     }
     public void componentMoved(ComponentEvent e) {}
@@ -353,16 +398,29 @@ public class Tornado3DCanvas extends vtkPanel
         // vtk later than version 4.4 is required for full color anaglyph
         // try {rw.SetStereoTypeToAnaglyph();}
         // catch (NoSuchMethodError exc) {rw.SetStereoTypeToRedBlue();}
+        
+        Lock();
+        
         rw.SetStereoTypeToRedBlue();
 
         rw.StereoRenderOn();
+        
+        UnLock();
     }
     public void setStereoInterlaced() {
+        Lock();
+        
         rw.SetStereoTypeToInterlaced();
         rw.StereoRenderOn();
+        
+        UnLock();
     }
     public void setStereoOff() {
+        Lock();
+        
         rw.StereoRenderOff();
+        
+        UnLock();
     }
     public void setStereoCrossEye() {
         // TODO - create cross-eye view using multiple viewports
@@ -380,6 +438,9 @@ public class Tornado3DCanvas extends vtkPanel
         float distanceToFocus = (float) cam.GetDistance();
         float frontClip = 0.60f * distanceToFocus;
         float backClip = 2.00f * distanceToFocus;
+        
+        Lock();
+        
         cam.SetClippingRange(frontClip, backClip);
         if ( (doFog) && (gl != null) ) {
             // if (fogLinear) {
@@ -389,10 +450,23 @@ public class Tornado3DCanvas extends vtkPanel
             // else 
                 gl.glFogf(GL.GL_FOG_DENSITY, 0.7f / distanceToFocus);                
         }
+        
+        UnLock();
     }
 
+    public void testFullScreen() {
+        rw.FullScreenOff();
+        rw.FullScreenOn();
+       
+        repaint();
+        // rw.FullScreenOff();
+    }
+    
     void createTestObject() {
         // vtkPlatonicSolidSource dod = new vtkPlatonicSolidSource();
+        
+        // Lock();
+        
         vtkConeSource cone = new vtkConeSource();
         cone.SetResolution(8);
         vtkPolyDataMapper coneMapper = new vtkPolyDataMapper();
@@ -402,6 +476,8 @@ public class Tornado3DCanvas extends vtkPanel
         coneActor.SetMapper(coneMapper);
             
         GetRenderer().AddActor(coneActor);
+        
+        // UnLock();
     }
     
     // Make the lock/unlock methods public
@@ -423,8 +499,10 @@ public class Tornado3DCanvas extends vtkPanel
             translateCameraXY(x - lastX, lastY - y);
         else if (mouseDragAction == MouseDragAction.CAMERA_ZOOM) // zoom
             zoomCamera(Math.pow(1.02,(y - lastY)));
-        else if (mouseDragAction == MouseDragAction.OBJECT_TRANSLATE) // zoom
-            translateMoleculeXY(currentHighlightedResidue, x - lastX, lastY -y);
+        else if (mouseDragAction == MouseDragAction.OBJECT_TRANSLATE) { // move selection
+            // System.out.println("move selection");
+            translateMoleculeXY(selectedAtoms, x - lastX, lastY -y);
+        }
 
 	    // super.mouseDragged(event);
 
@@ -628,7 +706,12 @@ public class Tornado3DCanvas extends vtkPanel
     
     public void Azimuth (double a) {
         if (cam == null) return;
+        
+        Lock();
+        
         cam.Azimuth(a);
+        
+        UnLock();
     }
     
     public void mousePressed(MouseEvent event) {
@@ -638,15 +721,27 @@ public class Tornado3DCanvas extends vtkPanel
         lastX = event.getX();
         lastY = event.getY();
         
-        if ( event.isControlDown() ) 
-            mouseDragAction = MouseDragAction.OBJECT_TRANSLATE;
-        else if ((event.getModifiers()==InputEvent.BUTTON2_MASK) ||
-            (event.getModifiers()==(InputEvent.BUTTON1_MASK | InputEvent.SHIFT_MASK)))
+        // Button number 2
+        if ( (event.getModifiers() & InputEvent.BUTTON2_MASK) == InputEvent.BUTTON2_MASK ) {
+            // Button number 2
             mouseDragAction = MouseDragAction.CAMERA_TRANSLATE;
-        else if (event.getModifiers()==InputEvent.BUTTON3_MASK)
+        }
+        // Button number 3
+        else if ( (event.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK ) {
+            // Button number 3
             mouseDragAction = MouseDragAction.CAMERA_ZOOM;
-        else 
-            mouseDragAction = MouseDragAction.CAMERA_ROTATE;
+        }
+        else { // Button number 1, or other button, or default button
+            if ( event.isShiftDown() )
+                mouseDragAction = MouseDragAction.CAMERA_TRANSLATE; 
+            else if ( event.isControlDown() )
+                mouseDragAction = MouseDragAction.CAMERA_ZOOM;
+            else if ( currentlyDepressedKeyboardKeys.contains("M") ) {
+                mouseDragAction = MouseDragAction.OBJECT_TRANSLATE;                
+            }
+            else
+                mouseDragAction = MouseDragAction.CAMERA_ROTATE; // Default
+        }
         
         // super.mousePressed(event);
     }
@@ -690,25 +785,64 @@ public class Tornado3DCanvas extends vtkPanel
     public void highlight(Residue r) {
         if (r == currentHighlightedResidue) return;
         unHighlightResidue();
+        Lock();
         currentCartoon.highlight(r);
+        UnLock();
         repaint();
     }
     public void unHighlightResidue() {
         if (currentHighlight == null) return;
+        Lock();
         currentHighlight.SetVisibility(0);
+        UnLock();
         currentHighlight = null;
         currentHighlightedResidue = null;
         repaint();
     }
     
     public void select(Selectable r) {
+        Lock();
         currentCartoon.select(r);
+        
+        // Put atoms into our special "selected" molecule
+        if (r instanceof Atom) {
+            selectedAtoms.addAtom((Atom)r);
+        }
+        else if (r instanceof Molecule) {
+            for (Iterator i = ((Molecule)r).getAtomIterator(); i.hasNext();) {
+                Atom a = (Atom) i.next();
+                selectedAtoms.addAtom(a);
+            }
+        }
+
+        UnLock();
     }
     public void unSelect(Selectable r) {
+        Lock();
         currentCartoon.unSelect(r);
+
+        // Remove atoms from our special "selected" molecule
+        if (r instanceof Atom) {
+            selectedAtoms.removeAtom((Atom)r);
+        }
+        else if (r instanceof Molecule) {
+            for (Iterator i = ((Molecule)r).getAtomIterator(); i.hasNext();) {
+                Atom a = (Atom) i.next();
+                selectedAtoms.removeAtom(a);
+            }
+        }
+
+        UnLock();
     }
     public void unSelect() {
+        Lock();
+
         currentCartoon.unSelect();
+        
+        // Empty out our personal selected atoms container
+        selectedAtoms = new Molecule();
+
+        UnLock();
     }
     public void add(Residue r) {}    
     public void clearResidues() {}
@@ -724,8 +858,10 @@ public class Tornado3DCanvas extends vtkPanel
         Vector3D oldPosition = new Vector3D(PPoint[0], PPoint[1], PPoint[2]);
         Vector3D newPosition = oldPosition.plus(focalShift);
         
+        Lock();
         cam.SetFocalPoint(newFocalPoint.getX(),newFocalPoint.getY(),newFocalPoint.getZ());
         cam.SetPosition(newPosition.getX(),newPosition.getY(),newPosition.getZ());
+        UnLock();
     }
     
     /**
@@ -734,6 +870,7 @@ public class Tornado3DCanvas extends vtkPanel
      * @param rotY angle in degrees
      */
     void rotateCameraXY(double rotX, double rotY) {
+        Lock();
         cam.Azimuth(-rotX);
         cam.Elevation(-rotY);
         cam.OrthogonalizeViewUp();
@@ -743,8 +880,11 @@ public class Tornado3DCanvas extends vtkPanel
             lgt.SetPosition(cam.GetPosition());
             lgt.SetFocalPoint(cam.GetFocalPoint());
           }
+        UnLock();
     }
     void zoomCamera(double zoomFactor) {
+        
+        Lock();
         if (cam.GetParallelProjection() == 1)
           {
             cam.SetParallelScale(cam.GetParallelScale()/zoomFactor);
@@ -752,8 +892,9 @@ public class Tornado3DCanvas extends vtkPanel
         else
           {
             cam.Dolly(zoomFactor);
-            resetCameraClippingRange();
+            myResetCameraClippingRange();
           }
+        UnLock();
     }
     void translateCameraXY(double tX, double tY) {
         // Apply tX, tY in pixels
@@ -767,6 +908,8 @@ public class Tornado3DCanvas extends vtkPanel
         FPoint = cam.GetFocalPoint();
         PPoint = cam.GetPosition();
         
+        Lock();
+        
         cam.SetFocalPoint(
                           FPoint[0] - translation.getX(),
                           FPoint[1] - translation.getY(),
@@ -775,6 +918,8 @@ public class Tornado3DCanvas extends vtkPanel
                         PPoint[0] - translation.getX(),
                         PPoint[1] - translation.getY(),
                         PPoint[2] - translation.getZ());
+        UnLock();
+        
         myResetCameraClippingRange();
     }
     
@@ -787,9 +932,18 @@ public class Tornado3DCanvas extends vtkPanel
     void translateMoleculeXY(Molecule mol, double tX, double tY) {
         if (mol == null) return;
         Vector3D translation = screenToWorldTranslation(tX, tY);
+
+        Lock();
+
         mol.translate(translation);
-        // TODO - turn this back on
-        // currentCartoon.updateCoordinates(mol);
+        
+        // TODO - turn this back on for all representations
+        if (currentCartoon instanceof WireFrameCartoon) {
+            ((WireFrameCartoon)currentCartoon).updateCoordinates(mol);
+            repaint();
+        }
+        
+        UnLock();
     }
     
     /**
@@ -835,5 +989,17 @@ public class Tornado3DCanvas extends vtkPanel
                 (RPoint[2]-FPoint[2]) * arbitraryScale
             );
         return translation;
+    }
+    
+    public void keyTyped(KeyEvent e) {
+        super.keyTyped(e);
+    }
+    public void keyPressed(KeyEvent e) {        
+        currentlyDepressedKeyboardKeys.add(KeyEvent.getKeyText(e.getKeyCode()));
+        super.keyPressed(e);
+    }
+    public void keyReleased(KeyEvent e) {
+        currentlyDepressedKeyboardKeys.remove(KeyEvent.getKeyText(e.getKeyCode()));
+        super.keyReleased(e);
     }
 }
