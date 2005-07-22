@@ -101,6 +101,8 @@ implements ResidueActionListener
 
     ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
     
+    private Color selectionColor;
+    
     String titleBase = "toRNAdo";
     Tornado() {
         super("toRNAdo: (no structures currently loaded)");
@@ -179,6 +181,7 @@ implements ResidueActionListener
         if (useRotationThread) {
             rotationThread = new InertialRotationThread(this);
             rotationThread.setPriority(Thread.MIN_PRIORITY);
+            rotationThread.sitStill = true;
             rotationThread.start();
         }
                 
@@ -191,6 +194,7 @@ implements ResidueActionListener
         if (drawSecondaryStructure)
             residueActionBroadcaster.addSelectionListener(canvas2D);            
         
+        setSelectionColor(new Color(255,255,150));
     }
     
     public static void main(String[] args) {
@@ -199,6 +203,13 @@ implements ResidueActionListener
         Tornado tornadoFrame = new Tornado();
     }
     
+    public void setSelectionColor(Color c) {
+        selectionColor = c;
+        sequencePane.setSelectionColor(c);
+        sequenceCartoonCanvas.setSelectionColor(c);
+        canvas.setSelectionColor(c);
+    }
+
     private static void loadNativeLibraries() {
         // To supplement those libraries loaded by vtkPanel
         // when in Java Web Start mode
@@ -211,6 +222,7 @@ implements ResidueActionListener
         loadOneNativeLibrary("vtkftgl"); 
         loadOneNativeLibrary("vtkCommon"); 
         loadOneNativeLibrary("vtkFiltering"); 
+        loadOneNativeLibrary("vtkDICOMParser"); 
         loadOneNativeLibrary("vtkIO"); 
         loadOneNativeLibrary("vtkImaging"); 
         loadOneNativeLibrary("vtkGraphics"); 
@@ -370,11 +382,11 @@ implements ResidueActionListener
             // Touching criterion
             double minDistance = 1000;
             // for (Atom atom1 : bp.getResidue1().getAtoms()) {
-            for (Iterator i1 = bp.getResidue1().getAtoms().iterator(); i1.hasNext();) {
+            for (Iterator i1 = bp.getResidue1().getAtomIterator(); i1.hasNext();) {
                 Atom atom1 = (Atom) i1.next();
                 if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
                 // for (Atom atom2 : bp.getResidue2().getAtoms()) {
-                for (Iterator i2 = bp.getResidue2().getAtoms().iterator(); i2.hasNext();) {
+                for (Iterator i2 = bp.getResidue2().getAtomIterator(); i2.hasNext();) {
                     Atom atom2 = (Atom) i2.next();
                     if (! ((atom2 instanceof PDBOxygen) || (atom2 instanceof PDBNitrogen))) continue;
                     double testDistance = atom1.distance(atom2);
@@ -435,30 +447,39 @@ implements ResidueActionListener
         JMenuItem menuItem;
         JCheckBoxMenuItem checkItem;
 
-        menu = new JMenu("Tornado");
-        menuBar.add(menu);
-
-        menuItem = new JMenuItem("About Tornado");
-        menuItem.setEnabled(true);
-        menuItem.addActionListener(new AboutTornadoAction());
-        menu.add(menuItem);
-
-        menu.add(new JSeparator());
-
-        menuItem = new JMenuItem("Exit Tornado");
-        menuItem.addActionListener(new QuitAction());
-        menu.add(menuItem);
+//        menu = new JMenu("Tornado");
+//        menuBar.add(menu);
+//
+//        menuItem = new JMenuItem("About Tornado");
+//        menuItem.setEnabled(true);
+//        menuItem.addActionListener(new AboutTornadoAction());
+//        menu.add(menuItem);
+//
+//        menu.add(new JSeparator());
+//
+//        menuItem = new JMenuItem("Exit Tornado");
+//        menuItem.addActionListener(new QuitAction());
+//        menu.add(menuItem);
 
 
         menu = new JMenu("File");
         menuBar.add(menu);
+
         menuItem = new JMenuItem("Load PDB Molecule...");
         menuItem.addActionListener(new LoadPDBAction());
         menu.add(menuItem);
 
+//        menuItem = new JMenuItem("Run script file...");
+//        menuItem.addActionListener(new RunScriptAction());
+//        menu.add(menuItem);
+
+        menu.add(new JSeparator());
+
         menuItem = new JMenuItem("Save PNG Image...");
         menuItem.addActionListener(new SaveImageFileAction());
         menu.add(menuItem);
+
+        menu.add(new JSeparator());
 
         menuItem = new JMenuItem("Exit Tornado");
         menuItem.addActionListener(new QuitAction());
@@ -479,13 +500,13 @@ implements ResidueActionListener
         menuItem.setEnabled(false);
         menu.add(menuItem);
 
-        // menuItem = new JMenuItem("Relax molecule");
-        // menuItem.addActionListener(new RelaxCoordinatesAction());
-        // menu.add(menuItem);
+        menuItem = new JMenuItem("Relax molecule");
+        menuItem.addActionListener(new RelaxCoordinatesAction());
+        menu.add(menuItem);
 
-        // menuItem = new JMenuItem("Move highlighted residue");
-        // menuItem.addActionListener(new MoveHighlightedResidueAction());
-        // menu.add(menuItem);
+//         menuItem = new JMenuItem("Move selection");
+//         menuItem.addActionListener(new MoveSelectionAction());
+//         menu.add(menuItem);
         
         JMenu viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
@@ -586,21 +607,21 @@ implements ResidueActionListener
         checkItem = new JCheckBoxMenuItem("None / Sit still");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateNoneAction());
-        checkItem.setState(false);
+        checkItem.setState((rotationThread == null) || rotationThread.sitStill);
         rotationGroup.add(checkItem);
         menu.add(checkItem);
 
         checkItem = new JCheckBoxMenuItem("Rock");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateRockAction());
-        checkItem.setState(true);
+        checkItem.setState((rotationThread != null) && rotationThread.doRock && (!rotationThread.sitStill));
         rotationGroup.add(checkItem);
         menu.add(checkItem);
         
         checkItem = new JCheckBoxMenuItem("Spin");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateSpinAction());
-        checkItem.setState(false);
+        checkItem.setState((rotationThread != null) && (!rotationThread.doRock) && (!rotationThread.sitStill));
         rotationGroup.add(checkItem);
         menu.add(checkItem);
         
@@ -629,6 +650,11 @@ implements ResidueActionListener
         backgroundGroup.add(checkItem);
         menu.add(checkItem);
         
+//        menuItem = new JMenuItem("Test Full Screen");
+//        viewMenu.add(menuItem);
+//        menuItem.setEnabled(true);
+//        checkItem.addActionListener(new TestFullScreenAction());
+
         menu = new JMenu("Stereoscopic 3D");
         viewMenu.add(menu);
 
@@ -691,6 +717,57 @@ implements ResidueActionListener
         }
     }
 
+    class RunScriptAction implements ActionListener {
+        JFileChooser loadScriptFileChooser = new JFileChooser();
+        MyJFileFilter scriptFilter = new MyJFileFilter();
+        
+        public RunScriptAction() {
+            scriptFilter.setDescription("script files (*.scr,*.ras,*.rsc)");
+            scriptFilter.addExtension("scr");
+            scriptFilter.addExtension("ras");
+            scriptFilter.addExtension("rsc");
+            
+            loadScriptFileChooser.setFileFilter(scriptFilter);
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+
+            int returnVal = loadScriptFileChooser.showOpenDialog(Tornado.this);
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = loadScriptFileChooser.getSelectedFile();
+                try {
+                    setWait("Loading script file " + file.getCanonicalPath() + " ...");
+                    FileInputStream inStream = new FileInputStream(file);
+
+                    // TODO - parse script
+                    // MoleculeCollection molecules = loadPDBFile(inStream);
+                    
+                    unSetWait("Script completed (" + file.getName() + ")");
+                }                
+                catch (FileNotFoundException exc) {
+                    unSetWait("File not found. (" + file.getName() + ")");
+                    String[] options = {"Bummer!"};
+                    JOptionPane.showOptionDialog(null, "No such file: " + file, "script File Error!",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
+                            null, options, options[0]);
+                }
+                catch (IOException exc) {
+                    unSetWait("File error. (" + file.getName() + ")");
+                    String[] options = {"Bummer!"};
+                    JOptionPane.showOptionDialog(null, "Problem reading file: " + file + ": " + exc, "script File Error!",
+                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
+                            null, options, options[0]);
+                }
+            }
+        }
+    }
+
+    class TestFullScreenAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            canvas.testFullScreen();
+        }
+    }
+
     class BackgroundColorAction implements ActionListener {
         Color color;
         BackgroundColorAction(Color c) {color = c;}
@@ -699,17 +776,21 @@ implements ResidueActionListener
         }
     }
 
-    class MoveHighlightedResidueAction implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            // TODO
-            System.out.println("Hey, this isn't moving a residue!?!?!");
-        }
-    }
+//    class MoveSelectionAction implements ActionListener {
+//        public void actionPerformed(ActionEvent e) {
+//            System.out.println("Hey, this isn't moving a residue!?!?!");
+//        }
+//    }
 
     class RelaxCoordinatesAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            // TODO
-            System.out.println("Hey, this isn't relaxing the coordinates!?!?!");
+            moleculeCollection.relaxCoordinates();
+            
+            // TODO update cartoon
+            canvas.currentCartoon.clear();
+            canvas.currentCartoon.show(moleculeCollection);
+            
+            // System.out.println("Hey, this isn't relaxing the coordinates!?!?!");
         }
     }
 
@@ -769,6 +850,10 @@ implements ResidueActionListener
 
                 canvas.UnLock();
             }
+            
+            // TODO loaded molecule does not paint
+            // assembly.Modified();
+            // canvas.repaint();
 
             // Update residue highlights
 //            firstResidue = null;
