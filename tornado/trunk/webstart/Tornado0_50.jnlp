@@ -1,0 +1,24 @@
+<jnlp spec="1.0+"
+  codebase="http://simtk.org/cmbruns/java"
+  href="Tornado0_50.jnlp"
+>
+  <information>
+    <title>toRNAdo RNA visualization prototype</title>
+    <vendor>Stanford National Center for Biomedical Computation</vendor>
+    <homepage href="http://simtk.org/" />
+    <description>View RNA structures</description>
+  </information>
+  <offline-allowed/>
+  <resources>
+    <j2se version="1.4+" />
+    <property name="apple.laf.useScreenMenuBar" value="true"/>
+    <jar href="Tornado0_50.jar"/>
+    <jar href="Jama.jar"/>
+    <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
+    <extension href="vtk44.jnlp" name="vtk4.4"/>
+  </resources>
+  <security>
+    <all-permissions/>
+  </security>
+<application-desc main-class="org.simtk.moleculargraphics.Tornado" />
+</jnlp>
