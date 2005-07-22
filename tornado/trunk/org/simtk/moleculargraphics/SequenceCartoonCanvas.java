@@ -71,7 +71,7 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     Cursor leftRightCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
 
-    Color selectionColor = new Color(50, 50, 255);
+    private Color selectionColor;
 
     public SequenceCartoonCanvas(ResidueActionBroadcaster b, SequenceCanvas s) {
         super();
@@ -83,6 +83,10 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         addMouseMotionListener(this);
         addMouseListener(this);
         sequenceCanvas.parent.getHorizontalScrollBar().addAdjustmentListener(this);
+    }
+
+    public void setSelectionColor(Color c) {
+        selectionColor = c;
     }
 
     public void checkSize() {

@@ -79,7 +79,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     boolean insertionResidueRightSide;
     // HashSet selectedResidues = new HashSet();
     HashSet temporarilySelectedResidues = new HashSet(); // During mouse drag, don't commit yet
-    Color selectionColor = new Color(50, 50, 255);
+    private Color selectionColor;
     Color highlightColor = new Color(255, 255, 100);
 
     AutoScrollThread autoScrollThread = new AutoScrollThread();
@@ -108,6 +108,10 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         parent.getHorizontalScrollBar().addAdjustmentListener(this);
         
         autoScrollThread.start();
+    }
+
+    public void setSelectionColor(Color c) {
+        selectionColor = c;
     }
 
     public void update(Graphics g) {
@@ -159,7 +163,12 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
                     || temporarilySelectedResidues.contains(residue)
             ) {
                 highlightPosition(g, r, selectionColor);
-                g.setColor(getBackground()); // Inverse text color for selected residues
+                
+                // Inverse text if selection color is dark
+                if ( (selectionColor.getRed() + selectionColor.getGreen() + selectionColor.getBlue()) < 380)
+                    g.setColor(getBackground()); // Inverse text color for selected residues
+                else 
+                    g.setColor(getForeground()); // Normal text color for selected residues
             }
             else g.setColor(getForeground()); // Normal text
             
