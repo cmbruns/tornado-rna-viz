@@ -48,7 +48,7 @@ public class Cytidylate extends Pyrimidine {
     public Cytidylate(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
     public String getResidueName() {return "cytidylate";}
     
-    static private Color defaultColor = new Color(150,200,255); // pale blue
+    static private Color defaultColor = new Color(130,180,255); // pale blue
     public Color getDefaultColor() {return defaultColor;}
 
     public char getOneLetterCode() {return 'C';}

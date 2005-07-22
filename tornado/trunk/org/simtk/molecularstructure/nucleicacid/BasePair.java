@@ -34,6 +34,7 @@ package org.simtk.molecularstructure.nucleicacid;
 import java.util.*;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
 import org.simtk.util.*;
 
 /** 
@@ -90,14 +91,16 @@ implements MyIterable
         Vector planeAtoms = new Vector();
         if (residue1 != null) {
             Molecule base = residue1.get(Nucleotide.baseGroup);
-            for (int a = 0; a < base.getAtomCount(); a++) {
-                planeAtoms.addElement(base.getAtom(a).getCoordinates());
+            for (Iterator i = base.getAtomIterator(); i.hasNext();) {
+                Atom a = (Atom) i.next();
+                planeAtoms.addElement(a.getCoordinates());
             }
         }
         if (residue2 != null) {
             Molecule base = residue2.get(Nucleotide.baseGroup);
-            for (int a = 0; a < base.getAtomCount(); a++) {
-                planeAtoms.addElement(base.getAtom(a).getCoordinates());
+            for (Iterator i = base.getAtomIterator(); i.hasNext();) {
+                Atom a = (Atom) i.next();
+                planeAtoms.addElement(a.getCoordinates());
             }
         }
         Plane3D basePairPlane = Plane3D.bestPlane3D(planeAtoms);
@@ -112,12 +115,14 @@ implements MyIterable
         // 1) compute best plane containing base group atoms
         Vector planeAtoms = new Vector();
         Molecule base = residue1.get(Nucleotide.baseGroup);
-        for (int a = 0; a < base.getAtomCount(); a++) {
-            planeAtoms.addElement(base.getAtom(a).getCoordinates());
+        for (Iterator i = base.getAtomIterator(); i.hasNext();) {
+            Atom a = (Atom) i.next();
+            planeAtoms.addElement(a.getCoordinates());
         }
         base = residue2.get(Nucleotide.baseGroup);
-        for (int a = 0; a < base.getAtomCount(); a++) {
-            planeAtoms.addElement(base.getAtom(a).getCoordinates());
+        for (Iterator i = base.getAtomIterator(); i.hasNext();) {
+            Atom a = (Atom) i.next();
+            planeAtoms.addElement(a.getCoordinates());
         }
         Plane3D basePairPlane = Plane3D.bestPlane3D(planeAtoms);
         

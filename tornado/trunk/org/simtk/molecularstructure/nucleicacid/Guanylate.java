@@ -46,7 +46,7 @@ public class Guanylate extends Purine {
     public Guanylate(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
     public String getResidueName() {return "guanylate";}
  
-    static private Color defaultColor = new Color(255,240,120); // orange
+    static private Color defaultColor = new Color(120,120,120); // charcoal
     public Color getDefaultColor() {return defaultColor;}
 
     public char getOneLetterCode() {return 'G';}

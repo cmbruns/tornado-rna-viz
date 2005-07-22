@@ -130,10 +130,10 @@ public class NucleicAcid extends Biopolymer {
                 
                 // Atomic touching criterion - polar atoms
                 double minDistance = 1000;
-                for (Iterator iterAtom1 = residue.getAtoms().iterator(); iterAtom1.hasNext(); ) {
+                for (Iterator iterAtom1 = residue.getAtomIterator(); iterAtom1.hasNext(); ) {
                     Atom atom1 = (Atom) iterAtom1.next();
                     if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
-                    for (Iterator iterAtom2 = otherResidue.getAtoms().iterator(); iterAtom2.hasNext(); ) {
+                    for (Iterator iterAtom2 = otherResidue.getAtomIterator(); iterAtom2.hasNext(); ) {
                         Atom atom2 = (Atom) iterAtom2.next();
                         if (! ((atom2 instanceof PDBOxygen) || (atom2 instanceof PDBNitrogen))) continue;
                         double testDistance = atom1.distance(atom2);
