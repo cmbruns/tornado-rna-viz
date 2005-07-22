@@ -137,7 +137,7 @@ public class BackboneSpheres extends GlyphCartoon {
         int colorScalar = ((Integer) colorIndices.get(color)).intValue();
         
         linePoints.InsertNextPoint(backbonePosition.getX(), backbonePosition.getY(), backbonePosition.getZ());
-        glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
+        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
         lineScalars.InsertNextValue(colorScalar);        
     }    
 }

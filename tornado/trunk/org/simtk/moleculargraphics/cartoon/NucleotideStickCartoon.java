@@ -214,7 +214,7 @@ public class NucleotideStickCartoon extends GlyphCartoon {
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());
 
-            glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
+            glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
             lineScalars.InsertNextValue(colorScalar);
         }
                 

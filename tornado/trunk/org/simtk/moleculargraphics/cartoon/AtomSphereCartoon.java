@@ -47,6 +47,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
 
     vtkSphereSource sphereSource = new vtkSphereSource();
     double sizeScale = 1.0;
+    public boolean scaleByAtom = true;
 
     public AtomSphereCartoon(double scale) {
         super();
@@ -66,6 +67,8 @@ public class AtomSphereCartoon extends GlyphCartoon {
 
         glyphActor.GetProperty().BackfaceCullingOn();
     }
+    
+    public void setScale(double s) {sizeScale = s;}
     
     public void show(Molecule molecule) {
         addMolecule(molecule, null);
@@ -89,8 +92,8 @@ public class AtomSphereCartoon extends GlyphCartoon {
         // If it's a biopolymer, index the glyphs by residue
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
-            for (int a = 0; a < residue.getAtomCount(); a++) {
-                Atom atom = residue.getAtom(a);
+            for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
+                Atom atom = (Atom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -100,7 +103,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
                 addMolecule((Residue) iterResidue.next(), currentObjects);
             }
         }
-        else for (Iterator i1 = molecule.getAtoms().iterator(); i1.hasNext(); ) {
+        else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
             Atom atom = (Atom) i1.next();
             addAtom(atom, currentObjects);
         }        
@@ -128,86 +131,12 @@ public class AtomSphereCartoon extends GlyphCartoon {
 
         // Draw a sphere for each atom
         linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
-        lineNormals.InsertNextTuple3(atom.getVanDerWaalsRadius() * sizeScale, 0.0, 0.0);
+        
+        double radius = sizeScale;
+        if (scaleByAtom) radius *= atom.getVanDerWaalsRadius();
+        lineNormals.InsertNextTuple3(radius, 0.0, 0.0);
 
-        glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
+        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
         lineScalars.InsertNextValue(colorScalar);
     }
-
-    
-//    public vtkAssembly represent(Molecule molecule, double scaleFactor, Color clr, double opacity) {
-//
-//        vtkAssembly assembly = new vtkAssembly();
-//        
-//        // Store each atom type in a separate vtkPoints structure
-//        Hashtable elementPoints = new Hashtable(); // Map all atoms of same element to the same structure
-//        Hashtable elementRadii = new Hashtable(); // Map element names to sphere radius
-//        Hashtable elementColors = new Hashtable(); // Map element names to color
-//        
-//        boolean hasContents = false;
-//
-//        for (int a = 0; a < molecule.getAtomCount(); a++) {
-//            Atom atom = molecule.getAtom(a);
-//            BaseVector3D coord = molecule.getAtom(a).getCoordinates();
-//            String elementSymbol = molecule.getAtom(a).getElementSymbol();
-//            
-//            vtkPoints atomPoints;
-//            if (!elementPoints.containsKey(elementSymbol)) { // New element type
-//                atomPoints = new vtkPoints();
-//                elementPoints.put(elementSymbol, atomPoints);
-//                elementRadii.put(elementSymbol, new Double(atom.getRadius() * scaleFactor));
-//                if (clr == null)
-//                    elementColors.put(elementSymbol, atom.getDefaultColor());
-//                else 
-//                    elementColors.put(elementSymbol, clr);
-//            }
-//            atomPoints = (vtkPoints) elementPoints.get(elementSymbol);
-//            
-//            atomPoints.InsertNextPoint(coord.getX(), coord.getY(), coord.getZ());
-//
-//            if (! (atomPositions.containsKey(atom))) atomPositions.put(atom, new Vector());
-//            Vector atomPrimitives = (Vector) atomPositions.get(atom);
-//            atomPrimitives.add( new VTKPointPosition(atomPoints, atomPoints.GetNumberOfPoints() - 1) );
-//            
-//            hasContents = true;
-//        }
-//
-//        String elementSymbol = "";
-//        Enumeration e = elementPoints.keys();
-//        while (e.hasMoreElements()) {
-//              elementSymbol = (String) e.nextElement();
-//              // System.out.println(elementSymbol);
-//
-//              vtkPoints atomPoints = (vtkPoints) elementPoints.get(elementSymbol);
-//              
-//              vtkPolyData points = new vtkPolyData();
-//              points.SetPoints(atomPoints);
-//              
-//              vtkSphereSource sphere = new vtkSphereSource();
-//              sphere.SetThetaResolution(8);
-//              sphere.SetPhiResolution(8);
-//              sphere.SetRadius( ((Double)elementRadii.get(elementSymbol)).doubleValue() );
-//              
-//              vtkGlyph3D spheres = new vtkGlyph3D();
-//              spheres.SetInput(points);
-//              spheres.SetSource(sphere.GetOutput());
-//
-//              vtkPolyDataMapper spheresMapper = new vtkPolyDataMapper();
-//              spheresMapper.SetInput(spheres.GetOutput());
-//              
-//              vtkActor spheresActor = new vtkActor();
-//              spheresActor.SetMapper(spheresMapper);
-//              Color color = (Color) elementColors.get(elementSymbol);
-//              spheresActor.GetProperty().SetColor(color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0);
-//              spheresActor.GetProperty().SetOpacity(opacity);
-//              spheresActor.GetProperty().BackfaceCullingOn();
-//              
-//              assembly.AddPart(spheresActor);
-//        }
-//        
-//        if (hasContents) {
-//            return assembly;
-//        }
-//        else return null;
-//    }
 }

@@ -41,7 +41,7 @@ import vtk.*;
 public class BackboneStick extends GlyphCartoon {
     double sphereFudge = 1.05; // spheres aren't quit flush with cylinder for some reason
     int stickResolution = 5;
-    double stickLength = 3.0;
+    double stickLength = 2.0;
     double stickRadius = 1.50;
     private int baseColorIndex = 150;
     private Hashtable colorIndices = new Hashtable();
@@ -238,7 +238,7 @@ public class BackboneStick extends GlyphCartoon {
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(segmentDirection.getX(), segmentDirection.getY(), segmentDirection.getZ());
 
-            glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
+            glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
             lineScalars.InsertNextValue(colorScalar);                
         }        
     }

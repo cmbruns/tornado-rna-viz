@@ -44,10 +44,14 @@ public class BallAndStickCartoon extends MolecularCartoonNewWay {
 
     BondStickCartoon sticks = new BondStickCartoon(0.15);
     AtomSphereCartoon balls = new AtomSphereCartoon(0.25);
-    
+
     vtkAssembly assembly = new vtkAssembly();
-    
+
     public BallAndStickCartoon() {
+        // Make spheres be caps for sticks
+        // balls.setScale(0.15);
+        // balls.scaleByAtom = false;
+        
         assembly.AddPart(sticks.getActor());
         assembly.AddPart(balls.getActor());
     }

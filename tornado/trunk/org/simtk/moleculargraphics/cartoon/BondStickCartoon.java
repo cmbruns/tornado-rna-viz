@@ -102,8 +102,8 @@ public class BondStickCartoon extends GlyphCartoon {
         // If it's a biopolymer, index the glyphs by residue
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
-            for (int a = 0; a < residue.getAtomCount(); a++) {
-                Atom atom = residue.getAtom(a);
+            for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
+                Atom atom = (Atom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -113,7 +113,7 @@ public class BondStickCartoon extends GlyphCartoon {
                 addMolecule((Residue) iterResidue.next(), currentObjects);
             }
         }
-        else for (Iterator i1 = molecule.getAtoms().iterator(); i1.hasNext(); ) {
+        else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
             Atom atom = (Atom) i1.next();
             addAtom(atom, currentObjects);
         }        
@@ -169,7 +169,7 @@ public class BondStickCartoon extends GlyphCartoon {
                 linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
                 lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());
     
-                glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
+                glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
                 lineScalars.InsertNextValue(colorScalar);
                 
             }

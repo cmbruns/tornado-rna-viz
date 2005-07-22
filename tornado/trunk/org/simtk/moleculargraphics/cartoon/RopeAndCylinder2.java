@@ -43,7 +43,7 @@ import vtk.*;
 public class RopeAndCylinder2 extends MolecularCartoonNewWay {
 
     DuplexCylinderCartoon duplexes = new DuplexCylinderCartoon();
-    TubeAndStickTrace ropes = new TubeAndStickTrace(1.50, 0.50);
+    TubeAndStickTrace ropes = new TubeAndStickTrace(0.20, 0.20);
     
     vtkAssembly assembly = new vtkAssembly();
     

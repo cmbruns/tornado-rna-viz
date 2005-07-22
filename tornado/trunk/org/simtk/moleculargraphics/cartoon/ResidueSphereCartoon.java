@@ -135,7 +135,7 @@ public class ResidueSphereCartoon extends GlyphCartoon {
         
         lineNormals.InsertNextTuple3(sphereRadius, 0.0, 0.0);
 
-        glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
+        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
         lineScalars.InsertNextValue(colorScalar);
     }
 

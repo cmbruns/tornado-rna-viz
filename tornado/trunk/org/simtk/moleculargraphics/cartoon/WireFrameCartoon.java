@@ -47,7 +47,9 @@ import org.simtk.molecularstructure.atom.*;
  * Plus a cross at each non-bonded atom
  */
 public class WireFrameCartoon extends GlyphCartoon {
-
+    // Key: glyph index number value: atoms at the other end of a bond
+    Hashtable otherAtomIndices = new Hashtable();
+    
     static double crossSize = 1.0;
     static vtkLineSource lineSource;
     static {
@@ -86,8 +88,8 @@ public class WireFrameCartoon extends GlyphCartoon {
         // If it's a biopolymer, index the glyphs by residue
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
-            for (int a = 0; a < residue.getAtomCount(); a++) {
-                Atom atom = residue.getAtom(a);
+            for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
+                Atom atom = (Atom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -97,7 +99,7 @@ public class WireFrameCartoon extends GlyphCartoon {
                 addMolecule((Residue) iterResidue.next(), currentObjects);
             }
         }
-        else for (Iterator i1 = molecule.getAtoms().iterator(); i1.hasNext(); ) {
+        else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
             Atom atom = (Atom) i1.next();
             addAtom(atom, currentObjects);
         }        
@@ -126,39 +128,13 @@ public class WireFrameCartoon extends GlyphCartoon {
         
         // For unbonded atoms, put a cross at atom position
         if (atom.getBonds().size() == 0) {
-            // X
-            linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
-            lineNormals.InsertNextTuple3(crossSize, 0.0, 0.0);
-
-            glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
-            lineScalars.InsertNextValue(colorScalar);
-
-            // Y
-            linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
-            lineNormals.InsertNextTuple3(0.0, crossSize, 0.0);
-
-            glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
-            lineScalars.InsertNextValue(colorScalar);
-
-            // Z
-            linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
-            lineNormals.InsertNextTuple3(0.0, 0.0, crossSize);
-
-            glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
-            lineScalars.InsertNextValue(colorScalar);
+            createSingleAtomGlyph(atom, currentObjects, colorScalar);
         }
         // For bonded atoms, draw a line for each bond
         else for (Iterator i2 = atom.getBonds().iterator(); i2.hasNext(); ) {
             Atom atom2 = (Atom) i2.next();
-            Vector3D midpoint = c.plus(atom2.getCoordinates()).scale(0.5); // middle of bond
-            Vector3D b = c.plus(midpoint).scale(0.5); // middle of half-bond
-            Vector3D n = midpoint.minus(c); // direction/length vector
-
-            linePoints.InsertNextPoint(b.getX(), b.getY(), b.getZ());
-            lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());
-
-            glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
-            lineScalars.InsertNextValue(colorScalar);
+            
+            createBondGlyph(atom, atom2, currentObjects, colorScalar);
         }
     }
 
@@ -167,5 +143,108 @@ public class WireFrameCartoon extends GlyphCartoon {
         glyphColors.show(molecule);
     }
 
+    /** Change graphics primitives only for those objects that have moved
+     * 
+     * @param molecule
+     */
+    public void updateCoordinates(Molecule molecule) {
+        // Each bond glyph depends on two atoms, asymmetrically
+        
+        boolean modified = false;
+
+        for (Iterator i = molecule.getAtomIterator(); i.hasNext(); ) {
+            Atom atom = (Atom) i.next();
+            if (glyphColors.containsKey(atom)) {
+                Vector glyphs = (Vector) glyphColors.objectGlyphs.get(atom); // TODO encapsulate this
+                for (Iterator g = glyphs.iterator();g.hasNext();) {
+                    GlyphPosition pos = (GlyphPosition) g.next();
+                    if (atom.getBonds().size() < 1) {
+                        // Single atom glyph, only need to change center
+                        pos.setPosition(atom.getCoordinates());
+                        modified = true;
+                    }
+                    else {
+                        int glyphIndex = pos.arrayIndex;
+                        if (otherAtomIndices.containsKey(new Integer(glyphIndex))) {
+                            Atom atom2 = (Atom) otherAtomIndices.get(new Integer(glyphIndex));
+                            Vector3D normal = getBondNormal(atom, atom2);
+                            Vector3D middle = getBondMiddle(atom, atom2);
+                            pos.setPosition(middle);
+                            pos.setNormal(normal);
+
+                            // Even if the other atom is not in the modified molecule, it should be redrawn anyway
+                            if (! molecule.containsAtom(atom2)) {
+                                normal = getBondNormal(atom2, atom);
+                                middle = getBondMiddle(atom2, atom);
+                                // TODO find glyph at the other side of the bond
+                            }
+                            
+                            modified = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (modified) {
+            linePoints.Modified();
+            lineNormals.Modified();
+        }
+        else {
+            System.out.println("No modification");
+        }
+        
+    }
     
+    private Vector3D getBondNormal(Atom a1, Atom a2) {
+        BaseVector3D c = a1.getCoordinates();        
+        Vector3D midpoint = c.plus(a2.getCoordinates()).scale(0.5); // middle of bond
+        Vector3D b = c.plus(midpoint).scale(0.5); // middle of half-bond
+        Vector3D n = midpoint.minus(c); // direction/length vector
+        return n;
+    }
+    private Vector3D getBondMiddle(Atom a1, Atom a2) {
+        BaseVector3D c = a1.getCoordinates();        
+        Vector3D midpoint = c.plus(a2.getCoordinates()).scale(0.5); // middle of bond
+        Vector3D b = c.plus(midpoint).scale(0.5); // middle of half-bond
+        return b;
+    }
+    private void createBondGlyph(Atom atom, Atom atom2, Vector currentObjects, int colorScalar) {
+        Vector3D b = getBondMiddle(atom, atom2);
+        Vector3D n = getBondNormal(atom, atom2);
+
+        linePoints.InsertNextPoint(b.getX(), b.getY(), b.getZ());
+        lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());
+
+        int glyphIndex = lineScalars.GetNumberOfTuples();
+        
+        glyphColors.add(currentObjects, lineData, glyphIndex, colorScalar);
+        otherAtomIndices.put(new Integer(glyphIndex), atom2);
+        
+        lineScalars.InsertNextValue(colorScalar);        
+    }
+    private void createSingleAtomGlyph(Atom atom, Vector currentObjects, int colorScalar) {
+        BaseVector3D c = atom.getCoordinates();
+        
+        // X
+        linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
+        lineNormals.InsertNextTuple3(crossSize, 0.0, 0.0);
+
+        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+        lineScalars.InsertNextValue(colorScalar);
+
+        // Y
+        linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
+        lineNormals.InsertNextTuple3(0.0, crossSize, 0.0);
+
+        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+        lineScalars.InsertNextValue(colorScalar);
+
+        // Z
+        linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
+        lineNormals.InsertNextTuple3(0.0, 0.0, crossSize);
+
+        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+        lineScalars.InsertNextValue(colorScalar);
+    }
 }

@@ -190,7 +190,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                             residueDirection.getX(),residueDirection.getY(),residueDirection.getZ(),
                             thirdDirection.getX(),thirdDirection.getY(),thirdDirection.getZ()); // TODO
         
-                    glyphColors.add(currentObjects, lineScalars, lineScalars.GetNumberOfTuples(), colorScalar);
+                    glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
                     lineScalars.InsertNextValue(colorScalar);
                     
                     // Reverse the orientation for the other residue

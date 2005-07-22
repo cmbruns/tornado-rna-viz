@@ -36,6 +36,7 @@ import java.util.*;
 
 import org.simtk.molecularstructure.*;
 import org.simtk.util.*;
+import org.simtk.geometry3d.*;
 
 import vtk.*;
 
@@ -50,7 +51,8 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
     static final int selectionColorIndex = 255;
     static final int highlightColorIndex = 254;
     static final int invisibleColorIndex = 253;
-    static final Color selectionColor = new Color(80, 80, 255);
+    // static final Color selectionColor = new Color(80, 80, 255);
+    static final Color selectionColor = new Color(255,255,150);
     static final Color highlightColor = new Color(250, 250, 50);
 
     GlyphIndex glyphColors = new GlyphIndex();
@@ -162,14 +164,19 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
     }
     
     class GlyphPosition {
-        vtkFloatArray colorIndexArray;
+        private vtkPolyData glyphData;
+        vtkDataArray colorIndexArray;
         int arrayIndex;
         int unselectedColorIndex;
-        public GlyphPosition(vtkFloatArray a, int i, int c) {
-            colorIndexArray = a;
+        
+        public GlyphPosition(vtkPolyData d, int i, int c) {
+            glyphData = d;
+            colorIndexArray = glyphData.GetPointData().GetScalars();
+            // colorIndexArray = a;
             arrayIndex = i;
             unselectedColorIndex = c;
         }
+        
         public void show() {
             if (colorIndexArray.GetTuple1(arrayIndex) == invisibleColorIndex)
                 colorIndexArray.SetTuple1(arrayIndex, unselectedColorIndex);
@@ -192,7 +199,15 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
             if (colorIndexArray.GetTuple1(arrayIndex) != invisibleColorIndex)
                 setColor(selectionColorIndex);
         }
+        public void setPosition(BaseVector3D v) {
+            glyphData.GetPoints().SetPoint(arrayIndex, v.getX(), v.getY(), v.getZ());
+        }
+        public void setNormal(BaseVector3D v) {
+            glyphData.GetPointData().GetNormals().SetTuple3(arrayIndex, v.getX(), v.getY(), v.getZ());
+        }
     }
+    
+    
     class GlyphIndex implements SelectionListener {
         static final long serialVersionUID = 0L;
 
@@ -215,8 +230,8 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
             return false;
         }
 
-        public void add(Vector objectKeys, vtkFloatArray scalarArray, int arrayIndex, int colorIndex) {
-            GlyphPosition glyph = new GlyphPosition(scalarArray, arrayIndex, colorIndex);
+        public void add(Vector objectKeys, vtkPolyData pointData, int arrayIndex, int colorIndex) {
+            GlyphPosition glyph = new GlyphPosition(pointData, arrayIndex, colorIndex);
             allGlyphs.add(glyph);
             // Index this one glyph by all of the entities it represents
             for (Iterator i = objectKeys.iterator(); i.hasNext(); ) {
@@ -302,7 +317,7 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
             vtkData.GetPointData().GetScalars().Modified();
         }
         
-        void setDefaultColor(Residue residue) {
+        void setDefaultColor(Object residue) {
             if (! objectGlyphs.containsKey(residue)) return;
             Vector glyphs = (Vector) objectGlyphs.get(residue);
             for (int g = 0; g < glyphs.size(); g++) {
@@ -310,7 +325,7 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
                 glyph.show();
             }
         }
-        void setColor(Residue residue, int colorIndex) {
+        void setColor(Object residue, int colorIndex) {
             if (! objectGlyphs.containsKey(residue)) return;
             Vector glyphs = (Vector) objectGlyphs.get(residue);
             for (int g = 0; g < glyphs.size(); g++) {
