@@ -34,6 +34,7 @@ package org.simtk.molecularstructure;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import org.simtk.molecularstructure.atom.*;
 
 import org.simtk.geometry3d.*;
 
@@ -59,6 +60,13 @@ public class MoleculeCollection {
     public Vector3D getCenterOfMass() {
         if (mass <= 0) return null;
         return centerOfMass;
+    }
+    
+    public void relaxCoordinates() {
+        for (Iterator i = molecules.iterator(); i.hasNext(); ) {
+            Molecule m = (Molecule) i.next();
+            m.relaxCoordinates();
+        }
     }
     
     public Vector molecules() {return molecules;}
@@ -131,8 +139,10 @@ public class MoleculeCollection {
 		    
 		    mass += mol.getMass();
 		    
-		    for (int a = 0; a < mol.getAtomCount(); a++)
-		        atoms.addElement(mol.getAtom(a));
+            for (Iterator i = mol.getAtomIterator(); i.hasNext(); ) {
+                Atom a = (Atom) i.next();
+                atoms.addElement(a);
+            }
 		    
 		    mol = Molecule.createFactoryPDBMolecule(reader);
 		    if (mol == null) break;

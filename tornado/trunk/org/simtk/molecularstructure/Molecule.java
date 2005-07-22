@@ -33,6 +33,7 @@ package org.simtk.molecularstructure;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.ByteOrder;
 import java.text.ParseException;
 import java.util.*; // Vector
 
@@ -40,6 +41,7 @@ import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.atom.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.protein.*;
+import org.simtk.moleculardynamics.*;
 
 /**
  * @author Christopher Bruns
@@ -47,7 +49,8 @@ import org.simtk.molecularstructure.protein.*;
  * \brief A single molecule structure.
  */
 public class Molecule {
-	protected Vector atoms = new Vector();
+    private LinkedHashSet atoms = new LinkedHashSet();
+    // protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();
 	// Vector bonds = new Vector();
 
@@ -60,6 +63,79 @@ public class Molecule {
     public Vector3D getCenterOfMass() {
         if (mass <= 0) return null;
         return centerOfMass;
+    }
+
+    float[] referenceCoordinates = null;
+    private void storeReferenceCoordinates() {
+        int atomCount = getAtomCount();
+        referenceCoordinates = new float[atomCount * 3];
+
+        int coordinateIndex = 0;
+        for (Iterator i = getAtomIterator(); i.hasNext(); ) {
+            Atom atom = (Atom) i.next();
+            for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
+                Double coordinate = (Double) i2.next();
+                // Set reference coordinates once
+                referenceCoordinates[coordinateIndex] = coordinate.floatValue();
+                coordinateIndex ++;
+            }
+        }
+    }
+    
+    public void relaxCoordinates() {
+        
+        int atomCount = getAtomCount();
+        int duplexCount = 0;
+        float referenceCoordinates[] = new float[atomCount * 3];
+        int duplexRanges[] = new int[duplexCount * 4];
+        boolean swapBytes = (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN);
+        
+        // First time relaxing the coordinates?  Store the initial configuration
+        if ( (referenceCoordinates == null) || (referenceCoordinates.length != atomCount) )
+            storeReferenceCoordinates();
+
+        // TODO - relax the actual coordinates
+        
+        // Copy the coordinates to a float array
+        float[] actualCoordinateArray = new float[atomCount * 3];
+        int coordinateIndex = 0;
+        for (Iterator i = getAtomIterator(); i.hasNext(); ) {
+            Atom atom = (Atom) i.next();
+            for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
+                Double coordinate = (Double) i2.next();
+                // Set reference coordinates once
+                actualCoordinateArray[coordinateIndex] = coordinate.floatValue();
+                coordinateIndex ++;
+            }
+        }
+
+        // Compute the new atom positions
+        RelaxCoordinates.relaxCoordinates1(
+                atomCount,
+                actualCoordinateArray,
+                referenceCoordinates,
+                5.0f,
+                duplexCount,
+                duplexRanges,
+                1.0f,
+                1.0f,
+                1);
+
+        // Copy the coordinates back to the molecule
+        coordinateIndex = 0;
+        for (Iterator i = getAtomIterator(); i.hasNext(); ) {
+            Atom atom = (Atom) i.next();
+            
+            atom.getCoordinates().setX(actualCoordinateArray[coordinateIndex]);
+            coordinateIndex++;
+            
+            atom.getCoordinates().setY(actualCoordinateArray[coordinateIndex]);
+            coordinateIndex++;
+            
+            atom.getCoordinates().setZ(actualCoordinateArray[coordinateIndex]);
+            coordinateIndex++;
+        }
+
     }
 
     public Molecule() {} // Empty molecule
@@ -77,13 +153,14 @@ public class Molecule {
      * @param t amount to translate
      */
     public void translate(BaseVector3D t) {
-        for (Iterator i = getAtoms().iterator(); i.hasNext(); ) {
+        for (Iterator i = getAtomIterator(); i.hasNext(); ) {
             Atom a = (Atom) i.next();
             a.translate(t);
         }
     }
     
-    public Vector getAtoms() {return atoms;}
+    public Iterator getAtomIterator() {return atoms.iterator();}
+    // public Vector getAtoms() {return atoms;}
     
     /**
      * Place all atomic coordinates into a single large array of float values,
@@ -96,7 +173,7 @@ public class Molecule {
 
         // TODO
         int arrayIndex = 0;
-        for (Iterator i = getAtoms().iterator(); i.hasNext(); ) {
+        for (Iterator i = getAtomIterator(); i.hasNext(); ) {
             Atom atom = (Atom) i.next();
             for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                 Double coord = (Double) i2.next();
@@ -112,23 +189,42 @@ public class Molecule {
     public Plane3D bestPlane3D() {
         BaseVector3D[] coordinates = new Vector3D[getAtomCount()];
         double[] masses = new double[getAtomCount()];
-        for (int a = 0; a < getAtomCount(); a++) {
-            Atom atom = (Atom) atoms.get(a);
+
+        int a = 0;
+        for (Iterator i = getAtomIterator(); i.hasNext();) {
+            Atom atom = (Atom) i.next();
             coordinates[a] = atom.getCoordinates();
             masses[a] = atom.getMass();
+
+            a++;
         }
         return Plane3D.bestPlane3D(coordinates, masses);
     }
     
     public void addAtom(Atom atom) {
+        if (atoms.contains(atom)) return; // no change
+        
         atoms.add(atom);
         mass += atom.getMass();
         double massRatio = atom.getMass() / mass;
         centerOfMass = centerOfMass.scale(1.0 - massRatio).plus(atom.getCoordinates().scale(massRatio));
     }
+
+    public void removeAtom(Atom atom) {
+        if (! atoms.contains(atom)) return; // no change
+        
+        atoms.remove(atom);
+        double massRatio = atom.getMass() / mass;
+        mass -= atom.getMass();
+        centerOfMass = centerOfMass.scale(1.0 - massRatio).minus(atom.getCoordinates().scale(massRatio));
+    }
+    
+    public boolean containsAtom(Atom atom) {
+        return atoms.contains(atom);
+    }
     
 	public int getAtomCount() {return atoms.size();}
-	public Atom getAtom(int i) {return (Atom) atoms.get(i);}
+	// public Atom getAtom(int i) {return (Atom) atoms.get(i);}
 	
     public static Molecule createFactoryPDBMolecule(URL url) throws IOException {
         InputStream inStream = url.openStream();

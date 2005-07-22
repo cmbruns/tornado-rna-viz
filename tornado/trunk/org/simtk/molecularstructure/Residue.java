@@ -191,7 +191,7 @@ public abstract class Residue extends Molecule implements Selectable {
      */
     // TODO - this only works for PDB atoms right now
     void createGenericBonds() {
-        ATOM1: for (Iterator a1 = atoms.iterator(); a1.hasNext(); ) {
+        ATOM1: for (Iterator a1 = getAtomIterator(); a1.hasNext(); ) {
             Atom atom = (Atom) a1.next();
             if (! (atom instanceof PDBAtom)) continue ATOM1;
             PDBAtom atom1 = (PDBAtom) atom;
