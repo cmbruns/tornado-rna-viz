@@ -44,7 +44,7 @@ public class RelaxCoordinates {
         System.loadLibrary("relaxCoordinates");
     }
     
-    static native int relaxCoordinates1(
+    public static native int relaxCoordinates1(
             int nAtoms,
             float[] coords,
             float[] coordsRef,
@@ -76,7 +76,7 @@ public class RelaxCoordinates {
             
             int coordinateIndex = 0;
             // for (Atom atom : molecule.getAtoms()) {
-            for (Iterator i = molecule.getAtoms().iterator(); i.hasNext(); ) {
+            for (Iterator i = molecule.getAtomIterator(); i.hasNext(); ) {
                 Atom atom = (Atom) i.next();
                 // for (Double coordinate : atom.getCoordinates()) {
                 for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
