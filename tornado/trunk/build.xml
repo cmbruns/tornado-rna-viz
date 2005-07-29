@@ -11,7 +11,7 @@
   <property name="webstart.dir" value="webstart"/>
   <property name="jar.name" value="tornado.jar"/>
 
-  <property name="lib" value="${jar.build.dir}/${jar.name}:${webstart.dir}/vtk.jar:${webstart.dir}/jogl.jar:${webstart.dir}/Jama.jar:jnlp.jar"/>
+  <property name="lib" value="${jar.build.dir}/${jar.name}:${vtk.bin.dir}/vtk.jar:${webstart.dir}/jogl.jar:${webstart.dir}/Jama.jar:jnlp.jar"/>
 
   <target name="run" depends="jar">
     <java fork="yes" classpath="${lib}" classname="org.simtk.moleculargraphics.Tornado">
@@ -33,13 +33,13 @@
 
   <target name="compile">
     <mkdir dir="${classes.build.dir}"/>
-    <javac source="1.4" target="1.4" classpath="${lib}" srcdir="." destdir="${classes.build.dir}" debug="on">
+    <javac source="1.4" target="1.4" classpath="${lib}" srcdir="src" destdir="${classes.build.dir}" debug="on">
       <include name="org/**"/>
       <include name="edu/**"/>
       <include name="HelloVtk.java"/>
     </javac>
     <copy todir="${classes.build.dir}/resources">
-      <fileset dir="resources" includes="**"/>
+      <fileset dir="src/resources" includes="**"/>
     </copy>
   </target>
 
@@ -61,7 +61,7 @@
               aboutmenuname="${mac.bundle.name}"
               icon="mac/Tornado.icns"
               mainclass="org.simtk.moleculargraphics.Tornado" 
-              jars="${jar.build.dir}/${jar.name} ${webstart.dir}/vtk.jar ${webstart.dir}/jogl.jar ${webstart.dir}/Jama.jar jnlp.jar"
+              jars="${jar.build.dir}/${jar.name} ${vtk.bin.dir}/vtk.jar ${webstart.dir}/jogl.jar ${webstart.dir}/Jama.jar jnlp.jar"
               antialiasedgraphics="true"
               antialiasedtext="true" 
               jvmversion="1.4+"
