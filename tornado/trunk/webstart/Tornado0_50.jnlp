@@ -1,5 +1,5 @@
 <jnlp spec="1.0+"
-  codebase="http://simtk.org/cmbruns/java"
+  codebase="https://simtk.org/svn/rna-viz-proto/tornado/tags/0.50/webstart"
   href="Tornado0_50.jnlp"
 >
   <information>
