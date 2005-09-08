@@ -1,0 +1,17 @@
+<jnlp spec="1.0+"
+  codebase="file:///C:/cygwin/home/cmbruns/eclipse/vtkjava/webstart"
+  href="jogl.jnlp"
+>
+  <information>
+    <title>Java openGL Bindings</title>
+    <vendor>Sun Microsystems, Inc.</vendor>
+  </information>
+  <resources>
+    <jar href="jogl.jar"/>
+  </resources>
+  <resources os="Windows">
+    <jar href="jogl-natives-win32.jar"/>
+  </resources>
+  <component-desc/>
+</jnlp>
+
