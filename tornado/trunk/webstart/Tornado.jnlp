@@ -1,5 +1,5 @@
 <jnlp spec="1.0+"
-  codebase="http://simtk.org/cmbruns/java"
+  codebase="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart"
   href="Tornado.jnlp"
 >
   <information>
@@ -12,20 +12,10 @@
   <resources>
     <j2se version="1.4+" />
     <property name="apple.laf.useScreenMenuBar" value="true"/>
-    <jar href="Tornado.jar"/>
-    <jar href="vtk.jar"/>
-    <jar href="Jama.jar"/>
+    <jar href="s_Tornado.jar"/>
+    <jar href="s_BrowserLauncher.jar"/>
     <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
-    <!-- <extension name="Java OpenGL Bindings" href="jogl.jnlp"/> -->
-  </resources>
-  <resources os="Windows">
-    <nativelib href="vtk42_win.jar"/>
-  </resources>
-  <resources os="Linux">
-    <nativelib href="vtk42linux.jar"/>
-  </resources>
-  <resources os="Mac OS X">
-    <nativelib href="vtkmac.jar"/>
+    <extension href="vtk44.jnlp" name="vtk4.4"/>
   </resources>
   <security>
     <all-permissions/>

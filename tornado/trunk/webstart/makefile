@@ -1,11 +1,8 @@
-IMAGES = -C .. resources
-
 default: Tornado.jnlp
 	javaws Tornado.jnlp
 
 Tornado.jar: never_up_to_date
-	jar cf Tornado.jar -C .. resources -C ../bin org/simtk -C ../bin Jama -C ../bin edu
-	jarsigner -keystore myKeystore Tornado.jar myself
+	jar cf Tornado.jar -C ../bin resources -C ../bin org/simtk -C ../bin Jama
 
 never_up_to_date:
 	
