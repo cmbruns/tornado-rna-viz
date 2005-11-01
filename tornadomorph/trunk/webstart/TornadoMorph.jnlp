@@ -3,7 +3,7 @@
   codebase="https://simtk.org/svn/rna-viz-proto/tornadomorph/trunk/webstart/"
 >
 <information>
-  <title>Ion Simulator Interface</title>
+  <title>toRNAdo molecular morph manager</title>
   <vendor>Stanford University</vendor>
   <homepage href="https://simtk.org/" />
   <description>Manages molecular animations</description>
@@ -15,7 +15,7 @@
 <resources>
   <j2se version="1.4+" />
   <jar href="s_TornadoMorph.jar"/>
-  <extension href="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart/Tornado.jnlp" name="tornado"/>
+  <!-- <extension href="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart/Tornado.jnlp" name="tornado"/> -->
 </resources>
 <application-desc main-class="org.simtk.tornadomorph.TornadoMorph" />
 </jnlp>
