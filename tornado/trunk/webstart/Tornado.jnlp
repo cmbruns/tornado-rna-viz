@@ -20,4 +20,5 @@
     <all-permissions/>
   </security>
 <application-desc main-class="org.simtk.moleculargraphics.Tornado" />
+<component-desc />
 </jnlp>
