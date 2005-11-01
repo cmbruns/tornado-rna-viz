@@ -1,6 +1,6 @@
 <jnlp spec="1.0+"
   codebase="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart"
-  href="Tornado.jnlp"
+  href="TornadoLib.jnlp"
 >
   <information>
     <title>toRNAdo RNA visualization prototype</title>
@@ -10,7 +10,14 @@
   </information>
   <offline-allowed/>
   <resources>
-    <extension href="TornadoLib.jnlp" name="toRNAdo"/>
+    <j2se version="1.4+" />
+    <property name="apple.laf.useScreenMenuBar" value="true"/>
+    <jar href="s_Tornado.jar"/>
+    <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
+    <extension href="https://simtk.org/svn/vtk-binaries/trunk/vtk4_4/vtk44.jnlp" name="vtk4.4"/>
   </resources>
-<application-desc main-class="org.simtk.moleculargraphics.Tornado" />
+  <security>
+    <all-permissions/>
+  </security>
+<component-desc />
 </jnlp>
