@@ -1,7 +1,8 @@
-default: Tornado.jnlp
+test: s_Tornado.jar
+	svn commit -m "Latest web start files"
 	javaws Tornado.jnlp
 
-Tornado.jar: never_up_to_date
+Tornado.jar: ../bin/org/simtk/*/*.class ../bin/resources/*/* ../bin/Jama/*.class
 	jar cf Tornado.jar -C ../bin resources -C ../bin org/simtk -C ../bin Jama
 
 s_Tornado.jar: Tornado.jar
