@@ -12,6 +12,10 @@
   <resources>
     <j2se version="1.4+" />
     <extension href="TornadoLib.jnlp" name="toRNAdo"/>
+    <jar href="s_Tornado.jar"/>
   </resources>
+  <security>
+    <all-permissions/>
+  </security>
 <application-desc main-class="org.simtk.moleculargraphics.Tornado" />
 </jnlp>
