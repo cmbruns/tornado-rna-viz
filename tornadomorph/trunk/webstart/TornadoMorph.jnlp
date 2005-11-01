@@ -15,7 +15,7 @@
 <resources>
   <j2se version="1.4+" />
   <jar href="s_TornadoMorph.jar"/>
-  <!-- <extension href="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart/Tornado.jnlp" name="tornado"/> -->
+  <jar href="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart/Tornado.jar"/>
 </resources>
 <application-desc main-class="org.simtk.tornadomorph.TornadoMorph" />
 </jnlp>
