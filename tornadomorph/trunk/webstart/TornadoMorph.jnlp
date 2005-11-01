@@ -17,6 +17,6 @@
   <jar href="s_TornadoMorph.jar" />
   <extension href="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart/Tornado.jnlp" name="toRNAdo" />
 </resources>
-<application-desc main-class="org.simtk.tornadomorph.TornadoMorph" />
 <component-desc />
+<application-desc main-class="org.simtk.tornadomorph.TornadoMorph" />
 </jnlp>
