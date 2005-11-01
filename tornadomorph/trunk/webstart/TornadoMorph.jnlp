@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+"
+  codebase="https://simtk.org/svn/rna-viz-proto/tornadomorph/trunk/webstart/"
+>
+<information>
+  <title>Ion Simulator Interface</title>
+  <vendor>Stanford University</vendor>
+  <homepage href="https://simtk.org/" />
+  <description>Manages molecular animations</description>
+</information>
+<offline-allowed/>
+<security>
+  <all-permissions/>
+</security>
+<resources>
+  <j2se version="1.4+" />
+  <jar href="s_TornadoMorph.jar"/>
+  <extension href="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart/tornado.jnlp" name="tornado"/>
+</resources>
+<application-desc main-class="org.simtk.tornadomorph.TornadoMorph" />
+</jnlp>
