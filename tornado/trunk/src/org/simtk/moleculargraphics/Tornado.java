@@ -37,7 +37,6 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.zip.*;
 import java.net.*;
 import javax.jnlp.*;
 
@@ -45,6 +44,7 @@ import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.*;
 import org.simtk.molecularstructure.nucleicacid.*;
+import org.simtk.pdb.*;
 import org.simtk.geometry3d.*;
 import org.simtk.util.*;
 
@@ -67,6 +67,7 @@ implements ResidueActionListener
     
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
     protected Tornado3DCanvas canvas;
+    private LoadStructureDialog loadStructureDialog = new LoadStructureDialog(this);
 
     Tornado() {
         super("toRNAdo: (no structures currently loaded)");
@@ -664,24 +665,26 @@ implements ResidueActionListener
         public void actionPerformed(ActionEvent e) {
             setWait("Calculating geometry...");
             
-            canvas.currentCartoonType = type;
-
-            canvas.currentCartoon = type.newInstance();
+            canvas.setMolecules(moleculeCollection);
             
-            canvas.currentCartoon.show(moleculeCollection);
-            vtkAssembly assembly = canvas.currentCartoon.getAssembly();
-            
-            if (assembly != null) {
-                canvas.Lock();
-                canvas.GetRenderer().RemoveAllProps();
-                
-                // AddProp deprecated in vtk 5.0
-                // try{canvas.GetRenderer().AddViewProp(assembly);}
-                // catch(NoSuchMethodError exc){canvas.GetRenderer().AddProp(assembly);}
-                canvas.GetRenderer().AddProp(assembly);
-
-                canvas.UnLock();
-            }
+//            canvas.currentCartoonType = type;
+//
+//            canvas.currentCartoon = type.newInstance();
+//            
+//            canvas.currentCartoon.show(moleculeCollection);
+//            vtkAssembly assembly = canvas.currentCartoon.getAssembly();
+//            
+//            if (assembly != null) {
+//                canvas.Lock();
+//                canvas.GetRenderer().RemoveAllProps();
+//                
+//                // AddProp deprecated in vtk 5.0
+//                // try{canvas.GetRenderer().AddViewProp(assembly);}
+//                // catch(NoSuchMethodError exc){canvas.GetRenderer().AddProp(assembly);}
+//                canvas.GetRenderer().AddProp(assembly);
+//
+//                canvas.UnLock();
+//            }
             
             // TODO loaded molecule does not paint
             // assembly.Modified();
@@ -814,278 +817,283 @@ implements ResidueActionListener
                 null, options, options[0]);        
     }
 
+    class LoadStructureDialog extends MoleculeAcquisitionMethodDialog {
+        LoadStructureDialog(Frame f) {super(f);}
+        public void readStructureFromStream(InputStream structureStream) throws IOException {
+            MoleculeCollection molecules = loadPDBFile(structureStream);
+            updateTitleBar();
+        }
+        static final long serialVersionUID = 01L;
+    }
+    
     class LoadPDBAction implements ActionListener {
-        JDialog dialog = null;
-        JButton loadFileButton = null;
-        JButton webPDBButton = null;
-        JButton cancelButton = null;
-        JTextField idField = null;
-        
-        // JCheckBoxMenuItem bioUnitCheckBox;
-        JComboBox bioUnitList;
-        
         public void actionPerformed(ActionEvent e) {
-            // If this is the very first call to this action, create the dialog
-            if (dialog == null) {
-                dialog = new JDialog(Tornado.this, "Choose Molecule Source", false);
-                dialog.setLocationRelativeTo(Tornado.this);
-                JPanel contentPanel = new JPanel();
-                contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-                dialog.setContentPane(contentPanel);
-                
-                contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
-                JLabel label = new JLabel("Choose molecule source:");
-                label.setAlignmentX(Component.CENTER_ALIGNMENT);
-                contentPanel.add(label);
-
-                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
-                contentPanel.add(new JSeparator());
-                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
-
-                loadFileButton = new JButton("From file...");
-                loadFileButton.addActionListener(this);
-                loadFileButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-                contentPanel.add(loadFileButton);
-
-                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
-                contentPanel.add(new JSeparator());
-                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
-                
-                JPanel webPDBPanel = new JPanel();
-                webPDBPanel.setLayout(new BoxLayout(webPDBPanel, BoxLayout.X_AXIS));
-
-                label = new JLabel(" PDB ID (4 characters): ");
-                webPDBPanel.add(label);
-
-                idField = new JTextField("1GID", 4);
-                idField.addActionListener(this);
-                webPDBPanel.add(idField);
-
-                webPDBButton = new JButton("From web");
-                webPDBButton.addActionListener(this);
-                webPDBPanel.add(webPDBButton);
-
-                webPDBPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-                contentPanel.add(webPDBPanel);
-
-                // contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
-                
-                // bioUnitCheckBox = new JCheckBoxMenuItem("Biological Unit");
-                // bioUnitCheckBox.setState(true);
-                // contentPanel.add(bioUnitCheckBox);
-                
-                String unitOptions[] = {"Biological Unit", "Crystallographic Unit"};
-                bioUnitList = new JComboBox(unitOptions);
-                bioUnitList.setSelectedIndex(0); // biological unit
-                contentPanel.add(bioUnitList);
-                
-                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
-                contentPanel.add(new JSeparator());
-                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
-
-                cancelButton = new JButton("Cancel");
-                cancelButton.addActionListener(this);
-                cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-                contentPanel.add(cancelButton);
-                contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
-
-                dialog.pack();
-            }
-
-            else if ( e.getSource() == loadFileButton ) {
-                // Load molecule from file using file browser dialog
-                dialog.setVisible(false); // temporarily hide the dialog
-                if (loadPDBFileAction.pdbFileLoaded())
-                    // success
-                    return;
-                else
-                    dialog.setVisible(true);  // Give the user another chance if something went wrong
-            }
-
-            if ( (e.getSource() == webPDBButton) ||
-                 (e.getSource() == idField) ) {
-                // Load PDB molecule from the internet
-                String pdbId = idField.getText().trim().toLowerCase();
-
-                // Force ID to be 4 characters
-                if (pdbId.length() != 4) return;
-
-                String urlBase;
-                String extension;
-                String filePrefix = "";
-                // if (bioUnitCheckBox.getState()) {
-                if (bioUnitList.getSelectedIndex() == 0) { // biological unit
-                    urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/biounit/coordinates/divided/";
-                    extension = "pdb1.gz";
-                }
-                else {
-                    urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/structures/divided/pdb/";
-                    extension = "ent.Z";
-                    filePrefix = "pdb";
-                }
-                
-                String division = pdbId.substring(1, 3);
-                String fullURLString = urlBase + division + "/" + filePrefix + pdbId + "." + extension;
-
-                InputStream inStream;
-                try {
-                    setWait("Loading remote PDB structure...");
-                    dialog.setCursor(waitCursor);
-
-                    setWait("Connecting to the PDB ftp site...");
-                    URLConnection urlConnection = (new URL(fullURLString)).openConnection();
-                    inStream = urlConnection.getInputStream();
-                    int fileSize = urlConnection.getContentLength();
-                    
-                    if ( (fullURLString.endsWith(".gz")) )
-                        inStream = new GZIPInputStream(inStream);
-                    if ( (fullURLString.endsWith(".Z")) )
-                        inStream = new UncompressInputStream(inStream);
-
-                    // Monitor load progress
-                    // TODO - this does not appear to work
-                    setWait("Reading structure file...");
-                    ProgressMonitorInputStream progressStream = 
-                            new ProgressMonitorInputStream(
-                                    Tornado.this,
-                                    "Reading " + fullURLString,
-                                    inStream);
-                    ProgressMonitor pm = progressStream.getProgressMonitor(); 
-                    pm.setMaximum(fileSize);
-                    pm.setMinimum(0);
-                    pm.setProgress(10);
-                    pm.setMillisToDecideToPopup(500);
-                    pm.setMillisToPopup(2000);
-                    setWait("Structure File size = " + fileSize + "...");
-                    
-                    MoleculeCollection molecules = loadPDBFile(progressStream);
-                    updateTitleBar();
-                    
-                    dialog.setCursor(defaultCursor);
-                    dialog.setVisible(false); // success, so close the dialog
-                    return;
-                } catch (IOException exc) {
-                    unSetWait("Remote PDB load error. (" + fullURLString + ")");
-                    String[] options = {"Bummer!"};
-                    JOptionPane.showOptionDialog(null, "Problem reading structure: " + pdbId + ": " + exc, "PDB File Error!",
-                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
-                            null, options, options[0]);
-                    dialog.setCursor(defaultCursor);
-                }
-                
-                
-                dialog.setCursor(defaultCursor);
-                dialog.setVisible(true); // reopen dialog so user can try again
-                return;
-            }
-            
-            if ( e.getSource() == cancelButton ) {
-                dialog.setCursor(defaultCursor);
-                dialog.setVisible(false);
-                return;
-            }
-
-            // User selected load molecule menu item
-            else {
-                dialog.setVisible(true);
-                dialog.setCursor(defaultCursor);
-            }
-        }
-    }
-
-    class LoadPDBWebAction implements ActionListener {
-        String pdbId;
-        LoadPDBWebAction(String id) {
-            super();
-            pdbId = id;
-        }
-        public void actionPerformed(ActionEvent e) {
+            loadStructureDialog.show();
         }
     }
     
-    class LoadPDBFileAction implements ActionListener {
-        JFileChooser loadPDBFileChooser;
+//    class OldLoadPDBAction implements ActionListener {
+//        JDialog dialog = null;
+//        JButton loadFileButton = null;
+//        JButton webPDBButton = null;
+//        JButton cancelButton = null;
+//        JTextField idField = null;
+//        
+//        // JCheckBoxMenuItem bioUnitCheckBox;
+//        JComboBox bioUnitList;
+//        
+//        public void actionPerformed(ActionEvent e) {
+//            // If this is the very first call to this action, create the dialog
+//            if (dialog == null) {
+//                dialog = new JDialog(Tornado.this, "Choose Molecule Source", false);
+//                dialog.setLocationRelativeTo(Tornado.this);
+//                JPanel contentPanel = new JPanel();
+//                contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+//                dialog.setContentPane(contentPanel);
+//                
+//                contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
+//                JLabel label = new JLabel("Choose molecule source:");
+//                label.setAlignmentX(Component.CENTER_ALIGNMENT);
+//                contentPanel.add(label);
+//
+//                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+//                contentPanel.add(new JSeparator());
+//                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+//
+//                loadFileButton = new JButton("From file...");
+//                loadFileButton.addActionListener(this);
+//                loadFileButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+//                contentPanel.add(loadFileButton);
+//
+//                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+//                contentPanel.add(new JSeparator());
+//                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+//                
+//                JPanel webPDBPanel = new JPanel();
+//                webPDBPanel.setLayout(new BoxLayout(webPDBPanel, BoxLayout.X_AXIS));
+//
+//                label = new JLabel(" PDB ID (4 characters): ");
+//                webPDBPanel.add(label);
+//
+//                idField = new JTextField("1GID", 4);
+//                idField.addActionListener(this);
+//                webPDBPanel.add(idField);
+//
+//                webPDBButton = new JButton("From web");
+//                webPDBButton.addActionListener(this);
+//                webPDBPanel.add(webPDBButton);
+//
+//                webPDBPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+//                contentPanel.add(webPDBPanel);
+//
+//                // contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
+//                
+//                // bioUnitCheckBox = new JCheckBoxMenuItem("Biological Unit");
+//                // bioUnitCheckBox.setState(true);
+//                // contentPanel.add(bioUnitCheckBox);
+//                
+//                String unitOptions[] = {"Biological Unit", "Crystallographic Unit"};
+//                bioUnitList = new JComboBox(unitOptions);
+//                bioUnitList.setSelectedIndex(0); // biological unit
+//                contentPanel.add(bioUnitList);
+//                
+//                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+//                contentPanel.add(new JSeparator());
+//                contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+//
+//                cancelButton = new JButton("Cancel");
+//                cancelButton.addActionListener(this);
+//                cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+//                contentPanel.add(cancelButton);
+//                contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
+//
+//                dialog.pack();
+//            }
+//
+//            else if ( e.getSource() == loadFileButton ) {
+//                // Load molecule from file using file browser dialog
+//                dialog.setVisible(false); // temporarily hide the dialog
+//                if (loadPDBFileAction.pdbFileLoaded())
+//                    // success
+//                    return;
+//                else
+//                    dialog.setVisible(true);  // Give the user another chance if something went wrong
+//            }
+//
+//            if ( (e.getSource() == webPDBButton) ||
+//                 (e.getSource() == idField) ) {
+//                // Load PDB molecule from the internet
+//                String pdbId = idField.getText().trim().toLowerCase();
+//
+//                // Force ID to be 4 characters
+//                if (pdbId.length() != 4) return;
+//
+//                String urlBase;
+//                String extension;
+//                String filePrefix = "";
+//                // if (bioUnitCheckBox.getState()) {
+//                if (bioUnitList.getSelectedIndex() == 0) { // biological unit
+//                    urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/biounit/coordinates/divided/";
+//                    extension = "pdb1.gz";
+//                }
+//                else {
+//                    urlBase = "ftp://ftp.rcsb.org/pub/pdb/data/structures/divided/pdb/";
+//                    extension = "ent.Z";
+//                    filePrefix = "pdb";
+//                }
+//                
+//                String division = pdbId.substring(1, 3);
+//                String fullURLString = urlBase + division + "/" + filePrefix + pdbId + "." + extension;
+//
+//                InputStream inStream;
+//                try {
+//                    setWait("Loading remote PDB structure...");
+//                    dialog.setCursor(waitCursor);
+//
+//                    setWait("Connecting to the PDB ftp site...");
+//                    URLConnection urlConnection = (new URL(fullURLString)).openConnection();
+//                    inStream = urlConnection.getInputStream();
+//                    int fileSize = urlConnection.getContentLength();
+//                    
+//                    if ( (fullURLString.endsWith(".gz")) )
+//                        inStream = new GZIPInputStream(inStream);
+//                    if ( (fullURLString.endsWith(".Z")) )
+//                        inStream = new UncompressInputStream(inStream);
+//
+//                    // Monitor load progress
+//                    // TODO - this does not appear to work
+//                    setWait("Reading structure file...");
+//                    ProgressMonitorInputStream progressStream = 
+//                            new ProgressMonitorInputStream(
+//                                    Tornado.this,
+//                                    "Reading " + fullURLString,
+//                                    inStream);
+//                    ProgressMonitor pm = progressStream.getProgressMonitor(); 
+//                    pm.setMaximum(fileSize);
+//                    pm.setMinimum(0);
+//                    pm.setProgress(10);
+//                    pm.setMillisToDecideToPopup(500);
+//                    pm.setMillisToPopup(2000);
+//                    setWait("Structure File size = " + fileSize + "...");
+//                    
+//                    MoleculeCollection molecules = loadPDBFile(progressStream);
+//                    updateTitleBar();
+//                    
+//                    dialog.setCursor(defaultCursor);
+//                    dialog.setVisible(false); // success, so close the dialog
+//                    return;
+//                } catch (IOException exc) {
+//                    unSetWait("Remote PDB load error. (" + fullURLString + ")");
+//                    String[] options = {"Bummer!"};
+//                    JOptionPane.showOptionDialog(null, "Problem reading structure: " + pdbId + ": " + exc, "PDB File Error!",
+//                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
+//                            null, options, options[0]);
+//                    dialog.setCursor(defaultCursor);
+//                }
+//                
+//                
+//                dialog.setCursor(defaultCursor);
+//                dialog.setVisible(true); // reopen dialog so user can try again
+//                return;
+//            }
+//            
+//            if ( e.getSource() == cancelButton ) {
+//                dialog.setCursor(defaultCursor);
+//                dialog.setVisible(false);
+//                return;
+//            }
+//
+//            // User selected load molecule menu item
+//            else {
+//                dialog.setVisible(true);
+//                dialog.setCursor(defaultCursor);
+//            }
+//        }
+//    }
 
-        public class PDBFilter extends javax.swing.filechooser.FileFilter {
-            public String getExtension(File f) {
-                if(f != null) {
-                    String filename = f.getName();
-                    int i = filename.lastIndexOf('.');
-                    if(i>0 && i<filename.length()-1) {
-                    return filename.substring(i+1).toLowerCase();
-                    };
-                }
-                return null;
-           }
-           public boolean accept(File f) {
-                if (f.isDirectory()) {return true;}
-                String extension = getExtension(f);
-                if (extension == null) return false;
-                extension = extension.toLowerCase();
-                if (extension != null)
-                    if (
-                        extension.equals("pdb") ||
-                        extension.equals("pdb1") ||
-                        extension.equals("pdb2") 
-                        )
-                            return true;
-                return false;
-            }
-
-            public String getDescription() {return "Protein Data Bank (PDB) structure files";}
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            pdbFileLoaded();
-        }
-        
-        boolean pdbFileLoaded() { 
-            boolean answer = false;  // start pessimistic
-            
-            if (loadPDBFileChooser == null) {
-                loadPDBFileChooser = new JFileChooser();
-                PDBFilter filter = new PDBFilter();
-                loadPDBFileChooser.setFileFilter(filter);
-            }
-            
-            int returnVal = loadPDBFileChooser.showOpenDialog(Tornado.this);
-            if(returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = loadPDBFileChooser.getSelectedFile();
-                try {
-                    setWait("Loading file " + file.getCanonicalPath() + " ...");
-                    FileInputStream inStream = new FileInputStream(file);
-                    
-                    MoleculeCollection molecules = loadPDBFile(inStream);
-                                        
-                    unSetWait("Molecule loaded (" + file.getName() + ")");
-                    answer = true;
-                    
-                    updateTitleBar();
-                    
-                    // This is temporary
-                    // if ( (bp != null) && file.getName().contains("1x8w") ) {
-                    //     compareHbonds("1x8w.pdb2.out", (RNA) bp);
-                    // }
-                }                
-                catch (FileNotFoundException exc) {
-                    unSetWait("File not found. (" + file.getName() + ")");
-                    String[] options = {"Bummer!"};
-                    JOptionPane.showOptionDialog(null, "No such file: " + file, "PDB File Error!",
-                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
-                            null, options, options[0]);
-                }
-                catch (IOException exc) {
-                    unSetWait("File error. (" + file.getName() + ")");
-                    String[] options = {"Bummer!"};
-                    JOptionPane.showOptionDialog(null, "Problem reading file: " + file + ": " + exc, "PDB File Error!",
-                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
-                            null, options, options[0]);
-                }
-    
-            }
-            return answer;
-        }
-    }
+//    class LoadPDBFileAction implements ActionListener {
+//        JFileChooser loadPDBFileChooser;
+//
+//        public class PDBFilter extends javax.swing.filechooser.FileFilter {
+//            public String getExtension(File f) {
+//                if(f != null) {
+//                    String filename = f.getName();
+//                    int i = filename.lastIndexOf('.');
+//                    if(i>0 && i<filename.length()-1) {
+//                    return filename.substring(i+1).toLowerCase();
+//                    };
+//                }
+//                return null;
+//           }
+//           public boolean accept(File f) {
+//                if (f.isDirectory()) {return true;}
+//                String extension = getExtension(f);
+//                if (extension == null) return false;
+//                extension = extension.toLowerCase();
+//                if (extension != null)
+//                    if (
+//                        extension.equals("pdb") ||
+//                        extension.equals("pdb1") ||
+//                        extension.equals("pdb2") 
+//                        )
+//                            return true;
+//                return false;
+//            }
+//
+//            public String getDescription() {return "Protein Data Bank (PDB) structure files";}
+//        }
+//        
+//        public void actionPerformed(ActionEvent e) {
+//            pdbFileLoaded();
+//        }
+//        
+//        boolean pdbFileLoaded() { 
+//            boolean answer = false;  // start pessimistic
+//            
+//            if (loadPDBFileChooser == null) {
+//                loadPDBFileChooser = new JFileChooser();
+//                PDBFilter filter = new PDBFilter();
+//                loadPDBFileChooser.setFileFilter(filter);
+//            }
+//            
+//            int returnVal = loadPDBFileChooser.showOpenDialog(Tornado.this);
+//            if(returnVal == JFileChooser.APPROVE_OPTION) {
+//                File file = loadPDBFileChooser.getSelectedFile();
+//                try {
+//                    setWait("Loading file " + file.getCanonicalPath() + " ...");
+//                    FileInputStream inStream = new FileInputStream(file);
+//                    
+//                    MoleculeCollection molecules = loadPDBFile(inStream);
+//                                        
+//                    unSetWait("Molecule loaded (" + file.getName() + ")");
+//                    answer = true;
+//                    
+//                    updateTitleBar();
+//                    
+//                    // This is temporary
+//                    // if ( (bp != null) && file.getName().contains("1x8w") ) {
+//                    //     compareHbonds("1x8w.pdb2.out", (RNA) bp);
+//                    // }
+//                }                
+//                catch (FileNotFoundException exc) {
+//                    unSetWait("File not found. (" + file.getName() + ")");
+//                    String[] options = {"Bummer!"};
+//                    JOptionPane.showOptionDialog(null, "No such file: " + file, "PDB File Error!",
+//                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
+//                            null, options, options[0]);
+//                }
+//                catch (IOException exc) {
+//                    unSetWait("File error. (" + file.getName() + ")");
+//                    String[] options = {"Bummer!"};
+//                    JOptionPane.showOptionDialog(null, "Problem reading file: " + file + ": " + exc, "PDB File Error!",
+//                            JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
+//                            null, options, options[0]);
+//                }
+//    
+//            }
+//            return answer;
+//        }
+//    }
     
     MoleculeCollection loadPDBFile(InputStream inStream) throws IOException {
         MoleculeCollection molecules = new MoleculeCollection();
@@ -1288,46 +1296,47 @@ implements ResidueActionListener
         cartoonMenu.add(checkItem);        
     }
     
-    private static void loadNativeLibraries() {
-        // To supplement those libraries loaded by vtkPanel
-        // when in Java Web Start mode
-        loadOneNativeLibrary("vtkfreetype"); 
-        loadOneNativeLibrary("vtkexpat"); 
-        loadOneNativeLibrary("vtkjpeg"); 
-        loadOneNativeLibrary("vtkzlib"); 
-        loadOneNativeLibrary("vtktiff"); 
-        loadOneNativeLibrary("vtkpng"); 
-        loadOneNativeLibrary("vtkftgl"); 
-        loadOneNativeLibrary("vtkCommon"); 
-        loadOneNativeLibrary("vtkFiltering"); 
-        loadOneNativeLibrary("vtkDICOMParser"); 
-        loadOneNativeLibrary("vtkIO"); 
-        loadOneNativeLibrary("vtkImaging"); 
-        loadOneNativeLibrary("vtkGraphics"); 
-        loadOneNativeLibrary("vtkRendering"); 
-        loadOneNativeLibrary("vtkHybrid"); 
-        loadOneNativeLibrary("jogl"); 
-        // loadOneNativeLibrary("jogl_cg"); 
-
-        
-        loadOneNativeLibrary("vtkCommonJava"); 
-        loadOneNativeLibrary("vtkFilteringJava"); 
-        loadOneNativeLibrary("vtkIOJava"); 
-        loadOneNativeLibrary("vtkImagingJava"); 
-        loadOneNativeLibrary("vtkGraphicsJava"); 
-        loadOneNativeLibrary("vtkRenderingJava"); 
-        loadOneNativeLibrary("vtkHybridJava");
-    }
-    
-    private static void loadOneNativeLibrary(String libName) {
-        try {System.loadLibrary(libName);}
-        catch (UnsatisfiedLinkError exc) {
-            System.err.println("Failed to load native library " + libName + " : " + exc);
-        }
-    }
+//    private static void loadNativeLibraries() {
+//        // To supplement those libraries loaded by vtkPanel
+//        // when in Java Web Start mode
+//        loadOneNativeLibrary("vtkfreetype"); 
+//        loadOneNativeLibrary("vtkexpat"); 
+//        loadOneNativeLibrary("vtkjpeg"); 
+//        loadOneNativeLibrary("vtkzlib"); 
+//        loadOneNativeLibrary("vtktiff"); 
+//        loadOneNativeLibrary("vtkpng"); 
+//        loadOneNativeLibrary("vtkftgl"); 
+//        loadOneNativeLibrary("vtkCommon"); 
+//        loadOneNativeLibrary("vtkFiltering"); 
+//        loadOneNativeLibrary("vtkDICOMParser"); 
+//        loadOneNativeLibrary("vtkIO"); 
+//        loadOneNativeLibrary("vtkImaging"); 
+//        loadOneNativeLibrary("vtkGraphics"); 
+//        loadOneNativeLibrary("vtkRendering"); 
+//        loadOneNativeLibrary("vtkHybrid"); 
+//        loadOneNativeLibrary("jogl"); 
+//        // loadOneNativeLibrary("jogl_cg"); 
+//
+//        
+//        loadOneNativeLibrary("vtkCommonJava"); 
+//        loadOneNativeLibrary("vtkFilteringJava"); 
+//        loadOneNativeLibrary("vtkIOJava"); 
+//        loadOneNativeLibrary("vtkImagingJava"); 
+//        loadOneNativeLibrary("vtkGraphicsJava"); 
+//        loadOneNativeLibrary("vtkRenderingJava"); 
+//        loadOneNativeLibrary("vtkHybridJava");
+//    }
+//    
+//    private static void loadOneNativeLibrary(String libName) {
+//        try {System.loadLibrary(libName);}
+//        catch (UnsatisfiedLinkError exc) {
+//            System.err.println("Failed to load native library " + libName + " : " + exc);
+//        }
+//    }
     
     static {
-        loadNativeLibraries();
+        VTKLibraries.load();
+        // loadNativeLibraries();
         
         // Keep vtk canvas from obscuring swing widgets
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
@@ -1346,7 +1355,7 @@ implements ResidueActionListener
     private Panel sequencePanel;
     private JLabel messageArea;
 
-    private LoadPDBFileAction loadPDBFileAction = new LoadPDBFileAction();
+    // private LoadPDBFileAction loadPDBFileAction = new LoadPDBFileAction();
     
     private Residue currentHighlightedResidue = null;
     

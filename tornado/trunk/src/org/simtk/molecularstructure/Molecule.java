@@ -42,13 +42,14 @@ import org.simtk.molecularstructure.atom.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.protein.*;
 import org.simtk.moleculardynamics.*;
+import org.simtk.mvc.*;
 
 /**
  * @author Christopher Bruns
  *
  * \brief A single molecule structure.
  */
-public class Molecule {
+public class Molecule extends MoleculeMVCModel {
     private LinkedHashSet atoms = new LinkedHashSet();
     // protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();

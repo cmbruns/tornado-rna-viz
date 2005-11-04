@@ -50,18 +50,9 @@ import org.simtk.util.*;
  * 
  * Three dimensional rendering canvas for molecular structures in Tornado application
  */
-public class Tornado3DCanvas extends vtkPanel 
+public class Tornado3DCanvas extends StructureCanvas 
  implements MouseMotionListener, MouseListener, ResidueActionListener, ComponentListener, KeyListener
 {
-    // was enum in Java 1.5, converted for Java 1.4 compatibility
-    static class MouseDragAction {
-        static MouseDragAction NONE = new MouseDragAction();
-        static MouseDragAction CAMERA_ROTATE = new MouseDragAction();
-        static MouseDragAction CAMERA_TRANSLATE = new MouseDragAction();
-        static MouseDragAction CAMERA_ZOOM = new MouseDragAction();
-        static MouseDragAction OBJECT_TRANSLATE = new MouseDragAction();
-    }
-    MouseDragAction mouseDragAction = MouseDragAction.CAMERA_ROTATE;
     
     HashSet currentlyDepressedKeyboardKeys = new HashSet();
     
@@ -69,8 +60,6 @@ public class Tornado3DCanvas extends vtkPanel
     boolean fogLinear = true;
     GL gl;
 
-    Color backgroundColor = new Color((float)0.92, (float)0.96, (float)1.0);
-    
     public static final long serialVersionUID = 1L;
 
     ResidueActionBroadcaster residueActionBroadcaster;
@@ -93,15 +82,13 @@ public class Tornado3DCanvas extends vtkPanel
     
     ClassLoader classLoader;
 
-    MolecularCartoon.CartoonType currentCartoonType = MolecularCartoon.CartoonType.WIRE_FRAME; // default starting type
-    MolecularCartoon currentCartoon = new WireFrameCartoon();
     
     private Color selectionColor;
     public void setSelectionColor(Color c) {
         selectionColor = c;
     }
 
-    Tornado3DCanvas(ResidueActionBroadcaster b) {
+    public Tornado3DCanvas(ResidueActionBroadcaster b) {
         super();
         
         residueActionBroadcaster = b;
@@ -231,16 +218,7 @@ public class Tornado3DCanvas extends vtkPanel
     }
     
     public void setBackgroundColor(Color c) {
-        backgroundColor = c;
-
-        Lock();
-        if (ren != null) {
-            ren.SetBackground(
-                    backgroundColor.getRed()/255.0,
-                    backgroundColor.getGreen()/255.0,
-                    backgroundColor.getBlue()/255.0);
-        }
-
+        super.setBackgroundColor(c);
         if (gl != null) {
             float[] fogColor = new float[] {
                     (float) (backgroundColor.getRed()/255.0),
@@ -250,7 +228,6 @@ public class Tornado3DCanvas extends vtkPanel
             
             gl.glFogfv(GL.GL_FOG_COLOR, fogColor);
         }
-        UnLock();
     }
     
     boolean firstPaint = true;
@@ -819,6 +796,8 @@ public class Tornado3DCanvas extends vtkPanel
      * @param rotY angle in degrees
      */
     void rotateCameraXY(double rotX, double rotY) {
+        if (cam == null) return;
+
         Lock();
         cam.Azimuth(-rotX);
         cam.Elevation(-rotY);
@@ -832,6 +811,7 @@ public class Tornado3DCanvas extends vtkPanel
         UnLock();
     }
     void zoomCamera(double zoomFactor) {
+        if (cam == null) return;
         
         Lock();
         if (cam.GetParallelProjection() == 1)
@@ -846,6 +826,7 @@ public class Tornado3DCanvas extends vtkPanel
         UnLock();
     }
     void translateCameraXY(double tX, double tY) {
+        if (cam == null) return;
         // Apply tX, tY in pixels
         
         DoubleVector3D translation = screenToWorldTranslation(tX, tY);
@@ -873,7 +854,7 @@ public class Tornado3DCanvas extends vtkPanel
     }
     
     /**
-     * Tranlate molecule in screen coordinates
+     * Translate molecule in screen coordinates
      * @param mol molecule to move
      * @param tX pixels to move horizontally
      * @param tY pixels to move vertically
