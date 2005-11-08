@@ -38,7 +38,7 @@ import javax.swing.JScrollBar;
 import org.simtk.molecularstructure.*;
 import org.simtk.util.*;
 
-public class SequenceCanvas extends BufferedCanvas 
+public class TornadoSequenceCanvas extends SequenceCanvas 
 implements ResidueActionListener, MouseMotionListener, AdjustmentListener, MouseListener
 {
     public static final long serialVersionUID = 1L;
@@ -84,7 +84,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
 
     AutoScrollThread autoScrollThread = new AutoScrollThread();
     
-    public SequenceCanvas(
+    public TornadoSequenceCanvas(
             String initialSequence, 
             SequencePane p, 
             ResidueActionBroadcaster b)

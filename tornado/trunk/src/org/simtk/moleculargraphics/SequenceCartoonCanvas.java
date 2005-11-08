@@ -51,7 +51,7 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
     // Tornado tornado;
     ResidueActionBroadcaster residueActionBroadcaster;
     // boolean userIsInteracting = false;
-    SequenceCanvas sequenceCanvas;
+    TornadoSequenceCanvas sequenceCanvas;
 
     Hashtable residuePositions = new Hashtable();
     Hashtable positionResidues = new Hashtable();
@@ -73,7 +73,7 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
 
     private Color selectionColor;
 
-    public SequenceCartoonCanvas(ResidueActionBroadcaster b, SequenceCanvas s) {
+    public SequenceCartoonCanvas(ResidueActionBroadcaster b, TornadoSequenceCanvas s) {
         super();
         sequenceCanvas = s;
         // tornado = t;

@@ -58,7 +58,7 @@ implements ResidueActionListener
     Residue finalResidue;
     
     // SequenceTextPane textPane;
-    SequenceCanvas sequenceCanvas;
+    TornadoSequenceCanvas sequenceCanvas;
     // NumberPane numberPane;
     Color backgroundColor = Color.white;
     // Tornado tornado;
@@ -77,7 +77,7 @@ implements ResidueActionListener
         getViewport().setBackground(backgroundColor); // for when text panel does not fill viewport
         getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
         
-        sequenceCanvas = new SequenceCanvas("This is a test", this, residueActionBroadcaster);
+        sequenceCanvas = new TornadoSequenceCanvas("This is a test", this, residueActionBroadcaster);
 
         contentPanel = new Panel();
         contentPanel.setBackground(Color.white);
@@ -138,7 +138,7 @@ implements ResidueActionListener
         }
     }
     
-    public SequenceCanvas getSequenceCanvas() {return sequenceCanvas;}
+    public TornadoSequenceCanvas getSequenceCanvas() {return sequenceCanvas;}
 
     public void clearResidues() {
         sequenceCanvas.clearResidues();

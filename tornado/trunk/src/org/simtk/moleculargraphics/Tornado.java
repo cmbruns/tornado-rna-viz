@@ -818,7 +818,7 @@ implements ResidueActionListener
     }
 
     class LoadStructureDialog extends MoleculeAcquisitionMethodDialog {
-        LoadStructureDialog(Frame f) {super(f);}
+        LoadStructureDialog(JFrame f) {super(f);}
         public void readStructureFromStream(InputStream structureStream) throws IOException {
             MoleculeCollection molecules = loadPDBFile(structureStream);
             updateTitleBar();
