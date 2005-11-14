@@ -40,7 +40,7 @@ import org.simtk.geometry3d.DoubleVector3D;
 import org.simtk.molecularstructure.Biopolymer;
 import org.simtk.molecularstructure.Molecule;
 import org.simtk.molecularstructure.Residue;
-import org.simtk.molecularstructure.atom.LocatedAtom;
+import org.simtk.molecularstructure.atom.LocatedAtomClass;
 
 import vtk.vtkCylinderSource;
 import vtk.vtkTransform;
@@ -107,7 +107,7 @@ public class BondStickCartoon extends GlyphCartoon {
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                LocatedAtom atom = (LocatedAtom) i.next();
+                LocatedAtomClass atom = (LocatedAtomClass) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -118,12 +118,12 @@ public class BondStickCartoon extends GlyphCartoon {
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) i1.next();
+            LocatedAtomClass atom = (LocatedAtomClass) i1.next();
             addAtom(atom, currentObjects);
         }        
     }
     
-    void addAtom(LocatedAtom atom, Vector parentObjects) {
+    void addAtom(LocatedAtomClass atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added
@@ -146,7 +146,7 @@ public class BondStickCartoon extends GlyphCartoon {
         
         // For bonded atoms, draw a line for each bond
         for (Iterator i2 = atom.getBonds().iterator(); i2.hasNext(); ) {
-            LocatedAtom atom2 = (LocatedAtom) i2.next();
+            LocatedAtomClass atom2 = (LocatedAtomClass) i2.next();
             DoubleVector3D midpoint = new DoubleVector3D( c.plus(atom2.getCoordinates()).scale(0.5) ); // middle of bond
             DoubleVector3D b = new DoubleVector3D( c.plus(midpoint).scale(0.5) ); // middle of half-bond
             DoubleVector3D n = new DoubleVector3D( midpoint.minus(c).unit() ); // direction vector

@@ -40,6 +40,7 @@ import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.atom.*;
+
 import vtk.*;
 
 public class NucleotideStickCartoon extends GlyphCartoon {

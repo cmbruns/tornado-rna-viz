@@ -38,7 +38,7 @@ import java.awt.Color;
  * 
  * magnesium atom
  */
-public class PDBMagnesium extends PDBAtom {
+public class PDBMagnesium extends PDBAtomClass {
     public PDBMagnesium(String PDBLine) {super(PDBLine);}
 	public double getMass() {return 24.0;} // guess value for unknown
     public String getElementSymbol() {return "Mg";}

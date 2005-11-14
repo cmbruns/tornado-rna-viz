@@ -34,7 +34,7 @@ package org.simtk.molecularstructure.nucleicacid;
 import java.awt.Color;
 import java.util.*;
 
-import org.simtk.molecularstructure.atom.LocatedAtom;
+import org.simtk.molecularstructure.atom.LocatedAtomClass;
 import org.simtk.molecularstructure.atom.PDBAtomSet;
 
 /** 
@@ -55,7 +55,7 @@ public class Guanylate extends Purine {
         HashSet answer = new HashSet();
 
         for (Iterator i = super.getHydrogenBondDonors().iterator(); i.hasNext(); ) {
-            LocatedAtom a = (LocatedAtom) i.next();
+            LocatedAtomClass a = (LocatedAtomClass) i.next();
             answer.add(a);
         }
 
@@ -64,7 +64,7 @@ public class Guanylate extends Purine {
         String donorAtomNames[] = {" N1 "};
         for (int i = 0; i < donorAtomNames.length; i++) {
             String atomName = donorAtomNames[i];
-            LocatedAtom a = getAtom(atomName);
+            LocatedAtomClass a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         

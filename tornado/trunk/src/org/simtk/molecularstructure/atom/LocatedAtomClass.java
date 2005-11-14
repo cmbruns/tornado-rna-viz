@@ -40,7 +40,7 @@ import org.simtk.geometry3d.*;
  *
  * Abstract base class for chemical atom, such a a particular nitrogen atom in a molecule
  */
-public abstract class LocatedAtomClass implements ChemicalElement {
+public abstract class LocatedAtomClass implements LocatedAtom, MoleculeAtom {
 	Vector3D coordinates = null;
 	String localName = null; // name should be unique within a residue
 	HashSet bonds = new HashSet();
@@ -56,28 +56,39 @@ public abstract class LocatedAtomClass implements ChemicalElement {
 	public void setName(String name) {localName = name;}
 	
 	// TODO add bond valence information to bonds
-	public void addBond(LocatedAtomClass atom2) {
+	/* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.MoleculeAtom#addBond(org.simtk.molecularstructure.atom.LocatedAtom)
+     */
+	public void addBond(LocatedAtom atom2) {
 	    bonds.add(atom2);
 	}
+	/* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.MoleculeAtom#getBonds()
+     */
 	public HashSet getBonds() {return bonds;}
 	
-	/**
-	 * 
-	 * @return The position in space of this PDBAtom
-	 */
+	/* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.LocatedAtom#getCoordinates()
+     */
 	public Vector3D getCoordinates() {return coordinates;}
 
-    /**
-     * @param coordinates The coordinates to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.LocatedAtom#setCoordinates(org.simtk.geometry3d.Vector3D)
      */
     public void setCoordinates(Vector3D coordinates) {
         this.coordinates = coordinates;
     }
     
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.LocatedAtom#distance(org.simtk.molecularstructure.atom.LocatedAtomClass)
+     */
     public double distance(LocatedAtomClass atom2) {
         return coordinates.distance(atom2.coordinates);
     }
     
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.LocatedAtom#translate(org.simtk.geometry3d.Vector3D)
+     */
     public void translate(Vector3D v) {
         getCoordinates().plusEquals(v);
     }

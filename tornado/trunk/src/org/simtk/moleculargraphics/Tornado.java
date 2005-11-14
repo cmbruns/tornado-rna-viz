@@ -314,7 +314,7 @@ implements ResidueActionListener
                 if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
                 // for (Atom atom2 : bp.getResidue2().getAtoms()) {
                 for (Iterator i2 = bp.getResidue2().getAtomIterator(); i2.hasNext();) {
-                    LocatedAtom atom2 = (LocatedAtom) i2.next();
+                    LocatedAtomClass atom2 = (LocatedAtomClass) i2.next();
                     if (! ((atom2 instanceof PDBOxygen) || (atom2 instanceof PDBNitrogen))) continue;
                     double testDistance = atom1.distance(atom2);
                     if (testDistance < minDistance) minDistance = testDistance;

@@ -89,7 +89,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                LocatedAtom atom = (LocatedAtom) i.next();
+                LocatedAtomClass atom = (LocatedAtomClass) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -100,12 +100,12 @@ public class WireFrameCartoon extends GlyphCartoon {
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) i1.next();
+            LocatedAtomClass atom = (LocatedAtomClass) i1.next();
             addAtom(atom, currentObjects);
         }        
     }
     
-    void addAtom(LocatedAtom atom, Vector parentObjects) {
+    void addAtom(LocatedAtomClass atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added
@@ -153,7 +153,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         boolean modified = false;
 
         for (Iterator i = molecule.getAtomIterator(); i.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) i.next();
+            LocatedAtomClass atom = (LocatedAtomClass) i.next();
             if (glyphColors.containsKey(atom)) {
                 Vector glyphs = (Vector) glyphColors.objectGlyphs.get(atom); // TODO encapsulate this
                 for (Iterator g = glyphs.iterator();g.hasNext();) {

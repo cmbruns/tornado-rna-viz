@@ -38,7 +38,7 @@ import java.awt.Color;
  * 
  * hydrogen atom
  */
-public class PDBHydrogen extends PDBAtom {
+public class PDBHydrogen extends PDBAtomClass {
     public PDBHydrogen(String PDBLine) {super(PDBLine);}
 	public double getMass() {return 1.008;} // guess value for unknown
     public String getElementSymbol() {return "H";}

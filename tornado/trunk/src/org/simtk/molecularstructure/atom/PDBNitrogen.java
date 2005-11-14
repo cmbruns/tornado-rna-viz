@@ -38,7 +38,7 @@ import java.awt.Color;
  * 
  * nitrogen atom
  */
-public class PDBNitrogen extends PDBAtom {
+public class PDBNitrogen extends PDBAtomClass {
     static Color color = new Color(110, 170, 255);
     public PDBNitrogen(String PDBLine) {super(PDBLine);}
 	public double getMass() {return 14.01;} // guess value for unknown

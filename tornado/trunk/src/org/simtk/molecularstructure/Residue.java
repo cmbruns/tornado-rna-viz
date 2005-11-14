@@ -152,7 +152,7 @@ public abstract class Residue extends Molecule implements Selectable {
         Molecule mol = new Molecule();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
-            LocatedAtom atom = getAtom(atomName);
+            LocatedAtomClass atom = getAtom(atomName);
             if (atom != null) mol.addAtom(atom);
         }
         if (mol.getAtomCount() > 0) return mol;
@@ -193,8 +193,8 @@ public abstract class Residue extends Molecule implements Selectable {
     void createGenericBonds() {
         ATOM1: for (Iterator a1 = getAtomIterator(); a1.hasNext(); ) {
             LocatedAtom atom = (LocatedAtom) a1.next();
-            if (! (atom instanceof PDBAtom)) continue ATOM1;
-            PDBAtom atom1 = (PDBAtom) atom;
+            if (! (atom instanceof PDBAtomClass)) continue ATOM1;
+            PDBAtomClass atom1 = (PDBAtomClass) atom;
             
             // Assign bonds from residue dictionary
             if (genericBonds.containsKey(atom1.getAtomName())) {
@@ -202,8 +202,8 @@ public abstract class Residue extends Molecule implements Selectable {
                     String a2Name = (String) b2.next();
                     if (! atomNames.containsKey(a2Name)) continue BOND;
                     ATOM2: for (Iterator a2 = ((Vector)atomNames.get(a2Name)).iterator(); a2.hasNext(); ) {
-                        LocatedAtom atom2 = (LocatedAtom) a2.next();
-                        if (! (atom2 instanceof PDBAtom)) continue ATOM2;
+                        LocatedAtomClass atom2 = (LocatedAtomClass) a2.next();
+                        if (! (atom2 instanceof PDBAtomClass)) continue ATOM2;
     
                         PDBAtom pdbAtom2 = (PDBAtom) atom2;
                         if (! (atom1.getAlternateLocationIndicator() == pdbAtom2.getAlternateLocationIndicator()))
@@ -227,9 +227,9 @@ public abstract class Residue extends Molecule implements Selectable {
      * @param atomName
      * @return
      */
-    public LocatedAtom getAtom(String atomName) {
+    public LocatedAtomClass getAtom(String atomName) {
         if (!atomNames.containsKey(atomName)) return null;
-        return (LocatedAtom) ((Vector)atomNames.get(atomName)).firstElement();
+        return (LocatedAtomClass) ((Vector)atomNames.get(atomName)).firstElement();
     }
     
     

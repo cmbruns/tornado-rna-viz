@@ -143,7 +143,7 @@ public class Molecule extends MoleculeMVCModel {
 	public Molecule(PDBAtomSet atomSet) {
         // for (Atom atom : atomSet) {
         for (Iterator i = atomSet.iterator(); i.hasNext();) {
-            LocatedAtom atom = (LocatedAtom) i.next();
+            LocatedAtomClass atom = (LocatedAtomClass) i.next();
             addAtom(atom);
 		}
         createBonds();
@@ -193,7 +193,7 @@ public class Molecule extends MoleculeMVCModel {
 
         int a = 0;
         for (Iterator i = getAtomIterator(); i.hasNext();) {
-            LocatedAtom atom = (LocatedAtom) i.next();
+            LocatedAtomClass atom = (LocatedAtomClass) i.next();
             coordinates[a] = atom.getCoordinates();
             masses[a] = atom.getMass();
 
@@ -202,7 +202,7 @@ public class Molecule extends MoleculeMVCModel {
         return Plane3D.bestPlane3D(coordinates, masses);
     }
     
-    public void addAtom(LocatedAtom atom) {
+    public void addAtom(LocatedAtomClass atom) {
         if (atoms.contains(atom)) return; // no change
         
         atoms.add(atom);
@@ -211,7 +211,7 @@ public class Molecule extends MoleculeMVCModel {
         centerOfMass = new DoubleVector3D( centerOfMass.scale(1.0 - massRatio).plus(atom.getCoordinates().scale(massRatio)) );
     }
 
-    public void removeAtom(LocatedAtom atom) {
+    public void removeAtom(LocatedAtomClass atom) {
         if (! atoms.contains(atom)) return; // no change
         
         atoms.remove(atom);
@@ -272,7 +272,7 @@ public class Molecule extends MoleculeMVCModel {
 
 			// Lines with atomic coordinates are used to create new atoms
 			else if ((PDBLine.substring(0,6).equals("ATOM  ")) || (PDBLine.substring(0,6).equals("HETATM"))) {
-				PDBAtom atom = PDBAtom.createFactoryPDBAtom(PDBLine);
+				PDBAtom atom = PDBAtomClass.createFactoryPDBAtom(PDBLine);
 				try {
 					atom.readPDBLine(PDBLine);
 				} catch (ParseException exc) {
@@ -406,10 +406,10 @@ public class Molecule extends MoleculeMVCModel {
             atomHash.put(atom.getCoordinates(), atom);
         }
         for (Iterator a1 = atoms.iterator(); a1.hasNext(); ) {
-            LocatedAtom atom1 = (LocatedAtom) a1.next();
+            LocatedAtomClass atom1 = (LocatedAtomClass) a1.next();
             double cutoffDistance = (atom1.getCovalentRadius() + maxCovalentRadius) * 1.5;
             for (Iterator a2 = atomHash.neighborValues(atom1.getCoordinates(), cutoffDistance).iterator(); a2.hasNext(); ) {
-                LocatedAtom atom2 = (LocatedAtom) a2.next();
+                LocatedAtomClass atom2 = (LocatedAtomClass) a2.next();
                 if (atom1.equals(atom2)) continue;
                 
                 // Make sure the bond length is about right
@@ -427,7 +427,7 @@ public class Molecule extends MoleculeMVCModel {
                 if (distance > maxDistance) continue;
                 
                 // Make sure it is in the same molecule or part
-                if ( (atom1 instanceof PDBAtom) && (atom2 instanceof PDBAtom) ) {
+                if ( (atom1 instanceof PDBAtomClass) && (atom2 instanceof PDBAtomClass) ) {
                     PDBAtom pdbAtom1 = (PDBAtom) atom1;
                     PDBAtom pdbAtom2 = (PDBAtom) atom2;
                     // Must be in the same chain

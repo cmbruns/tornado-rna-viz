@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.simtk.molecularstructure.atom.LocatedAtom;
+import org.simtk.molecularstructure.atom.LocatedAtomClass;
 import org.simtk.molecularstructure.atom.PDBAtomSet;
 
 /** 
@@ -59,14 +59,14 @@ public class Purine extends Nucleotide {
         HashSet answer = new HashSet();
 
         for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            LocatedAtom a = (LocatedAtom) i.next();
+            LocatedAtomClass a = (LocatedAtomClass) i.next();
             answer.add(a);
         }
 
         String acceptorAtomNames[] = {" N3 "};
         for (int i = 0; i < acceptorAtomNames.length; i++) {
             String atomName = acceptorAtomNames[i];
-            LocatedAtom a = getAtom(atomName);
+            LocatedAtomClass a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         

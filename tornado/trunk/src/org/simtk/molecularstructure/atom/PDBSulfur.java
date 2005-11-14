@@ -38,7 +38,7 @@ import java.awt.Color;
  * 
  * sulfur (sulphur) atom
  */
-public class PDBSulfur extends PDBAtom {
+public class PDBSulfur extends PDBAtomClass {
     static Color color = new Color(255, 255, 150);
     public PDBSulfur(String PDBLine) {super(PDBLine);}
 	public double getMass() {return 32.06;}

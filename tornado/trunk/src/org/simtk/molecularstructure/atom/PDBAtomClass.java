@@ -40,7 +40,7 @@ import java.text.ParseException;
  * \brief A chemical atom including members found in Protein Data Bank flat structure files.
  * 
  */
-public abstract class PDBAtom extends LocatedAtomClass {
+public abstract class PDBAtomClass extends LocatedAtomClass implements PDBAtom {
 
     double temperatureFactor;
 	double occupancy;
@@ -61,173 +61,171 @@ public abstract class PDBAtom extends LocatedAtomClass {
 	char chainIdentifier;
 	String segmentIdentifier;
 
-	public PDBAtom(String PDBLine) {
+	public PDBAtomClass(String PDBLine) {
 	    try {
 	        readPDBLine(PDBLine);
 	    } catch (ParseException exc) {}
 	}
 	
-    /**
-     * @return Returns the alternateLocationIndicator.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getAlternateLocationIndicator()
      */
     public char getAlternateLocationIndicator() {
         return alternateLocationIndicator;
     }
-    /**
-     * @param alternateLocationIndicator The alternateLocationIndicator to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setAlternateLocationIndicator(char)
      */
     public void setAlternateLocationIndicator(char alternateLocationIndicator) {
         this.alternateLocationIndicator = alternateLocationIndicator;
     }
-    /**
-     * @return Returns the atomName.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getAtomName()
      */
     public String getAtomName() {
         return getName();
     }
-    /**
-     * @param atomName The atomName to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setAtomName(java.lang.String)
      */
     public void setAtomName(String atomName) {
         this.setName(atomName);
     }
-    /**
-     * @return Returns the chainIdentifier.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getChainIdentifier()
      */
     public char getChainIdentifier() {
         return chainIdentifier;
     }
-    /**
-     * @param chainIdentifier The chainIdentifier to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setChainIdentifier(char)
      */
     public void setChainIdentifier(char chainIdentifier) {
         this.chainIdentifier = chainIdentifier;
     }
-    /**
-     * @return Returns the charge.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getCharge()
      */
     public String getCharge() {
         return charge;
     }
-    /**
-     * @param charge The charge to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setCharge(java.lang.String)
      */
     public void setCharge(String charge) {
         this.charge = charge;
     }
-    /**
-     * @return Returns the elementName.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getElementName()
      */
     public String getElementName() {
         return elementName;
     }
-    /**
-     * @param elementName The elementName to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setElementName(java.lang.String)
      */
     public void setElementName(String elementName) {
         this.elementName = elementName;
     }
-    /**
-     * @return Returns the insertionCode.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getInsertionCode()
      */
     public char getInsertionCode() {
         return insertionCode;
     }
-    /**
-     * @param insertionCode The insertionCode to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setInsertionCode(char)
      */
     public void setInsertionCode(char insertionCode) {
         this.insertionCode = insertionCode;
     }
-    /**
-     * @return Returns the occupancy.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getOccupancy()
      */
     public double getOccupancy() {
         return occupancy;
     }
-    /**
-     * @param occupancy The occupancy to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setOccupancy(double)
      */
     public void setOccupancy(double occupancy) {
         this.occupancy = occupancy;
     }
-    /**
-     * @return Returns the recordName.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getRecordName()
      */
     public String getRecordName() {
         return recordName;
     }
-    /**
-     * @param recordName The recordName to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setRecordName(java.lang.String)
      */
     public void setRecordName(String recordName) {
         this.recordName = recordName;
     }
-    /**
-     * @return Returns the residueIndex.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getResidueIndex()
      */
     public int getResidueIndex() {
         return residueIndex;
     }
-    /**
-     * @param residueIndex The residueIndex to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setResidueIndex(int)
      */
     public void setResidueIndex(int residueIndex) {
         this.residueIndex = residueIndex;
     }
-    /**
-     * @return Returns the residueName.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getResidueName()
      */
     public String getResidueName() {
         return residueName;
     }
-    /**
-     * @param residueName The residueName to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setResidueName(java.lang.String)
      */
     public void setResidueName(String residueName) {
         this.residueName = residueName;
     }
-    /**
-     * @return Returns the segmentIdentifier.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getSegmentIdentifier()
      */
     public String getSegmentIdentifier() {
         return segmentIdentifier;
     }
-    /**
-     * @param segmentIdentifier The segmentIdentifier to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setSegmentIdentifier(java.lang.String)
      */
     public void setSegmentIdentifier(String segmentIdentifier) {
         this.segmentIdentifier = segmentIdentifier;
     }
-    /**
-     * @return Returns the serialNumber.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getSerialNumber()
      */
     public int getSerialNumber() {
         return serialNumber;
     }
-    /**
-     * @param serialNumber The serialNumber to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setSerialNumber(int)
      */
     public void setSerialNumber(int serialNumber) {
         this.serialNumber = serialNumber;
     }
-    /**
-     * @return Returns the temperatureFactor.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#getTemperatureFactor()
      */
     public double getTemperatureFactor() {
         return temperatureFactor;
     }
-    /**
-     * @param temperatureFactor The temperatureFactor to set.
+    /* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#setTemperatureFactor(double)
      */
     public void setTemperatureFactor(double temperatureFactor) {
         this.temperatureFactor = temperatureFactor;
     }
-	/** 
-	 * \brief Populate an PDBAtom's attributes from one line of a PDB structure file.
-	 * @param PDBLine A string containing one ATOM or HETATM record from a PDB structure file.
-	 * @throws ParseException
-	 */
+	/* (non-Javadoc)
+     * @see org.simtk.molecularstructure.atom.PDBAtom#readPDBLine(java.lang.String)
+     */
 	public void readPDBLine(String PDBLine) 
 		throws ParseException
 	{	

@@ -38,7 +38,7 @@ import java.awt.Color;
  * 
  * phosphorus atom
  */
-public class PDBPhosphorus extends PDBAtom {
+public class PDBPhosphorus extends PDBAtomClass {
     static Color color = new Color(200, 255, 80);
     public PDBPhosphorus(String PDBLine) {super(PDBLine);}
 	public double getMass() {return 31.0;} // guess value for unknown

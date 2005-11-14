@@ -38,7 +38,7 @@ import java.awt.Color;
  * 
  * carbon atom
  */
-public class PDBCarbon extends PDBAtom {
+public class PDBCarbon extends PDBAtomClass {
     Color color = new Color(150, 150, 150);
 
     public PDBCarbon(String PDBLine) {super(PDBLine);}

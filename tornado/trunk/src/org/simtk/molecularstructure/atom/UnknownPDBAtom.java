@@ -39,7 +39,7 @@ import java.awt.Color;
  * \brief A chemical atom including members found in Protein Data Bank flat structure files.
  * 
  */
-public class UnknownPDBAtom extends PDBAtom {
+public class UnknownPDBAtom extends PDBAtomClass {
     public UnknownPDBAtom(String PDBLine) {super(PDBLine);}
     public Color getDefaultColor() {return Color.pink;}
     public String getElementSymbol() {return "??";}
