@@ -40,7 +40,7 @@ import org.simtk.geometry3d.*;
  *
  * Abstract base class for chemical atom, such a a particular nitrogen atom in a molecule
  */
-public abstract class LocatedAtom implements ChemicalElement {
+public abstract class LocatedAtomClass implements ChemicalElement {
 	Vector3D coordinates = null;
 	String localName = null; // name should be unique within a residue
 	HashSet bonds = new HashSet();
@@ -56,7 +56,7 @@ public abstract class LocatedAtom implements ChemicalElement {
 	public void setName(String name) {localName = name;}
 	
 	// TODO add bond valence information to bonds
-	public void addBond(LocatedAtom atom2) {
+	public void addBond(LocatedAtomClass atom2) {
 	    bonds.add(atom2);
 	}
 	public HashSet getBonds() {return bonds;}
@@ -74,7 +74,7 @@ public abstract class LocatedAtom implements ChemicalElement {
         this.coordinates = coordinates;
     }
     
-    public double distance(LocatedAtom atom2) {
+    public double distance(LocatedAtomClass atom2) {
         return coordinates.distance(atom2.coordinates);
     }
     

@@ -40,7 +40,7 @@ import java.text.ParseException;
  * \brief A chemical atom including members found in Protein Data Bank flat structure files.
  * 
  */
-public abstract class PDBAtom extends LocatedAtom {
+public abstract class PDBAtom extends LocatedAtomClass {
 
     double temperatureFactor;
 	double occupancy;

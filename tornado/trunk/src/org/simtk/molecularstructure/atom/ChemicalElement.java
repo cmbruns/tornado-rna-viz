@@ -26,7 +26,12 @@
  */
 package org.simtk.molecularstructure.atom;
 
+import java.awt.Color;
+
 public interface ChemicalElement {
     public abstract String getElementSymbol();
     public abstract String getElementName();
+    public double getVanDerWaalsRadius();
+    public double getCovalentRadius();
+    public Color getDefaultAtomColor();
 }
