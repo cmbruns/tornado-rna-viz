@@ -152,7 +152,7 @@ public abstract class Residue extends Molecule implements Selectable {
         Molecule mol = new Molecule();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
-            Atom atom = getAtom(atomName);
+            LocatedAtom atom = getAtom(atomName);
             if (atom != null) mol.addAtom(atom);
         }
         if (mol.getAtomCount() > 0) return mol;
@@ -192,7 +192,7 @@ public abstract class Residue extends Molecule implements Selectable {
     // TODO - this only works for PDB atoms right now
     void createGenericBonds() {
         ATOM1: for (Iterator a1 = getAtomIterator(); a1.hasNext(); ) {
-            Atom atom = (Atom) a1.next();
+            LocatedAtom atom = (LocatedAtom) a1.next();
             if (! (atom instanceof PDBAtom)) continue ATOM1;
             PDBAtom atom1 = (PDBAtom) atom;
             
@@ -202,7 +202,7 @@ public abstract class Residue extends Molecule implements Selectable {
                     String a2Name = (String) b2.next();
                     if (! atomNames.containsKey(a2Name)) continue BOND;
                     ATOM2: for (Iterator a2 = ((Vector)atomNames.get(a2Name)).iterator(); a2.hasNext(); ) {
-                        Atom atom2 = (Atom) a2.next();
+                        LocatedAtom atom2 = (LocatedAtom) a2.next();
                         if (! (atom2 instanceof PDBAtom)) continue ATOM2;
     
                         PDBAtom pdbAtom2 = (PDBAtom) atom2;
@@ -227,9 +227,9 @@ public abstract class Residue extends Molecule implements Selectable {
      * @param atomName
      * @return
      */
-    public Atom getAtom(String atomName) {
+    public LocatedAtom getAtom(String atomName) {
         if (!atomNames.containsKey(atomName)) return null;
-        return (Atom) ((Vector)atomNames.get(atomName)).firstElement();
+        return (LocatedAtom) ((Vector)atomNames.get(atomName)).firstElement();
     }
     
     

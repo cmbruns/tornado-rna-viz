@@ -59,7 +59,7 @@ abstract public class AminoAcid extends Residue {
     static public FunctionalGroup backboneGroup = new FunctionalGroup(backboneAtomNames);
 
     public Vector3D getBackbonePosition() {
-        Atom atom = getAtom(" CA ");
+        LocatedAtom atom = getAtom(" CA ");
         if (atom == null) return null;
         return atom.getCoordinates();
     }

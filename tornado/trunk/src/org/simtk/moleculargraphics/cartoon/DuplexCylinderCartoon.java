@@ -39,7 +39,7 @@ import vtk.*;
 import org.simtk.geometry3d.*;
 import org.simtk.moleculargraphics.GraphicsCylinder;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.Atom;
+import org.simtk.molecularstructure.atom.LocatedAtom;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.util.*;
 
@@ -173,8 +173,8 @@ public class DuplexCylinderCartoon extends MolecularCartoonNewWay
                 basePairEndAlphas.put(previousBasePair, new Double(startAlpha));
             
             // Create cylinder slicing plane using vector between residue atoms
-            Atom atom1 = basePair.getResidue1().getAtom(" C1*");
-            Atom atom2 = basePair.getResidue2().getAtom(" C1*");
+            LocatedAtom atom1 = basePair.getResidue1().getAtom(" C1*");
+            LocatedAtom atom2 = basePair.getResidue2().getAtom(" C1*");
             MathVector direction = atom2.getCoordinates().minus(atom1.getCoordinates()).unit();
             // Make sure direction is perpendicular to the helix axis
             direction = direction.minus(helixDirection.scale(helixDirection.dot(direction))).unit();

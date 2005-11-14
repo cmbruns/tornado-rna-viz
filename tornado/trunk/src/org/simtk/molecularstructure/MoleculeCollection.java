@@ -53,6 +53,10 @@ public class MoleculeCollection {
     private String mTitle = "";
     public String getTitle() {return mTitle;}
     public void setTitle(String t) {mTitle = t;}
+    
+    private String mPdbId = null;
+    public String getPdbId() {return mPdbId;}
+    public void setPdbId(String i) {mPdbId = i;}
 
     public double getMass() {
         return mass;
@@ -95,6 +99,7 @@ public class MoleculeCollection {
         // TODO read header information, specfically the name(s) of the molecules
         String PDBLine;
         String title = "";
+        
         reader.mark(200);
         FILE_LINE: while ((PDBLine = reader.readLine()) != null) {
 
@@ -112,7 +117,6 @@ public class MoleculeCollection {
                 break;
             }
 
-            // If we get to ATOM records, we need to stop and send the stream to the Molecule parser
             else if (PDBLine.substring(0,6).equals("TITLE ")) {
                 String titlePart = PDBLine.substring(10,60).trim();
                 if (titlePart.length() > 0) {
@@ -121,8 +125,17 @@ public class MoleculeCollection {
                 }
             }
 
+            else if (PDBLine.substring(0,6).equals("HEADER")) {
+                if (PDBLine.length() >= 56) {
+                    String id = PDBLine.substring(52,56).trim();
+                    if (id.length() == 4) setPdbId(id);
+                }
+            }
+
             reader.mark(200); // Commit to reading this far into the file
         }
+        
+        // Populate title
         if (title.length() > 0) setTitle(title);
         
 		Molecule mol = Molecule.createFactoryPDBMolecule(reader);
@@ -140,7 +153,7 @@ public class MoleculeCollection {
 		    mass += mol.getMass();
 		    
             for (Iterator i = mol.getAtomIterator(); i.hasNext(); ) {
-                Atom a = (Atom) i.next();
+                LocatedAtom a = (LocatedAtom) i.next();
                 atoms.addElement(a);
             }
 		    

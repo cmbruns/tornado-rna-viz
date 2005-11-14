@@ -310,11 +310,11 @@ implements ResidueActionListener
             double minDistance = 1000;
             // for (Atom atom1 : bp.getResidue1().getAtoms()) {
             for (Iterator i1 = bp.getResidue1().getAtomIterator(); i1.hasNext();) {
-                Atom atom1 = (Atom) i1.next();
+                LocatedAtom atom1 = (LocatedAtom) i1.next();
                 if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
                 // for (Atom atom2 : bp.getResidue2().getAtoms()) {
                 for (Iterator i2 = bp.getResidue2().getAtomIterator(); i2.hasNext();) {
-                    Atom atom2 = (Atom) i2.next();
+                    LocatedAtom atom2 = (LocatedAtom) i2.next();
                     if (! ((atom2 instanceof PDBOxygen) || (atom2 instanceof PDBNitrogen))) continue;
                     double testDistance = atom1.distance(atom2);
                     if (testDistance < minDistance) minDistance = testDistance;

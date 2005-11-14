@@ -139,11 +139,11 @@ public class Biopolymer extends Molecule {
             if (previousResidue != null) {
                 for (Iterator s2 = genericResidueBonds.keySet().iterator(); s2.hasNext(); ) {
                     String firstAtomName = (String) s2.next();
-                    Atom firstAtom = previousResidue.getAtom(firstAtomName);
+                    LocatedAtom firstAtom = previousResidue.getAtom(firstAtomName);
                     if (firstAtom != null) {
                         for (Iterator s3 = ((HashSet)genericResidueBonds.get(firstAtomName)).iterator(); s3.hasNext(); ) {
                             String secondAtomName = (String) s3.next();
-                            Atom secondAtom = residue.getAtom(secondAtomName);
+                            LocatedAtom secondAtom = residue.getAtom(secondAtomName);
                             if (secondAtom != null) {
                                 // TODO check distance
                                 firstAtom.addBond(secondAtom);

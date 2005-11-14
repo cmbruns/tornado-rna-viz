@@ -165,12 +165,12 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         if (glyphColors.containsKey(nucleotide)) return;
 
         // Put end of rod in the middle of the Watson-Crick face
-        Atom sideChainAtom;
+        LocatedAtom sideChainAtom;
         if (nucleotide instanceof Purine)
             sideChainAtom = nucleotide.getAtom(" N1 ");
         else sideChainAtom = nucleotide.getAtom(" N3 ");
 
-        Atom backboneAtom = nucleotide.getAtom(" C5*");
+        LocatedAtom backboneAtom = nucleotide.getAtom(" C5*");
         
         if ( (sideChainAtom == null) || (backboneAtom == null) ) return;
 

@@ -131,10 +131,10 @@ public class NucleicAcid extends Biopolymer {
                 // Atomic touching criterion - polar atoms
                 double minDistance = 1000;
                 for (Iterator iterAtom1 = residue.getAtomIterator(); iterAtom1.hasNext(); ) {
-                    Atom atom1 = (Atom) iterAtom1.next();
+                    LocatedAtom atom1 = (LocatedAtom) iterAtom1.next();
                     if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
                     for (Iterator iterAtom2 = otherResidue.getAtomIterator(); iterAtom2.hasNext(); ) {
-                        Atom atom2 = (Atom) iterAtom2.next();
+                        LocatedAtom atom2 = (LocatedAtom) iterAtom2.next();
                         if (! ((atom2 instanceof PDBOxygen) || (atom2 instanceof PDBNitrogen))) continue;
                         double testDistance = atom1.distance(atom2);
                         if (testDistance < minDistance) minDistance = testDistance;
@@ -294,7 +294,7 @@ public class NucleicAcid extends Biopolymer {
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide nucleotide = (Nucleotide) residue;
             for (Iterator iterAtom = nucleotide.getHydrogenBondDonors().iterator(); iterAtom.hasNext(); ) {
-                Atom atom = (Atom) iterAtom.next();
+                LocatedAtom atom = (LocatedAtom) iterAtom.next();
                 donorAtoms.put(atom.getCoordinates(), atom);
                 donorNucleotides.put(atom, nucleotide);
             }
@@ -306,9 +306,9 @@ public class NucleicAcid extends Biopolymer {
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide acceptorNucleotide = (Nucleotide) residue;
             for (Iterator iterAcceptorAtom = acceptorNucleotide.getHydrogenBondAcceptors().iterator(); iterAcceptorAtom.hasNext(); ) {
-                Atom acceptorAtom = (Atom) iterAcceptorAtom.next();
+                LocatedAtom acceptorAtom = (LocatedAtom) iterAcceptorAtom.next();
                 for (Iterator iterDonorAtom = donorAtoms.neighborValues(acceptorAtom.getCoordinates(), maxHydrogenBondDistance).iterator(); iterDonorAtom.hasNext(); ) {
-                    Atom donorAtom = (Atom) iterDonorAtom.next();
+                    LocatedAtom donorAtom = (LocatedAtom) iterDonorAtom.next();
                     // This atom pair are now closer than the maximum distance cutoff of 3.5 Angstroms
                     
                     // Exclude atoms in the same residue

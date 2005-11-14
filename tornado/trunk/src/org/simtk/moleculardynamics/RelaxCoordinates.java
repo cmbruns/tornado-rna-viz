@@ -77,7 +77,7 @@ public class RelaxCoordinates {
             int coordinateIndex = 0;
             // for (Atom atom : molecule.getAtoms()) {
             for (Iterator i = molecule.getAtomIterator(); i.hasNext(); ) {
-                Atom atom = (Atom) i.next();
+                LocatedAtom atom = (LocatedAtom) i.next();
                 // for (Double coordinate : atom.getCoordinates()) {
                 for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                     Double coordinate = (Double) i.next();

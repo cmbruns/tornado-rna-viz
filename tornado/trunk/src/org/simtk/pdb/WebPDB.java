@@ -44,6 +44,21 @@ public class WebPDB {
     
     static InputStream getWebPDBStream(String rawPdbId, boolean useBiologicalUnit) throws IOException {
         
+        URL url = getWebPdbUrl(rawPdbId, useBiologicalUnit);        
+        
+        InputStream inStream;
+        URLConnection urlConnection = url.openConnection();
+        inStream = urlConnection.getInputStream();
+        
+        if ( (url.toString().endsWith(".gz")) )
+            inStream = new GZIPInputStream(inStream);
+        if ( (url.toString().endsWith(".Z")) )
+            inStream = new UncompressInputStream(inStream);
+        
+        return inStream;
+    }
+
+    static URL getWebPdbUrl(String rawPdbId, boolean useBiologicalUnit) {
         // Load PDB molecule from the internet
         String pdbId = rawPdbId.trim().toLowerCase();
         
@@ -67,16 +82,13 @@ public class WebPDB {
         String division = pdbId.substring(1, 3);
         String fullURLString = urlBase + division + "/" + filePrefix + pdbId + "." + extension;
         
-        InputStream inStream;
-        URLConnection urlConnection = (new URL(fullURLString)).openConnection();
-        inStream = urlConnection.getInputStream();
-        int fileSize = urlConnection.getContentLength();
-        
-        if ( (fullURLString.endsWith(".gz")) )
-            inStream = new GZIPInputStream(inStream);
-        if ( (fullURLString.endsWith(".Z")) )
-            inStream = new UncompressInputStream(inStream);
-        
-        return inStream;
+        URL url = null;
+        try {
+            url = new URL(fullURLString);
+        } catch (MalformedURLException exc) { 
+            // TODO
+        }
+
+        return url;
     }
 }

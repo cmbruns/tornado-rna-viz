@@ -73,7 +73,7 @@ public class Molecule extends MoleculeMVCModel {
 
         int coordinateIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            Atom atom = (Atom) i.next();
+            LocatedAtom atom = (LocatedAtom) i.next();
             for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                 Double coordinate = (Double) i2.next();
                 // Set reference coordinates once
@@ -101,7 +101,7 @@ public class Molecule extends MoleculeMVCModel {
         float[] actualCoordinateArray = new float[atomCount * 3];
         int coordinateIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            Atom atom = (Atom) i.next();
+            LocatedAtom atom = (LocatedAtom) i.next();
             for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                 Double coordinate = (Double) i2.next();
                 // Set reference coordinates once
@@ -125,7 +125,7 @@ public class Molecule extends MoleculeMVCModel {
         // Copy the coordinates back to the molecule
         coordinateIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            Atom atom = (Atom) i.next();
+            LocatedAtom atom = (LocatedAtom) i.next();
             
             atom.getCoordinates().setX(actualCoordinateArray[coordinateIndex]);
             coordinateIndex++;
@@ -143,7 +143,7 @@ public class Molecule extends MoleculeMVCModel {
 	public Molecule(PDBAtomSet atomSet) {
         // for (Atom atom : atomSet) {
         for (Iterator i = atomSet.iterator(); i.hasNext();) {
-            Atom atom = (Atom) i.next();
+            LocatedAtom atom = (LocatedAtom) i.next();
             addAtom(atom);
 		}
         createBonds();
@@ -155,7 +155,7 @@ public class Molecule extends MoleculeMVCModel {
      */
     public void translate(Vector3D t) {
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            Atom a = (Atom) i.next();
+            LocatedAtom a = (LocatedAtom) i.next();
             a.translate(t);
         }
     }
@@ -175,7 +175,7 @@ public class Molecule extends MoleculeMVCModel {
         // TODO
         int arrayIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            Atom atom = (Atom) i.next();
+            LocatedAtom atom = (LocatedAtom) i.next();
             for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                 Double coord = (Double) i2.next();
                 coordinateArray[arrayIndex] = coord.floatValue();
@@ -193,7 +193,7 @@ public class Molecule extends MoleculeMVCModel {
 
         int a = 0;
         for (Iterator i = getAtomIterator(); i.hasNext();) {
-            Atom atom = (Atom) i.next();
+            LocatedAtom atom = (LocatedAtom) i.next();
             coordinates[a] = atom.getCoordinates();
             masses[a] = atom.getMass();
 
@@ -202,7 +202,7 @@ public class Molecule extends MoleculeMVCModel {
         return Plane3D.bestPlane3D(coordinates, masses);
     }
     
-    public void addAtom(Atom atom) {
+    public void addAtom(LocatedAtom atom) {
         if (atoms.contains(atom)) return; // no change
         
         atoms.add(atom);
@@ -211,7 +211,7 @@ public class Molecule extends MoleculeMVCModel {
         centerOfMass = new DoubleVector3D( centerOfMass.scale(1.0 - massRatio).plus(atom.getCoordinates().scale(massRatio)) );
     }
 
-    public void removeAtom(Atom atom) {
+    public void removeAtom(LocatedAtom atom) {
         if (! atoms.contains(atom)) return; // no change
         
         atoms.remove(atom);
@@ -220,7 +220,7 @@ public class Molecule extends MoleculeMVCModel {
         centerOfMass = new DoubleVector3D( centerOfMass.scale(1.0 - massRatio).minus(atom.getCoordinates().scale(massRatio)) );
     }
     
-    public boolean containsAtom(Atom atom) {
+    public boolean containsAtom(LocatedAtom atom) {
         return atoms.contains(atom);
     }
     
@@ -402,14 +402,14 @@ public class Molecule extends MoleculeMVCModel {
         // Create a hash for rapid access
         Hash3D atomHash = new Hash3D(maxCovalentRadius);
         for (Iterator a = atoms.iterator(); a.hasNext(); ) {
-            Atom atom = (Atom) a.next();
+            LocatedAtom atom = (LocatedAtom) a.next();
             atomHash.put(atom.getCoordinates(), atom);
         }
         for (Iterator a1 = atoms.iterator(); a1.hasNext(); ) {
-            Atom atom1 = (Atom) a1.next();
+            LocatedAtom atom1 = (LocatedAtom) a1.next();
             double cutoffDistance = (atom1.getCovalentRadius() + maxCovalentRadius) * 1.5;
             for (Iterator a2 = atomHash.neighborValues(atom1.getCoordinates(), cutoffDistance).iterator(); a2.hasNext(); ) {
-                Atom atom2 = (Atom) a2.next();
+                LocatedAtom atom2 = (LocatedAtom) a2.next();
                 if (atom1.equals(atom2)) continue;
                 
                 // Make sure the bond length is about right

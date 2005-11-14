@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.simtk.molecularstructure.atom.Atom;
+import org.simtk.molecularstructure.atom.LocatedAtom;
 import org.simtk.molecularstructure.atom.PDBAtomSet;
 
 /** 
@@ -59,14 +59,14 @@ public class Pyrimidine extends Nucleotide {
         HashSet answer = new HashSet();
 
         for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            Atom a = (Atom) i.next();
+            LocatedAtom a = (LocatedAtom) i.next();
             answer.add(a);
         }
 
         String acceptorAtomNames[] = {" N1 "};
         for (int i = 0; i < acceptorAtomNames.length; i++) {
             String atomName = acceptorAtomNames[i];
-            Atom a = getAtom(atomName);
+            LocatedAtom a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         

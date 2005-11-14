@@ -30,17 +30,20 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
+import java.net.*;
 
 public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionListener {
     static final long serialVersionUID = 01L;
     JButton loadFileButton = null;
     JButton webPDBButton = null;
     JButton cancelButton = null;
-    JTextField idField = null;            
+    private JTextField idField = null;            
     JComboBox bioUnitList;
     Frame parent = null;
     MoleculeFileChooser moleculeFileChooser = null;
-    String defaultPDBId = "1MRP";
+    String defaultPdbId = "1MRP";
+    private String pdbId = null;
+    private String structureFileName = null;
     
     Cursor waitCursor = new Cursor(Cursor.WAIT_CURSOR);
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -53,16 +56,20 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
    protected void readStructureFromStream(InputStream structureStream) throws IOException {
        if (structureStream == null) throw new IOException("Attempt to load structure from null stream");
    }
-   public void setDefaultPDBId(String id) {
+   
+   public void setDefaultPdbId(String id) {
+       defaultPdbId = id;
        idField.setText(id);
    }
+   public String getDefaultPdbId() {return defaultPdbId;}
 
 //   MoleculeAcquisitionMethodDialog() {
 //        initializeDialog();
 //   }
     
-    public MoleculeAcquisitionMethodDialog(Frame f) {
+    public MoleculeAcquisitionMethodDialog(JFrame f) {
         super(f);
+        // System.out.println("MoleculeAcquisitionMethodDialog constructor");
         parent = f;
         initializeDialog();
     }
@@ -98,7 +105,7 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
         label = new JLabel(" PDB ID (4 characters): ");
         webPDBPanel.add(label);
 
-        idField = new JTextField(defaultPDBId, 4);
+        idField = new JTextField(defaultPdbId, 4);
         idField.addActionListener(this);
         webPDBPanel.add(idField);
 
@@ -125,9 +132,6 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
         contentPanel.add(Box.createRigidArea(new Dimension(0,5)));
 
         pack();
-        
-        // TODO this set location does not seem to work
-        if (parent != null) setLocationRelativeTo(parent);
     }
 
     boolean isPDBFile(File f) {
@@ -149,8 +153,12 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
         return false;
     }
     
+    protected void setPdbId(String id) {pdbId = id;}
+    protected String getPdbId() {return pdbId;}
     
     public void actionPerformed(ActionEvent e) {
+        setPdbId(null);
+        setStructureFileName(null);
         
         // Load structure from file
         if ( e.getSource() == loadFileButton ) {
@@ -186,10 +194,25 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
             
             try {
                 InputStream webStream = WebPDB.getWebPDBStream(pdbId, isBioUnit);
+
+                // Remember PDBId used
+                setPdbId(idField.getText());
+
+                // Remember file name
+                URL pdbUrl = WebPDB.getWebPdbUrl(pdbId, isBioUnit);
+                String fileName = pdbUrl.getFile();
+
+                // strip off all but the file name (no path)
+                int pathEnd = fileName.lastIndexOf("/");
+                if (pathEnd >= 0) fileName = fileName.substring(pathEnd + 1);
+
+                setStructureFileName(fileName);
+                
                 readStructureFromStream(webStream);
                 setVisible(false);
             } catch (IOException exc) {
-                // TODO
+                // TODO report problem
+                setVisible(true);
             }
         }
         
@@ -202,6 +225,9 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
         setCursor(defaultCursor);
     }
 
+    protected String getStructureFileName() {return structureFileName;}
+    protected void setStructureFileName(String fName) {structureFileName = fName;}
+    
     InputStream loadMoleculeFromFile() {
         String [] extensions = {"pdb", "pqr"};
         if (moleculeFileChooser == null) moleculeFileChooser = new MoleculeFileChooser(parent, extensions);
@@ -210,7 +236,10 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
         if (null == inputFile) return null;
         
         FileInputStream inStream = null;
-        try {inStream = new FileInputStream(inputFile);}
+        try {
+            inStream = new FileInputStream(inputFile);
+            setStructureFileName(inputFile.getName());
+        }
         catch (FileNotFoundException exc) {
             String[] options = {"Bummer!"};
             JOptionPane.showOptionDialog(null, "No such file: " + inputFile, "File Error!",
@@ -220,7 +249,6 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
         }
         return inStream;
     }
-
 }
 
 

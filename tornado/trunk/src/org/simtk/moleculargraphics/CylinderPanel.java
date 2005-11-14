@@ -41,7 +41,7 @@ import vtk.*;
 
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.Atom;
+import org.simtk.molecularstructure.atom.LocatedAtom;
 import org.simtk.molecularstructure.nucleicacid.RNA;
 
 
@@ -97,7 +97,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		 Vector3D previousCenter = null;
 		 for (int r = 0; r < rna.getResidueCount(); r++) {
 		     Residue residue = rna.getResidue(r);
-		     Atom phosphorus = residue.getAtom("P");
+		     LocatedAtom phosphorus = residue.getAtom("P");
 		     if (phosphorus != null) {
 		         // Create sphere at phosphate
 		         Vector3D center = phosphorus.getCoordinates();

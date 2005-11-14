@@ -97,7 +97,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                Atom atom = (Atom) i.next();
+                LocatedAtom atom = (LocatedAtom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -108,12 +108,12 @@ public class AtomSphereCartoon extends GlyphCartoon {
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            Atom atom = (Atom) i1.next();
+            LocatedAtom atom = (LocatedAtom) i1.next();
             addAtom(atom, currentObjects);
         }        
     }
     
-    void addAtom(Atom atom, Vector parentObjects) {
+    void addAtom(LocatedAtom atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added

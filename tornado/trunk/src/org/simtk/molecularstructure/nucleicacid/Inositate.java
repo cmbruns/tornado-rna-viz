@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.simtk.molecularstructure.atom.Atom;
+import org.simtk.molecularstructure.atom.LocatedAtom;
 import org.simtk.molecularstructure.atom.PDBAtomSet;
 
 /** 
@@ -53,7 +53,7 @@ public class Inositate extends Purine {
         HashSet answer = new HashSet();
 
         for (Iterator i = super.getHydrogenBondDonors().iterator(); i.hasNext(); ) {
-            Atom a = (Atom) i.next();
+            LocatedAtom a = (LocatedAtom) i.next();
             answer.add(a);
         }
 
@@ -62,7 +62,7 @@ public class Inositate extends Purine {
         String donorAtomNames[] = {" N1 "};
         for (int i = 0; i < donorAtomNames.length; i++) {
             String atomName = donorAtomNames[i];
-            Atom a = getAtom(atomName);
+            LocatedAtom a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         

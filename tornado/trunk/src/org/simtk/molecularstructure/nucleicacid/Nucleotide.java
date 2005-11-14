@@ -63,7 +63,7 @@ public class Nucleotide extends Residue {
         HashSet answer = new HashSet();
 
         for (Iterator i = super.getHydrogenBondDonors().iterator(); i.hasNext(); ) {
-            Atom a = (Atom) i.next();
+            LocatedAtom a = (LocatedAtom) i.next();
             answer.add(a);
         }
 
@@ -72,7 +72,7 @@ public class Nucleotide extends Residue {
         String donorAtomNames[] = {" O2*", " N2 ", " N4 ", " N6 ", };
         for (int i = 0; i < donorAtomNames.length; i++) {
             String atomName = donorAtomNames[i];
-            Atom a = getAtom(atomName);
+            LocatedAtom a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         
@@ -82,14 +82,14 @@ public class Nucleotide extends Residue {
         HashSet answer = new HashSet();
 
         for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            Atom a = (Atom) i.next();
+            LocatedAtom a = (LocatedAtom) i.next();
             answer.add(a);
         }
 
         String acceptorAtomNames[] = {" O2*", " N7 ", " O2 ", " O4 ", " O6 "};
         for (int i = 0; i < acceptorAtomNames.length; i++) {
             String atomName = acceptorAtomNames[i];
-            Atom a = getAtom(atomName);
+            LocatedAtom a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         
@@ -97,7 +97,7 @@ public class Nucleotide extends Residue {
     }
     
     public Vector3D getBackbonePosition() {
-        Atom atom = getAtom(" C5*");
+        LocatedAtom atom = getAtom(" C5*");
         if (atom == null) return null;
         return atom.getCoordinates();
     }

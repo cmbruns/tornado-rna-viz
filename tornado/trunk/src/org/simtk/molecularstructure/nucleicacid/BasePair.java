@@ -92,14 +92,14 @@ implements MyIterable
         if (residue1 != null) {
             Molecule base = residue1.get(Nucleotide.baseGroup);
             for (Iterator i = base.getAtomIterator(); i.hasNext();) {
-                Atom a = (Atom) i.next();
+                LocatedAtom a = (LocatedAtom) i.next();
                 planeAtoms.addElement(a.getCoordinates());
             }
         }
         if (residue2 != null) {
             Molecule base = residue2.get(Nucleotide.baseGroup);
             for (Iterator i = base.getAtomIterator(); i.hasNext();) {
-                Atom a = (Atom) i.next();
+                LocatedAtom a = (LocatedAtom) i.next();
                 planeAtoms.addElement(a.getCoordinates());
             }
         }
@@ -116,12 +116,12 @@ implements MyIterable
         Vector planeAtoms = new Vector();
         Molecule base = residue1.get(Nucleotide.baseGroup);
         for (Iterator i = base.getAtomIterator(); i.hasNext();) {
-            Atom a = (Atom) i.next();
+            LocatedAtom a = (LocatedAtom) i.next();
             planeAtoms.addElement(a.getCoordinates());
         }
         base = residue2.get(Nucleotide.baseGroup);
         for (Iterator i = base.getAtomIterator(); i.hasNext();) {
-            Atom a = (Atom) i.next();
+            LocatedAtom a = (LocatedAtom) i.next();
             planeAtoms.addElement(a.getCoordinates());
         }
         Plane3D basePairPlane = Plane3D.bestPlane3D(planeAtoms);

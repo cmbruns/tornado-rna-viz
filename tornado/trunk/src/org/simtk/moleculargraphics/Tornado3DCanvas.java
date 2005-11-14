@@ -731,12 +731,12 @@ public class Tornado3DCanvas extends StructureCanvas
         currentCartoon.select(r);
         
         // Put atoms into our special "selected" molecule
-        if (r instanceof Atom) {
-            selectedAtoms.addAtom((Atom)r);
+        if (r instanceof LocatedAtom) {
+            selectedAtoms.addAtom((LocatedAtom)r);
         }
         else if (r instanceof Molecule) {
             for (Iterator i = ((Molecule)r).getAtomIterator(); i.hasNext();) {
-                Atom a = (Atom) i.next();
+                LocatedAtom a = (LocatedAtom) i.next();
                 selectedAtoms.addAtom(a);
             }
         }
@@ -748,12 +748,12 @@ public class Tornado3DCanvas extends StructureCanvas
         currentCartoon.unSelect(r);
 
         // Remove atoms from our special "selected" molecule
-        if (r instanceof Atom) {
-            selectedAtoms.removeAtom((Atom)r);
+        if (r instanceof LocatedAtom) {
+            selectedAtoms.removeAtom((LocatedAtom)r);
         }
         else if (r instanceof Molecule) {
             for (Iterator i = ((Molecule)r).getAtomIterator(); i.hasNext();) {
-                Atom a = (Atom) i.next();
+                LocatedAtom a = (LocatedAtom) i.next();
                 selectedAtoms.removeAtom(a);
             }
         }

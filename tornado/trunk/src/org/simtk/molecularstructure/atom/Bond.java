@@ -32,10 +32,10 @@
 package org.simtk.molecularstructure.atom;
 
 public class Bond {
-    protected Atom atom1;
-    protected Atom atom2;
+    protected LocatedAtom atom1;
+    protected LocatedAtom atom2;
     
-    public Bond(Atom a1, Atom a2) {atom1 = a1; atom2 = a2;}
+    public Bond(LocatedAtom a1, LocatedAtom a2) {atom1 = a1; atom2 = a2;}
 
     public boolean equals(Object o) {
         if (! (o instanceof Bond)) return false;

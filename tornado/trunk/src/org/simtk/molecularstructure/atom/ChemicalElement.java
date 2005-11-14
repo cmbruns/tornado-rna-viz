@@ -21,22 +21,12 @@
  */
 
 /*
- * Created on Nov 3, 2005
+ * Created on Nov 14, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.mvc;
+package org.simtk.molecularstructure.atom;
 
-import java.util.*;
-
-public class MoleculeMVCModel extends Observable implements MVCModel {
-
-    // Delegate model interface to contained object
-//    Observable moleculeObservable = new Observable();
-//    public void addObserver(Observer o) {moleculeObservable.addObserver(o);}
-//    public void deleteObserver(Observer o) {moleculeObservable.deleteObserver(o);}
-//    public void deleteObservers() {moleculeObservable.deleteObservers();}
-//    public boolean hasChanged() {return moleculeObservable.hasChanged();}
-//    public void notifyObservers() {moleculeObservable.notifyObservers();}
-//    public void notifyObservers(Object arg) {moleculeObservable.notifyObservers(arg);}
-
+public interface ChemicalElement {
+    public abstract String getElementSymbol();
+    public abstract String getElementName();
 }

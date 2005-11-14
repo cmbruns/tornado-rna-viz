@@ -89,7 +89,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                Atom atom = (Atom) i.next();
+                LocatedAtom atom = (LocatedAtom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -100,12 +100,12 @@ public class WireFrameCartoon extends GlyphCartoon {
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            Atom atom = (Atom) i1.next();
+            LocatedAtom atom = (LocatedAtom) i1.next();
             addAtom(atom, currentObjects);
         }        
     }
     
-    void addAtom(Atom atom, Vector parentObjects) {
+    void addAtom(LocatedAtom atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added
@@ -132,7 +132,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         }
         // For bonded atoms, draw a line for each bond
         else for (Iterator i2 = atom.getBonds().iterator(); i2.hasNext(); ) {
-            Atom atom2 = (Atom) i2.next();
+            LocatedAtom atom2 = (LocatedAtom) i2.next();
             
             createBondGlyph(atom, atom2, currentObjects, colorScalar);
         }
@@ -153,7 +153,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         boolean modified = false;
 
         for (Iterator i = molecule.getAtomIterator(); i.hasNext(); ) {
-            Atom atom = (Atom) i.next();
+            LocatedAtom atom = (LocatedAtom) i.next();
             if (glyphColors.containsKey(atom)) {
                 Vector glyphs = (Vector) glyphColors.objectGlyphs.get(atom); // TODO encapsulate this
                 for (Iterator g = glyphs.iterator();g.hasNext();) {
@@ -166,7 +166,7 @@ public class WireFrameCartoon extends GlyphCartoon {
                     else {
                         int glyphIndex = pos.arrayIndex;
                         if (otherAtomIndices.containsKey(new Integer(glyphIndex))) {
-                            Atom atom2 = (Atom) otherAtomIndices.get(new Integer(glyphIndex));
+                            LocatedAtom atom2 = (LocatedAtom) otherAtomIndices.get(new Integer(glyphIndex));
                             DoubleVector3D normal = getBondNormal(atom, atom2);
                             DoubleVector3D middle = getBondMiddle(atom, atom2);
                             pos.setPosition(middle);
@@ -196,20 +196,20 @@ public class WireFrameCartoon extends GlyphCartoon {
         
     }
     
-    private DoubleVector3D getBondNormal(Atom a1, Atom a2) {
+    private DoubleVector3D getBondNormal(LocatedAtom a1, LocatedAtom a2) {
         Vector3D c = a1.getCoordinates();        
         MathVector midpoint = c.plus(a2.getCoordinates()).scale(0.5); // middle of bond
         MathVector b = c.plus(midpoint).scale(0.5); // middle of half-bond
         MathVector n = midpoint.minus(c); // direction/length vector
         return new DoubleVector3D(n);
     }
-    private DoubleVector3D getBondMiddle(Atom a1, Atom a2) {
+    private DoubleVector3D getBondMiddle(LocatedAtom a1, LocatedAtom a2) {
         Vector3D c = a1.getCoordinates();        
         MathVector midpoint = c.plus(a2.getCoordinates()).scale(0.5); // middle of bond
         MathVector b = c.plus(midpoint).scale(0.5); // middle of half-bond
         return new DoubleVector3D(b);
     }
-    private void createBondGlyph(Atom atom, Atom atom2, Vector currentObjects, int colorScalar) {
+    private void createBondGlyph(LocatedAtom atom, LocatedAtom atom2, Vector currentObjects, int colorScalar) {
         DoubleVector3D b = getBondMiddle(atom, atom2);
         DoubleVector3D n = getBondNormal(atom, atom2);
 
@@ -223,7 +223,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         
         lineScalars.InsertNextValue(colorScalar);        
     }
-    private void createSingleAtomGlyph(Atom atom, Vector currentObjects, int colorScalar) {
+    private void createSingleAtomGlyph(LocatedAtom atom, Vector currentObjects, int colorScalar) {
         Vector3D c = atom.getCoordinates();
         
         // X

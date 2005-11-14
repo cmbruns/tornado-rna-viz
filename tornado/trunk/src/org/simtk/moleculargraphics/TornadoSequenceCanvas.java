@@ -41,31 +41,16 @@ import org.simtk.util.*;
 public class TornadoSequenceCanvas extends SequenceCanvas 
 implements ResidueActionListener, MouseMotionListener, AdjustmentListener, MouseListener
 {
-    public static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
 
     SequencePane parent;
     // Tornado tornado;
     ResidueActionBroadcaster residueActionBroadcaster;
     // boolean userIsInteracting = false;
 
-    Vector residueSymbols = new Vector();
-    int columnCount = 0;
-    Hashtable residuePositions = new Hashtable();
-    Hashtable positionResidues = new Hashtable();
-    Graphics myGraphics = null; // Notice when Graphics object is available
     Residue highlightResidue = null;
     int highlightPosition = -1;
 
-    double symbolWidth = 25;
-    double symbolHeight = 30;
-    double characterSpacing = 5; // pixels between symbols
-    Font font;
-    int baseLine = (int) symbolHeight; // y coordinate of character baseline
-    
-    Font numberFont;
-    int numberHeight = 5;
-    int numberBaseLine = 5;
-    
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     Cursor moveCursor = new Cursor(Cursor.MOVE_CURSOR);
     Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
@@ -95,13 +80,10 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         // tornado = t;
         residueActionBroadcaster = b;
         
-        setBackground(Color.white);
-        columnCount = initialSequence.length();
+        numberOfResidues = initialSequence.length();
         clearResidues();
-        for (int r = 0; r < columnCount; r++)
+        for (int r = 0; r < numberOfResidues; r++)
            residueSymbols.add("" + initialSequence.charAt(r));
-        font = new Font("Monospaced", Font.BOLD, 20);
-        numberFont = new Font("SanSerif", Font.PLAIN, 9);
         checkSize(getGraphics()); // getGraphics returns null here, but I had to try...
         addMouseMotionListener(this);
         addMouseListener(this);
@@ -114,10 +96,6 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         selectionColor = c;
     }
 
-    public void update(Graphics g) {
-        paint(g);
-    }
-    
     public void highlightPosition(Graphics graphics, int position, Color color) {
         int leftX = (int) (characterSpacing / 2.0 + position * symbolWidth);
         int rightX = (int) (leftX + symbolWidth);
@@ -140,7 +118,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         int leftPosition = (int)((leftPixel - characterSpacing/2.0) / symbolWidth);
         int rightPosition = (int)((rightPixel - characterSpacing/2.0) / symbolWidth);
         if (leftPosition < 0) leftPosition = 0;
-        if (rightPosition >= columnCount) rightPosition = columnCount - 1;
+        if (rightPosition >= numberOfResidues) rightPosition = numberOfResidues - 1;
         
         // Clear background
         g.setColor(getBackground());
@@ -186,10 +164,10 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
                 // Choose which numbers to show
                 if ( ((residueNumber % 5) == 0) || // show round multiples of 10
                      (r == 0) || // show first residue number
-                     (r == (columnCount - 1)) // show final residue number
+                     (r == (numberOfResidues - 1)) // show final residue number
                      ) {
                     // Don't number the ones right next to the numbered ends
-                    if ( (r==1) || (r == (columnCount - 2)) ) continue;
+                    if ( (r==1) || (r == (numberOfResidues - 2)) ) continue;
                     g.drawString("" + residueNumber, (int)(characterSpacing + r * symbolWidth), numberBaseLine);
                 }
             }
@@ -230,7 +208,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         int desiredHeight = (int) numberBaseLine + 1;
         if (desiredHeight <= 0) desiredHeight = 1;
 
-        int desiredWidth = (int) (characterSpacing + columnCount * symbolWidth);
+        int desiredWidth = (int) (characterSpacing + numberOfResidues * symbolWidth);
         if (desiredWidth <= 0) desiredWidth = 1;
         if (desiredWidth < parent.getViewport().getWidth()) desiredWidth = parent.getViewport().getWidth();
 
@@ -261,7 +239,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
 
     public void clearResidues() {
         highlightResidue = null;
-        columnCount = 0;
+        numberOfResidues = 0;
         residueSymbols.clear();
         residuePositions.clear();
         positionResidues.clear();
@@ -272,7 +250,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         residuePositions.put(r, new Integer(residueSymbols.size()));
         positionResidues.put(new Integer(residueSymbols.size()), r);
         residueSymbols.add("" + r.getOneLetterCode());
-        columnCount ++;        
+        numberOfResidues ++;        
     }    
 
     public void highlight(Residue r) {
@@ -540,7 +518,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         return ( (mouseY >= (baseLine - symbolHeight)) && 
                  (mouseY <= baseLine) &&
                  (mouseX >= (int) (characterSpacing/2.0)) &&
-                 (mouseX <= (int) (characterSpacing/2.0 + (columnCount) * symbolWidth)) 
+                 (mouseX <= (int) (characterSpacing/2.0 + (numberOfResidues) * symbolWidth)) 
                 );
     }
     
@@ -596,7 +574,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
      */
     public int getSequenceWidth() {
         checkSize(getGraphics());
-        return (int) (characterSpacing + columnCount * symbolWidth);
+        return (int) (characterSpacing + numberOfResidues * symbolWidth);
     }
     
     /** 
@@ -614,12 +592,12 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         int rightPixel = (int) parent.getViewport().getViewRect().getMaxX();        
         int rightPosition = (int)((rightPixel - characterSpacing/2.0) / symbolWidth);
 
-        // if (getViewportWidth() >= getSequenceWidth()) rightPosition = columnCount - 1;
+        // if (getViewportWidth() >= getSequenceWidth()) rightPosition = numberOfResidues - 1;
 
         if (positionResidues.containsKey(new Integer(rightPosition)))
             return (Residue) positionResidues.get(new Integer(rightPosition));
         else
-            return (Residue) positionResidues.get(new Integer(columnCount - 1));
+            return (Residue) positionResidues.get(new Integer(numberOfResidues - 1));
     }
 
     void doAutoScroll(int direction) {

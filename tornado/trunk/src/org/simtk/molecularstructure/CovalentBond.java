@@ -35,7 +35,7 @@ import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.atom.*;
 
 public class CovalentBond extends Bond {
-    public CovalentBond(Atom a1, Atom a2) {super(a1,a2);}
+    public CovalentBond(LocatedAtom a1, LocatedAtom a2) {super(a1,a2);}
 
     /**
      * Compute a point between the atoms, in proportion to the atoms' covalent radii
