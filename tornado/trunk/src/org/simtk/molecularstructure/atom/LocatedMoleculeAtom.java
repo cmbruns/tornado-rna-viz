@@ -21,18 +21,11 @@
  */
 
 /*
- * Created on Nov 14, 2005
+ * Created on Nov 15, 2005
  * Original author: Christopher Bruns
  */
 package org.simtk.molecularstructure.atom;
 
-import java.awt.Color;
+public interface LocatedMoleculeAtom extends MoleculeAtom, LocatedAtom {
 
-public interface ChemicalElement {
-    public double getCovalentRadius();
-    public Color getDefaultAtomColor();
-    public String getElementSymbol();
-    public String getElementName();
-    public double getMass();
-    public double getVanDerWaalsRadius();
 }

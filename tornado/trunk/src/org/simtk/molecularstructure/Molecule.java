@@ -73,7 +73,7 @@ public class Molecule extends MoleculeMVCModel {
 
         int coordinateIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) i.next();
+            PDBAtom atom = (PDBAtom) i.next();
             for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                 Double coordinate = (Double) i2.next();
                 // Set reference coordinates once
@@ -101,7 +101,7 @@ public class Molecule extends MoleculeMVCModel {
         float[] actualCoordinateArray = new float[atomCount * 3];
         int coordinateIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) i.next();
+            PDBAtom atom = (PDBAtom) i.next();
             for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                 Double coordinate = (Double) i2.next();
                 // Set reference coordinates once
@@ -125,7 +125,7 @@ public class Molecule extends MoleculeMVCModel {
         // Copy the coordinates back to the molecule
         coordinateIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) i.next();
+            PDBAtom atom = (PDBAtom) i.next();
             
             atom.getCoordinates().setX(actualCoordinateArray[coordinateIndex]);
             coordinateIndex++;
@@ -143,7 +143,7 @@ public class Molecule extends MoleculeMVCModel {
 	public Molecule(PDBAtomSet atomSet) {
         // for (Atom atom : atomSet) {
         for (Iterator i = atomSet.iterator(); i.hasNext();) {
-            LocatedAtomClass atom = (LocatedAtomClass) i.next();
+            PDBAtom atom = (PDBAtom) i.next();
             addAtom(atom);
 		}
         createBonds();
@@ -155,7 +155,7 @@ public class Molecule extends MoleculeMVCModel {
      */
     public void translate(Vector3D t) {
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            LocatedAtom a = (LocatedAtom) i.next();
+            PDBAtom a = (PDBAtom) i.next();
             a.translate(t);
         }
     }
@@ -175,7 +175,7 @@ public class Molecule extends MoleculeMVCModel {
         // TODO
         int arrayIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) i.next();
+            PDBAtom atom = (PDBAtom) i.next();
             for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                 Double coord = (Double) i2.next();
                 coordinateArray[arrayIndex] = coord.floatValue();
@@ -193,7 +193,7 @@ public class Molecule extends MoleculeMVCModel {
 
         int a = 0;
         for (Iterator i = getAtomIterator(); i.hasNext();) {
-            LocatedAtomClass atom = (LocatedAtomClass) i.next();
+            PDBAtom atom = (PDBAtom) i.next();
             coordinates[a] = atom.getCoordinates();
             masses[a] = atom.getMass();
 
@@ -202,7 +202,7 @@ public class Molecule extends MoleculeMVCModel {
         return Plane3D.bestPlane3D(coordinates, masses);
     }
     
-    public void addAtom(LocatedAtomClass atom) {
+    public void addAtom(PDBAtom atom) {
         if (atoms.contains(atom)) return; // no change
         
         atoms.add(atom);
@@ -211,7 +211,7 @@ public class Molecule extends MoleculeMVCModel {
         centerOfMass = new DoubleVector3D( centerOfMass.scale(1.0 - massRatio).plus(atom.getCoordinates().scale(massRatio)) );
     }
 
-    public void removeAtom(LocatedAtomClass atom) {
+    public void removeAtom(PDBAtom atom) {
         if (! atoms.contains(atom)) return; // no change
         
         atoms.remove(atom);
@@ -220,7 +220,7 @@ public class Molecule extends MoleculeMVCModel {
         centerOfMass = new DoubleVector3D( centerOfMass.scale(1.0 - massRatio).minus(atom.getCoordinates().scale(massRatio)) );
     }
     
-    public boolean containsAtom(LocatedAtom atom) {
+    public boolean containsAtom(PDBAtom atom) {
         return atoms.contains(atom);
     }
     
@@ -272,9 +272,9 @@ public class Molecule extends MoleculeMVCModel {
 
 			// Lines with atomic coordinates are used to create new atoms
 			else if ((PDBLine.substring(0,6).equals("ATOM  ")) || (PDBLine.substring(0,6).equals("HETATM"))) {
-				PDBAtom atom = PDBAtomClass.createFactoryPDBAtom(PDBLine);
-				try {
-					atom.readPDBLine(PDBLine);
+                PDBAtom atom;
+                try {
+                    atom = new PDBAtomClass(PDBLine);
 				} catch (ParseException exc) {
 					System.err.println("ERROR: Line " + reader.getLineNumber() + " of PDB file: " + exc);
 					continue FILE_LINE;
@@ -287,17 +287,17 @@ public class Molecule extends MoleculeMVCModel {
 				if (currentMoleculeAtoms.size() == 0) { // The very first atom of the molecule
 					currentMoleculeAtoms.addElement(atom);
 
-					residueName = atom.getResidueName();
+					residueName = atom.getPDBResidueName();
 					insertionCode = atom.getInsertionCode();
 					chainIdentifier = atom.getChainIdentifier();
-					residueIndex = atom.getResidueIndex();
+					residueIndex = atom.getResidueNumber();
 				}
 				else { // not the first atom
 
-				    boolean isSameResidue = ( (atom.getResidueIndex() == residueIndex)
+				    boolean isSameResidue = ( (atom.getResidueNumber() == residueIndex)
 				       &&(atom.getInsertionCode() == insertionCode) );
 				    boolean isSameChain = ( atom.getChainIdentifier() == chainIdentifier );
-				    boolean isSolvent = Residue.isSolvent(atom.getResidueName());
+				    boolean isSolvent = Residue.isSolvent(atom.getPDBResidueName());
 
 				    if ( isSameChain && (isSameResidue || !isSolvent) ) {
 					    // Still the same molecule
@@ -336,17 +336,17 @@ public class Molecule extends MoleculeMVCModel {
             PDBAtom atom = (PDBAtom) bagOfAtoms.elementAt(a);
             
             // Look for 2' hydroxyl atom to distinguish DNA from RNA
-            if (atom.getAtomName().trim().equals("O2*")) atomO2Count ++;
-            if (atom.getAtomName().trim().equals("C2*")) atomC2Count ++;            
+            if (atom.getPDBAtomName().trim().equals("O2*")) atomO2Count ++;
+            if (atom.getPDBAtomName().trim().equals("C2*")) atomC2Count ++;            
             
-			String residueKey = "" + atom.getChainIdentifier() + atom.getResidueIndex() + atom.getInsertionCode();
+			String residueKey = "" + atom.getChainIdentifier() + atom.getResidueNumber() + atom.getInsertionCode();
 			if (residues.contains(residueKey)) continue; // Already saw this residue before
 			
-			if (Residue.isSolvent(atom.getResidueName())) solventCount ++;
-			if (Residue.isProtein(atom.getResidueName())) proteinCount ++;
-			if (Residue.isNucleicAcid(atom.getResidueName())) nucleicCount ++;
-			if (Residue.isDNA(atom.getResidueName())) DNACount ++;
-			if (Residue.isRNA(atom.getResidueName())) RNACount ++;
+			if (Residue.isSolvent(atom.getPDBResidueName())) solventCount ++;
+			if (Residue.isProtein(atom.getPDBResidueName())) proteinCount ++;
+			if (Residue.isNucleicAcid(atom.getPDBResidueName())) nucleicCount ++;
+			if (Residue.isDNA(atom.getPDBResidueName())) DNACount ++;
+			if (Residue.isRNA(atom.getPDBResidueName())) RNACount ++;
 			
 			residues.add(residueKey);
 			residueCount ++;
@@ -402,14 +402,14 @@ public class Molecule extends MoleculeMVCModel {
         // Create a hash for rapid access
         Hash3D atomHash = new Hash3D(maxCovalentRadius);
         for (Iterator a = atoms.iterator(); a.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) a.next();
+            PDBAtom atom = (PDBAtom) a.next();
             atomHash.put(atom.getCoordinates(), atom);
         }
         for (Iterator a1 = atoms.iterator(); a1.hasNext(); ) {
-            LocatedAtomClass atom1 = (LocatedAtomClass) a1.next();
+            PDBAtom atom1 = (PDBAtom) a1.next();
             double cutoffDistance = (atom1.getCovalentRadius() + maxCovalentRadius) * 1.5;
             for (Iterator a2 = atomHash.neighborValues(atom1.getCoordinates(), cutoffDistance).iterator(); a2.hasNext(); ) {
-                LocatedAtomClass atom2 = (LocatedAtomClass) a2.next();
+                PDBAtom atom2 = (PDBAtom) a2.next();
                 if (atom1.equals(atom2)) continue;
                 
                 // Make sure the bond length is about right
@@ -427,7 +427,7 @@ public class Molecule extends MoleculeMVCModel {
                 if (distance > maxDistance) continue;
                 
                 // Make sure it is in the same molecule or part
-                if ( (atom1 instanceof PDBAtomClass) && (atom2 instanceof PDBAtomClass) ) {
+                if ( (atom1 instanceof PDBAtom) && (atom2 instanceof PDBAtom) ) {
                     PDBAtom pdbAtom1 = (PDBAtom) atom1;
                     PDBAtom pdbAtom2 = (PDBAtom) atom2;
                     // Must be in the same chain

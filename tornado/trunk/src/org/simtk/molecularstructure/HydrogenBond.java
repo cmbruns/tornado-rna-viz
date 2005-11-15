@@ -33,19 +33,20 @@ package org.simtk.molecularstructure;
 
 import org.simtk.molecularstructure.atom.*;
 
-public class HydrogenBond extends Bond {
-    public HydrogenBond(LocatedAtomClass donor, LocatedAtomClass acceptor) {super(donor,acceptor);}
+public class HydrogenBond extends LocatedMoleculeBondClass {
+    public HydrogenBond(LocatedMoleculeAtom donor, LocatedMoleculeAtom acceptor) {super(donor,acceptor);}
     
     // Hydrogen bonds are not symmetric, so swapping the atoms is not equal
     public boolean equals(Object o) {
         if (! (o instanceof HydrogenBond)) return false;
         HydrogenBond bond2 = (HydrogenBond) o;
-        if ( (atom1.equals(bond2.atom2)) &&
-             (atom2.equals(bond2.atom2)) ) return true;
+        if ( (getAtom1().equals(bond2.getAtom1())) &&
+                (getAtom2().equals(bond2.getAtom2())) ) return true;
+
         return false;
     }
     public int hashCode() {
-        // Must be symmetric with respect to atom1 vs. atom2
-        return atom1.hashCode() + atom2.hashCode();
+        // Unchanged
+        return super.hashCode();
     }
 }

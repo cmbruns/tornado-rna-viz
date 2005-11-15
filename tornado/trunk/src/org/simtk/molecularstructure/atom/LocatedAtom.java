@@ -28,21 +28,21 @@ package org.simtk.molecularstructure.atom;
 
 import org.simtk.geometry3d.Vector3D;
 
-public interface LocatedAtom extends ChemicalElement {
+public interface LocatedAtom extends Atom {
 
     /**
      * 
      * @return The position in space of this PDBAtom
      */
-    public abstract Vector3D getCoordinates();
+    public Vector3D getCoordinates();
 
     /**
      * @param coordinates The coordinates to set.
      */
-    public abstract void setCoordinates(Vector3D coordinates);
+    public void setCoordinates(Vector3D coordinates);
 
-    public abstract double distance(LocatedAtom atom2);
+    public double distance(LocatedAtom atom2);
 
-    public abstract void translate(Vector3D v);
+    public void translate(Vector3D v);
 
 }

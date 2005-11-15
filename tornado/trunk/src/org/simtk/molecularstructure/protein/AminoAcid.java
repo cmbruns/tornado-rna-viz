@@ -132,7 +132,7 @@ abstract public class AminoAcid extends Residue {
     static public AminoAcid createFactoryAminoAcid(PDBAtomSet bagOfAtoms) {
         // Distinguish among subclasses
         PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
-        String residueName = atom.getResidueName().trim().toUpperCase();
+        String residueName = atom.getPDBResidueName().trim().toUpperCase();
         
         if (residueName.equals("ALA")) {return new Alanine(bagOfAtoms);}
         if (residueName.equals("CYS")) {return new Cysteine(bagOfAtoms);}

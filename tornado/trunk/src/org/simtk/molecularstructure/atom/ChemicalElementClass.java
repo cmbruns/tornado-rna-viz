@@ -59,7 +59,26 @@ public class ChemicalElementClass implements ChemicalElement {
     static public ChemicalElementClass UNKNOWN_ELEMENT = 
         new ChemicalElementClass("unknown element", "?",  10.0,   1.50, 0.75, Color.PINK);
 
-    protected ChemicalElementClass(
+    // TODO make sure this has all of the elements in it
+    static private ChemicalElementClass[] staticElements = {
+        HYDROGEN, CARBON, NITROGEN, OXYGEN, MAGNESIUM, PHOSPHORUS, SULFUR
+    };
+
+    static ChemicalElement getElementByName(String elementName) {
+        // Clean up the name string
+        String name = elementName.trim().toUpperCase();
+
+        for (int i = 0; i < staticElements.length; i ++) {
+            ChemicalElement testElement = staticElements[i];
+            String testElementName = testElement.getElementName().trim().toUpperCase();
+            String testElementSymbol = testElement.getElementSymbol().trim().toUpperCase();
+            if (name.equals(testElementName)) return testElement;
+            if (name.equals(testElementSymbol)) return testElement;
+        }
+        return UNKNOWN_ELEMENT;
+    }
+    
+    private ChemicalElementClass(
             String name, 
             String symbol, 
             double mass, 

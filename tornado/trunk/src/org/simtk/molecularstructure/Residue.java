@@ -110,7 +110,7 @@ public abstract class Residue extends Molecule implements Selectable {
         if (bagOfAtoms.size() > 0) {
             PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
             insertionCode = atom.getInsertionCode();
-            residueNumber = atom.getResidueIndex();
+            residueNumber = atom.getResidueNumber();
         }
         
         for (int a = 0; a < bagOfAtoms.size(); a++) {
@@ -119,7 +119,7 @@ public abstract class Residue extends Molecule implements Selectable {
             
             // Create index for lookup by atom name
             // Short atom name
-            String atomName = atom.getAtomName();
+            String atomName = atom.getPDBAtomName();
             
             // Insertion code qualified atom name
             char insertionCode = atom.getInsertionCode();
@@ -152,7 +152,7 @@ public abstract class Residue extends Molecule implements Selectable {
         Molecule mol = new Molecule();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
-            LocatedAtomClass atom = getAtom(atomName);
+            PDBAtom atom = getAtom(atomName);
             if (atom != null) mol.addAtom(atom);
         }
         if (mol.getAtomCount() > 0) return mol;
@@ -197,13 +197,13 @@ public abstract class Residue extends Molecule implements Selectable {
             PDBAtomClass atom1 = (PDBAtomClass) atom;
             
             // Assign bonds from residue dictionary
-            if (genericBonds.containsKey(atom1.getAtomName())) {
-                BOND: for (Iterator b2 = ((HashSet)genericBonds.get(atom1.getAtomName())).iterator(); b2.hasNext(); ) {
+            if (genericBonds.containsKey(atom1.getPDBAtomName())) {
+                BOND: for (Iterator b2 = ((HashSet)genericBonds.get(atom1.getPDBAtomName())).iterator(); b2.hasNext(); ) {
                     String a2Name = (String) b2.next();
                     if (! atomNames.containsKey(a2Name)) continue BOND;
                     ATOM2: for (Iterator a2 = ((Vector)atomNames.get(a2Name)).iterator(); a2.hasNext(); ) {
-                        LocatedAtomClass atom2 = (LocatedAtomClass) a2.next();
-                        if (! (atom2 instanceof PDBAtomClass)) continue ATOM2;
+                        PDBAtom atom2 = (PDBAtom) a2.next();
+                        if (! (atom2 instanceof PDBAtom)) continue ATOM2;
     
                         PDBAtom pdbAtom2 = (PDBAtom) atom2;
                         if (! (atom1.getAlternateLocationIndicator() == pdbAtom2.getAlternateLocationIndicator()))
@@ -227,9 +227,9 @@ public abstract class Residue extends Molecule implements Selectable {
      * @param atomName
      * @return
      */
-    public LocatedAtomClass getAtom(String atomName) {
+    public PDBAtom getAtom(String atomName) {
         if (!atomNames.containsKey(atomName)) return null;
-        return (LocatedAtomClass) ((Vector)atomNames.get(atomName)).firstElement();
+        return (PDBAtom) ((Vector)atomNames.get(atomName)).firstElement();
     }
     
     
@@ -241,8 +241,8 @@ public abstract class Residue extends Molecule implements Selectable {
         if (bagOfAtoms == null) return null;
         if (bagOfAtoms.size() == 0) return null;
         PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
-        if (isProtein(atom.getResidueName())) return AminoAcid.createFactoryAminoAcid(bagOfAtoms);
-        else if (isNucleicAcid(atom.getResidueName())) return Nucleotide.createFactoryNucleotide(bagOfAtoms);
+        if (isProtein(atom.getPDBResidueName())) return AminoAcid.createFactoryAminoAcid(bagOfAtoms);
+        else if (isNucleicAcid(atom.getPDBResidueName())) return Nucleotide.createFactoryNucleotide(bagOfAtoms);
         
         else return new UnknownResidue(bagOfAtoms); // default to base class
     }

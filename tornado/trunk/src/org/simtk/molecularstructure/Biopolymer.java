@@ -72,7 +72,7 @@ public class Biopolymer extends Molecule {
         PDBAtomSet newResidueAtoms = new PDBAtomSet();
         for (int a = 0; a < atomSet.size(); a++) {
             PDBAtom atom = (PDBAtom) atomSet.get(a);
-            String residueKey = "" + atom.getResidueIndex() + atom.getInsertionCode();
+            String residueKey = "" + atom.getResidueNumber() + atom.getInsertionCode();
             if (!residueKey.equals(previousResidueKey)) { // Start a new residue, flush the old one
                 if (newResidueAtoms.size() > 0) {
                     Residue residue = Residue.createFactoryResidue(newResidueAtoms);
@@ -139,11 +139,11 @@ public class Biopolymer extends Molecule {
             if (previousResidue != null) {
                 for (Iterator s2 = genericResidueBonds.keySet().iterator(); s2.hasNext(); ) {
                     String firstAtomName = (String) s2.next();
-                    LocatedAtomClass firstAtom = previousResidue.getAtom(firstAtomName);
+                    PDBAtom firstAtom = previousResidue.getAtom(firstAtomName);
                     if (firstAtom != null) {
                         for (Iterator s3 = ((HashSet)genericResidueBonds.get(firstAtomName)).iterator(); s3.hasNext(); ) {
                             String secondAtomName = (String) s3.next();
-                            LocatedAtomClass secondAtom = residue.getAtom(secondAtomName);
+                            PDBAtom secondAtom = residue.getAtom(secondAtomName);
                             if (secondAtom != null) {
                                 // TODO check distance
                                 firstAtom.addBond(secondAtom);

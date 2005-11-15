@@ -32,6 +32,9 @@
 package org.simtk.molecularstructure.atom;
 
 import org.simtk.geometry3d.*;
+
+import java.util.*;
+import java.awt.Color;
 import java.text.ParseException;
 
 /**
@@ -40,188 +43,220 @@ import java.text.ParseException;
  * \brief A chemical atom including members found in Protein Data Bank flat structure files.
  * 
  */
-public abstract class PDBAtomClass extends LocatedAtomClass implements PDBAtom {
+public class PDBAtomClass implements MutablePDBAtom {
+    // Atom fields
+    private ChemicalElement m_element;
+    
+    // Located atom fields
+    private Vector3D m_coordinates;
+    
+    // Molecule Atom fields
+    private HashSet m_bonds = new HashSet();
+    
+    // PDB fields
+    private double m_temperatureFactor;
+    private double m_occupancy;	
+    private String m_recordName;
+    private int m_serialNumber;
+	private String m_atomName;
+    private char m_alternateLocationIndicator;
+    private String m_pdbElementName;
+    private String m_charge;
+	// PDB Residue information
+    private String m_residueName;
+    private int m_residueIndex;
+    private char m_insertionCode;
+	// PDB Molecule information
+    private char m_chainIdentifier;
+    private String m_segmentIdentifier;
 
-    double temperatureFactor;
-	double occupancy;
-	
-	String recordName;
-	int serialNumber;
-	// String atomName;
-	char alternateLocationIndicator;
-	String elementName;
-	String charge;
-	
-	// Residue information
-	String residueName;
-	int residueIndex;
-	char insertionCode;
-	
-	// Molecule information
-	char chainIdentifier;
-	String segmentIdentifier;
-
-	public PDBAtomClass(String PDBLine) {
+	public PDBAtomClass(String PDBLine) throws ParseException {
 	    try {
 	        readPDBLine(PDBLine);
 	    } catch (ParseException exc) {}
 	}
 	
+    // LocatedAtom interface methods
+    // public Vector3D getCoordinates();
+    // public void setCoordinates(Vector3D coordinates);
+    public Vector3D getCoordinates() {return m_coordinates;}
+    public void setCoordinates(Vector3D v) {m_coordinates = v;}
+    public double distance(LocatedAtom atom2) {return getCoordinates().distance(atom2.getCoordinates());}
+    public void translate(Vector3D v) {setCoordinates(getCoordinates().plus3(v));}
+
+    // MoleculeAtom interface methods
+    public void addBond(ChemicalElement atom2) {m_bonds.add(atom2);}
+    public Collection getBonds() {return m_bonds;}
+    
+    protected void setElement(ChemicalElement element) {
+        m_element = element;
+    }
+    
+    // ChemicalElement interface methods
+    public double getCovalentRadius() {return m_element.getCovalentRadius();}
+    public Color getDefaultAtomColor() {return m_element.getDefaultAtomColor();}
+    public String getElementSymbol() {return m_element.getElementSymbol();}
+    public String getElementName() {return m_element.getElementName();}
+    public double getMass() {return m_element.getMass();}
+    public double getVanDerWaalsRadius() {return m_element.getVanDerWaalsRadius();}
+
+    
+    // PDBAtom interface methods
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getAlternateLocationIndicator()
      */
     public char getAlternateLocationIndicator() {
-        return alternateLocationIndicator;
+        return m_alternateLocationIndicator;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setAlternateLocationIndicator(char)
      */
     public void setAlternateLocationIndicator(char alternateLocationIndicator) {
-        this.alternateLocationIndicator = alternateLocationIndicator;
+        m_alternateLocationIndicator = alternateLocationIndicator;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getAtomName()
      */
-    public String getAtomName() {
-        return getName();
+    public String getPDBAtomName() {
+        return m_atomName;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setAtomName(java.lang.String)
      */
-    public void setAtomName(String atomName) {
-        this.setName(atomName);
+    public void setPDBAtomName(String atomName) {
+        m_atomName = atomName;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getChainIdentifier()
      */
     public char getChainIdentifier() {
-        return chainIdentifier;
+        return m_chainIdentifier;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setChainIdentifier(char)
      */
     public void setChainIdentifier(char chainIdentifier) {
-        this.chainIdentifier = chainIdentifier;
+        m_chainIdentifier = chainIdentifier;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getCharge()
      */
-    public String getCharge() {
-        return charge;
+    public String getPDBCharge() {
+        return m_charge;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setCharge(java.lang.String)
      */
-    public void setCharge(String charge) {
-        this.charge = charge;
+    public void setPDBCharge(String charge) {
+        m_charge = charge;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getElementName()
      */
-    public String getElementName() {
-        return elementName;
+    public String getPDBElementName() {
+        return m_pdbElementName;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setElementName(java.lang.String)
      */
-    public void setElementName(String elementName) {
-        this.elementName = elementName;
+    public void setPDBElementName(String elementName) {
+        m_pdbElementName = elementName;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getInsertionCode()
      */
     public char getInsertionCode() {
-        return insertionCode;
+        return m_insertionCode;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setInsertionCode(char)
      */
     public void setInsertionCode(char insertionCode) {
-        this.insertionCode = insertionCode;
+        m_insertionCode = insertionCode;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getOccupancy()
      */
     public double getOccupancy() {
-        return occupancy;
+        return m_occupancy;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setOccupancy(double)
      */
     public void setOccupancy(double occupancy) {
-        this.occupancy = occupancy;
+        m_occupancy = occupancy;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getRecordName()
      */
-    public String getRecordName() {
-        return recordName;
+    public String getPDBRecordName() {
+        return m_recordName;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setRecordName(java.lang.String)
      */
-    public void setRecordName(String recordName) {
-        this.recordName = recordName;
+    public void setPDBRecordName(String recordName) {
+        m_recordName = recordName;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getResidueIndex()
      */
-    public int getResidueIndex() {
-        return residueIndex;
+    public int getResidueNumber() {
+        return m_residueIndex;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setResidueIndex(int)
      */
-    public void setResidueIndex(int residueIndex) {
-        this.residueIndex = residueIndex;
+    public void setResidueNumber(int residueIndex) {
+        m_residueIndex = residueIndex;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getResidueName()
      */
-    public String getResidueName() {
-        return residueName;
+    public String getPDBResidueName() {
+        return m_residueName;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setResidueName(java.lang.String)
      */
-    public void setResidueName(String residueName) {
-        this.residueName = residueName;
+    public void setPDBResidueName(String residueName) {
+        m_residueName = residueName;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getSegmentIdentifier()
      */
     public String getSegmentIdentifier() {
-        return segmentIdentifier;
+        return m_segmentIdentifier;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setSegmentIdentifier(java.lang.String)
      */
     public void setSegmentIdentifier(String segmentIdentifier) {
-        this.segmentIdentifier = segmentIdentifier;
+        m_segmentIdentifier = segmentIdentifier;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getSerialNumber()
      */
-    public int getSerialNumber() {
-        return serialNumber;
+    public int getPDBAtomSerialNumber() {
+        return m_serialNumber;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setSerialNumber(int)
      */
-    public void setSerialNumber(int serialNumber) {
-        this.serialNumber = serialNumber;
+    public void setPDBAtomSerialNumber(int serialNumber) {
+        m_serialNumber = serialNumber;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#getTemperatureFactor()
      */
     public double getTemperatureFactor() {
-        return temperatureFactor;
+        return m_temperatureFactor;
     }
     /* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#setTemperatureFactor(double)
      */
     public void setTemperatureFactor(double temperatureFactor) {
-        this.temperatureFactor = temperatureFactor;
+        m_temperatureFactor = temperatureFactor;
     }
 	/* (non-Javadoc)
      * @see org.simtk.molecularstructure.atom.PDBAtom#readPDBLine(java.lang.String)
@@ -263,55 +298,35 @@ public abstract class PDBAtomClass extends LocatedAtomClass implements PDBAtom {
 		//
 		//A   79 - 80        LString(2)      charge         Charge on the atom.
 	
-		recordName = PDBLine.substring(0, 6);
-		if ((! recordName.equals("ATOM  ")) && (! recordName.equals("HETATM"))) 
+		setPDBRecordName(PDBLine.substring(0, 6));
+		if ((! getPDBRecordName().equals("ATOM  ")) && (! getPDBRecordName().equals("HETATM"))) 
 			throw new ParseException("ATOM record field not found in line: " + PDBLine, 0);
 
-		serialNumber = (new Integer(PDBLine.substring(6,11).trim())).intValue();
-		setName(PDBLine.substring(12,16));
-		alternateLocationIndicator = PDBLine.charAt(16);
-		residueName = PDBLine.substring(17,20);
-		chainIdentifier = PDBLine.charAt(21);
-		residueIndex = (new Integer(PDBLine.substring(22,26).trim())).intValue();
-		insertionCode = PDBLine.charAt(26);
-		coordinates = new DoubleVector3D(
+		setPDBAtomSerialNumber((new Integer(PDBLine.substring(6,11).trim())).intValue());
+		setPDBAtomName(PDBLine.substring(12,16));
+		setAlternateLocationIndicator(PDBLine.charAt(16));
+		setPDBResidueName(PDBLine.substring(17,20));
+        setChainIdentifier( PDBLine.charAt(21) );
+        setResidueNumber( (new Integer(PDBLine.substring(22,26).trim())).intValue());
+        setInsertionCode( PDBLine.charAt(26));
+        setCoordinates( new DoubleVector3D(
 				(new Double(PDBLine.substring(30,38).trim())).doubleValue(),
 				(new Double(PDBLine.substring(38,46).trim())).doubleValue(),
-				(new Double(PDBLine.substring(46,54).trim())).doubleValue() );
-		occupancy = (new Double(PDBLine.substring(54,60).trim())).doubleValue();
-		temperatureFactor = (new Double(PDBLine.substring(60,66).trim())).doubleValue();
-		segmentIdentifier = PDBLine.substring(73,77);
-		elementName = PDBLine.substring(76,78);
-		charge = PDBLine.substring(78,80);
+				(new Double(PDBLine.substring(46,54).trim())).doubleValue() ));
+        setOccupancy( (new Double(PDBLine.substring(54,60).trim())).doubleValue());
+        setTemperatureFactor( (new Double(PDBLine.substring(60,66).trim())).doubleValue());
+        setSegmentIdentifier( PDBLine.substring(73,77));
+        setPDBElementName( PDBLine.substring(76,78));
+        setPDBCharge( PDBLine.substring(78,80));
+        
+        // Rectify the two possible element containing fields
+        String elementName = getPDBElementName().toUpperCase().replaceAll("[^A-Z]", "").trim();
+        String atomElement = getPDBAtomName().substring(0,2).toUpperCase().replaceAll("[^A-Z]", "").trim();
+
+        ChemicalElement element = ChemicalElementClass.getElementByName(elementName);
+        if (element.equals(ChemicalElementClass.UNKNOWN_ELEMENT))
+            element = ChemicalElementClass.getElementByName(atomElement);
+        
+        setElement(element);
 	}
-	
-	static public PDBAtom createFactoryPDBAtom(String PDBLine) {
-	    // Deduce the element type
-	    String elementName = PDBLine.substring(76,78); // Might be spelled explicitly
-	    String atomName = PDBLine.substring(12,16);
-	    String atomElement = PDBLine.substring(12,14); // First two characters of name should be element
-
-	    // Rectify the two possible element containing fields
-	    elementName = elementName.toUpperCase().replaceAll("[^A-Z]", "").trim();
-	    atomElement = atomElement.toUpperCase().replaceAll("[^A-Z]", "").trim();
-
-	    if (elementName.equals("C"))   return new PDBCarbon(PDBLine);
-	    if (elementName.equals("H"))   return new PDBHydrogen(PDBLine);
-	    if (elementName.equals("MG"))  return new PDBMagnesium(PDBLine);
-	    if (elementName.equals("N"))   return new PDBNitrogen(PDBLine);
-	    if (elementName.equals("O"))   return new PDBOxygen(PDBLine);
-	    if (elementName.equals("P"))   return new PDBPhosphorus(PDBLine);
-	    if (elementName.equals("S"))   return new PDBSulfur(PDBLine);
-	    
-	    if (atomElement.equals("C"))   return new PDBCarbon(PDBLine);
-	    if (atomElement.equals("H"))   return new PDBHydrogen(PDBLine);
-	    if (atomElement.equals("MG"))  return new PDBMagnesium(PDBLine);
-	    if (atomElement.equals("N"))   return new PDBNitrogen(PDBLine);
-	    if (atomElement.equals("O"))   return new PDBOxygen(PDBLine);
-	    if (atomElement.equals("P"))   return new PDBPhosphorus(PDBLine);
-	    if (atomElement.equals("S"))   return new PDBSulfur(PDBLine);
-
-	    return new UnknownPDBAtom(PDBLine);
-	}
-
 }

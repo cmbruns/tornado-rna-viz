@@ -89,7 +89,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                LocatedAtomClass atom = (LocatedAtomClass) i.next();
+                PDBAtom atom = (PDBAtom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -100,12 +100,12 @@ public class WireFrameCartoon extends GlyphCartoon {
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            LocatedAtomClass atom = (LocatedAtomClass) i1.next();
+            PDBAtom atom = (PDBAtom) i1.next();
             addAtom(atom, currentObjects);
         }        
     }
     
-    void addAtom(LocatedAtomClass atom, Vector parentObjects) {
+    void addAtom(PDBAtom atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added
@@ -123,7 +123,7 @@ public class WireFrameCartoon extends GlyphCartoon {
 
         int colorScalar = (int) (atom.getMass());
 
-        Color col = atom.getDefaultColor();
+        Color col = atom.getDefaultAtomColor();
         lut.SetTableValue(colorScalar, col.getRed()/255.0, col.getGreen()/255.0, col.getBlue()/255.0, 1.0);
         
         // For unbonded atoms, put a cross at atom position
@@ -153,7 +153,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         boolean modified = false;
 
         for (Iterator i = molecule.getAtomIterator(); i.hasNext(); ) {
-            LocatedAtomClass atom = (LocatedAtomClass) i.next();
+            PDBAtom atom = (PDBAtom) i.next();
             if (glyphColors.containsKey(atom)) {
                 Vector glyphs = (Vector) glyphColors.objectGlyphs.get(atom); // TODO encapsulate this
                 for (Iterator g = glyphs.iterator();g.hasNext();) {
@@ -166,7 +166,7 @@ public class WireFrameCartoon extends GlyphCartoon {
                     else {
                         int glyphIndex = pos.arrayIndex;
                         if (otherAtomIndices.containsKey(new Integer(glyphIndex))) {
-                            LocatedAtom atom2 = (LocatedAtom) otherAtomIndices.get(new Integer(glyphIndex));
+                            PDBAtom atom2 = (PDBAtom) otherAtomIndices.get(new Integer(glyphIndex));
                             DoubleVector3D normal = getBondNormal(atom, atom2);
                             DoubleVector3D middle = getBondMiddle(atom, atom2);
                             pos.setPosition(middle);

@@ -33,8 +33,7 @@ package org.simtk.molecularstructure.nucleicacid;
 
 import java.util.*;
 import java.awt.*;
-import org.simtk.molecularstructure.atom.LocatedAtomClass;
-import org.simtk.molecularstructure.atom.PDBAtomSet;
+import org.simtk.molecularstructure.atom.*;
 
 /** 
  * @author Christopher Bruns
@@ -55,14 +54,14 @@ public class Adenylate extends Purine {
         HashSet answer = new HashSet();
 
         for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            LocatedAtomClass a = (LocatedAtomClass) i.next();
+            LocatedMoleculeAtom a = (LocatedMoleculeAtom) i.next();
             answer.add(a);
         }
 
         String acceptorAtomNames[] = {" N1 "};
         for (int i = 0; i < acceptorAtomNames.length; i++) {
             String atomName = acceptorAtomNames[i];
-            LocatedAtomClass a = getAtom(atomName);
+            LocatedMoleculeAtom a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         

@@ -97,7 +97,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                LocatedAtomClass atom = (LocatedAtomClass) i.next();
+                PDBAtom atom = (PDBAtom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
@@ -108,12 +108,12 @@ public class AtomSphereCartoon extends GlyphCartoon {
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            LocatedAtomClass atom = (LocatedAtomClass) i1.next();
+            PDBAtom atom = (PDBAtom) i1.next();
             addAtom(atom, currentObjects);
         }        
     }
     
-    void addAtom(LocatedAtomClass atom, Vector parentObjects) {
+    void addAtom(PDBAtom atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added
@@ -130,7 +130,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
         Vector3D c = atom.getCoordinates();
 
         int colorScalar = (int) (atom.getMass());
-        Color col = atom.getDefaultColor();
+        Color col = atom.getDefaultAtomColor();
         lut.SetTableValue(colorScalar, col.getRed()/255.0, col.getGreen()/255.0, col.getBlue()/255.0, 1.0);
 
         // Draw a sphere for each atom

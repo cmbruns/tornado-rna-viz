@@ -36,7 +36,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.simtk.molecularstructure.atom.LocatedAtomClass;
+import org.simtk.molecularstructure.atom.LocatedMoleculeAtom;
 import org.simtk.molecularstructure.atom.PDBAtomSet;
 
 /** 
@@ -57,14 +57,14 @@ public class Thymidylate extends Pyrimidine {
         HashSet answer = new HashSet();
 
         for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            LocatedAtomClass a = (LocatedAtomClass) i.next();
+            LocatedMoleculeAtom a = (LocatedMoleculeAtom) i.next();
             answer.add(a);
         }
 
         String acceptorAtomNames[] = {" N3 "};
         for (int i = 0; i < acceptorAtomNames.length; i++) {
             String atomName = acceptorAtomNames[i];
-            LocatedAtomClass a = getAtom(atomName);
+            LocatedMoleculeAtom a = getAtom(atomName);
             if (a != null) answer.add(a);
         }
         

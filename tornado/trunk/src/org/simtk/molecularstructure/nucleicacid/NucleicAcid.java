@@ -132,10 +132,10 @@ public class NucleicAcid extends Biopolymer {
                 double minDistance = 1000;
                 for (Iterator iterAtom1 = residue.getAtomIterator(); iterAtom1.hasNext(); ) {
                     LocatedAtom atom1 = (LocatedAtom) iterAtom1.next();
-                    if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
+                    if (! ((atom1.getElementName().equals("oxygen")) || (atom1.getElementName().equals("nitrogen")))) continue;
                     for (Iterator iterAtom2 = otherResidue.getAtomIterator(); iterAtom2.hasNext(); ) {
-                        LocatedAtomClass atom2 = (LocatedAtomClass) iterAtom2.next();
-                        if (! ((atom2 instanceof PDBOxygen) || (atom2 instanceof PDBNitrogen))) continue;
+                        LocatedMoleculeAtom atom2 = (LocatedMoleculeAtom) iterAtom2.next();
+                        if (! ((atom2.getElementName().equals("oxygen")) || (atom2.getElementName().equals("nitrogen")))) continue;
                         double testDistance = atom1.distance(atom2);
                         if (testDistance < minDistance) minDistance = testDistance;
                     }
@@ -306,7 +306,7 @@ public class NucleicAcid extends Biopolymer {
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide acceptorNucleotide = (Nucleotide) residue;
             for (Iterator iterAcceptorAtom = acceptorNucleotide.getHydrogenBondAcceptors().iterator(); iterAcceptorAtom.hasNext(); ) {
-                LocatedAtomClass acceptorAtom = (LocatedAtomClass) iterAcceptorAtom.next();
+                LocatedMoleculeAtom acceptorAtom = (LocatedMoleculeAtom) iterAcceptorAtom.next();
                 for (Iterator iterDonorAtom = donorAtoms.neighborValues(acceptorAtom.getCoordinates(), maxHydrogenBondDistance).iterator(); iterDonorAtom.hasNext(); ) {
                     LocatedAtom donorAtom = (LocatedAtom) iterDonorAtom.next();
                     // This atom pair are now closer than the maximum distance cutoff of 3.5 Angstroms

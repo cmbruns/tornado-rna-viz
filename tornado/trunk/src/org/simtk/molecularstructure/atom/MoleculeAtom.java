@@ -28,10 +28,10 @@ package org.simtk.molecularstructure.atom;
 
 import java.util.Collection;
 
-public interface MoleculeAtom {
+public interface MoleculeAtom extends Atom {
 
     // TODO add bond valence information to bonds
-    public abstract void addBond(ChemicalElement atom2);
-    public abstract Collection getBonds();
+    public void addBond(ChemicalElement atom2);
+    public Collection getBonds();
 
 }

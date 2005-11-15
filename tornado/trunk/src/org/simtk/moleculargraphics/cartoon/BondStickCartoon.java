@@ -40,7 +40,7 @@ import org.simtk.geometry3d.DoubleVector3D;
 import org.simtk.molecularstructure.Biopolymer;
 import org.simtk.molecularstructure.Molecule;
 import org.simtk.molecularstructure.Residue;
-import org.simtk.molecularstructure.atom.LocatedAtomClass;
+import org.simtk.molecularstructure.atom.*;
 
 import vtk.vtkCylinderSource;
 import vtk.vtkTransform;
@@ -107,8 +107,7 @@ public class BondStickCartoon extends GlyphCartoon {
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                LocatedAtomClass atom = (LocatedAtomClass) i.next();
-                addAtom(atom, currentObjects);                    
+                addAtom((PDBAtom)i.next(), currentObjects);
             }
         }
         else if (molecule instanceof Biopolymer) {
@@ -118,12 +117,11 @@ public class BondStickCartoon extends GlyphCartoon {
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            LocatedAtomClass atom = (LocatedAtomClass) i1.next();
-            addAtom(atom, currentObjects);
+            addAtom((PDBAtom)i1.next(), currentObjects);
         }        
     }
     
-    void addAtom(LocatedAtomClass atom, Vector parentObjects) {
+    void addAtom(PDBAtom atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added
@@ -141,12 +139,12 @@ public class BondStickCartoon extends GlyphCartoon {
 
         int colorScalar = (int) (atom.getMass());
 
-        Color col = atom.getDefaultColor();
+        Color col = atom.getDefaultAtomColor();
         lut.SetTableValue(colorScalar, col.getRed()/255.0, col.getGreen()/255.0, col.getBlue()/255.0, 1.0);
         
         // For bonded atoms, draw a line for each bond
         for (Iterator i2 = atom.getBonds().iterator(); i2.hasNext(); ) {
-            LocatedAtomClass atom2 = (LocatedAtomClass) i2.next();
+            PDBAtom atom2 = (PDBAtom) i2.next();
             DoubleVector3D midpoint = new DoubleVector3D( c.plus(atom2.getCoordinates()).scale(0.5) ); // middle of bond
             DoubleVector3D b = new DoubleVector3D( c.plus(midpoint).scale(0.5) ); // middle of half-bond
             DoubleVector3D n = new DoubleVector3D( midpoint.minus(c).unit() ); // direction vector
@@ -159,7 +157,7 @@ public class BondStickCartoon extends GlyphCartoon {
 
             // Direction of this half bond
             // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
-            if ( (atom.getName().compareTo(atom2.getName())) > 0 ) {
+            if ( (atom.getPDBAtomName().compareTo(atom2.getPDBAtomName())) > 0 ) {
                 n.selfScale(-1.0);
             }
             

@@ -165,7 +165,7 @@ public class Nucleotide extends Residue {
 
         // Distinguish among subclasses
         PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
-        String residueName = atom.getResidueName().trim().toUpperCase();
+        String residueName = atom.getPDBResidueName().trim().toUpperCase();
 
         if (residueName.equals("A")) return new Adenylate(bagOfAtoms);
         if (residueName.equals("C")) return new Cytidylate(bagOfAtoms);

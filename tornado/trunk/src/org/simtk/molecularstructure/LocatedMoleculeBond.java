@@ -21,18 +21,13 @@
  */
 
 /*
- * Created on Nov 14, 2005
+ * Created on Nov 15, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure.atom;
+package org.simtk.molecularstructure;
 
-import java.awt.Color;
+import org.simtk.geometry3d.*;
 
-public interface ChemicalElement {
-    public double getCovalentRadius();
-    public Color getDefaultAtomColor();
-    public String getElementSymbol();
-    public String getElementName();
-    public double getMass();
-    public double getVanDerWaalsRadius();
+public interface LocatedMoleculeBond extends MolecularBond {
+    public Vector3D getMidpoint();
 }
