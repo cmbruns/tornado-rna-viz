@@ -277,6 +277,18 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         if (parentContainer != null) parentContainer.revalidate();
         // repaint();
     }
+    
+    /**
+     * Get width of entire sequence, not just the visible canvas
+     * @return
+     */
+    public int getTotalSequenceWidth() {
+        return (int)(characterSpacing + numberOfResidues * symbolWidth);
+    }
 
+    public int getResidueWidth() {
+        return (int) symbolWidth;
+    }
+    
     static final long serialVersionUID = 01L;
 }

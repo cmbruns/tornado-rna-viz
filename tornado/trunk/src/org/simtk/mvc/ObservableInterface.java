@@ -38,18 +38,18 @@ public interface ObservableInterface {
     public void addObserver(Observer o);
     // Adds an observer to the set of observers for this object, provided that it is not the same as some observer already in the set.
     
-    void    deleteObserver(Observer o);
+    public void    deleteObserver(Observer o);
     //  Deletes an observer from the set of observers of this object.
     
-    void    deleteObservers();
+    public void    deleteObservers();
     //  Clears the observer list so that this object no longer has any observers.
     
-    boolean     hasChanged();
+    public boolean     hasChanged();
     //  Tests if this object has changed.
     
-    void    notifyObservers();
+    public void    notifyObservers();
     //  If this object has changed, as indicated by the hasChanged method, then notify all of its observers and then call the clearChanged method to indicate that this object has no longer changed.
     
-    void    notifyObservers(Object arg);
+    public void    notifyObservers(Object arg);
     //  If this object has changed, as indicated by the hasChanged method, then notify all of its observers and then call the clearChanged method to indicate that this object has no longer changed.
 }

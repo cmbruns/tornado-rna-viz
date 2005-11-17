@@ -58,6 +58,10 @@ public class MoleculeCollection {
     public String getPdbId() {return mPdbId;}
     public void setPdbId(String i) {mPdbId = i;}
 
+    private String m_inputStructureFileName = null;
+    public String getInputStructureFileName() {return m_inputStructureFileName;}
+    public void setInputStructureFileName(String s) {m_inputStructureFileName = s;}
+
     public double getMass() {
         return mass;
     }
