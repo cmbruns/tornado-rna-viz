@@ -35,7 +35,6 @@ import org.simtk.pdb.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
-import org.simtk.mvc.*;
 
 public class TornadoMorph extends JFrame {
     static Color panelColor = new Color(240, 240, 240); // light grey
@@ -46,9 +45,7 @@ public class TornadoMorph extends JFrame {
 
     // Need to load vtk libraries in the correct order before vtkPanel gets a chance to do it wrong
     static {
-        // System.err.println("Loading VTK libraries...");
         VTKLibraries.load();
-        // System.err.println("Done loading VTK libraries.");
     }
     
     public static void main(String[] args) {
@@ -517,19 +514,20 @@ public class TornadoMorph extends JFrame {
             }
             
             public void adjustmentValueChanged(AdjustmentEvent event) {
-                // TODO
-                System.out.println("scrollbar adjust");
                 JScrollBar scrollBar = (JScrollBar) event.getAdjustable();
-                System.out.println("value = " + scrollBar.getValue());
-                System.out.println("unit increment = " + scrollBar.getUnitIncrement());
-                System.out.println("block increment = " + scrollBar.getBlockIncrement());
+                
+                // Scroll the sequences to where the scrollbar tells them
+                int pixelValue = scrollBar.getValue();
+                startingSequencePanel.setLeftEdgePixel(pixelValue);
+                targetSequencePanel.setLeftEdgePixel(pixelValue);
             }
 
             static final long serialVersionUID = 01L;
 
             // The actual sequence text
             class SequenceTextPanel extends BasePanel implements Observer {
-                SequenceCanvas sequenceCanvas = null;
+                SequenceCanvas sequenceCanvas = new SequenceCanvas();
+                
                 SequenceTextPanel(GridBagLayout gb) {
                     GridBagConstraints gc = new GridBagConstraints();
                     gc.fill = GridBagConstraints.HORIZONTAL; // stretch
@@ -540,34 +538,25 @@ public class TornadoMorph extends JFrame {
                     // BoxLayout does cause child to stretch to fill
                     // default layout (BorderLayout?) does not cause child to stretch
                     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-                    // GridBagLayout localLayout = new GridBagLayout();
-                    // setLayout(localLayout);
-                    // GridBagConstraints localLayoutConstraints = new GridBagConstraints();
                     
-                    // TODO why does this canvas not show up on the panel?
-                    sequenceCanvas = new SequenceCanvas();
                     sequenceCanvas.setParentContainer(this);
 
-//                    localLayoutConstraints.gridx = 0;
-//                    localLayoutConstraints.gridy = 0;
-//                    localLayoutConstraints.gridheight = 1;
-//                    localLayoutConstraints.gridwidth = GridBagConstraints.RELATIVE;
-//                    localLayoutConstraints.fill = GridBagConstraints.HORIZONTAL;
-//                    
-//                    localLayout.setConstraints(sequenceCanvas, localLayoutConstraints);
-//                    add(sequenceCanvas, localLayoutConstraints);
                     add(sequenceCanvas);
                     add(Box.createHorizontalGlue()); // Keep alignment on the left side
 
-                    // JPanel testPanel = new JPanel();
-                    // testPanel.setBackground(Color.green);
-                    // add(testPanel); // Shows up tiny, but not with BoxLayout
-                    // add(new Canvas(), BorderLayout.CENTER);
-                    
-                    // add(Box.createHorizontalGlue());
-                    
-                    // setBackground(Color.pink); // Just so I can see if any of the child is peeking out
+                    setBackground(Color.white);
                 }
+
+                public void setBackground(Color c) {
+                    super.setBackground(c);
+                    if (sequenceCanvas != null) sequenceCanvas.setBackground(c);
+                }
+                
+                public void setLeftEdgePixel(int p) {
+                    sequenceCanvas.setLeftEdgePixel(p);
+                }
+                
+                public int getLeftEdgePixel() {return sequenceCanvas.getLeftEdgePixel();}
 
                 /**
                  * Respond to loading a new molecule
@@ -593,6 +582,9 @@ public class TornadoMorph extends JFrame {
                     
                     if ((sequenceCanvas != null) && (singleMolecule != null)) 
                         sequenceCanvas.setMolecule(singleMolecule);
+                    
+                    // New sequence may cause change in scroll bar geometry
+                    AlignmentPanel.this.updateScrollBarParameters();
                 }
                 
                 int getResidueWidth() {
