@@ -16,6 +16,7 @@
   <j2se version="1.4+" />
   <jar href="s_TornadoMorph.jar" />
   <extension href="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart/TornadoLib.jnlp" name="toRNAdo" />
+  <extension href="https://simtk.org/svn/rna-viz-proto/shared-java/trunk/webstart/SimtkSharedJava.jnlp" name="SimTK shared classes" />
 </resources>
 <application-desc main-class="org.simtk.tornadomorph.TornadoMorph" />
 </jnlp>
