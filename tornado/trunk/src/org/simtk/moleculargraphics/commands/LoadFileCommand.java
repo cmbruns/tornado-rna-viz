@@ -60,11 +60,14 @@ public class LoadFileCommand implements LineCommand {
         catch (IOException exc) {
             throw new ParseException("Problem reading file: " + fileName, 0);
         }
+        catch (InterruptedException exc) {
+            throw new ParseException("Interrupted while reading file: " + fileName, 0);
+        }
         
         return molecules;
     }
 
-    private void loadPDBFile(String fileName, MoleculeCollection molecules) throws FileNotFoundException, IOException {
+    private void loadPDBFile(String fileName, MoleculeCollection molecules) throws FileNotFoundException, IOException, InterruptedException {
         molecules.loadPDBFormat(fileName);
     }
 }

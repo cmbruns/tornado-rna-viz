@@ -67,11 +67,10 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     Vector residueSymbols = new Vector();
 
     public SequenceCanvas() {
-        System.out.println("Sequence canvas constructor");
         setBackground(Color.white);
         font = new Font("Monospaced", Font.BOLD, 20);
         numberFont = new Font("SanSerif", Font.PLAIN, 9);
-        setSize(minWidth, minHeight); // This is needed to make the container exist...
+        // setSize(minWidth, minHeight); // This is needed to make the container exist...
     }
     
     public void setParentContainer(JComponent parent) {
@@ -101,7 +100,7 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         size.height = desiredHeight;
 
         // width
-        int desiredWidth = (int) (characterSpacing + numberOfResidues * symbolWidth);
+        int desiredWidth = getTotalSequenceWidth();
         if (desiredWidth <= minWidth) desiredWidth = minWidth;
         size.width = desiredWidth;
         
@@ -113,7 +112,6 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     }
     
     void checkSize(Graphics g) {
-        System.out.println("Sequence canvas check size");
         boolean haveNewGraphics = false;
         if ( (myGraphics == null) && (g != null) ) haveNewGraphics = true;
 
@@ -140,38 +138,9 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
             // repaint();
             if (parentContainer != null) parentContainer.revalidate();
         }
-        
-//        int desiredHeight = (int) numberBaseLine + 1;
-//        if (desiredHeight <= minHeight) desiredHeight = minHeight;
-//
-//        int desiredWidth = (int) (characterSpacing + numberOfResidues * symbolWidth);
-//        if (desiredWidth <= minWidth) desiredWidth = minWidth;
-//        if (desiredWidth < getWidth()) desiredWidth = getWidth();
-//        if (parentContainer != null) {
-//            desiredWidth = parentContainer.getWidth();
-//        }
-//        // if (desiredWidth < parent.getViewport().getWidth()) desiredWidth = parent.getViewport().getWidth();
-//
-//        Dimension d = getSize();
-//        if ( ((d.height != desiredHeight) ||
-//             (d.width != desiredWidth)) ) {
-//            Dimension preferredSize = new Dimension(desiredWidth, desiredHeight);
-//            setSize(preferredSize);
-//            validate();
-//            if (parentContainer != null) {
-//                parentContainer.revalidate();
-//            }
-//
-//            // Java 1.5 specific
-//            // setPreferredSize(preferredSize);
-//            // setMinimumSize(preferredSize);
-//            // setMaximumSize(preferredSize);
-//        }
     }
 
     public void paint(Graphics onScreenGraphics) {
-        System.out.println("paint sequence canvas");
-        
         checkOffScreen();
         if (offScreenImage == null) return;
         Graphics g = offScreenImage.getGraphics();
@@ -283,12 +252,21 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
      * @return
      */
     public int getTotalSequenceWidth() {
-        return (int)(characterSpacing + numberOfResidues * symbolWidth);
+        return (int)(2 * characterSpacing + numberOfResidues * symbolWidth);
     }
 
     public int getResidueWidth() {
         return (int) symbolWidth;
     }
+    
+    public void setLeftEdgePixel(int p) {
+        if (p != leftEdgeVirtualPixel) {
+            leftEdgeVirtualPixel = p;
+            repaint();
+        }
+    }
+    
+    public int getLeftEdgePixel() {return leftEdgeVirtualPixel;}
     
     static final long serialVersionUID = 01L;
 }

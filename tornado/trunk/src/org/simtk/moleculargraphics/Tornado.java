@@ -822,9 +822,10 @@ implements ResidueActionListener
 
     class LoadStructureDialog extends MoleculeAcquisitionMethodDialog {
         LoadStructureDialog(JFrame f) {super(f);}
-        public void readStructureFromStream(InputStream structureStream) throws IOException {
-            MoleculeCollection molecules = loadPDBFile(structureStream);
-            updateTitleBar();
+
+        public void readStructureFromMoleculeCollection(MoleculeCollection molecules)
+        {
+            loadPDBFile(molecules);
         }
         static final long serialVersionUID = 01L;
     }
@@ -1098,9 +1099,14 @@ implements ResidueActionListener
 //        }
 //    }
     
-    MoleculeCollection loadPDBFile(InputStream inStream) throws IOException {
+    MoleculeCollection loadPDBFile(InputStream inStream) throws IOException, InterruptedException {
         MoleculeCollection molecules = new MoleculeCollection();
         molecules.loadPDBFormat(inStream);
+        loadPDBFile(molecules);
+        return molecules;
+    }
+
+    void loadPDBFile(MoleculeCollection molecules) {
 
         setMessage("Read " + molecules.getAtomCount() + " atoms, in " +
                 molecules.getMoleculeCount() + " molecules");
@@ -1141,8 +1147,6 @@ implements ResidueActionListener
         sequencePane.repaint();
         sequenceCartoonCanvas.repaint();
         repaint();
-        
-        return molecules;
     }
 
     class SaveImageFileAction implements ActionListener {
