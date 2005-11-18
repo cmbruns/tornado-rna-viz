@@ -27,13 +27,13 @@
 package org.simtk.tornadomorph;
 
 import java.awt.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import org.simtk.moleculargraphics.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.pdb.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
 
 public class TornadoMorph extends JFrame {
@@ -55,7 +55,7 @@ public class TornadoMorph extends JFrame {
     TornadoMorph() {
         super("toRNAdoMorph: (no molecules currently loaded)");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+        
         layOutGUI();
         
         pack();
@@ -300,10 +300,6 @@ public class TornadoMorph extends JFrame {
 
             JComponent panel = getContentPane();
             
-            // Make the structure panel the most springy
-            // panel.setMinimumSize(new Dimension(10,10));
-            // panel.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
-            
             panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); // horizontal
             
             // Starting structure
@@ -341,7 +337,17 @@ public class TornadoMorph extends JFrame {
             }
             
             void initializeStructurePanel() {
-                setLayout(new BoxLayout(this, BoxLayout.Y_AXIS)); // vertical
+                // Result: Gridbag layout resizes structureCanvas properly
+                // Boxlayout does not
+
+                GridBagLayout gridbag = new GridBagLayout();
+                setLayout(gridbag);
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.gridwidth = GridBagConstraints.REMAINDER; // each on its own row
+                gbc.weightx = 1.0; // Everybody stretches horizontally
+                gbc.fill = GridBagConstraints.HORIZONTAL; // stretch horizontally
+
+                // setLayout(new BoxLayout(this, BoxLayout.Y_AXIS)); // vertical
                 
                 // Panel label and "Load" button
                 WhitePanel labelPanel = new WhitePanel();
@@ -352,15 +358,19 @@ public class TornadoMorph extends JFrame {
                 JButton loadButton = new JButton("Load molecule...");
                 loadButton.addActionListener(this);
                 labelPanel.add(loadButton);
-
+                gridbag.setConstraints(labelPanel, gbc);
                 add(labelPanel);
                 
                 // Don't allow this label to get tall
                 Dimension labelSize = new Dimension(Integer.MAX_VALUE, userLabelField.getPreferredSize().height);
                 userLabelField.setMaximumSize(labelSize);
+                gridbag.setConstraints(userLabelField, gbc);
                 add(userLabelField);
                 
                 // Canvas for rendering the structure
+                gbc.fill = GridBagConstraints.BOTH; // stretch horizontally and vertically
+                gbc.weighty = 1.0;
+                gridbag.setConstraints(structureCanvas, gbc);
                 add(structureCanvas);
             }
 
@@ -404,30 +414,14 @@ public class TornadoMorph extends JFrame {
                 
                 MorphStructDialog(JFrame f, MoleculeLoadBroadcaster b) {
                     super(f);
-                    // System.out.println("MorphStructDialog constructor");
-                    // dialogTargetCanvas = c;
                     broadcaster = b;
                 }
                 
-                protected void readStructureFromStream(InputStream structureStream) throws IOException {
-                    // System.out.println("Reading structure...");
-                    
-                    super.readStructureFromStream(structureStream);
-                    
-                    MoleculeCollection molecules = new MoleculeCollection();
-                    molecules.loadPDBFormat(structureStream);
-                    
-                    // System.out.println("Number of molecules = " + molecules.molecules().size());
-                    
-                    // Set PDB Id to what the user said
-                    if (getPdbId() != null) molecules.setPdbId(getPdbId());
-                    
-                    if (getStructureFileName() != null) molecules.setInputStructureFileName(getStructureFileName());
-                    
-                    // Send molecule through MoleculeLoadBroadcaster interface
+                protected void readStructureFromMoleculeCollection(MoleculeCollection molecules) {
                     broadcaster.setChanged();
-                    broadcaster.notifyObservers(molecules);
+                    broadcaster.notifyObservers(molecules);                    
                 }
+                
                 static final long serialVersionUID = 01L;
             }
             static final long serialVersionUID = 01L;
@@ -435,7 +429,7 @@ public class TornadoMorph extends JFrame {
         static final long serialVersionUID = 01L;
     }
 
-    class AlignmentPanel extends MinimizablePanel {
+    class AlignmentPanel extends MinimizablePanel implements ComponentListener {
         AlignmentTextArea alignmentTextArea;
         AlignmentScrollBar alignmentScrollBar;
         AlignmentPanel() {
@@ -454,6 +448,7 @@ public class TornadoMorph extends JFrame {
             alignmentScrollBar.addAdjustmentListener(alignmentTextArea);
             panel.add(alignmentScrollBar);
             
+            addComponentListener(this);
             // updateScrollBarParameters();
         }
         
@@ -625,6 +620,16 @@ public class TornadoMorph extends JFrame {
             }
             static final long serialVersionUID = 01L;            
         }
+        
+        // ComponentListener interface
+        public void componentMoved(ComponentEvent event) {}
+        public void componentResized(ComponentEvent event) {
+            if (event.getSource() == this)
+                updateScrollBarParameters();
+        }
+        public void componentHidden(ComponentEvent event) {}
+        public void componentShown(ComponentEvent event) {}
+        
         static final long serialVersionUID = 01L;
     }
 
@@ -705,7 +710,7 @@ public class TornadoMorph extends JFrame {
       * Model wrapper to notify sequence panel and structure panel when molecule has changed
      */
     class MoleculeLoadBroadcaster extends Observable {
-        // Make setChanged public
+        // Make setChanged public, so I can declare the change from another object
         public void setChanged() {super.setChanged();}
     }
     
