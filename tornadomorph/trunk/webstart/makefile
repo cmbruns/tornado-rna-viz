@@ -1,3 +1,5 @@
+default: test
+
 TornadoMorph.jar: ../bin/org/simtk/tornadomorph/*.class ../bin/resources/*
 	jar cf TornadoMorph.jar -C ../bin .
 
