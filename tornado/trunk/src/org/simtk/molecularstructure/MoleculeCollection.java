@@ -84,19 +84,19 @@ public class MoleculeCollection {
     
     public int getAtomCount() {return atoms.size();}
     
-    public void loadPDBFormat(String fileName) throws FileNotFoundException, IOException {
+    public void loadPDBFormat(String fileName) throws FileNotFoundException, IOException, InterruptedException {
 		FileInputStream fileStream = new FileInputStream(fileName);
 		loadPDBFormat(fileStream);
         fileStream.close();
 	}
 
-    public void loadPDBFormat(URL url) throws IOException {
+    public void loadPDBFormat(URL url) throws IOException, InterruptedException {
         InputStream inStream = url.openStream();
         loadPDBFormat(inStream);
         inStream.close();
     }
 
-    public void loadPDBFormat(InputStream is) throws IOException {
+    public void loadPDBFormat(InputStream is) throws IOException, InterruptedException {
         
 		LineNumberReader reader = new LineNumberReader(new InputStreamReader(is));
         
