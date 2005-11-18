@@ -31,19 +31,25 @@ import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
 import java.net.*;
+import org.simtk.gui.*;
+import java.util.*;
+import org.simtk.molecularstructure.*;
+import org.simtk.mvc.*;
 
-public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionListener {
+public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements ActionListener, Observer {
     static final long serialVersionUID = 01L;
     JButton loadFileButton = null;
     JButton webPDBButton = null;
     JButton cancelButton = null;
-    private JTextField idField = null;            
+    JTextField idField = null;            
     JComboBox bioUnitList;
     Frame parent = null;
     MoleculeFileChooser moleculeFileChooser = null;
     String defaultPdbId = "1MRP";
     private String pdbId = null;
-    private String structureFileName = null;
+    
+    private volatile boolean isLoadingFile = false;
+    SimpleObservable fileLoadObservable = new SimpleObservable();
     
     Cursor waitCursor = new Cursor(Cursor.WAIT_CURSOR);
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -53,9 +59,17 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
      * @param structureStream
      * @return true if the read was successful, false if the dialog should keep prodding the user to load a structure
      */
-   protected void readStructureFromStream(InputStream structureStream) throws IOException {
-       if (structureStream == null) throw new IOException("Attempt to load structure from null stream");
-   }
+//   protected void readStructureFromStream(InputStream structureStream) 
+//   throws IOException, InterruptedException {
+//       if (structureStream == null) throw new IOException("Attempt to load structure from null stream");
+//   }
+   
+   /**
+    * Overload this to make use of preloaded molecule collection
+    * 
+    * @param molecules equals null when load fails
+    */
+   protected abstract void readStructureFromMoleculeCollection(MoleculeCollection molecules);
    
    public void setDefaultPdbId(String id) {
        defaultPdbId = id;
@@ -63,7 +77,15 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
    }
    public String getDefaultPdbId() {return defaultPdbId;}
 
-//   MoleculeAcquisitionMethodDialog() {
+   private void setButtonsAreEnabled(boolean buttonsAreEnabled) {
+       loadFileButton.setEnabled(buttonsAreEnabled);
+       webPDBButton.setEnabled(buttonsAreEnabled);
+       // TODO the cancel button should be able to top the load process
+       cancelButton.setEnabled(buttonsAreEnabled);
+       idField.setEnabled(buttonsAreEnabled);
+   }
+   
+   //   MoleculeAcquisitionMethodDialog() {
 //        initializeDialog();
 //   }
     
@@ -72,6 +94,7 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
         // System.out.println("MoleculeAcquisitionMethodDialog constructor");
         parent = f;
         initializeDialog();
+        fileLoadObservable.addObserver(this);
     }
     
     void initializeDialog() {
@@ -157,32 +180,44 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
     protected String getPdbId() {return pdbId;}
     
     public void actionPerformed(ActionEvent e) {
+        // Don't launch a second process if a previous one is not complete
+        if (isLoadingFile) return;
+        
+
         setPdbId(null);
-        setStructureFileName(null);
         
         // Load structure from file
         if ( e.getSource() == loadFileButton ) {
             // Load molecule from file using file browser dialog
 
+            // Tell everyone we are busy
+            isLoadingFile = true;
             setCursor(waitCursor);
-            setEnabled(false);
+            setButtonsAreEnabled(false);
 
-            InputStream fileStream = loadMoleculeFromFile();
-            try {
-                readStructureFromStream(fileStream);
-                setVisible(false); // hide dialog after successful load
-            } catch (IOException exc) {
-                // TODO report problem
-                setVisible(true);
-            }
+            String [] extensions = {"pdb", "pqr"};
+            if (moleculeFileChooser == null) moleculeFileChooser = new MoleculeFileChooser(parent, extensions);
+
+            File inputFile = moleculeFileChooser.getFile();
+
+            LoadFilePDBProcess loadFilePDBProcess = 
+                new LoadFilePDBProcess(inputFile, fileLoadObservable);
+            loadFilePDBProcess.start();
+            
+            // And another process to monitor the download process
+            ProgressManager progressManager = 
+                new ProgressManager(loadFilePDBProcess, this, "Loading structure " + inputFile.getName());
+            progressManager.start();
         }
 
         // Download structure from PDB web site
         else if ( (e.getSource() == webPDBButton) ||
              (e.getSource() == idField) ) {
 
+            // Tell everyone we are busy
+            isLoadingFile = true;
             setCursor(waitCursor);
-            setEnabled(false);
+            setButtonsAreEnabled(false);
 
             // Load PDB molecule from the internet
             String pdbId = idField.getText().trim().toLowerCase();
@@ -192,62 +227,51 @@ public class MoleculeAcquisitionMethodDialog extends JDialog implements ActionLi
             if (bioUnitList.getSelectedIndex() != 0)
                 isBioUnit = false;
             
-            try {
-                InputStream webStream = WebPDB.getWebPDBStream(pdbId, isBioUnit);
+            // Start the background download process
+            LoadWebPDBProcess loadWebPDBProcess = new LoadWebPDBProcess(pdbId, isBioUnit, fileLoadObservable);
+            loadWebPDBProcess.start();
 
-                // Remember PDBId used
-                setPdbId(idField.getText());
-
-                // Remember file name
-                URL pdbUrl = WebPDB.getWebPdbUrl(pdbId, isBioUnit);
-                String fileName = pdbUrl.getFile();
-
-                // strip off all but the file name (no path)
-                int pathEnd = fileName.lastIndexOf("/");
-                if (pathEnd >= 0) fileName = fileName.substring(pathEnd + 1);
-
-                setStructureFileName(fileName);
-                
-                readStructureFromStream(webStream);
-                setVisible(false);
-            } catch (IOException exc) {
-                // TODO report problem
-                setVisible(true);
-            }
+            // And another process to monitor the download process
+            ProgressManager progressManager = 
+                new ProgressManager(loadWebPDBProcess, this, "Downloading structure " + idField.getText());
+            progressManager.start();
         }
         
         // Cancel
         else if ( e.getSource() == cancelButton ) {
             setVisible(false);
         }
-
-        setEnabled(true);
-        setCursor(defaultCursor);
+    }
+    
+    public void finishLoad(boolean isSuccessful) {
+        if (isSuccessful) {
+            
+        } else {
+            
+        }
     }
 
-    protected String getStructureFileName() {return structureFileName;}
-    protected void setStructureFileName(String fName) {structureFileName = fName;}
-    
-    InputStream loadMoleculeFromFile() {
-        String [] extensions = {"pdb", "pqr"};
-        if (moleculeFileChooser == null) moleculeFileChooser = new MoleculeFileChooser(parent, extensions);
+    // Respond to successful file load
+    public void update(Observable observable, Object object) {
+        if (observable == fileLoadObservable) {
+            
+            if (object == null) { // failed to load
+                // TODO - error dialog
+            }
+            else if (object instanceof MoleculeCollection) {
+                MoleculeCollection molecules = (MoleculeCollection) object;
+                
+                // Let derived classes do whatever they want with the molecule
+                readStructureFromMoleculeCollection(molecules);
 
-        File inputFile = moleculeFileChooser.getFile();
-        if (null == inputFile) return null;
+                setVisible(false); // close window on success
+            }
+        }
         
-        FileInputStream inStream = null;
-        try {
-            inStream = new FileInputStream(inputFile);
-            setStructureFileName(inputFile.getName());
-        }
-        catch (FileNotFoundException exc) {
-            String[] options = {"Bummer!"};
-            JOptionPane.showOptionDialog(null, "No such file: " + inputFile, "File Error!",
-                    JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
-                    null, options, options[0]);
-            return null;
-        }
-        return inStream;
+        // Reactivate dialog
+        setButtonsAreEnabled(true);
+        setCursor(defaultCursor);
+        isLoadingFile = false; // Permit new loading operations
     }
 }
 
@@ -273,3 +297,105 @@ class MoleculeFileChooser extends JFileChooser {
     }
 }
 
+class LoadPDBProcess extends Thread implements MonitoredProcess {
+    boolean m_isSuccessful = false; // Only set true in case of success
+    private boolean m_isFailed = false;
+    private SimpleObservable m_loadMoleculeObservable;
+    protected volatile MoleculeCollection molecules = null;
+
+    LoadPDBProcess(SimpleObservable loadMoleculeObservable) {
+        m_loadMoleculeObservable = loadMoleculeObservable;
+    }
+    
+    protected void loadMolecules() throws IOException, InterruptedException {}
+    
+    public void run() {
+        try {
+            loadMolecules();
+            
+            reportSuccess();
+            
+        } catch (IOException exc) {
+            reportFailure();
+        }
+        catch (InterruptedException exc) {  
+            reportFailure();
+        }
+    }
+    
+    private void reportSuccess() {
+        m_isSuccessful = true;
+        m_isFailed = false;        
+        // Deliver molecules in the event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                m_loadMoleculeObservable.setChanged();
+                m_loadMoleculeObservable.notifyObservers(molecules);                    
+            }
+        });
+    }
+    
+    private void reportFailure() {
+        m_isFailed = true;
+        m_isSuccessful = false;
+        // Deliver molecules in the event thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                m_loadMoleculeObservable.setChanged();
+                m_loadMoleculeObservable.notifyObservers(null);                    
+            }
+        });        
+    }
+    
+    // MonitoredProcess interface
+    public void abort() {
+        interrupt();
+    }    
+    public int getProgress() {return 0;} // TODO
+    public int getMinimum() {return 0;} // TODO
+    public int getMaximum() {return 0;} // TODO
+    public boolean isFailed() {return m_isFailed;}
+    public boolean isSuccessful() {return m_isSuccessful;}
+}
+
+class LoadWebPDBProcess extends LoadPDBProcess {
+    private boolean m_isBioUnit;
+    private String m_pdbId;
+    
+    LoadWebPDBProcess(String pdbId, boolean isBioUnit, SimpleObservable loadMoleculeObservable) {
+        super(loadMoleculeObservable);
+        m_isBioUnit = isBioUnit;
+        m_pdbId = pdbId;
+    }
+    
+    protected void loadMolecules() throws IOException, InterruptedException {
+        InputStream webStream = WebPDB.getWebPDBStream(m_pdbId, m_isBioUnit);
+
+        
+        // Remember file name
+        URL pdbUrl = WebPDB.getWebPdbUrl(m_pdbId, m_isBioUnit);
+        String fileName = pdbUrl.getFile();
+
+        // strip off all but the file name (no path)
+        int pathEnd = fileName.lastIndexOf("/");
+        if (pathEnd >= 0) fileName = fileName.substring(pathEnd + 1);
+
+        molecules = new MoleculeCollection();
+        molecules.loadPDBFormat(webStream);            
+        molecules.setInputStructureFileName(fileName);
+        if (m_pdbId != null) molecules.setPdbId(m_pdbId);
+    }
+}
+
+class LoadFilePDBProcess extends LoadPDBProcess {
+    private File m_file;
+    LoadFilePDBProcess(File file, SimpleObservable loadMoleculeObservable) {
+        super(loadMoleculeObservable);
+        m_file = file;
+    }
+    protected void loadMolecules() throws IOException, InterruptedException {
+        molecules = new MoleculeCollection();
+        molecules.loadPDBFormat(new FileInputStream(m_file));
+        molecules.setInputStructureFileName(m_file.getName());
+    }
+}
