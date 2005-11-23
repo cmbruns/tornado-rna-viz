@@ -31,15 +31,42 @@
  */
 package org.simtk.geometry3d;
 
-import java.util.*;
-import org.simtk.util.*;
+import java.util.Iterator;
+import java.util.Vector;
+
+import org.simtk.geometry3d.Vector3D.VectorIterator;
 
 /**
  * @author Christopher Bruns
  *
  * A point or direction vector in three dimensions.
  */
-abstract public class Vector3D extends MathVectorClass implements MyIterable {
+public class Vector3DClass implements Vector3D {
+
+    private double[] privateCoordinates = new double[3];
+    public Vector3DClass() {
+        setX(0);
+        setY(0);
+        setZ(0);
+        }
+    public Vector3DClass(double x, double y, double z) {
+        setX(x);
+        setY(y);
+        setZ(z);
+    }
+
+    public Vector3DClass(MathVectorClass template) {
+        copy(template);
+    }
+    
+    public void setX(double d) {privateCoordinates[0] = d;}
+    public void setY(double d) {privateCoordinates[1] = d;}
+    public void setZ(double d) {privateCoordinates[2] = d;}
+
+    public double getX() {return privateCoordinates[0];}
+    public double getY() {return privateCoordinates[1];}
+    public double getZ() {return privateCoordinates[2];}
+    
 
     abstract public void setX(double d);
     abstract public void setY(double d);

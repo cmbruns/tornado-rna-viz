@@ -41,10 +41,10 @@ public class SemiCylinder extends Cylinder {
     /**
      * Vector normal to the plane dividing the cylinder
      */
-    DoubleVector3D normal;  
-    public SemiCylinder(Vector3D head, Vector3D tail, double radius, DoubleVector3D normalArg) {
+    Vector3DClass normal;  
+    public SemiCylinder(Vector3D head, Vector3D tail, double radius, Vector3DClass normalArg) {
         super(head, tail, radius);
         normal = normalArg;
     }
-    public DoubleVector3D getNormal() {return normal;}
+    public Vector3DClass getNormal() {return normal;}
 }

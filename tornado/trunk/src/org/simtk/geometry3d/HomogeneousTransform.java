@@ -41,8 +41,8 @@ public class HomogeneousTransform extends MathMatrix {
 
     public HomogeneousTransform() { super(4,4); }
     
-    DoubleVector3D mult(Vector3D v) {
-        DoubleVector3D answer = new DoubleVector3D();
+    Vector3DClass mult(Vector3D v) {
+        Vector3DClass answer = new Vector3DClass();
 
         double wOut = 0.0; // 4th coordinate of answer vector
         for (int i = 0; i < 4; i ++) {

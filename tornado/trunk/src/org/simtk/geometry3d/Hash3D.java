@@ -72,9 +72,9 @@ extends Hashtable
     }
     
     public Object remove(Object key) {
-        if (! (key instanceof DoubleVector3D)) return null;
+        if (! (key instanceof Vector3DClass)) return null;
 
-        DoubleVector3D vec = (DoubleVector3D) key;
+        Vector3DClass vec = (Vector3DClass) key;
         Object value = get(vec);
         if (value == null) return null;
         

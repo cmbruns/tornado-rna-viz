@@ -38,8 +38,8 @@ import Jama.Matrix;
 
 public class Plane3D {
     
-    DoubleVector3D normal; // Unit vector perpendicular to the plane
-    DoubleVector3D origin; // A point on the plane, closest to the origin
+    Vector3DClass normal; // Unit vector perpendicular to the plane
+    Vector3DClass origin; // A point on the plane, closest to the origin
 
     /**
      * Distance between a point and a plane
@@ -53,7 +53,7 @@ public class Plane3D {
         return distance;
     }
     
-    public DoubleVector3D getNormal() {return normal;}
+    public Vector3DClass getNormal() {return normal;}
     
     /**
      * Create a plane that minimizes the sum of squared distances to a set of points
@@ -62,13 +62,13 @@ public class Plane3D {
      */
     
     public static Plane3D bestPlane3D(Vector bagOfPoints)   {
-        DoubleVector3D[] coordinates = new DoubleVector3D[0];
+        Vector3DClass[] coordinates = new Vector3DClass[0];
         return bestPlane3D((Vector3D[])bagOfPoints.toArray(coordinates), null);
     }
 
     public static Plane3D bestPlane3D(Vector3D[] coordinates, double[] weights)   {
         // 1) Compute the centroid or mean point
-        DoubleVector3D centroid = new DoubleVector3D( DoubleVector3D.centroid(coordinates, weights) );
+        Vector3DClass centroid = new Vector3DClass( Vector3DClass.centroid(coordinates, weights) );
         
         // 2) Compute the covariance or variance-covariance matrix
         Matrix covarianceMatrix = new Matrix(3, 3);
@@ -108,11 +108,11 @@ public class Plane3D {
         }
 
         Matrix eigenVectors = eigenSystem.getV();
-        DoubleVector3D largestEigenVector = new DoubleVector3D (
+        Vector3DClass largestEigenVector = new Vector3DClass (
                 eigenVectors.get(0, largestEigenValueIndex),
                 eigenVectors.get(1, largestEigenValueIndex),
                 eigenVectors.get(2, largestEigenValueIndex));
-        DoubleVector3D smallestEigenVector = new DoubleVector3D (
+        Vector3DClass smallestEigenVector = new Vector3DClass (
                 eigenVectors.get(0, smallestEigenValueIndex),
                 eigenVectors.get(1, smallestEigenValueIndex),
                 eigenVectors.get(2, smallestEigenValueIndex));
@@ -120,10 +120,10 @@ public class Plane3D {
         Plane3D answer = new Plane3D();
         
         // Normalize the plane normal vector to unit length
-        answer.normal = new DoubleVector3D( smallestEigenVector.unit() );
+        answer.normal = new Vector3DClass( smallestEigenVector.unit() );
         
         // Normalize the plane origin to be the point closest to the origin
-        answer.origin = new DoubleVector3D( answer.normal.scale(centroid.dot(answer.normal)) );
+        answer.origin = new Vector3DClass( answer.normal.scale(centroid.dot(answer.normal)) );
         
         return answer;
     }

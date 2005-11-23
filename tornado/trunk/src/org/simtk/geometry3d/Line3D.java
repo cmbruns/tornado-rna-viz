@@ -46,8 +46,8 @@ public class Line3D {
     
     public Line3D() {}
     public Line3D(Vector3D d, Vector3D o) {
-        direction = new DoubleVector3D(d.unit());
-        origin = new DoubleVector3D( o.minus(direction.scale(o.dot(direction))) );
+        direction = new Vector3DClass(d.unit());
+        origin = new Vector3DClass( o.minus(direction.scale(o.dot(direction))) );
     }
 
     public Vector3D getDirection() {return direction;}
@@ -55,12 +55,12 @@ public class Line3D {
 	
     // Closest point on a line to a point in space
     public Vector3D getClosestPoint(Vector3D v) {
-        return new DoubleVector3D( origin.plus(direction.scale(direction.dot(v))) );
+        return new Vector3DClass( origin.plus(direction.scale(direction.dot(v))) );
     }
     
 	public static Line3D bestLine3D(Vector bagOfPoints)	{
         // 1) Compute the centroid or mean point
-        DoubleVector3D centroid = new DoubleVector3D ( Vector3D.centroid(bagOfPoints) );
+        Vector3DClass centroid = new Vector3DClass ( Vector3D.centroid(bagOfPoints) );
 		
 		// 2) Compute the covariance or variance-covariance matrix
 		Matrix covarianceMatrix = new Matrix(3, 3);
@@ -68,7 +68,7 @@ public class Line3D {
 			for (int j = i; j < 3; j++) { // Only visit upper triangle of symmetric matrix
 				double matrixElement = 0;
 				for (int p = 0; p < bagOfPoints.size(); p++) {
-					DoubleVector3D point = (DoubleVector3D) bagOfPoints.elementAt(p);
+					Vector3DClass point = (Vector3DClass) bagOfPoints.elementAt(p);
 					double deltaJ = point.getElement(j) - centroid.getElement(j);
 					double deltaI = point.getElement(i) - centroid.getElement(i);
 					matrixElement += deltaI * deltaJ;
@@ -91,7 +91,7 @@ public class Line3D {
 				largestEigenValueIndex = i;
 
 		Matrix eigenVectors = eigenSystem.getV();
-		DoubleVector3D largestEigenVector = new DoubleVector3D (
+		Vector3DClass largestEigenVector = new Vector3DClass (
 				eigenVectors.get(0, largestEigenValueIndex),
 				eigenVectors.get(1, largestEigenValueIndex),
 				eigenVectors.get(2, largestEigenValueIndex));
@@ -99,10 +99,10 @@ public class Line3D {
 		Line3D answer = new Line3D();
 		
 		// Normalize the line direction to unit length
-		answer.direction = new DoubleVector3D(largestEigenVector.unit());
+		answer.direction = new Vector3DClass(largestEigenVector.unit());
 		
 		// Normalize the line offset to be the point closest to the origin
-		answer.origin = new DoubleVector3D( centroid.minus( answer.direction.scale(centroid.dot(answer.direction)) ) );
+		answer.origin = new Vector3DClass( centroid.minus( answer.direction.scale(centroid.dot(answer.direction)) ) );
 		
 		return answer;
 	}

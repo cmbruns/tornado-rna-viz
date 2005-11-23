@@ -50,7 +50,7 @@ public class Cylinder {
     public Vector3D getTail() {return tail;}
     public double getRadius() {return radius;}
     public Vector3D getMidpoint() {
-        DoubleVector3D answer = new DoubleVector3D(getHead());
+        Vector3DClass answer = new Vector3DClass(getHead());
         answer.plusEquals(getTail());
         answer.selfScale(0.5);
         return answer;
