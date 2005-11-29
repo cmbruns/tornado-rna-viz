@@ -36,6 +36,7 @@ public interface MutableMathVector extends MathVector {
     public void copy(MathVector v2);    
     public void set(int i, double d);
     public void plusEquals(MathVector v2);    
+    public void minusEquals(MathVector v2);    
     public void selfUnit();    
     public void selfScale(double s);
 }

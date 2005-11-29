@@ -37,9 +37,9 @@ package org.simtk.geometry3d;
   * 
   * 4x4 matrix that includes both rotation and translation components
  */
-public class HomogeneousTransform extends MathMatrix {
+public class HomogeneousTransformClass extends MathMatrix {
 
-    public HomogeneousTransform() { super(4,4); }
+    public HomogeneousTransformClass() { super(4,4); }
     
     Vector3DClass mult(Vector3D v) {
         Vector3DClass answer = new Vector3DClass();

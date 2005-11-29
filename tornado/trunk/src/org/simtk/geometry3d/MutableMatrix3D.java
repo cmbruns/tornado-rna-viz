@@ -21,25 +21,14 @@
  */
 
 /*
- * Created on Nov 23, 2005
+ * Created on Nov 29, 2005
  * Original author: Christopher Bruns
  */
 package org.simtk.geometry3d;
 
-import org.simtk.util.MyIterable;
-
-public interface MathVector extends MyIterable {
-    public double get(int i);
-    public double getElement(int i);
-    public int dimension();    
-    public MathVector plus(MathVector v2);    
-    public MathVector minus(MathVector v2);
-    public double dot(MathVector v2);    
-    public double length();
-    public double lengthSquared();
-    public double distance(MathVector v2);
-    public double distanceSquared(MathVector v2);
-    public MathVector unit();
-    public MathVector scale(double s);
-    public Vector3D v3(); // Convert to Vector3D
+public interface MutableMatrix3D extends Matrix3D {
+    public void set(int m, int n, double d);
+    public void plusEquals(Matrix3D m2);
+    public void minusEquals(Matrix3D m2);
+    public void timesEquals(double d);
 }

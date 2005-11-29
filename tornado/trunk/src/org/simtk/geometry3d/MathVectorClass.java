@@ -31,7 +31,10 @@
  */
 package org.simtk.geometry3d;
 
-public class MathVectorClass implements MathVector {
+import java.util.*;
+
+public class MathVectorClass implements MutableMathVector {
+
     private double m_array[] = null;
 
     private void initialize(int size) {
@@ -50,47 +53,60 @@ public class MathVectorClass implements MathVector {
         return m_array[i];
     }
 
+    public double getElement(int i) {
+        return get(i);
+    }
+
     /** copy contents of argument vector into this one
      * 
      * @param v2
      */
-    public void copy(MathVectorClass v2) {
+    public void copy(MathVector v2) {
         initialize(v2.dimension());
         for (int i = 0; i < dimension(); i++) {
             set(i, v2.get(i));
         }        
     }
     
-    public void set(int i, double d) {m_array[i] = d;}
+    public void set(int i, double d) {
+        m_array[i] = d;
+    }
 
     public int dimension() {return m_array.length;}
     
-    public MathVectorClass plus(MathVectorClass v2) {
+    public MathVector plus(MathVector v2) {
         checkDimension(v2);
-        MathVectorClass answer = new MathVectorClass(dimension());
+        MutableMathVector answer = new MathVectorClass(dimension());
         for (int i = 0; i < dimension(); i++) {
             answer.set(i, get(i) + v2.get(i));
         }
         return answer;
     }
     
-    public void plusEquals(MathVectorClass v2) {
+    public void plusEquals(MathVector v2) {
         checkDimension(v2);
         for (int i = 0; i < dimension(); i++) {
             set(i, get(i) + v2.get(i));
         }        
     }
     
-    public MathVectorClass minus(MathVectorClass v2) {
+    public void minusEquals(MathVector v2) {
         checkDimension(v2);
-        MathVectorClass answer = new MathVectorClass(dimension());
+        for (int i = 0; i < dimension(); i++) {
+            set(i, get(i) - v2.get(i));
+        }        
+    }
+    
+    public MathVector minus(MathVector v2) {
+        checkDimension(v2);
+        MutableMathVector answer = new MathVectorClass(dimension());
         for (int i = 0; i < dimension(); i++) {
             answer.set(i, get(i) - v2.get(i));
         }
         return answer;
     }
     
-    public double dot(MathVectorClass v2) {
+    public double dot(MathVector v2) {
         checkDimension(v2);
         double answer = 0;
         for (int i = 0; i < dimension(); i++) {
@@ -99,29 +115,35 @@ public class MathVectorClass implements MathVector {
         return answer;
     }
     
-    public double length() {
-        return Math.sqrt(this.dot(this));
+    public double lengthSquared() {
+        return this.dot(this);
     }
     
-    public double distance(MathVectorClass v2) {
+    public double length() {
+        return Math.sqrt(lengthSquared());
+    }
+    
+    public double distance(MathVector v2) {
         return this.minus(v2).length();
     }
     
-    public double distanceSquared(MathVectorClass v2) {
-        MathVectorClass difference = this.minus(v2);
+    public double distanceSquared(MathVector v2) {
+        MathVector difference = this.minus(v2);
         return difference.dot(difference);
     }
     
-    public MathVectorClass unit() {
+    public MathVector unit() {
         return this.scale(1.0/length());
     }
     
-    public void selfUnit() {
-        this.selfScale(1.0/length());
+    public void selfUnit() {        
+        double scale = length();
+        if (scale > 0) scale = 1.0/scale;
+        this.selfScale(scale);
     }
     
-    public MathVectorClass scale(double s) {
-        MathVectorClass answer = new MathVectorClass(dimension());
+    public MathVector scale(double s) {
+        MutableMathVector answer = new MathVectorClass(dimension());
         for (int i = 0; i < dimension(); i++) {
             answer.set(i, get(i) * s);
         }
@@ -134,7 +156,55 @@ public class MathVectorClass implements MathVector {
         }
     }
     
-    private void checkDimension(MathVectorClass v2) {
-        if ( dimension() != v2.dimension() ) throw new RuntimeException("Vector inner product dimension mismatch");        
+    private void checkDimension(MathVector v2) {
+        if ( dimension() != v2.dimension() ) throw new VectorSizeException("Vector inner product dimension mismatch");        
+    }
+    
+    public Iterator iterator() {
+        return new VectorIterator(this);
+    }
+    
+    public Vector3D v3() {
+        if (this instanceof Vector3D) return (Vector3D) this;
+        if ( dimension() != 3 ) throw new VectorSizeException("Vector3D must have exactly three coordinates");
+        return new Vector3DClass(this);
+    }
+    
+    class VectorIterator implements Iterator {
+
+        private int elementIndex = 0;
+        private MathVector vector;
+        
+        VectorIterator(MathVector vector) {
+            this.vector = vector;
+        }
+        
+        public boolean hasNext() {
+            if (elementIndex >= vector.dimension()) return false;
+            else return true;
+        }
+
+        public Object next() {
+            Object answer = null;
+            if (hasNext()) answer = new Double(vector.getElement(elementIndex));
+            elementIndex ++;
+            return answer;
+        }
+        
+        public void remove() {
+            throw new UnsupportedOperationException("I cannot remove elements from a vector");
+        }
+    }
+    
+    public String toString() {
+        String answer = "";
+        answer += "(";
+        for (int i = 0; i < dimension(); i++) {
+            answer += get(i);
+            if (i < (dimension() - 1))
+                answer += ", ";
+        }
+        answer += ")";
+        return answer;
     }
 }

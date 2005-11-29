@@ -31,65 +31,79 @@
  */
 package org.simtk.geometry3d;
 
-import java.util.Iterator;
-import java.util.Vector;
-
-import org.simtk.geometry3d.Vector3D.VectorIterator;
+import java.util.*;
 
 /**
  * @author Christopher Bruns
  *
  * A point or direction vector in three dimensions.
  */
-public class Vector3DClass implements Vector3D {
+public class Vector3DClass extends MathVectorClass implements MutableVector3D {
 
-    private double[] privateCoordinates = new double[3];
     public Vector3DClass() {
+        super(3);
         setX(0);
         setY(0);
         setZ(0);
-        }
+    }
+    
     public Vector3DClass(double x, double y, double z) {
+        super(3);
         setX(x);
         setY(y);
         setZ(z);
     }
 
-    public Vector3DClass(MathVectorClass template) {
+    public Vector3DClass(MathVector template) {
+        super(3);
         copy(template);
     }
-    
-    public void setX(double d) {privateCoordinates[0] = d;}
-    public void setY(double d) {privateCoordinates[1] = d;}
-    public void setZ(double d) {privateCoordinates[2] = d;}
 
-    public double getX() {return privateCoordinates[0];}
-    public double getY() {return privateCoordinates[1];}
-    public double getZ() {return privateCoordinates[2];}
-    
+    public void copy(MathVector v2) {
+        if (v2.dimension() != 3) throw new VectorSizeException();
+        super.copy(v2);
+    }
 
-    abstract public void setX(double d);
-    abstract public void setY(double d);
-    abstract public void setZ(double d);
-    
-    abstract public double getX();
-    abstract public double getY();
-    abstract public double getZ();
-    
-    public Vector3D() {super(3);}
-    
-    public void set(int i, double d) {
-        if (i == 0) setX(d);
-        else if (i == 1) setY(d);
-        else if (i == 2) setZ(d);
-        else throw new ArrayIndexOutOfBoundsException();
+    public void setX(double d) {set(0, d);}
+    public void setY(double d) {set(1, d);}
+    public void setZ(double d) {set(2, d);}
+    public double getX() {return get(0);}
+    public double getY() {return get(1);}
+    public double getZ() {return get(2);}
+
+    // Try to return Vector3D objects for methods that return vectors
+    public MathVector unit() {
+        MutableVector3D answer = new Vector3DClass(this);
+        answer.selfUnit();
+        return answer;
     }
     
-    /**
-     * Overload plus operator to return Vector3D
-     */
-    Vector3D plus(Vector3D v2) {
-        Vector3DClass answer = new Vector3DClass(this);
+    public MathVector scale(double scale) {
+        MutableVector3D answer = new Vector3DClass(this);
+        answer.selfScale(scale);
+        return answer;
+    }
+
+    public Vector3D minus(Vector3D v2) {
+        MutableVector3D answer = new Vector3DClass(this);
+        answer.minusEquals(v2);
+        return answer;
+    }
+    
+    public MathVector minus(MathVector v2) {
+        MutableVector3D answer = new Vector3DClass(this);
+        answer.minusEquals(v2);
+        return answer;
+    }
+
+    public Vector3D plus(Vector3D v2) {
+        MutableVector3D answer = new Vector3DClass(this);
+        answer.plusEquals(v2);
+        return answer;
+    }
+    
+    public MathVector plus(MathVector v2) {
+        MutableVector3D answer = new Vector3DClass(this);
         answer.plusEquals(v2);
         return answer;
     }
@@ -107,7 +121,7 @@ public class Vector3DClass implements Vector3D {
         if (coordinates == null) throw new NullPointerException();
         if (coordinates.length < 1) return null;
         
-        Vector3DClass centroid = new Vector3DClass(0,0,0);
+        MutableVector3D centroid = new Vector3DClass(0,0,0);
         double totalWeight = 0;
         double weight = 1.0;
         for (int i = 0; i < coordinates.length; i++) {
@@ -119,16 +133,7 @@ public class Vector3DClass implements Vector3D {
         return centroid;
     }
     
-    public double getElement(int i) {
-        if (i == 0) return getX();
-        else if (i == 1) return getY();
-        else if (i == 2) return getZ();
-        else throw new ArrayIndexOutOfBoundsException();
-    }
-    
-    public double get(int i) {return getElement(i);}
-    
-    public Vector3DClass cross(Vector3D v2) {
+    public Vector3D cross(Vector3D v2) {
         double x = getY()*v2.getZ() - getZ()*v2.getY();
         double y = getZ()*v2.getX() - getX()*v2.getZ();
         double z = getX()*v2.getY() - getY()*v2.getX();
@@ -138,8 +143,7 @@ public class Vector3DClass implements Vector3D {
     public String toString() {
         String answer = "" + getX() + ", " + getY() + ", " + getZ();
         return answer;
-    }
-    
+    }    
     
     // So we can hash on BaseVector3D
     public boolean equals(Object v) {
@@ -154,6 +158,7 @@ public class Vector3DClass implements Vector3D {
         }
         else return false;
     }
+    
     public int hashCode() {
         return 
         (new Double(getX())).hashCode() +
@@ -163,47 +168,10 @@ public class Vector3DClass implements Vector3D {
     
     public Vector3D rotate(Vector3D axis, double angle) {
         double cosAngle = Math.cos(angle);
-        Vector3DClass answer = new Vector3DClass(this);
+        MutableVector3D answer = new Vector3DClass(this);
         answer.selfScale(cosAngle);
         answer.plusEquals( (axis.scale(axis.dot(this) * (1.0 - cosAngle))).plus
         (this.cross(axis).scale(Math.sin(angle))) );
         return answer;
-    }
-    
-    public Iterator iterator() {
-        return new VectorIterator(this);        
-    }
-    class VectorIterator implements Iterator {
-        int coordinateIndex;
-        Vector3D vector3d;
-        VectorIterator(Vector3D v) {
-            coordinateIndex = -1;
-            vector3d = v;
-        }
-        public Object next() {
-            coordinateIndex ++;
-            if (coordinateIndex < 0) return null;
-            if (coordinateIndex > 2) return null;
-            return new Double(vector3d.get(coordinateIndex));
-        }
-        public boolean hasNext() {
-            if (coordinateIndex < -1) return false;
-            if (coordinateIndex > 1) return false;
-            return true;
-        }
-        public void remove() {throw new UnsupportedOperationException();}
-    }
-    
-    public Vector3D unit3() {
-        return new Vector3DClass(unit());
-    }
-    public Vector3D plus3(Vector3D v2) {
-        return new Vector3DClass(this.plus(v2));
-    }
-    public Vector3D minus3(Vector3D v2) {
-        return new Vector3DClass(this.minus(v2));
-    }
-    public Vector3D scale3(double d) {
-        return new Vector3DClass(this.scale(d));
     }
 }

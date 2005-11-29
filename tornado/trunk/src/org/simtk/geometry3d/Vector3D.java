@@ -26,20 +26,13 @@
  */
 package org.simtk.geometry3d;
 
-import org.simtk.util.MyIterable;
+public interface Vector3D extends MathVector {
+    public double getX();
+    public double getY();
+    public double getZ();
+    public Vector3D cross(Vector3D v2);
+    public Vector3D rotate(Vector3D axis, double angle);
 
-public interface MathVector extends MyIterable {
-    public double get(int i);
-    public double getElement(int i);
-    public int dimension();    
-    public MathVector plus(MathVector v2);    
-    public MathVector minus(MathVector v2);
-    public double dot(MathVector v2);    
-    public double length();
-    public double lengthSquared();
-    public double distance(MathVector v2);
-    public double distanceSquared(MathVector v2);
-    public MathVector unit();
-    public MathVector scale(double s);
-    public Vector3D v3(); // Convert to Vector3D
+    public Vector3D plus(Vector3D v2);
+    public Vector3D minus(Vector3D v2);
 }

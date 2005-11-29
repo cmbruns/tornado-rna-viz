@@ -60,7 +60,7 @@ public class Line3D {
     
 	public static Line3D bestLine3D(Vector bagOfPoints)	{
         // 1) Compute the centroid or mean point
-        Vector3DClass centroid = new Vector3DClass ( Vector3D.centroid(bagOfPoints) );
+        Vector3D centroid = new Vector3DClass ( Vector3DClass.centroid(bagOfPoints) );
 		
 		// 2) Compute the covariance or variance-covariance matrix
 		Matrix covarianceMatrix = new Matrix(3, 3);
@@ -68,7 +68,7 @@ public class Line3D {
 			for (int j = i; j < 3; j++) { // Only visit upper triangle of symmetric matrix
 				double matrixElement = 0;
 				for (int p = 0; p < bagOfPoints.size(); p++) {
-					Vector3DClass point = (Vector3DClass) bagOfPoints.elementAt(p);
+					Vector3D point = (Vector3D) bagOfPoints.elementAt(p);
 					double deltaJ = point.getElement(j) - centroid.getElement(j);
 					double deltaI = point.getElement(i) - centroid.getElement(i);
 					matrixElement += deltaI * deltaJ;
@@ -91,7 +91,7 @@ public class Line3D {
 				largestEigenValueIndex = i;
 
 		Matrix eigenVectors = eigenSystem.getV();
-		Vector3DClass largestEigenVector = new Vector3DClass (
+		Vector3D largestEigenVector = new Vector3DClass (
 				eigenVectors.get(0, largestEigenValueIndex),
 				eigenVectors.get(1, largestEigenValueIndex),
 				eigenVectors.get(2, largestEigenValueIndex));

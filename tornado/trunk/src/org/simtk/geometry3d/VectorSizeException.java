@@ -26,20 +26,8 @@
  */
 package org.simtk.geometry3d;
 
-import org.simtk.util.MyIterable;
-
-public interface MathVector extends MyIterable {
-    public double get(int i);
-    public double getElement(int i);
-    public int dimension();    
-    public MathVector plus(MathVector v2);    
-    public MathVector minus(MathVector v2);
-    public double dot(MathVector v2);    
-    public double length();
-    public double lengthSquared();
-    public double distance(MathVector v2);
-    public double distanceSquared(MathVector v2);
-    public MathVector unit();
-    public MathVector scale(double s);
-    public Vector3D v3(); // Convert to Vector3D
+public class VectorSizeException extends RuntimeException {
+    VectorSizeException() {}
+    VectorSizeException(String msg) {super(msg);}
+    static final long serialVersionUID = 01L;
 }

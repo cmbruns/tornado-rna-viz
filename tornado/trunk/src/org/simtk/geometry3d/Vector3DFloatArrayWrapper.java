@@ -37,7 +37,7 @@ package org.simtk.geometry3d;
   * 
   * Vector3D whose underlying x, y, and z values are located in another object
  */
-public class Vector3DFloatArrayWrapper extends Vector3D {
+public class Vector3DFloatArrayWrapper extends Vector3DClass {
     /**
      * Get xyz values from three consecutive values in a float array
      * @param colorIndexArray
@@ -56,12 +56,20 @@ public class Vector3DFloatArrayWrapper extends Vector3D {
         zIndex = index + 2;
     }
     
-    public void setX(double d) {dataArray[xIndex] = (float) d;}
-    public void setY(double d) {dataArray[yIndex] = (float) d;}
-    public void setZ(double d) {dataArray[zIndex] = (float) d;}
-
-    public double getX() {return dataArray[xIndex];}
-    public double getY() {return dataArray[yIndex];}
-    public double getZ() {return dataArray[zIndex];}
-
+    public void set(int index, double value) {
+        if (index == 0) dataArray[xIndex] = (float) value;
+        else if (index == 1) dataArray[yIndex] = (float) value;
+        else if (index == 2) dataArray[zIndex] = (float) value;
+        else 
+            throw new ArrayIndexOutOfBoundsException();
+    }
+    
+    public double get(int index) {
+        if (index == 0) return dataArray[xIndex];
+        else if (index == 1) return dataArray[yIndex];
+        else if (index == 2) return dataArray[zIndex];
+        else 
+            throw new ArrayIndexOutOfBoundsException();
+        
+    }    
 }
