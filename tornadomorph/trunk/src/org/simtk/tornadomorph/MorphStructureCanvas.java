@@ -28,12 +28,68 @@ package org.simtk.tornadomorph;
 
 import org.simtk.moleculargraphics.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 
 public class MorphStructureCanvas extends StructureCanvas 
 {
-    static final long serialVersionUID = 01L;
+    HashSet mouseSlaves = new HashSet();
+
     MorphStructureCanvas() {
         super();
         setBackgroundColor(Color.WHITE);
     }
+
+    /**
+     * Repeat mouse events in this panel in another panel
+     *
+     */
+    void addMouseSlavePanel(MorphStructureCanvas p) {
+        mouseSlaves.add(p);
+    }
+    void removeMouseSlavePanel(MorphStructureCanvas p) {
+        mouseSlaves.remove(p);
+    }
+    
+    /**
+     * Send mouse events from this canvas to other canvases that ask for it
+     * @param event
+     */
+    public void superMouseDragged(MouseEvent event) {
+        super.mouseDragged(event);
+    }    
+    public void mouseDragged(MouseEvent event) {
+        superMouseDragged(event);
+        for (Iterator i = mouseSlaves.iterator(); i.hasNext();) {
+            MorphStructureCanvas otherCanvas = (MorphStructureCanvas) i.next();
+            if (otherCanvas != this)
+                otherCanvas.superMouseDragged(event);
+        }
+    }
+    
+    public void superMousePressed(MouseEvent event) {
+        super.mousePressed(event);
+    }    
+    public void mousePressed(MouseEvent event) {
+        superMousePressed(event);
+        for (Iterator i = mouseSlaves.iterator(); i.hasNext();) {
+            MorphStructureCanvas otherCanvas = (MorphStructureCanvas) i.next();
+            if (otherCanvas != this)
+                otherCanvas.superMousePressed(event);
+        }
+    }    
+    
+    public void superMouseWheelMoved(MouseWheelEvent event) {
+        super.mouseWheelMoved(event);
+    }    
+    public void mouseWheelMoved(MouseWheelEvent event) {
+        superMouseWheelMoved(event);
+        for (Iterator i = mouseSlaves.iterator(); i.hasNext();) {
+            MorphStructureCanvas otherCanvas = (MorphStructureCanvas) i.next();
+            if (otherCanvas != this)
+                otherCanvas.superMouseWheelMoved(event);
+        }
+    }    
+    
+    static final long serialVersionUID = 01L;
 }

@@ -31,8 +31,10 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import org.simtk.moleculargraphics.*;
+import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.pdb.*;
+import org.simtk.gui.*;
 import java.awt.event.*;
 import java.util.*;
 
@@ -42,6 +44,9 @@ public class TornadoMorph extends JFrame {
     
     MoleculeLoadBroadcaster startingMoleculeLoadBroadcaster = new MoleculeLoadBroadcaster();
     MoleculeLoadBroadcaster targetMoleculeLoadBroadcaster = new MoleculeLoadBroadcaster();
+    
+    private final String startingMoleculeLabel = "Origin";
+    private final String finalMoleculeLabel = "Goal";
 
     // Need to load vtk libraries in the correct order before vtkPanel gets a chance to do it wrong
     static {
@@ -300,22 +305,49 @@ public class TornadoMorph extends JFrame {
 
             JComponent panel = getContentPane();
             
-            panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); // horizontal
+            /* There was a horizontal layout problem with the 
+             * structure panels.  Making the window narrower obscured the window
+             * on the right at the expense of the window on the right.  Using
+             * gridbaglayout instead of boxlayout fixed this -CMB
+             */
+            
+            // panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS)); // horizontal
+            GridBagLayout gridbag = new GridBagLayout();
+            panel.setLayout(gridbag);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridwidth = 1; // all in one row
+            gbc.weightx = 1.0; // Everybody stretches horizontally
+            gbc.weighty = 1.0;
+            gbc.fill = GridBagConstraints.BOTH; // stretch           
             
             // Starting structure
             SingleStructurePanel startingStructurePanel = 
-                new SingleStructurePanel("Starting molecule", "1D9V", startingMoleculeLoadBroadcaster);
+                new SingleStructurePanel(startingMoleculeLabel, "1D9V", startingMoleculeLoadBroadcaster);
             startingMoleculeLoadBroadcaster.addObserver(startingStructurePanel);
+            gridbag.setConstraints(startingStructurePanel, gbc);
             panel.add(startingStructurePanel);
             
             // Separator panel
-            panel.add(new WhitePanel());
+            JPanel separatorPanel = new WhitePanel();
+            separatorPanel.add(Box.createHorizontalStrut(2));
+            gbc.weightx = 0; // don't stretch
+            gridbag.setConstraints(separatorPanel, gbc);
+            panel.add(separatorPanel);
             
             // Target structure
             SingleStructurePanel targetStructurePanel = 
-                new SingleStructurePanel("Target molecule", "1MRP", targetMoleculeLoadBroadcaster);
+                new SingleStructurePanel("Goal", "1MRP", targetMoleculeLoadBroadcaster);
             targetMoleculeLoadBroadcaster.addObserver(targetStructurePanel);
+            gbc.weightx = 1.0; // stretch
+            gbc.gridwidth = GridBagConstraints.REMAINDER; // finish row
+            gridbag.setConstraints(targetStructurePanel, gbc);
             panel.add(targetStructurePanel);
+            
+            /**
+             * Tie mouse events between the two structures
+             */
+            startingStructurePanel.addMouseSlavePanel(targetStructurePanel);
+            targetStructurePanel.addMouseSlavePanel(startingStructurePanel);
         }
         
         // One structure window with a label
@@ -324,6 +356,10 @@ public class TornadoMorph extends JFrame {
             MorphStructureCanvas structureCanvas = new MorphStructureCanvas();
             MoleculeAcquisitionMethodDialog loadDialog;
             JLabel structurePanelLabel = new JLabel("Structure: ?");
+
+            JButton loadButton = new JButton("Load Molecule...");
+            Container loadPanel = new WhitePanel();
+            Container progressPanel = new LoadProgressPanel();
 
             // Editable text description field above the structure
             JTextField userLabelField = new JTextField("(no molecule loaded)");
@@ -334,6 +370,14 @@ public class TornadoMorph extends JFrame {
 
                 loadDialog = new MorphStructDialog(TornadoMorph.this, broadcaster);
                 loadDialog.setDefaultPdbId(pdbId);
+            }
+            
+            /**
+             * Delegate addMouseSlavePanel to internal canvas
+             * @param p
+             */
+            public void addMouseSlavePanel(SingleStructurePanel p) {
+                structureCanvas.addMouseSlavePanel(p.structureCanvas);
             }
             
             void initializeStructurePanel() {
@@ -349,23 +393,31 @@ public class TornadoMorph extends JFrame {
 
                 // setLayout(new BoxLayout(this, BoxLayout.Y_AXIS)); // vertical
                 
-                // Panel label and "Load" button
-                WhitePanel labelPanel = new WhitePanel();
-                labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
-                labelPanel.add(structurePanelLabel);
-                labelPanel.add(new WhitePanel()); // Flexible filler
-
-                JButton loadButton = new JButton("Load molecule...");
-                loadButton.addActionListener(this);
-                labelPanel.add(loadButton);
-                gridbag.setConstraints(labelPanel, gbc);
-                add(labelPanel);
+                // Panel label and description
+                JPanel titlePanel = new WhitePanel();
+                titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
+                titlePanel.add(structurePanelLabel);
                 
                 // Don't allow this label to get tall
                 Dimension labelSize = new Dimension(Integer.MAX_VALUE, userLabelField.getPreferredSize().height);
                 userLabelField.setMaximumSize(labelSize);
                 gridbag.setConstraints(userLabelField, gbc);
-                add(userLabelField);
+                titlePanel.add(userLabelField);
+                gridbag.setConstraints(titlePanel, gbc);                
+                add(titlePanel);
+
+                // Panel with "Load" button
+                loadPanel.setLayout(new BoxLayout(loadPanel, BoxLayout.X_AXIS));
+                loadButton.addActionListener(this);
+                loadPanel.add(loadButton);
+                loadPanel.add(Box.createHorizontalGlue());
+                gridbag.setConstraints(loadPanel, gbc);                
+                add(loadPanel);
+                
+                // (initially hidden) panel with load progress
+                gridbag.setConstraints(progressPanel, gbc);                
+                add(progressPanel);                
+                progressPanel.setVisible(false);
                 
                 // Canvas for rendering the structure
                 gbc.fill = GridBagConstraints.BOTH; // stretch horizontally and vertically
@@ -385,7 +437,7 @@ public class TornadoMorph extends JFrame {
             }
             
             private void setMolecules(MoleculeCollection molecules) {
-                structureCanvas.setMolecules(molecules);
+                structureCanvas.setMolecules(molecules, MolecularCartoon.CartoonType.BACKBONE_STICK);
 
                 String pdbId = molecules.getPdbId();
                 
@@ -403,9 +455,27 @@ public class TornadoMorph extends JFrame {
             
             // Load structure button was pressed
             public void actionPerformed(ActionEvent event) {
-                // This set location works, why not the one in the constructor?
-                loadDialog.setLocationRelativeTo(SingleStructurePanel.this);
-                loadDialog.show();
+                if (event.getSource() == loadButton) {
+                    // This set location works, why not the one in the constructor?
+                    loadDialog.setLocationRelativeTo(SingleStructurePanel.this);
+                    loadDialog.show();
+
+                    loadPanel.setVisible(false);
+                    progressPanel.setVisible(true);
+                    repaint();
+                }
+            }
+            
+            class LoadProgressPanel extends ProgressPanel {
+                LoadProgressPanel() {
+                    super("Loading...");
+                }
+                public void hide() {
+                    super.hide();
+                    setVisible(false);
+                    loadPanel.setVisible(true);
+                }
+                static final long serialVersionUID = 01L;
             }
             
             class MorphStructDialog extends MoleculeAcquisitionMethodDialog {
@@ -456,7 +526,6 @@ public class TornadoMorph extends JFrame {
          * Make sure scroll bar geometry matches the loaded sequences
          */
         private void updateScrollBarParameters() {
-            // TODO this hasn't worked yet
             // Use pixel units for scrollbar
             
             // Minimum is always zero
@@ -464,11 +533,30 @@ public class TornadoMorph extends JFrame {
             
             int sequenceWidth = alignmentTextArea.getTotalSequenceWidth();
             int windowWidth = alignmentTextArea.getVisibleSequenceWidth();
+            int barValue = alignmentScrollBar.getValue();
             
+            int oldVisibleAmount = alignmentScrollBar.getVisibleAmount();
+            int newVisibleAmount = windowWidth;
+            
+            /* This way its keeps the left side of the sequence the same on resize
+             * 
+             */
+            if (barValue > (sequenceWidth - windowWidth))
+                barValue = sequenceWidth - windowWidth;
+            if (barValue < 0)
+                barValue = 0;
+            
+            alignmentScrollBar.setValue(barValue);
+
             alignmentScrollBar.setMaximum(Math.max(sequenceWidth, windowWidth));
-            alignmentScrollBar.setVisibleAmount(windowWidth);
+            alignmentScrollBar.setVisibleAmount(newVisibleAmount);
             alignmentScrollBar.setBlockIncrement( (int)(0.95 * windowWidth) );
             alignmentScrollBar.setUnitIncrement(alignmentTextArea.getResidueWidth());
+
+            System.out.println("scrollbar value = " + barValue);
+            System.out.println("window width = " + windowWidth);
+            System.out.println("sequence width = " + sequenceWidth);
+            
         }
         
         // Panel where the alignment text is shown
@@ -484,12 +572,12 @@ public class TornadoMorph extends JFrame {
                 targetSequencePanel = new SequenceTextPanel(gridBag);
                 
                 // First sequence
-                add(new SequenceLabel("Starting: ", gridBag));
+                add(new SequenceLabel(startingMoleculeLabel + ": ", gridBag));
                 startingMoleculeLoadBroadcaster.addObserver(startingSequencePanel);
                 add(startingSequencePanel);
 
                 // Second sequence
-                add(new SequenceLabel("Target: ", gridBag));
+                add(new SequenceLabel(finalMoleculeLabel + ": ", gridBag));
                 targetMoleculeLoadBroadcaster.addObserver(targetSequencePanel);
                 add(targetSequencePanel);
             }
@@ -513,6 +601,7 @@ public class TornadoMorph extends JFrame {
                 
                 // Scroll the sequences to where the scrollbar tells them
                 int pixelValue = scrollBar.getValue();
+                
                 startingSequencePanel.setLeftEdgePixel(pixelValue);
                 targetSequencePanel.setLeftEdgePixel(pixelValue);
             }
