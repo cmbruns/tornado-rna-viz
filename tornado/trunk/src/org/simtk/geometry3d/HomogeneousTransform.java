@@ -32,7 +32,7 @@ package org.simtk.geometry3d;
   * 
   * 4x4 matrix used to encapsulate a rotation and a translation in 3 dimensions
  */
-public interface HomogeneousMatrix {
+public interface HomogeneousTransform {
     Matrix3D getRotation();
     Vector3D getTranslation();
     Vector3D times(Vector3D v);

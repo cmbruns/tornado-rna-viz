@@ -31,10 +31,10 @@
  */
 package org.simtk.geometry3d;
 
-public class MathMatrix {
+public class MathMatrixClass {
     private double m_matrix[][];
 
-    public MathMatrix(int  m, int n) {
+    public MathMatrixClass(int  m, int n) {
         m_matrix = new double[m][n];
     }
 
@@ -48,9 +48,9 @@ public class MathMatrix {
         return m_matrix[0].length;
     }
     
-    public MathMatrix mult(MathMatrix m2) {
+    public MathMatrixClass times(MathMatrixClass m2) {
         if ( columnCount() != m2.rowCount() ) throw new RuntimeException("Matrix size mismatch");
-        MathMatrix answer = new MathMatrix(rowCount(), m2.columnCount());
+        MathMatrixClass answer = new MathMatrixClass(rowCount(), m2.columnCount());
         for (int i = 0; i < rowCount(); i++)
             for (int j = 0; j < m2.columnCount(); j++) {
                 double delta = 0;
