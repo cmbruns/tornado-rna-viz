@@ -40,14 +40,14 @@ import vtk.*;
 
 public class BackboneStick extends GlyphCartoon {
     double sphereFudge = 1.05; // spheres aren't quit flush with cylinder for some reason
-    int stickResolution = 5;
+    int stickResolution = 7;
     double stickLength = 2.0;
-    double stickRadius = 1.50;
+    double stickRadius = 0.50;
     private int baseColorIndex = 150;
     private Hashtable colorIndices = new Hashtable();
 
     public BackboneStick() {
-        this(1.50);
+        this(0.50);
     }
     
     public BackboneStick(double r) {
@@ -197,7 +197,14 @@ public class BackboneStick extends GlyphCartoon {
 
         if (previousPosition != null) {
             // Point midway between two residues
-            DoubleVector3D midPosition = new DoubleVector3D( backbonePosition.plus(previousPosition).scale(0.5) );
+            Vector3DClass midPosition = new Vector3DClass( backbonePosition.plus(previousPosition).times(0.5) );
+
+            // TODO debug new Vector3D arithmetic problem
+            System.out.println("previousPosition = " + previousPosition);
+            System.out.println("midPosition = " + midPosition);
+            System.out.println("backbonePosition = " + backbonePosition);
+            System.out.println();
+
             
             // Direction of this half bond
             // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
@@ -209,7 +216,13 @@ public class BackboneStick extends GlyphCartoon {
 
         if (nextPosition != null) {
             // Point midway between two residues
-            DoubleVector3D midPosition = new DoubleVector3D( backbonePosition.plus(nextPosition).scale(0.5) );
+            Vector3DClass midPosition = new Vector3DClass( backbonePosition.plus(nextPosition).times(0.5) );
+
+            // TODO debug new Vector3D arithmetic problem
+            System.out.println("backbonePosition = " + backbonePosition);
+            System.out.println("midPosition = " + midPosition);
+            System.out.println("nextPosition = " + backbonePosition);
+            System.out.println();
 
             // Direction of this half bond
             // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
@@ -221,23 +234,25 @@ public class BackboneStick extends GlyphCartoon {
     }
     
     private void tileSticks(Vector3D segmentStart, Vector3D segmentEnd, Vector currentObjects, int colorScalar) {
-        DoubleVector3D segmentDirection = new DoubleVector3D( segmentEnd.minus(segmentStart) );
+        Vector3D segmentDirection = segmentEnd.minus(segmentStart);
+        System.out.println("segmentDirection = " + segmentDirection);
 
         // Use sticks to tile path from atom center, c, to bond midpoint
         int numberOfSticks = (int) Math.ceil(segmentDirection.length() / stickLength);
+        System.out.println("number of sticks = " + numberOfSticks);
 
         // Scale to unit length.  NOTE - effect of this on calculations above and below
-        segmentDirection = new DoubleVector3D( segmentDirection.unit() );
+        segmentDirection = segmentDirection.unit().v3();
         
-        DoubleVector3D startStickCenter = new DoubleVector3D( segmentStart.plus(segmentDirection.scale(stickLength * 0.5)) );
-        DoubleVector3D endStickCenter = new DoubleVector3D( segmentEnd.minus(segmentDirection.scale(stickLength * 0.5)) );
+        Vector3D startStickCenter = new Vector3DClass( segmentStart.plus(segmentDirection.times(stickLength * 0.5)) );
+        Vector3D endStickCenter = new Vector3DClass( segmentEnd.minus(segmentDirection.times(stickLength * 0.5)) );
 
-        DoubleVector3D stickCenterVector = new DoubleVector3D( endStickCenter.minus(startStickCenter) );
+        Vector3DClass stickCenterVector = new Vector3DClass( endStickCenter.minus(startStickCenter) );
         for (int s = 0; s < numberOfSticks; s++) {
             double alpha = 0.0;
             if (numberOfSticks > 1)
                 alpha = s / (numberOfSticks - 1.0);
-            DoubleVector3D stickCenter = new DoubleVector3D( startStickCenter.plus(stickCenterVector.scale(alpha)) );
+            Vector3DClass stickCenter = new Vector3DClass( startStickCenter.plus(stickCenterVector.scale(alpha)) );
         
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(segmentDirection.getX(), segmentDirection.getY(), segmentDirection.getZ());

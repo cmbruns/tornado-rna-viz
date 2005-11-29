@@ -167,8 +167,8 @@ public class WireFrameCartoon extends GlyphCartoon {
                         int glyphIndex = pos.arrayIndex;
                         if (otherAtomIndices.containsKey(new Integer(glyphIndex))) {
                             PDBAtom atom2 = (PDBAtom) otherAtomIndices.get(new Integer(glyphIndex));
-                            DoubleVector3D normal = getBondNormal(atom, atom2);
-                            DoubleVector3D middle = getBondMiddle(atom, atom2);
+                            Vector3DClass normal = getBondNormal(atom, atom2);
+                            Vector3DClass middle = getBondMiddle(atom, atom2);
                             pos.setPosition(middle);
                             pos.setNormal(normal);
 
@@ -196,22 +196,22 @@ public class WireFrameCartoon extends GlyphCartoon {
         
     }
     
-    private DoubleVector3D getBondNormal(LocatedAtom a1, LocatedAtom a2) {
+    private Vector3DClass getBondNormal(LocatedAtom a1, LocatedAtom a2) {
         Vector3D c = a1.getCoordinates();        
-        MathVector midpoint = c.plus(a2.getCoordinates()).scale(0.5); // middle of bond
-        MathVector b = c.plus(midpoint).scale(0.5); // middle of half-bond
-        MathVector n = midpoint.minus(c); // direction/length vector
-        return new DoubleVector3D(n);
+        Vector3D midpoint = c.plus(a2.getCoordinates()).times(0.5).v3(); // middle of bond
+        Vector3D b = c.plus(midpoint).times(0.5).v3(); // middle of half-bond
+        Vector3D n = midpoint.minus(c); // direction/length vector
+        return new Vector3DClass(n);
     }
-    private DoubleVector3D getBondMiddle(LocatedAtom a1, LocatedAtom a2) {
+    private Vector3DClass getBondMiddle(LocatedAtom a1, LocatedAtom a2) {
         Vector3D c = a1.getCoordinates();        
-        MathVector midpoint = c.plus(a2.getCoordinates()).scale(0.5); // middle of bond
-        MathVector b = c.plus(midpoint).scale(0.5); // middle of half-bond
-        return new DoubleVector3D(b);
+        Vector3D midpoint = c.plus(a2.getCoordinates()).times(0.5).v3(); // middle of bond
+        Vector3D b = c.plus(midpoint).times(0.5).v3(); // middle of half-bond
+        return new Vector3DClass(b);
     }
     private void createBondGlyph(LocatedAtom atom, LocatedAtom atom2, Vector currentObjects, int colorScalar) {
-        DoubleVector3D b = getBondMiddle(atom, atom2);
-        DoubleVector3D n = getBondNormal(atom, atom2);
+        Vector3DClass b = getBondMiddle(atom, atom2);
+        Vector3DClass n = getBondNormal(atom, atom2);
 
         linePoints.InsertNextPoint(b.getX(), b.getY(), b.getZ());
         lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());

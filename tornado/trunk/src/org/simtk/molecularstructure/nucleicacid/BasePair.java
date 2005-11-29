@@ -111,7 +111,7 @@ implements MyIterable
      * Estimate position at center of a double helix containing this base pair
      * @return
      */
-    public DoubleVector3D getHelixCenter() {
+    public Vector3DClass getHelixCenter() {
         // 1) compute best plane containing base group atoms
         Vector planeAtoms = new Vector();
         Molecule base = residue1.get(Nucleotide.baseGroup);
@@ -127,22 +127,22 @@ implements MyIterable
         Plane3D basePairPlane = Plane3D.bestPlane3D(planeAtoms);
         
         // 2) compute minor-major axis by comparing C1*->C1* axis to base group centroid
-        MathVector basePairCentroid = Vector3D.centroid(planeAtoms);
+        Vector3D basePairCentroid = Vector3DClass.centroid(planeAtoms);
         Vector3D c11 = residue1.getAtom(" C1*").getCoordinates();
         Vector3D c12 = residue2.getAtom(" C1*").getCoordinates();
-        MathVector centerC1 = c11.plus(c12).scale(0.5);
-        MathVector approximateMinorMajorDirection = basePairCentroid.minus(centerC1).unit();
+        Vector3D centerC1 = c11.plus(c12).times(0.5).v3();
+        Vector3D approximateMinorMajorDirection = basePairCentroid.minus(centerC1).unit().v3();
 
-        DoubleVector3D basePairDirection = new DoubleVector3D( c12.minus(c11).unit() );
-        MathVector minorMajorDirection = basePairDirection.cross(basePairPlane.getNormal()).unit();
+        Vector3DClass basePairDirection = new Vector3DClass( c12.minus(c11).unit() );
+        Vector3D minorMajorDirection = basePairDirection.cross(basePairPlane.getNormal()).unit().v3();
         // Cross product might point in the exact opposite direction, depending upon base order
         if (minorMajorDirection.dot(approximateMinorMajorDirection) < 0)
-            minorMajorDirection = minorMajorDirection.scale(-1.0);
+            minorMajorDirection = minorMajorDirection.times(-1.0).v3();
         
         // 3) extend minor-major axis to estimate helix center
         // TODO - adjust this distance according to something
-        MathVector helixCenter = centerC1.plus(minorMajorDirection.scale(5.90));
-        return new DoubleVector3D (helixCenter);
+        Vector3D helixCenter = centerC1.plus(minorMajorDirection.times(5.90)).v3();
+        return new Vector3DClass (helixCenter);
     }
     
     public String toString() {

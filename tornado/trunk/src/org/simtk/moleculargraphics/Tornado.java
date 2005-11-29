@@ -286,8 +286,8 @@ implements ResidueActionListener
             BasePair bp = (BasePair) i.next();
             Molecule base1 = bp.getResidue1().get(Nucleotide.baseGroup);
             Molecule base2 = bp.getResidue2().get(Nucleotide.baseGroup);
-            DoubleVector3D centroid1 = base1.getCenterOfMass();
-            DoubleVector3D centroid2 = base2.getCenterOfMass();
+            Vector3DClass centroid1 = base1.getCenterOfMass();
+            Vector3DClass centroid2 = base2.getCenterOfMass();
             Plane3D plane1 = base1.bestPlane3D();
             Plane3D plane2 = base2.bestPlane3D();
             
@@ -668,7 +668,7 @@ implements ResidueActionListener
         public void actionPerformed(ActionEvent e) {
             setWait("Calculating geometry...");
             
-            canvas.setMolecules(moleculeCollection);
+            canvas.setMolecules(moleculeCollection, null);
             
 //            canvas.currentCartoonType = type;
 //
@@ -1119,7 +1119,7 @@ implements ResidueActionListener
         (new CartoonAction(canvas.currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Center camera on new molecule
-        DoubleVector3D com = molecules.getCenterOfMass();
+        Vector3DClass com = molecules.getCenterOfMass();
         canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
 
         // Display sequence of first molecule that has a sequence

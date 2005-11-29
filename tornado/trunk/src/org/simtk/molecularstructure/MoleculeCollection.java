@@ -47,7 +47,7 @@ public class MoleculeCollection {
     Vector atoms = new Vector();
     Vector molecules = new Vector();
 
-    DoubleVector3D centerOfMass = new DoubleVector3D();
+    Vector3DClass centerOfMass = new Vector3DClass();
     double mass = 0;
     
     private String mTitle = "";
@@ -65,7 +65,7 @@ public class MoleculeCollection {
     public double getMass() {
         return mass;
     }
-    public DoubleVector3D getCenterOfMass() {
+    public Vector3DClass getCenterOfMass() {
         if (mass <= 0) return null;
         return centerOfMass;
     }
@@ -151,7 +151,7 @@ public class MoleculeCollection {
 		    molecules.addElement(mol);
 
 		    double myMassProportion = getMass() / (getMass() + mol.getMass());
-		    centerOfMass = new DoubleVector3D( centerOfMass.scale(myMassProportion).plus(
+		    centerOfMass = new Vector3DClass( centerOfMass.scale(myMassProportion).plus(
 		            mol.getCenterOfMass().scale(1.0 - myMassProportion) ) );
 		    
 		    mass += mol.getMass();

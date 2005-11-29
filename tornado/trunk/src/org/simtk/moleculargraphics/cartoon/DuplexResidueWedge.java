@@ -141,7 +141,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         for (Iterator iterDuplex = duplexen.iterator(); iterDuplex.hasNext(); ) {
             Duplex duplex = (Duplex) iterDuplex.next();
             Cylinder duplexCylinder = DuplexCylinderCartoon.doubleHelixCylinder(duplex);
-            Vector3D duplexDirection = new DoubleVector3D( duplexCylinder.getHead().minus(duplexCylinder.getTail()).unit() );
+            MutableVector3D duplexDirection = new Vector3DClass( duplexCylinder.getHead().minus(duplexCylinder.getTail()).unit() );
             Line3D duplexAxis = new Line3D(duplexDirection, duplexCylinder.getTail());
 
             for (Iterator iterBasePair = duplex.basePairs().iterator(); iterBasePair.hasNext(); ) {
@@ -154,18 +154,18 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                 // Put residue position on cylinder axis
                 Vector3D baseCentroid1 = residue1.get(Nucleotide.baseGroup).getCenterOfMass();
                 Vector3D baseCentroid2 = residue2.get(Nucleotide.baseGroup).getCenterOfMass();
-                Vector3D baseCentroid = new DoubleVector3D( baseCentroid1.plus(baseCentroid2).scale(0.5) );
+                Vector3D baseCentroid = new Vector3DClass( baseCentroid1.plus(baseCentroid2).times(0.5) );
                 Vector3D helixCenter = duplexAxis.getClosestPoint(baseCentroid);
 
                 // Put residue normal perpendicular to helix axis, along base-pair direction
                 Vector3D backbonePosition1 = residue1.getBackbonePosition();
                 Vector3D backbonePosition2 = residue2.getBackbonePosition();
                 
-                Vector3D residueDirection = new DoubleVector3D( backbonePosition2.minus(backbonePosition1) );
+                MutableVector3D residueDirection = new Vector3DClass( backbonePosition2.minus(backbonePosition1) );
 
-                Vector3D thirdDirection = new DoubleVector3D( duplexDirection.cross(residueDirection).unit() );
+                Vector3D thirdDirection = new Vector3DClass( duplexDirection.cross(residueDirection).unit() );
                 // Make it all neatly orthogonal
-                residueDirection = thirdDirection.cross(duplexDirection);                
+                residueDirection = (MutableVector3D) thirdDirection.cross(duplexDirection);                
 
                 Residue residues[] = {residue1, residue2};
                 
@@ -198,8 +198,8 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                     lineScalars.InsertNextValue(colorScalar);
                     
                     // Reverse the orientation for the other residue
-                    residueDirection.selfScale(-1.0);
-                    duplexDirection.selfScale(-1.0);
+                    residueDirection.timesEquals(-1.0);
+                    duplexDirection.timesEquals(-1.0);
                 }
             }
         }

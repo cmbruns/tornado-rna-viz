@@ -26,12 +26,9 @@
  */
 package org.simtk.geometry3d;
 
-public class Matrix3DClass implements MutableMatrix3D {
-    private double[][] element = new double[3][3];
+public class Matrix3DClass extends MathMatrixClass implements MutableMatrix3D {
 
-    public void set(int m, int n, double d) {
-        element[m][n] = d;
-    }
+    Matrix3DClass() {super(3,3);}
 
     public void plusEquals(Matrix3D m2) {
         for (int m = 0; m < 3; m++)
@@ -43,24 +40,6 @@ public class Matrix3DClass implements MutableMatrix3D {
         for (int m = 0; m < 3; m++)
             for (int n = 0; n < 3; n++)
                 set(m, n, get(m, n) -  m2.get(m, n));
-    }
-
-    public void timesEquals(double d) {
-        for (int m = 0; m < 3; m++)
-            for (int n = 0; n < 3; n++)
-                set(m, n, get(m, n) * d);
-    }
-
-    public double get(int m, int n) {
-        return element[m][n];
-    }
-
-    public Matrix3D transpose() {
-        MutableMatrix3D answer = new Matrix3DClass();
-        for (int m = 0; m < 3; m++)
-            for (int n = 0; n < 3; n++)
-                answer.set(m, n, get(n, m));
-        return answer;
     }
 
     public Matrix3D plus(Matrix3D m2) {
@@ -76,14 +55,6 @@ public class Matrix3DClass implements MutableMatrix3D {
         for (int m = 0; m < 3; m++)
             for (int n = 0; n < 3; n++)
                 answer.set(m, n, get(m, n) - m2.get(m, n));
-        return answer;
-    }
-
-    public Matrix3D times(double d) {
-        MutableMatrix3D answer = new Matrix3DClass();
-        for (int m = 0; m < 3; m++)
-            for (int n = 0; n < 3; n++)
-                answer.set(m, n, get(m, n) * d);
         return answer;
     }
 
@@ -109,9 +80,4 @@ public class Matrix3DClass implements MutableMatrix3D {
             }
         return answer;
     }
-
-    public double trace() {
-        return get(0,0) + get(1,1) + get(2,2);
-    }
-
 }

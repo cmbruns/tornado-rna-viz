@@ -40,18 +40,18 @@ public class GraphicsCylinder {
         vtkCylinderSource cylinderSource = new vtkCylinderSource();
 
         cylinderSource.SetRadius(c.getRadius());
-        DoubleVector3D center = new DoubleVector3D( c.getHead().plus(c.getTail()).scale(0.5) );
+        Vector3DClass center = new Vector3DClass( c.getHead().plus(c.getTail()).times(0.5) );
         cylinderSource.SetHeight(c.getHead().distance(c.getTail()));
         cylinderSource.SetResolution(resolution);
         
         // Set orientation
         // vtkCylinderSource begins along the y axis
-        DoubleVector3D direction = new DoubleVector3D( c.getHead().minus(c.getTail()).unit() );
-        DoubleVector3D xAxis = new DoubleVector3D(1,0,0);
-        DoubleVector3D yAxis = new DoubleVector3D(0,1,0);
-        DoubleVector3D zAxis = new DoubleVector3D(0,0,1);
+        Vector3DClass direction = new Vector3DClass( c.getHead().minus(c.getTail()).unit() );
+        Vector3DClass xAxis = new Vector3DClass(1,0,0);
+        Vector3DClass yAxis = new Vector3DClass(0,1,0);
+        Vector3DClass zAxis = new Vector3DClass(0,0,1);
         // Project vector onto Y plane
-        DoubleVector3D yProjection = new DoubleVector3D( new DoubleVector3D(direction.getX(), 0, direction.getZ()).unit() );
+        Vector3DClass yProjection = new Vector3DClass( new Vector3DClass(direction.getX(), 0, direction.getZ()).unit() );
         double radiansToDegrees = 180.0 / Math.PI;
         // How far is cylinder tilted from straight up?
         double yRotationAngle = Math.acos(yAxis.dot(direction)) * radiansToDegrees;

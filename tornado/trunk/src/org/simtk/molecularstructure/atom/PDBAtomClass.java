@@ -82,7 +82,7 @@ public class PDBAtomClass implements MutablePDBAtom {
     public Vector3D getCoordinates() {return m_coordinates;}
     public void setCoordinates(Vector3D v) {m_coordinates = v;}
     public double distance(LocatedAtom atom2) {return getCoordinates().distance(atom2.getCoordinates());}
-    public void translate(Vector3D v) {setCoordinates(getCoordinates().plus3(v));}
+    public void translate(Vector3D v) {setCoordinates(getCoordinates().plus(v));}
 
     // MoleculeAtom interface methods
     public void addBond(ChemicalElement atom2) {m_bonds.add(atom2);}
@@ -309,7 +309,7 @@ public class PDBAtomClass implements MutablePDBAtom {
         setChainIdentifier( PDBLine.charAt(21) );
         setResidueNumber( (new Integer(PDBLine.substring(22,26).trim())).intValue());
         setInsertionCode( PDBLine.charAt(26));
-        setCoordinates( new DoubleVector3D(
+        setCoordinates( new Vector3DClass(
 				(new Double(PDBLine.substring(30,38).trim())).doubleValue(),
 				(new Double(PDBLine.substring(38,46).trim())).doubleValue(),
 				(new Double(PDBLine.substring(46,54).trim())).doubleValue() ));

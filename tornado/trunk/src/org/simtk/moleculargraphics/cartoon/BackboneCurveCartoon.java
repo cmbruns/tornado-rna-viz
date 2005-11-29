@@ -167,7 +167,7 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
             
             if ( (backbonePosition != null) && (sideChainPosition != null) ) {
                 linePoints.InsertNextPoint(backbonePosition.getX(), backbonePosition.getY(), backbonePosition.getZ());
-                DoubleVector3D normal = new DoubleVector3D( sideChainPosition.minus(backbonePosition).unit() );
+                Vector3DClass normal = new Vector3DClass( sideChainPosition.minus(backbonePosition).unit() );
                 lineNormals.InsertNextPoint(normal.getX(), normal.getY(), normal.getZ());
                 lineScalars.InsertNextValue(colorScalar);
             }
@@ -218,7 +218,7 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
                         splineZ.Evaluate(t)
                 );
                 
-                DoubleVector3D normal = new DoubleVector3D( (new DoubleVector3D(
+                Vector3DClass normal = new Vector3DClass( (new Vector3DClass(
                         normalSplineX.Evaluate(t),
                         normalSplineY.Evaluate(t),
                         normalSplineZ.Evaluate(t))).unit() );

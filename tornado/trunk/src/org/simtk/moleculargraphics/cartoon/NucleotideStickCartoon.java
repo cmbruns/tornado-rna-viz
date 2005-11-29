@@ -186,20 +186,20 @@ public class NucleotideStickCartoon extends GlyphCartoon {
 
         // Extend rod one Angstrom past the Watson-Crick face atom
         Vector3D rodStart = backboneAtom.getCoordinates();
-        MathVector rodDirection = sideChainAtom.getCoordinates().minus(rodStart);
+        Vector3D rodDirection = sideChainAtom.getCoordinates().minus(rodStart);
         double rodLength = rodDirection.length() + 1.0;
-        rodDirection = rodDirection.unit();
-        MathVector rodEnd = rodStart.plus(rodDirection.scale(rodLength));
+        rodDirection = rodDirection.unit().v3();
+        Vector3D rodEnd = rodStart.plus(rodDirection.times(rodLength)).v3();
         
         Vector3D c = rodStart;
 
-        Vector3D n = new DoubleVector3D( rodDirection ); // direction vector
+        Vector3D n = new Vector3DClass( rodDirection ); // direction vector
 
         // Use sticks to tile path from atom center, c, to bond rodEnd
         int numberOfSticks = (int) Math.ceil(rodLength / stickLength);
 
-        MathVector startStickCenter = c.plus(n.scale(stickLength * 0.5));
-        MathVector endStickCenter = rodEnd.minus(n.scale(stickLength * 0.5));
+        Vector3D startStickCenter = c.plus(n.times(stickLength * 0.5)).v3();
+        Vector3D endStickCenter = rodEnd.minus(n.times(stickLength * 0.5)).v3();
 
         Color color = nucleotide.getDefaultColor();
         if (! (colorIndices.containsKey(color))) {
@@ -209,12 +209,12 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         }
         int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
 
-        MathVector stickCenterVector = endStickCenter.minus(startStickCenter);
+        Vector3D stickCenterVector = endStickCenter.minus(startStickCenter);
         for (int s = 0; s < numberOfSticks; s++) {
             double alpha = 0.0;
             if (numberOfSticks > 1)
                 alpha = s / (numberOfSticks - 1.0);
-            Vector3D stickCenter = new DoubleVector3D( startStickCenter.plus(stickCenterVector.scale(alpha)) );
+            Vector3D stickCenter = new Vector3DClass( startStickCenter.plus(stickCenterVector.times(alpha)) );
         
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());

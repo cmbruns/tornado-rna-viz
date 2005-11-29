@@ -33,7 +33,6 @@ package org.simtk.moleculargraphics;
 
 import java.awt.*;
 import java.awt.image.*;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import vtk.*;
@@ -98,7 +97,7 @@ public class Tornado3DCanvas extends StructureCanvas
         if (useLogoOverlay)
             loadSimtkLogo();
         
-        setUpLights();
+        // setUpLights();
         
         setBackgroundColor(backgroundColor);
         
@@ -106,27 +105,6 @@ public class Tornado3DCanvas extends StructureCanvas
         
         // Required for fog to work?
         // createTestObject();
-    }
-    
-    private void setUpLights() {
-        // Remove or dim that darn initial headlight.
-        lgt.SetIntensity(0.0);
-
-        vtkLightKit lightKit = new vtkLightKit();
-        lightKit.MaintainLuminanceOn();
-
-        lightKit.SetKeyLightIntensity(0.9);
-        lightKit.SetKeyLightWarmth(0.65); // Orange sun
-        lightKit.SetKeyLightAngle(60, -40); // Upper left rear
-        lightKit.SetKeyToHeadRatio(4); // Very dim head light
-        lightKit.SetKeyToFillRatio(3); // Very dim fill light
-        lightKit.SetKeyToBackRatio(3); // Very dim back light
-        
-        lightKit.SetBackLightWarmth(0.32);
-        lightKit.SetFillLightWarmth(0.32);
-        lightKit.SetHeadlightWarmth(0.45);
-        
-        lightKit.AddLightsToRenderer(ren);        
     }
     
     private void loadSimtkLogo() {
@@ -311,7 +289,7 @@ public class Tornado3DCanvas extends StructureCanvas
             UnLock();
             
             // Cause update
-            myResetCameraClippingRange(); // somehow this is needed for screen update
+            resetCameraClippingRange(); // somehow this is needed for screen update
             
             // repaint();
         }
@@ -352,22 +330,15 @@ public class Tornado3DCanvas extends StructureCanvas
         // TODO - create cross-eye view using multiple viewports
     }
         
-    // Don't show all of the actors every time
     public void resetCameraClippingRange() {
-        myResetCameraClippingRange();
-    }
+        super.resetCameraClippingRange();
 
-    public void myResetCameraClippingRange() {
-        
         if (cam == null) return;
 
         float distanceToFocus = (float) cam.GetDistance();
         float frontClip = 0.60f * distanceToFocus;
         float backClip = 2.00f * distanceToFocus;
-        
-        Lock();
-        
-        cam.SetClippingRange(frontClip, backClip);
+
         if ( (doFog) && (gl != null) ) {
             // if (fogLinear) {
                 gl.glFogf(GL.GL_FOG_START, 0.90f * distanceToFocus);
@@ -376,8 +347,6 @@ public class Tornado3DCanvas extends StructureCanvas
             // else 
                 gl.glFogf(GL.GL_FOG_DENSITY, 0.7f / distanceToFocus);                
         }
-        
-        UnLock();
     }
 
     public void testFullScreen() {
@@ -410,41 +379,6 @@ public class Tornado3DCanvas extends StructureCanvas
     public int Lock() {return super.Lock();}
     public int UnLock() {return super.UnLock();}
     
-	public void mouseDragged(MouseEvent event) {
-        // TODO - implement mode for model modification
-        
-        residueActionBroadcaster.lubricateUserInteraction();
-        
-        // Reimpliment interactor
-        int x = event.getX();
-        int y = event.getY();
-
-        if (mouseDragAction == MouseDragAction.CAMERA_ROTATE) // rotate
-            rotateCameraXY(x - lastX, lastY - y);
-        else if (mouseDragAction == MouseDragAction.CAMERA_TRANSLATE) // translate
-            translateCameraXY(x - lastX, lastY - y);
-        else if (mouseDragAction == MouseDragAction.CAMERA_ZOOM) // zoom
-            zoomCamera(Math.pow(1.02,(y - lastY)));
-        else if (mouseDragAction == MouseDragAction.OBJECT_TRANSLATE) { // move selection
-            // System.out.println("move selection");
-            translateMoleculeXY(selectedAtoms, x - lastX, lastY -y);
-        }
-
-	    // super.mouseDragged(event);
-
-        if (event.isControlDown()) {
-            // System.out.println("Control key is down");
-        }
-        else {
-            // System.out.println("Control key is NOT down");
-        }
-        
-        // myResetCameraClippingRange();
-        repaint();
-        lastX = x;
-        lastY = y;
-	}
-	
     boolean pickIsPending = false;
     vtkCellPicker picker = new vtkCellPicker();        
 	public void mouseMoved(MouseEvent event) {
@@ -497,7 +431,7 @@ public class Tornado3DCanvas extends StructureCanvas
         double y = getSize().height - e.getY();
         
         Residue pickedResidue = null;
-        DoubleVector3D pickedPosition = null;
+        Vector3D pickedPosition = null;
         
         Lock();
         
@@ -510,7 +444,7 @@ public class Tornado3DCanvas extends StructureCanvas
             vtkWorldPointPicker picker = new vtkWorldPointPicker(); // Unrelated to models
             int pickResult = picker.Pick(x, y, -100, ren);
             double[] pickedPoint = picker.GetPickPosition();
-            pickedPosition = new DoubleVector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+            pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
         }
 
         else if (false) { // vtkPropPicker
@@ -524,7 +458,7 @@ public class Tornado3DCanvas extends StructureCanvas
             // System.out.println("Picked something");
             double[] pickedPoint = picker.GetPickPosition();
             // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-            pickedPosition = new DoubleVector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+            pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
         }
         
         else if (true) { // vtkCellPicker
@@ -539,7 +473,7 @@ public class Tornado3DCanvas extends StructureCanvas
                 // System.out.println("Picked something");
                 double[] pickedPoint = picker.GetPickPosition();
                 // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-                pickedPosition = new DoubleVector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+                pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
             }
         }
         
@@ -554,7 +488,7 @@ public class Tornado3DCanvas extends StructureCanvas
                 pickedPoint = picker.GetProp3D().GetPosition();
                 
                 // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-                pickedPosition = new DoubleVector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+                pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
 
                 vtkProp3DCollection props3D = picker.GetProp3Ds();
                 // System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
@@ -571,7 +505,7 @@ public class Tornado3DCanvas extends StructureCanvas
                 // System.out.println("Picked something");
                 double[] pickedPoint = picker.GetPickPosition();
                 System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-                pickedPosition = new DoubleVector3D(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
+                pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
                 
                 vtkProp3DCollection props3D = picker.GetProp3Ds();
                 // System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
@@ -640,40 +574,6 @@ public class Tornado3DCanvas extends StructureCanvas
         UnLock();
     }
     
-    public void mousePressed(MouseEvent event) {
-        residueActionBroadcaster.lubricateUserInteraction();
-
-        rw.SetDesiredUpdateRate(5.0);
-        lastX = event.getX();
-        lastY = event.getY();
-        
-        // Button number 2
-        if ( (event.getModifiers() & InputEvent.BUTTON2_MASK) == InputEvent.BUTTON2_MASK ) {
-            // Button number 2
-            mouseDragAction = MouseDragAction.CAMERA_TRANSLATE;
-        }
-        // Button number 3
-        else if ( (event.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK ) {
-            // Button number 3
-            mouseDragAction = MouseDragAction.CAMERA_ZOOM;
-        }
-        else { // Button number 1, or other button, or default button
-            if ( event.isShiftDown() )
-                mouseDragAction = MouseDragAction.CAMERA_TRANSLATE; 
-            else if ( event.isControlDown() )
-                mouseDragAction = MouseDragAction.CAMERA_ZOOM;
-            else if ( currentlyDepressedKeyboardKeys.contains("M") ) {
-                mouseDragAction = MouseDragAction.OBJECT_TRANSLATE;                
-            }
-            else
-                mouseDragAction = MouseDragAction.CAMERA_ROTATE; // Default
-        }
-        
-        // super.mousePressed(event);
-    }
-    public void mouseReleased(MouseEvent event) {
-        super.mouseReleased(event);
-    }
     public void mouseEntered(MouseEvent event) {
         // tornado.resumeRotation();
         // super.mouseEntered(event);
@@ -777,12 +677,12 @@ public class Tornado3DCanvas extends StructureCanvas
         double  FPoint[] = cam.GetFocalPoint() ;
         double  PPoint[] = cam.GetPosition();
 
-        DoubleVector3D oldFocalPoint = new DoubleVector3D(FPoint[0], FPoint[1], FPoint[2]);
-        DoubleVector3D newFocalPoint = r.getCenterOfMass();
-        DoubleVector3D focalShift = new DoubleVector3D( newFocalPoint.minus(oldFocalPoint) );
+        Vector3D oldFocalPoint = new Vector3DClass(FPoint[0], FPoint[1], FPoint[2]);
+        Vector3D newFocalPoint = r.getCenterOfMass();
+        Vector3D focalShift = new Vector3DClass( newFocalPoint.minus(oldFocalPoint) );
 
-        DoubleVector3D oldPosition = new DoubleVector3D(PPoint[0], PPoint[1], PPoint[2]);
-        DoubleVector3D newPosition = new DoubleVector3D( oldPosition.plus(focalShift) );
+        Vector3D oldPosition = new Vector3DClass(PPoint[0], PPoint[1], PPoint[2]);
+        Vector3D newPosition = new Vector3DClass( oldPosition.plus(focalShift) );
         
         Lock();
         cam.SetFocalPoint(newFocalPoint.getX(),newFocalPoint.getY(),newFocalPoint.getZ());
@@ -790,68 +690,6 @@ public class Tornado3DCanvas extends StructureCanvas
         UnLock();
     }
     
-    /**
-     * Rotate the camera about the focal point
-     * @param rotX angle in degrees
-     * @param rotY angle in degrees
-     */
-    void rotateCameraXY(double rotX, double rotY) {
-        if (cam == null) return;
-
-        Lock();
-        cam.Azimuth(-rotX);
-        cam.Elevation(-rotY);
-        cam.OrthogonalizeViewUp();
-        resetCameraClippingRange();
-        if (this.LightFollowCamera == 1)
-          {
-            lgt.SetPosition(cam.GetPosition());
-            lgt.SetFocalPoint(cam.GetFocalPoint());
-          }
-        UnLock();
-    }
-    void zoomCamera(double zoomFactor) {
-        if (cam == null) return;
-        
-        Lock();
-        if (cam.GetParallelProjection() == 1)
-          {
-            cam.SetParallelScale(cam.GetParallelScale()/zoomFactor);
-          }
-        else
-          {
-            cam.Dolly(zoomFactor);
-            myResetCameraClippingRange();
-          }
-        UnLock();
-    }
-    void translateCameraXY(double tX, double tY) {
-        if (cam == null) return;
-        // Apply tX, tY in pixels
-        
-        DoubleVector3D translation = screenToWorldTranslation(tX, tY);
-        
-        double  FPoint[]; // focal point
-        double  PPoint[]; // camera position
-
-        // get the current focal point and position
-        FPoint = cam.GetFocalPoint();
-        PPoint = cam.GetPosition();
-        
-        Lock();
-        
-        cam.SetFocalPoint(
-                          FPoint[0] - translation.getX(),
-                          FPoint[1] - translation.getY(),
-                          FPoint[2] - translation.getZ());
-        cam.SetPosition(
-                        PPoint[0] - translation.getX(),
-                        PPoint[1] - translation.getY(),
-                        PPoint[2] - translation.getZ());
-        UnLock();
-        
-        myResetCameraClippingRange();
-    }
     
     /**
      * Translate molecule in screen coordinates
@@ -861,7 +699,7 @@ public class Tornado3DCanvas extends StructureCanvas
      */
     void translateMoleculeXY(Molecule mol, double tX, double tY) {
         if (mol == null) return;
-        DoubleVector3D translation = screenToWorldTranslation(tX, tY);
+        Vector3D translation = screenToWorldTranslation(tX, tY);
 
         Lock();
 
@@ -876,49 +714,14 @@ public class Tornado3DCanvas extends StructureCanvas
         UnLock();
     }
     
-    /**
-     * Compute the translation in world coordinates that corresponds to the change in screen
-     * coordinates.
-     * @param event
-     * @return
-     */
-    DoubleVector3D screenToWorldTranslation(double tX, double tY) {        
-        double arbitraryScale = 1.0; // was 0.5 in vtkPanel
-        
-        double  FPoint[];
-        double  PPoint[];
-        double  APoint[] = new double[3];
-        double  RPoint[];
-        double focalDepth;
-        
-        // get the current focal point and position
-        FPoint = cam.GetFocalPoint();
-        PPoint = cam.GetPosition();
-        
-        // calculate the focal depth since we'll be using it a lot
-        ren.SetWorldPoint(FPoint[0],FPoint[1],FPoint[2],1.0);
-        ren.WorldToDisplay();
-        focalDepth = ren.GetDisplayPoint()[2];
-        
-        APoint[0] = rw.GetSize()[0]/2.0 + (tX);
-        APoint[1] = rw.GetSize()[1]/2.0 + (tY);
-        APoint[2] = focalDepth;
-        ren.SetDisplayPoint(APoint);
-        ren.DisplayToWorld();
-        RPoint = ren.GetWorldPoint();
-        if (RPoint[3] != 0.0)
-          {
-            RPoint[0] = RPoint[0]/RPoint[3];
-            RPoint[1] = RPoint[1]/RPoint[3];
-            RPoint[2] = RPoint[2]/RPoint[3];
-          }
-        
-        DoubleVector3D translation = new DoubleVector3D(
-                (RPoint[0]-FPoint[0]) * arbitraryScale,
-                (RPoint[1]-FPoint[1]) * arbitraryScale,
-                (RPoint[2]-FPoint[2]) * arbitraryScale
-            );
-        return translation;
+    public void mousePressed(MouseEvent event) {
+        residueActionBroadcaster.lubricateUserInteraction();
+        super.mousePressed(event);
+    }
+
+    public void mouseDragged(MouseEvent event) {
+        residueActionBroadcaster.lubricateUserInteraction();
+        super.mouseDragged(event);
     }
     
     public void keyTyped(KeyEvent e) {

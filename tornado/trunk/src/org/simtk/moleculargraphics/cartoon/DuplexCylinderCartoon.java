@@ -105,39 +105,39 @@ public class DuplexCylinderCartoon extends MolecularCartoonNewWay
         
         // Average the direction of the base plane normals
         // Make the helix axis pass through the centroid of the base pair helix center guesses
-        MathVector helixDirection = new DoubleVector3D(0,0,0);
-        MathVector helixCentroid = new DoubleVector3D(0,0,0);
+        Vector3D helixDirection = new Vector3DClass(0,0,0);
+        Vector3D helixCentroid = new Vector3DClass(0,0,0);
         // Vector<Vector3D> cylinderPoints = new Vector<Vector3D>();
         for (Iterator iterBasePair = h.basePairs().iterator(); iterBasePair.hasNext(); ) {
         // for (int p = 0; p < h.basePairs().size(); p++) {
             BasePair bp = (BasePair) iterBasePair.next();
             
             // Accumulate normals
-            DoubleVector3D normal = bp.getBasePlane().getNormal();
-            if (normal.dot(helixDirection) < 0) normal.selfScale(-1.0);
+            Vector3DClass normal = bp.getBasePlane().getNormal();
+            if (normal.dot(helixDirection) < 0) normal.timesEquals(-1.0);
             helixDirection = helixDirection.plus(normal);
             
             // Accumulate centroid
-            DoubleVector3D helixCenter = bp.getHelixCenter();
+            Vector3DClass helixCenter = bp.getHelixCenter();
             basePairCentroids.put(bp, helixCenter);
             helixCentroid = helixCentroid.plus(helixCenter);
 
             // cylinderPoints.addElement(helixCenter);
         }
-        helixDirection = helixDirection.unit();
-        helixCentroid = helixCentroid.scale(1.0/h.basePairs().size());
-        MathVector helixOffset = helixCentroid.minus(helixDirection.scale(helixDirection.dot(helixCentroid)));
+        helixDirection = helixDirection.unit().v3();
+        helixCentroid = helixCentroid.times(1.0/h.basePairs().size()).v3();
+        Vector3D helixOffset = helixCentroid.minus(helixDirection.times(helixDirection.dot(helixCentroid))).v3();
         
-        Line3D helixAxis = new Line3D( new DoubleVector3D(helixDirection), new DoubleVector3D(helixOffset) );
+        Line3D helixAxis = new Line3D( new Vector3DClass(helixDirection), new Vector3DClass(helixOffset) );
                 
         // Find ends of helix
         TreeMap alphaBasePairs = new TreeMap();
-        DoubleVector3D somePoint = (DoubleVector3D) basePairCentroids.values().iterator().next();
+        Vector3DClass somePoint = (Vector3DClass) basePairCentroids.values().iterator().next();
         double minAlpha = somePoint.dot(helixAxis.getDirection());
         double maxAlpha = minAlpha;
         for (Iterator i = basePairCentroids.keySet().iterator(); i.hasNext(); ) {
             BasePair bp = (BasePair) i.next();
-            DoubleVector3D cylinderPoint = (DoubleVector3D) basePairCentroids.get(bp);
+            Vector3DClass cylinderPoint = (Vector3DClass) basePairCentroids.get(bp);
             double alpha = cylinderPoint.dot(helixAxis.getDirection());
             alphaBasePairs.put(new Double(alpha), bp);
             if (alpha > maxAlpha) maxAlpha = alpha;
@@ -146,11 +146,11 @@ public class DuplexCylinderCartoon extends MolecularCartoonNewWay
         // Extend helix to enclose end base pairs
         minAlpha -= 1.6;
         maxAlpha += 1.6;
-        MathVector cylinderHead = helixAxis.getDirection().scale(maxAlpha).plus(helixAxis.getOrigin());
-        MathVector cylinderTail = helixAxis.getDirection().scale(minAlpha).plus(helixAxis.getOrigin());
+        Vector3D cylinderHead = helixAxis.getDirection().times(maxAlpha).plus(helixAxis.getOrigin()).v3();
+        Vector3D cylinderTail = helixAxis.getDirection().times(minAlpha).plus(helixAxis.getOrigin()).v3();
         
         double cylinderRadius = defaultbarrelRadius;
-        Cylinder cylinder = new Cylinder( new DoubleVector3D(cylinderHead), new DoubleVector3D(cylinderTail), cylinderRadius);
+        Cylinder cylinder = new Cylinder( new Vector3DClass(cylinderHead), new Vector3DClass(cylinderTail), cylinderRadius);
         
         // Populate half cylinders for each residue
         // Using TreeMap data structure to ensure that the alpha values are in increasing order
@@ -175,11 +175,11 @@ public class DuplexCylinderCartoon extends MolecularCartoonNewWay
             // Create cylinder slicing plane using vector between residue atoms
             PDBAtom atom1 = basePair.getResidue1().getAtom(" C1*");
             PDBAtom atom2 = basePair.getResidue2().getAtom(" C1*");
-            MathVector direction = atom2.getCoordinates().minus(atom1.getCoordinates()).unit();
+            Vector3D direction = atom2.getCoordinates().minus(atom1.getCoordinates()).unit().v3();
             // Make sure direction is perpendicular to the helix axis
-            direction = direction.minus(helixDirection.scale(helixDirection.dot(direction))).unit();
+            direction = direction.minus(helixDirection.times(helixDirection.dot(direction))).unit().v3();
             residueNormals.put(basePair.getResidue1(), direction);
-            residueNormals.put(basePair.getResidue2(), direction.scale(-1));
+            residueNormals.put(basePair.getResidue2(), direction.times(-1));
             
             previousAlpha = new Double(alpha);
             previousBasePair = basePair;

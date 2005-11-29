@@ -52,7 +52,7 @@ public class Cylinder {
     public Vector3D getMidpoint() {
         Vector3DClass answer = new Vector3DClass(getHead());
         answer.plusEquals(getTail());
-        answer.selfScale(0.5);
+        answer.timesEquals(0.5);
         return answer;
     }
 

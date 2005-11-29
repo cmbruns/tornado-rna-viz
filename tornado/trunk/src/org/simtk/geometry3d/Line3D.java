@@ -47,7 +47,7 @@ public class Line3D {
     public Line3D() {}
     public Line3D(Vector3D d, Vector3D o) {
         direction = new Vector3DClass(d.unit());
-        origin = new Vector3DClass( o.minus(direction.scale(o.dot(direction))) );
+        origin = new Vector3DClass( o.minus(direction.times(o.dot(direction))) );
     }
 
     public Vector3D getDirection() {return direction;}
@@ -55,7 +55,7 @@ public class Line3D {
 	
     // Closest point on a line to a point in space
     public Vector3D getClosestPoint(Vector3D v) {
-        return new Vector3DClass( origin.plus(direction.scale(direction.dot(v))) );
+        return new Vector3DClass( origin.plus(direction.times(direction.dot(v))) );
     }
     
 	public static Line3D bestLine3D(Vector bagOfPoints)	{
@@ -102,7 +102,7 @@ public class Line3D {
 		answer.direction = new Vector3DClass(largestEigenVector.unit());
 		
 		// Normalize the line offset to be the point closest to the origin
-		answer.origin = new Vector3DClass( centroid.minus( answer.direction.scale(centroid.dot(answer.direction)) ) );
+		answer.origin = new Vector3DClass( centroid.minus( answer.direction.times(centroid.dot(answer.direction)) ) );
 		
 		return answer;
 	}

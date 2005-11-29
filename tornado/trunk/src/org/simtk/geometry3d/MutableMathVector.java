@@ -38,5 +38,5 @@ public interface MutableMathVector extends MathVector {
     public void plusEquals(MathVector v2);    
     public void minusEquals(MathVector v2);    
     public void selfUnit();    
-    public void selfScale(double s);
+    public void timesEquals(double s);
 }

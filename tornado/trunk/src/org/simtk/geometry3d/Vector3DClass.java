@@ -60,7 +60,7 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
     }
 
     public void copy(MathVector v2) {
-        if (v2.dimension() != 3) throw new VectorSizeException();
+        if (v2.getDimension() != 3) throw new VectorSizeException();
         super.copy(v2);
     }
 
@@ -80,7 +80,7 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
     
     public MathVector scale(double scale) {
         MutableVector3D answer = new Vector3DClass(this);
-        answer.selfScale(scale);
+        answer.timesEquals(scale);
         return answer;
     }
 
@@ -126,10 +126,10 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
         double weight = 1.0;
         for (int i = 0; i < coordinates.length; i++) {
             if (weights != null) weight = weights[i];
-            centroid.plusEquals(coordinates[i].scale(weight));
+            centroid.plusEquals(coordinates[i].times(weight));
             totalWeight += weight;
         }
-        centroid.selfScale(1.0/totalWeight);
+        centroid.timesEquals(1.0/totalWeight);
         return centroid;
     }
     
@@ -169,9 +169,9 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
     public Vector3D rotate(Vector3D axis, double angle) {
         double cosAngle = Math.cos(angle);
         MutableVector3D answer = new Vector3DClass(this);
-        answer.selfScale(cosAngle);
-        answer.plusEquals( (axis.scale(axis.dot(this) * (1.0 - cosAngle))).plus
-        (this.cross(axis).scale(Math.sin(angle))) );
+        answer.timesEquals(cosAngle);
+        answer.plusEquals( (axis.times(axis.dot(this) * (1.0 - cosAngle))).plus
+        (this.cross(axis).times(Math.sin(angle))) );
         return answer;
     }
 }

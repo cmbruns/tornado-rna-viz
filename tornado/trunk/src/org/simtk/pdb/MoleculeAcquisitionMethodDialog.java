@@ -48,7 +48,9 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
     String defaultPdbId = "1MRP";
     private String pdbId = null;
     
-    private volatile boolean isLoadingFile = false;
+    private LoadPDBProcess loadPDBProcess = null;
+    private ProgressManager progressManager = null;
+    
     SimpleObservable fileLoadObservable = new SimpleObservable();
     
     Cursor waitCursor = new Cursor(Cursor.WAIT_CURSOR);
@@ -80,8 +82,10 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
    private void setButtonsAreEnabled(boolean buttonsAreEnabled) {
        loadFileButton.setEnabled(buttonsAreEnabled);
        webPDBButton.setEnabled(buttonsAreEnabled);
-       // TODO the cancel button should be able to top the load process
-       cancelButton.setEnabled(buttonsAreEnabled);
+
+       // The cancel button should be left enabled to stop the load process
+       // cancelButton.setEnabled(buttonsAreEnabled);
+
        idField.setEnabled(buttonsAreEnabled);
    }
    
@@ -180,9 +184,6 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
     protected String getPdbId() {return pdbId;}
     
     public void actionPerformed(ActionEvent e) {
-        // Don't launch a second process if a previous one is not complete
-        if (isLoadingFile) return;
-        
 
         setPdbId(null);
         
@@ -191,23 +192,25 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
             // Load molecule from file using file browser dialog
 
             // Tell everyone we are busy
-            isLoadingFile = true;
-            setCursor(waitCursor);
-            setButtonsAreEnabled(false);
+            inactivate();
 
             String [] extensions = {"pdb", "pqr"};
             if (moleculeFileChooser == null) moleculeFileChooser = new MoleculeFileChooser(parent, extensions);
 
+            // Hide first dialog while the file chooser is shown
+            setVisible(false);
+
             File inputFile = moleculeFileChooser.getFile();
 
-            LoadFilePDBProcess loadFilePDBProcess = 
+            loadPDBProcess = 
                 new LoadFilePDBProcess(inputFile, fileLoadObservable);
-            loadFilePDBProcess.start();
+            loadPDBProcess.start();
             
             // And another process to monitor the download process
-            ProgressManager progressManager = 
-                new ProgressManager(loadFilePDBProcess, this, "Loading structure " + inputFile.getName());
+            progressManager = 
+                new ProgressManager(loadPDBProcess, this, "Loading structure " + inputFile.getName());
             progressManager.start();
+
         }
 
         // Download structure from PDB web site
@@ -215,10 +218,8 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
              (e.getSource() == idField) ) {
 
             // Tell everyone we are busy
-            isLoadingFile = true;
-            setCursor(waitCursor);
-            setButtonsAreEnabled(false);
-
+            inactivate();
+            
             // Load PDB molecule from the internet
             String pdbId = idField.getText().trim().toLowerCase();
             
@@ -228,50 +229,74 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
                 isBioUnit = false;
             
             // Start the background download process
-            LoadWebPDBProcess loadWebPDBProcess = new LoadWebPDBProcess(pdbId, isBioUnit, fileLoadObservable);
-            loadWebPDBProcess.start();
+            loadPDBProcess = new LoadWebPDBProcess(pdbId, isBioUnit, fileLoadObservable);
+            loadPDBProcess.start();
 
             // And another process to monitor the download process
-            ProgressManager progressManager = 
-                new ProgressManager(loadWebPDBProcess, this, "Downloading structure " + idField.getText());
+            progressManager = 
+                new ProgressManager(loadPDBProcess, this, "Downloading structure " + idField.getText());
             progressManager.start();
+            
+            setVisible(false);
         }
         
         // Cancel
         else if ( e.getSource() == cancelButton ) {
-            setVisible(false);
-        }
-    }
-    
-    public void finishLoad(boolean isSuccessful) {
-        if (isSuccessful) {
+            System.out.println("cancel");
             
-        } else {
-            
+            // allow process to continue, but ignore it, because
+            //  this cancel routine seems to block
+            cancelDownload(); // try to stop thread
+
+            // forget that the process was ever our friend
+            loadPDBProcess = null;
+            reactivate();
+            setVisible(false); // hide dialog
         }
     }
 
     // Respond to successful file load
     public void update(Observable observable, Object object) {
-        if (observable == fileLoadObservable) {
-            
-            if (object == null) { // failed to load
-                // TODO - error dialog
-            }
-            else if (object instanceof MoleculeCollection) {
-                MoleculeCollection molecules = (MoleculeCollection) object;
-                
-                // Let derived classes do whatever they want with the molecule
-                readStructureFromMoleculeCollection(molecules);
+        // System.out.println("update load PDB");
+        // System.out.println("  object = " + object);
+        // System.out.println("  loadPDBProcess = " + loadPDBProcess);
+        
+        // Don't respond to stale processes
+        if (object != loadPDBProcess) return;
 
-                setVisible(false); // close window on success
-            }
+        if (loadPDBProcess.isSuccessful()) {
+            MoleculeCollection molecules = loadPDBProcess.getMolecules();
+            readStructureFromMoleculeCollection(molecules);
+            setVisible(false); // Hide dialog after success
         }
         
-        // Reactivate dialog
+        reactivate();
+    }
+    
+    /**
+     * Cancel download in progress
+     */
+    void cancelDownload() {
+
+        if ( (progressManager != null) &&
+             (progressManager.isAlive()) ) {
+            progressManager.abort();
+        }
+        
+        // if ( (loadPDBProcess != null) &&
+        //    (loadPDBProcess.isAlive()) ) {
+        //   loadPDBProcess.abort();
+        //}
+    }
+    
+    public void reactivate() {
         setButtonsAreEnabled(true);
         setCursor(defaultCursor);
-        isLoadingFile = false; // Permit new loading operations
+    }
+    
+    public void inactivate() {
+        setButtonsAreEnabled(false);
+        setCursor(waitCursor);
     }
 }
 
@@ -297,23 +322,43 @@ class MoleculeFileChooser extends JFileChooser {
     }
 }
 
-class LoadPDBProcess extends Thread implements MonitoredProcess {
-    boolean m_isSuccessful = false; // Only set true in case of success
-    private boolean m_isFailed = false;
-    private SimpleObservable m_loadMoleculeObservable;
+abstract class LoadPDBProcess extends Thread implements MonitoredProcess {
+    private volatile boolean m_isSuccessful = false; // Only set true in case of success
+    private volatile boolean m_isFailed = false;
+    private volatile SimpleObservable m_loadMoleculeObservable;
     protected volatile MoleculeCollection molecules = null;
-
+    private volatile InputStream m_inputStream;
+    private volatile boolean isCancelled = false;
+    
     LoadPDBProcess(SimpleObservable loadMoleculeObservable) {
         m_loadMoleculeObservable = loadMoleculeObservable;
     }
     
-    protected void loadMolecules() throws IOException, InterruptedException {}
+    abstract InputStream getInputStream() throws IOException;
+
+    public synchronized void cancelLoad() {
+        isCancelled = true;
+        try {
+            getInputStream().close();
+        } catch (IOException exc) {}
+        interrupt();
+    }
+    
+    protected void loadMolecules() throws IOException, InterruptedException {
+        molecules = new MoleculeCollection();
+        molecules.loadPDBFormat(getInputStream());
+    }
+    
+    public synchronized MoleculeCollection getMolecules() {return molecules;}
     
     public void run() {
         try {
             loadMolecules();
             
-            reportSuccess();
+            if (isCancelled)
+                reportFailure();
+            else
+                reportSuccess();
             
         } catch (IOException exc) {
             reportFailure();
@@ -330,7 +375,7 @@ class LoadPDBProcess extends Thread implements MonitoredProcess {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 m_loadMoleculeObservable.setChanged();
-                m_loadMoleculeObservable.notifyObservers(molecules);                    
+                m_loadMoleculeObservable.notifyObservers(LoadPDBProcess.this);                    
             }
         });
     }
@@ -342,25 +387,27 @@ class LoadPDBProcess extends Thread implements MonitoredProcess {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 m_loadMoleculeObservable.setChanged();
-                m_loadMoleculeObservable.notifyObservers(null);                    
+                m_loadMoleculeObservable.notifyObservers(LoadPDBProcess.this);                    
             }
         });        
     }
     
     // MonitoredProcess interface
-    public void abort() {
-        interrupt();
-    }    
+    public synchronized void abort() {
+        cancelLoad();
+    }   
+    
     public int getProgress() {return 0;} // TODO
     public int getMinimum() {return 0;} // TODO
     public int getMaximum() {return 0;} // TODO
     public boolean isFailed() {return m_isFailed;}
-    public boolean isSuccessful() {return m_isSuccessful;}
+    public boolean isSuccessful() {return ( (m_isSuccessful) && (!isCancelled) );}
 }
 
 class LoadWebPDBProcess extends LoadPDBProcess {
     private boolean m_isBioUnit;
     private String m_pdbId;
+    private volatile InputStream m_inputStream;
     
     LoadWebPDBProcess(String pdbId, boolean isBioUnit, SimpleObservable loadMoleculeObservable) {
         super(loadMoleculeObservable);
@@ -368,9 +415,13 @@ class LoadWebPDBProcess extends LoadPDBProcess {
         m_pdbId = pdbId;
     }
     
+    InputStream getInputStream() throws IOException {
+        if (m_inputStream == null) m_inputStream = WebPDB.getWebPDBStream(m_pdbId, m_isBioUnit);
+        return m_inputStream;
+    }
+    
     protected void loadMolecules() throws IOException, InterruptedException {
-        InputStream webStream = WebPDB.getWebPDBStream(m_pdbId, m_isBioUnit);
-
+        super.loadMolecules();
         
         // Remember file name
         URL pdbUrl = WebPDB.getWebPdbUrl(m_pdbId, m_isBioUnit);
@@ -380,8 +431,6 @@ class LoadWebPDBProcess extends LoadPDBProcess {
         int pathEnd = fileName.lastIndexOf("/");
         if (pathEnd >= 0) fileName = fileName.substring(pathEnd + 1);
 
-        molecules = new MoleculeCollection();
-        molecules.loadPDBFormat(webStream);            
         molecules.setInputStructureFileName(fileName);
         if (m_pdbId != null) molecules.setPdbId(m_pdbId);
     }
@@ -389,13 +438,18 @@ class LoadWebPDBProcess extends LoadPDBProcess {
 
 class LoadFilePDBProcess extends LoadPDBProcess {
     private File m_file;
+    private InputStream m_inputStream = null;
+
     LoadFilePDBProcess(File file, SimpleObservable loadMoleculeObservable) {
         super(loadMoleculeObservable);
         m_file = file;
     }
+    InputStream getInputStream() throws IOException {
+        if (m_inputStream == null) m_inputStream = new FileInputStream(m_file);
+        return m_inputStream;
+    }
     protected void loadMolecules() throws IOException, InterruptedException {
-        molecules = new MoleculeCollection();
-        molecules.loadPDBFormat(new FileInputStream(m_file));
+        super.loadMolecules();
         molecules.setInputStructureFileName(m_file.getName());
     }
 }

@@ -112,17 +112,17 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		     }
 		 }
 
-		 addCylinder(new DoubleVector3D(-4.1, 2.5, -16.2), new DoubleVector3D(5.6, 3.5, -24.2), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(12.1, -69.2, -33.3), new DoubleVector3D(7.5, -51.0, -37.3), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(10.4, -27.7, 11.0), new DoubleVector3D(15.7, -23.1, 6.0), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(-2.3, -21.6, -40.2), new DoubleVector3D(-0.6, -8.3, -30.9), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(-48.5, -55.3, -46.0), new DoubleVector3D(-13.2, -46.3, -30.4), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(-21.4, -46.0, -30.9), new DoubleVector3D(-6.1, -31.6, -24.2), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(-4.8, -36.5, -39.8), new DoubleVector3D(0.1, -46.1, -46.9), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(-33.2, -44.7, -15.9), new DoubleVector3D(-12.9, -42.2, 1.2), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(-2.9, -25.2, 11.1), new DoubleVector3D(6.1, -27.5, 14.0), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(4.7, -10.7, -3.6), new DoubleVector3D(-5.3, -3.2, -16.4), 10.0, 20, Color.GRAY);
-		 addCylinder(new DoubleVector3D(23.0, -17.3, -1.1), new DoubleVector3D(-14.5, -30.8, -31.1), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(-4.1, 2.5, -16.2), new Vector3DClass(5.6, 3.5, -24.2), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(12.1, -69.2, -33.3), new Vector3DClass(7.5, -51.0, -37.3), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(10.4, -27.7, 11.0), new Vector3DClass(15.7, -23.1, 6.0), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(-2.3, -21.6, -40.2), new Vector3DClass(-0.6, -8.3, -30.9), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(-48.5, -55.3, -46.0), new Vector3DClass(-13.2, -46.3, -30.4), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(-21.4, -46.0, -30.9), new Vector3DClass(-6.1, -31.6, -24.2), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(-4.8, -36.5, -39.8), new Vector3DClass(0.1, -46.1, -46.9), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(-33.2, -44.7, -15.9), new Vector3DClass(-12.9, -42.2, 1.2), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(-2.9, -25.2, 11.1), new Vector3DClass(6.1, -27.5, 14.0), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(4.7, -10.7, -3.6), new Vector3DClass(-5.3, -3.2, -16.4), 10.0, 20, Color.GRAY);
+		 addCylinder(new Vector3DClass(23.0, -17.3, -1.1), new Vector3DClass(-14.5, -30.8, -31.1), 10.0, 20, Color.GRAY);
 
 		 // rw.StereoRenderOn();
 	}
@@ -198,11 +198,11 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		// Change orientation from straight up
 		vtkTransform orientation = new vtkTransform();
 		// Project vector onto Z plane
-		DoubleVector3D direction = new DoubleVector3D( head.minus(tail).unit() );
-		DoubleVector3D xAxis = new DoubleVector3D(1,0,0);
-		DoubleVector3D yAxis = new DoubleVector3D(0,1,0);
-		DoubleVector3D zAxis = new DoubleVector3D(0,0,1);
-		DoubleVector3D yProjection = new DoubleVector3D (new DoubleVector3D(direction.getX(), 0, direction.getZ()).unit() );
+		Vector3DClass direction = new Vector3DClass( head.minus(tail).unit() );
+		Vector3DClass xAxis = new Vector3DClass(1,0,0);
+		Vector3DClass yAxis = new Vector3DClass(0,1,0);
+		Vector3DClass zAxis = new Vector3DClass(0,0,1);
+		Vector3DClass yProjection = new Vector3DClass (new Vector3DClass(direction.getX(), 0, direction.getZ()).unit() );
 
 		// How far is cylinder tilted from straight up?
 		double yRotationAngle = Math.acos(yAxis.dot(direction)) * radiansToDegrees;
@@ -213,7 +213,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		if (direction.getX() < 0) zRotationAngle *= -1.0;
 
 		// Translate cylinder
-		DoubleVector3D center = new DoubleVector3D( head.plus(tail).scale(0.5) );
+		Vector3DClass center = new Vector3DClass( head.plus(tail).times(0.5) );
 
 		
 		orientation.Translate(center.getX(), center.getY(), center.getZ());

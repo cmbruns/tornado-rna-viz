@@ -31,33 +31,125 @@
  */
 package org.simtk.geometry3d;
 
-public class MathMatrixClass {
+public class MathMatrixClass implements MutableMathMatrix {
     private double m_matrix[][];
 
     public MathMatrixClass(int  m, int n) {
-        m_matrix = new double[m][n];
+        initialize(m, n);
     }
 
-    double get(int i, int j) {return m_matrix[i][j];}
+    public MathMatrixClass(MathMatrix m) {
+        initialize(m);
+    }
 
-    void set(int i, int j, double d) {m_matrix[i][j] = d;}
+    private void initialize(int m, int n) {
+        m_matrix = new double[m][n];        
+    }
+    
+    private void initialize(MathMatrix m) {
+        initialize(m.getRowCount(), m.getColumnCount());
+        for (int i = 0; i < getRowCount(); i++)
+            for (int j = 0; j < getColumnCount(); j++)
+                set(i, j, m.get(i, j));
+    }
+    
+    public double get(int i, int j) {return m_matrix[i][j];}
 
-    public int rowCount() {return m_matrix.length;}
-    public int columnCount() {
-        if (rowCount() < 1) return 0; 
+    public void set(int i, int j, double d) {
+        m_matrix[i][j] = d;
+    }
+
+    public MathMatrix transpose() {
+        MutableMathMatrix answer = new MathMatrixClass(getColumnCount(), getRowCount());
+        for (int m = 0; m < getColumnCount(); m++)
+            for (int n = 0; n < getRowCount(); n++)
+                answer.set(m, n, get(n, m));
+        return answer;
+    }
+
+    public void plusEquals(MathMatrix m2) {
+        for (int m = 0; m < getRowCount(); m++)
+            for (int n = 0; n < getColumnCount(); n++)
+                set(m, n, get(m, n) +  m2.get(m, n));
+    }
+
+    public void minusEquals(MathMatrix m2) {
+        for (int m = 0; m < getRowCount(); m++)
+            for (int n = 0; n < getColumnCount(); n++)
+                set(m, n, get(m, n) -  m2.get(m, n));
+    }
+
+    public void timesEquals(double d) {
+        for (int m = 0; m < getRowCount(); m++)
+            for (int n = 0; n < getColumnCount(); n++)
+                set(m, n, get(m, n) * d);
+    }
+
+    public int getRowCount() {return m_matrix.length;}
+    public int getColumnCount() {
+        if (getRowCount() < 1) return 0; 
         return m_matrix[0].length;
     }
     
-    public MathMatrixClass times(MathMatrixClass m2) {
-        if ( columnCount() != m2.rowCount() ) throw new RuntimeException("Matrix size mismatch");
-        MathMatrixClass answer = new MathMatrixClass(rowCount(), m2.columnCount());
-        for (int i = 0; i < rowCount(); i++)
-            for (int j = 0; j < m2.columnCount(); j++) {
+    public MathMatrix plus(MathMatrix m2) {
+        if ( getColumnCount() != m2.getColumnCount() ) throw new MatrixSizeMismatchException();
+        if ( getRowCount() != m2.getRowCount() ) throw new MatrixSizeMismatchException();
+        MutableMathMatrix answer = new MathMatrixClass(this);
+        for (int m = 0; m < getRowCount(); m++)
+            for (int n = 0; n < getColumnCount(); n++)
+                answer.set(m, n, get(m, n) + m2.get(m, n));
+        return answer;
+    }
+
+    public MathMatrix minus(MathMatrix m2) {
+        if ( getColumnCount() != m2.getColumnCount() ) throw new MatrixSizeMismatchException();
+        if ( getRowCount() != m2.getRowCount() ) throw new MatrixSizeMismatchException();
+        MutableMathMatrix answer = new MathMatrixClass(this);
+        for (int m = 0; m < getRowCount(); m++)
+            for (int n = 0; n < getColumnCount(); n++)
+                answer.set(m, n, get(m, n) - m2.get(m, n));
+        return answer;
+    }
+
+    public MathMatrix times(MathMatrix m2) {
+        if ( getColumnCount() != m2.getRowCount() ) throw new MatrixSizeMismatchException();
+        MathMatrixClass answer = new MathMatrixClass(getRowCount(), m2.getColumnCount());
+        for (int i = 0; i < getRowCount(); i++)
+            for (int j = 0; j < m2.getColumnCount(); j++) {
                 double delta = 0;
-                for (int k = 0; k < columnCount(); k++)
+                for (int k = 0; k < getColumnCount(); k++)
                     delta += get(i, k) * m2.get(k, j);
                 answer.set(i, j, delta);
             }
         return answer;
     }
+
+    public MathVector times(MathVector v) {
+        if ( getColumnCount() != v.getDimension() ) throw new MatrixSizeMismatchException();
+        MutableMathVector answer = new MathVectorClass(getRowCount());
+        for (int i = 0; i < getRowCount(); i++) {
+            double d = 0;
+            for (int j = 0; j < getColumnCount(); j++)
+                d += v.get(j) * get(i, j);
+            answer.set(i, d);
+        }
+        return answer;
+    }
+
+    public MathMatrix times(double d) {
+        MathMatrixClass answer = new MathMatrixClass(this);
+        for (int i = 0; i < getRowCount(); i++)
+            for (int j = 0; j < getColumnCount(); j++)
+                answer.set(i, j, get(i, j) * d);
+        return answer;
+    }
+
+    public double trace() {
+        int diagonalLength = Math.min(getRowCount(), getColumnCount());
+        double d = 0.0;
+        for (int i = 0; i < diagonalLength; i ++)
+            d += get(i, i);
+        return d;
+    }
+
 }

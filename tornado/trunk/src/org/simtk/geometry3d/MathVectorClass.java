@@ -62,8 +62,8 @@ public class MathVectorClass implements MutableMathVector {
      * @param v2
      */
     public void copy(MathVector v2) {
-        initialize(v2.dimension());
-        for (int i = 0; i < dimension(); i++) {
+        initialize(v2.getDimension());
+        for (int i = 0; i < getDimension(); i++) {
             set(i, v2.get(i));
         }        
     }
@@ -72,12 +72,12 @@ public class MathVectorClass implements MutableMathVector {
         m_array[i] = d;
     }
 
-    public int dimension() {return m_array.length;}
+    public int getDimension() {return m_array.length;}
     
     public MathVector plus(MathVector v2) {
         checkDimension(v2);
-        MutableMathVector answer = new MathVectorClass(dimension());
-        for (int i = 0; i < dimension(); i++) {
+        MutableMathVector answer = new MathVectorClass(getDimension());
+        for (int i = 0; i < getDimension(); i++) {
             answer.set(i, get(i) + v2.get(i));
         }
         return answer;
@@ -85,22 +85,22 @@ public class MathVectorClass implements MutableMathVector {
     
     public void plusEquals(MathVector v2) {
         checkDimension(v2);
-        for (int i = 0; i < dimension(); i++) {
+        for (int i = 0; i < getDimension(); i++) {
             set(i, get(i) + v2.get(i));
         }        
     }
     
     public void minusEquals(MathVector v2) {
         checkDimension(v2);
-        for (int i = 0; i < dimension(); i++) {
+        for (int i = 0; i < getDimension(); i++) {
             set(i, get(i) - v2.get(i));
         }        
     }
     
     public MathVector minus(MathVector v2) {
         checkDimension(v2);
-        MutableMathVector answer = new MathVectorClass(dimension());
-        for (int i = 0; i < dimension(); i++) {
+        MutableMathVector answer = new MathVectorClass(getDimension());
+        for (int i = 0; i < getDimension(); i++) {
             answer.set(i, get(i) - v2.get(i));
         }
         return answer;
@@ -109,7 +109,7 @@ public class MathVectorClass implements MutableMathVector {
     public double dot(MathVector v2) {
         checkDimension(v2);
         double answer = 0;
-        for (int i = 0; i < dimension(); i++) {
+        for (int i = 0; i < getDimension(); i++) {
             answer += ( get(i) * v2.get(i) );
         }
         return answer;
@@ -133,31 +133,31 @@ public class MathVectorClass implements MutableMathVector {
     }
     
     public MathVector unit() {
-        return this.scale(1.0/length());
+        return this.times(1.0/length());
     }
     
     public void selfUnit() {        
         double scale = length();
         if (scale > 0) scale = 1.0/scale;
-        this.selfScale(scale);
+        this.timesEquals(scale);
     }
     
-    public MathVector scale(double s) {
-        MutableMathVector answer = new MathVectorClass(dimension());
-        for (int i = 0; i < dimension(); i++) {
+    public MathVector times(double s) {
+        MutableMathVector answer = new MathVectorClass(getDimension());
+        for (int i = 0; i < getDimension(); i++) {
             answer.set(i, get(i) * s);
         }
         return answer;
     }
     
-    public void selfScale(double s) {
-        for (int i = 0; i < dimension(); i++) {
+    public void timesEquals(double s) {
+        for (int i = 0; i < getDimension(); i++) {
             set(i, get(i) * s);
         }
     }
     
     private void checkDimension(MathVector v2) {
-        if ( dimension() != v2.dimension() ) throw new VectorSizeException("Vector inner product dimension mismatch");        
+        if ( getDimension() != v2.getDimension() ) throw new VectorSizeException("Vector inner product dimension mismatch");        
     }
     
     public Iterator iterator() {
@@ -166,7 +166,7 @@ public class MathVectorClass implements MutableMathVector {
     
     public Vector3D v3() {
         if (this instanceof Vector3D) return (Vector3D) this;
-        if ( dimension() != 3 ) throw new VectorSizeException("Vector3D must have exactly three coordinates");
+        if ( getDimension() != 3 ) throw new VectorSizeException("Vector3D must have exactly three coordinates");
         return new Vector3DClass(this);
     }
     
@@ -180,7 +180,7 @@ public class MathVectorClass implements MutableMathVector {
         }
         
         public boolean hasNext() {
-            if (elementIndex >= vector.dimension()) return false;
+            if (elementIndex >= vector.getDimension()) return false;
             else return true;
         }
 
@@ -199,9 +199,9 @@ public class MathVectorClass implements MutableMathVector {
     public String toString() {
         String answer = "";
         answer += "(";
-        for (int i = 0; i < dimension(); i++) {
+        for (int i = 0; i < getDimension(); i++) {
             answer += get(i);
-            if (i < (dimension() - 1))
+            if (i < (getDimension() - 1))
                 answer += ", ";
         }
         answer += ")";

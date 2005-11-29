@@ -41,7 +41,17 @@ public class HomogeneousTransformClass extends MathMatrixClass implements Homoge
 
     public HomogeneousTransformClass() { super(4,4); }
     
+    public Vector3D getTranslation() {
+        return new Vector3DClass(get(3,0), get(3,1), get(3,2));
+    }
     
+    public Matrix3D getRotation() {
+        MutableMatrix3D answer = new Matrix3DClass();
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                answer.set(i, j, get(i, j));
+        return answer;
+    }
     
     public Vector3D times(Vector3D v) {
         Vector3DClass answer = new Vector3DClass();

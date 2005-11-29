@@ -55,13 +55,13 @@ public class Molecule extends MoleculeMVCModel {
     // protected Vector<Bond> bonds = new Vector<Bond>();
 	// Vector bonds = new Vector();
 
-    DoubleVector3D centerOfMass = new DoubleVector3D();
+    Vector3DClass centerOfMass = new Vector3DClass();
     double mass = 0;
 
     public double getMass() {
         return mass;
     }
-    public DoubleVector3D getCenterOfMass() {
+    public Vector3DClass getCenterOfMass() {
         if (mass <= 0) return null;
         return centerOfMass;
     }
@@ -127,13 +127,16 @@ public class Molecule extends MoleculeMVCModel {
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
             PDBAtom atom = (PDBAtom) i.next();
             
-            atom.getCoordinates().setX(actualCoordinateArray[coordinateIndex]);
+            // Make coordinates changeable
+            MutableVector3D coord = (MutableVector3D) atom.getCoordinates();
+            
+            coord.setX(actualCoordinateArray[coordinateIndex]);
             coordinateIndex++;
             
-            atom.getCoordinates().setY(actualCoordinateArray[coordinateIndex]);
+            coord.setY(actualCoordinateArray[coordinateIndex]);
             coordinateIndex++;
             
-            atom.getCoordinates().setZ(actualCoordinateArray[coordinateIndex]);
+            coord.setZ(actualCoordinateArray[coordinateIndex]);
             coordinateIndex++;
         }
 
@@ -188,7 +191,7 @@ public class Molecule extends MoleculeMVCModel {
     }
     
     public Plane3D bestPlane3D() {
-        Vector3D[] coordinates = new DoubleVector3D[getAtomCount()];
+        Vector3D[] coordinates = new Vector3DClass[getAtomCount()];
         double[] masses = new double[getAtomCount()];
 
         int a = 0;
@@ -208,7 +211,7 @@ public class Molecule extends MoleculeMVCModel {
         atoms.add(atom);
         mass += atom.getMass();
         double massRatio = atom.getMass() / mass;
-        centerOfMass = new DoubleVector3D( centerOfMass.scale(1.0 - massRatio).plus(atom.getCoordinates().scale(massRatio)) );
+        centerOfMass = new Vector3DClass( centerOfMass.scale(1.0 - massRatio).plus(atom.getCoordinates().times(massRatio)) );
     }
 
     public void removeAtom(PDBAtom atom) {
@@ -217,7 +220,7 @@ public class Molecule extends MoleculeMVCModel {
         atoms.remove(atom);
         double massRatio = atom.getMass() / mass;
         mass -= atom.getMass();
-        centerOfMass = new DoubleVector3D( centerOfMass.scale(1.0 - massRatio).minus(atom.getCoordinates().scale(massRatio)) );
+        centerOfMass = new Vector3DClass( centerOfMass.scale(1.0 - massRatio).minus(atom.getCoordinates().times(massRatio)) );
     }
     
     public boolean containsAtom(PDBAtom atom) {
