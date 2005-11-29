@@ -37,9 +37,38 @@ package org.simtk.geometry3d;
   * 
   * 4x4 matrix that includes both rotation and translation components
  */
-public class HomogeneousTransformClass extends MathMatrixClass implements HomogeneousTransform {
+public class HomogeneousTransformClass extends MathMatrixClass implements MutableHomogeneousTransform {
 
-    public HomogeneousTransformClass() { super(4,4); }
+    public HomogeneousTransformClass() { 
+        super(4, 4, 0.0);
+        initialize();
+    }
+    
+    public HomogeneousTransformClass(MathMatrix m) { 
+        super(4, 4);
+        if ( (m.getRowCount() != 4) || (m.getColumnCount() != 4) )
+            throw new MatrixSizeMismatchException();
+        copy(m);
+    }
+    
+    private void initialize() {
+        // Put ones on the diagonal
+        set(0, 0, 1.0);
+        set(1, 1, 1.0);
+        set(2, 2, 1.0);
+        set(3, 3, 1.0);        
+    }
+    
+    public void setTranslation(Vector3D t) {
+        for (int i = 0; i < 3; i++)
+            set(3, i, t.get(i));
+    }
+    
+    public void setRotation(Matrix3D r) {
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                set(i, j, r.get(i, j));
+    }
     
     public Vector3D getTranslation() {
         return new Vector3DClass(get(3,0), get(3,1), get(3,2));
@@ -75,5 +104,11 @@ public class HomogeneousTransformClass extends MathMatrixClass implements Homoge
         }
         
         return answer;
+    }
+    
+    public HomogeneousTransform times(HomogeneousTransform m) {
+        MutableHomogeneousTransform answer = new HomogeneousTransformClass(this);
+        answer.timesEquals(m);
+        return m;
     }
 }

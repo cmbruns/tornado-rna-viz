@@ -29,6 +29,14 @@ package org.simtk.geometry3d;
 public class Matrix3DClass extends MathMatrixClass implements MutableMatrix3D {
 
     Matrix3DClass() {super(3,3);}
+    Matrix3DClass(MathMatrix m) {
+        super(3,3);
+        if ( (m.getRowCount() != 3) || (m.getColumnCount() != 3) )
+            throw new MatrixSizeMismatchException("Cannot construct Matrix3D from non 3x3 matrix");
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                set(i, j, m.get(i, j));
+    }
 
     public void plusEquals(Matrix3D m2) {
         for (int m = 0; m < 3; m++)

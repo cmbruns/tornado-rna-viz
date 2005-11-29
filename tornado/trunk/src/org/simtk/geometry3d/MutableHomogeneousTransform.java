@@ -26,13 +26,7 @@
  */
 package org.simtk.geometry3d;
 
-public interface MutableMathMatrix extends MathMatrix {
-    public void set(int m, int n, double d);
-    public void plusEquals(MathMatrix m2);
-    public void minusEquals(MathMatrix m2);
-    public void timesEquals(double d);
-    public void timesEquals(MathMatrix m);
-    public void setRow(int i, MathVector v);
-    public void setColumn(int j, MathVector v);
-    public void copy(MathMatrix m);
+public interface MutableHomogeneousTransform extends MutableMathMatrix, HomogeneousTransform {
+    public void setTranslation(Vector3D t);
+    public void setRotation(Matrix3D m);
 }

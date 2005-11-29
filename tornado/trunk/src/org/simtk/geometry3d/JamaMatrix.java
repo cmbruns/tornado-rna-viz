@@ -26,8 +26,43 @@
  */
 package org.simtk.geometry3d;
 
-public class MatrixSizeMismatchException extends RuntimeException {
-    MatrixSizeMismatchException() {}
-    MatrixSizeMismatchException(String msg) {super(msg);}
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * Wrapper around Jama.Matrix class, to support MathMatrix interface
+ */
+public class JamaMatrix extends MathMatrixClass {
+    private Jama.Matrix jamaMatrix;
+    
+    JamaMatrix(int m, int n) {
+        super(0, 0); // parent internal data will not be used
+        jamaMatrix = new Jama.Matrix(m, n);
+    }
+    
+    JamaMatrix(MathMatrix m) {
+        super(m.getRowCount(), m.getColumnCount());
+        for (int i = 0; i < m.getRowCount(); i++)
+            for (int j = 0; j < m.getColumnCount(); j++)
+                set(i, j, m.get(i, j));
+    }
+    
+    JamaMatrix(Jama.Matrix m) {
+        super(0, 0);
+        jamaMatrix = m.copy();
+    }
+
+    // Override the methods that access the internal data structure
+    public double get(int i, int j) {return jamaMatrix.get(i, j);}
+    public void set(int i, int j, double d) {jamaMatrix.set(i, j, d);}
+    public int getColumnCount() {return jamaMatrix.getColumnDimension();}
+    public int getRowCount() {return jamaMatrix.getRowDimension();}
+
+    public Jama.EigenvalueDecomposition getEigenvalueDecomposition() {
+        Jama.EigenvalueDecomposition answer = 
+            new Jama.EigenvalueDecomposition(jamaMatrix);
+        return answer;
+    }
+    
     static final long serialVersionUID = 01L;
 }

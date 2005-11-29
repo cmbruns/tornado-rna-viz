@@ -38,6 +38,13 @@ public class MathMatrixClass implements MutableMathMatrix {
         initialize(m, n);
     }
 
+    public MathMatrixClass(int  m, int n, double d) {
+        initialize(m, n);
+        for (int i = 0; i < getRowCount(); i++)
+            for (int j = 0; j < getColumnCount(); j++)
+                set(i, j, d);
+    }
+
     public MathMatrixClass(MathMatrix m) {
         initialize(m);
     }
@@ -58,7 +65,43 @@ public class MathMatrixClass implements MutableMathMatrix {
     public void set(int i, int j, double d) {
         m_matrix[i][j] = d;
     }
-
+    
+    public void copy(MathMatrix m) {
+        if ( (m.getRowCount() != getRowCount()) || (m.getColumnCount() != getColumnCount()) ) 
+            throw new MatrixSizeMismatchException();
+        for (int i = 0; i < getRowCount(); i++)
+            for (int j = 0; j < getColumnCount(); j++)
+                set(i, j, m.get(i, j));
+    }
+    
+    public void setRow(int i, MathVector v) {
+        if (v.getDimension() != getColumnCount())
+            throw new MatrixSizeMismatchException();
+        for (int j = 0; j < getColumnCount(); j++)
+            set(i, j, v.get(j));
+    }
+    
+    public void setColumn(int j, MathVector v) {
+        if (v.getDimension() != getRowCount())
+            throw new MatrixSizeMismatchException();
+        for (int i = 0; i < getColumnCount(); i++)
+            set(i, j, v.get(i));
+    }
+    
+    public MathVector getColumn(int j) {
+        MutableMathVector answer = new MathVectorClass(getRowCount());
+        for (int i = 0; i < getRowCount(); i++)
+            answer.set(i, get(i,j));
+        return answer;
+    }
+    
+    public MathVector getRow(int i) {
+        MutableMathVector answer = new MathVectorClass(getColumnCount());
+        for (int j = 0; j < getColumnCount(); j++)
+            answer.set(j, get(i,j));
+        return answer;
+    }
+    
     public MathMatrix transpose() {
         MutableMathMatrix answer = new MathMatrixClass(getColumnCount(), getRowCount());
         for (int m = 0; m < getColumnCount(); m++)
@@ -83,6 +126,11 @@ public class MathMatrixClass implements MutableMathMatrix {
         for (int m = 0; m < getRowCount(); m++)
             for (int n = 0; n < getColumnCount(); n++)
                 set(m, n, get(m, n) * d);
+    }
+
+    public void timesEquals(MathMatrix m) {
+        MathMatrix product = this.times(m);
+        copy(product);
     }
 
     public int getRowCount() {return m_matrix.length;}
@@ -145,11 +193,26 @@ public class MathMatrixClass implements MutableMathMatrix {
     }
 
     public double trace() {
-        int diagonalLength = Math.min(getRowCount(), getColumnCount());
-        double d = 0.0;
-        for (int i = 0; i < diagonalLength; i ++)
-            d += get(i, i);
+        MathVector diagonal = getDiagonal();
+        double d = 0;
+        for (int i = 0; i < diagonal.getDimension(); i ++)
+            d += diagonal.get(i);
         return d;
     }
 
+    public MathVector getDiagonal() {
+        int diagonalLength = Math.min(getRowCount(), getColumnCount());
+        MutableMathVector answer = new MathVectorClass(diagonalLength);
+        for (int i = 0; i < diagonalLength; i ++)
+            answer.set(i, get(i, i));
+        return answer;
+    }
+
+    public Matrix3D m3() {
+        if (this instanceof Matrix3D) return (Matrix3D) this;
+        if ( getRowCount() != 3 ) throw new MatrixSizeMismatchException("Matrix3D must have exactly three rows");
+        if ( getColumnCount() != 3 ) throw new MatrixSizeMismatchException("Matrix3D must have exactly three columns");
+        return new Matrix3DClass(this);
+    }
+    
 }
