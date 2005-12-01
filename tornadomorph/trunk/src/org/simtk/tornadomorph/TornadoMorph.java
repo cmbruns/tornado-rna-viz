@@ -655,11 +655,11 @@ public class TornadoMorph extends JFrame {
                 }
                 
                 private void setMolecules(MoleculeCollection molecules) {
-                    Biopolymer singleMolecule = null;
+                    BiopolymerClass singleMolecule = null;
                     for (Iterator molIter = molecules.molecules().iterator(); molIter.hasNext();) {
-                        Molecule molecule = (Molecule) molIter.next();
-                        if (molecule instanceof Biopolymer) {
-                            singleMolecule = (Biopolymer) molecule;
+                        StructureMolecule molecule = (StructureMolecule) molIter.next();
+                        if (molecule instanceof BiopolymerClass) {
+                            singleMolecule = (BiopolymerClass) molecule;
                             break;
                         }
                     }
