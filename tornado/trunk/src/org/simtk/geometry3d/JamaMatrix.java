@@ -33,7 +33,7 @@ package org.simtk.geometry3d;
   * Wrapper around Jama.Matrix class, to support MathMatrix interface
  */
 public class JamaMatrix extends MathMatrixClass {
-    private Jama.Matrix jamaMatrix;
+    private Jama.Matrix jamaMatrix = new Jama.Matrix(0, 0);
     
     JamaMatrix(int m, int n) {
         super(0, 0); // parent internal data will not be used
@@ -41,7 +41,8 @@ public class JamaMatrix extends MathMatrixClass {
     }
     
     JamaMatrix(MathMatrix m) {
-        super(m.getRowCount(), m.getColumnCount());
+        super(0, 0);
+        jamaMatrix = new Jama.Matrix(m.getRowCount(), m.getColumnCount());
         for (int i = 0; i < m.getRowCount(); i++)
             for (int j = 0; j < m.getColumnCount(); j++)
                 set(i, j, m.get(i, j));

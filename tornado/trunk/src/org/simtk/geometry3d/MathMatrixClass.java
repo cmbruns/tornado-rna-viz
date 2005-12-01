@@ -215,4 +215,12 @@ public class MathMatrixClass implements MutableMathMatrix {
         return new Matrix3DClass(this);
     }
     
+    public String toString() {
+        String answer = new String("");
+        for (int i = 0; i < getRowCount(); i++) {
+            answer += getRow(i).toString();
+            answer += "\n";
+        }
+        return answer;
+    }
 }

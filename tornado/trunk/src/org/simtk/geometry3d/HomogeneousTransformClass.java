@@ -87,14 +87,14 @@ public class HomogeneousTransformClass extends MathMatrixClass implements Mutabl
 
         double wOut = 0.0; // 4th coordinate of answer vector
         for (int i = 0; i < 4; i ++) {
+            double d = 0;
             for (int j = 0; j < 4; j++) {
                 double inputCoordinate = 1.0;
-                if (j != 4) inputCoordinate = v.get(j);
-                
-                double delta = inputCoordinate * get(i,j);
-                if (i == 4) wOut += inputCoordinate;
-                else answer.set(i, answer.get(i) + delta);
+                if (j != 3) inputCoordinate = v.get(j);                
+                d += inputCoordinate * get(i,j);
             }
+            if (i == 3) wOut = d;
+            else answer.set(i, d);
         }
 
         if ( (wOut != 1.0) && (wOut != 0.0) ) {
@@ -109,6 +109,6 @@ public class HomogeneousTransformClass extends MathMatrixClass implements Mutabl
     public HomogeneousTransform times(HomogeneousTransform m) {
         MutableHomogeneousTransform answer = new HomogeneousTransformClass(this);
         answer.timesEquals(m);
-        return m;
+        return answer;
     }
 }

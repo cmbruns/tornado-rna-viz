@@ -106,15 +106,24 @@ public class Superposition {
         // a is the matrix of eigenvectors, in decreasing order
         MutableMatrix3D a = new Matrix3DClass();
         for (int i = 0; i < 2; i++)
-            a.setRow(i, eigenVectors.getRow(eigenOrder[i].intValue()));
+            a.setRow(i, eigenVectors.getColumn(eigenOrder[i].intValue()));
         // Compute the third eigenvector to form a right-handed system with the other two
         a.setRow(2, a.getRow(0).v3().cross(a.getRow(1).v3()));
         
         MutableMatrix3D b = new Matrix3DClass();
         for (int i = 0; i < 2; i++)
-            b.setRow( i, R.times(a.getRow(i)).times(1.0/eigenValues.get(eigenOrder[i].intValue())) );
+            b.setRow( i, R.times(a.getRow(i)).times(1.0/Math.sqrt(eigenValues.get(eigenOrder[i].intValue()))) );
         // Compute the third eigenvector to form a right-handed system with the other two
         b.setRow(2, b.getRow(0).v3().cross(b.getRow(1).v3()));
+        
+        // if b3 * R * a3 < 0, this is a reflection, not a rotation
+        // make it a rotation
+        double sigma[] = {1.0, 1.0, 1.0};
+        double discriminant = b.getRow(2).dot(R.times(a.getRow(2)));
+        if (discriminant < 0) {
+            sigma[2] = -1.0; // For use in computing rms deviation
+            // TODO what has to be done to make it a rotation?
+        }
         
         // 5) generate rotation matrix
         MutableMatrix3D rotation = new Matrix3DClass(); // rotation matrix
@@ -134,7 +143,7 @@ public class Superposition {
         rotate.setRotation(rotation);
 
         MutableHomogeneousTransform translateOriginTo2 = new HomogeneousTransformClass();
-        translate1ToOrigin.setTranslation(centroid2);
+        translateOriginTo2.setTranslation(centroid2);
         
         return translateOriginTo2.times(rotate.times(translate1ToOrigin));
     }
@@ -146,8 +155,8 @@ class EigenComparator implements java.util.Comparator {
     public int compare(Object o1, Object o2) {
         int i1 = ((Integer)o1).intValue();
         int i2 = ((Integer)o2).intValue();
-        if (eigenvalues.get(i1) > eigenvalues.get(i2)) return 1;
-        if (eigenvalues.get(i1) < eigenvalues.get(i2)) return -1;
+        if (eigenvalues.get(i1) < eigenvalues.get(i2)) return 1;
+        if (eigenvalues.get(i1) > eigenvalues.get(i2)) return -1;
         return 0;
     }
 }
