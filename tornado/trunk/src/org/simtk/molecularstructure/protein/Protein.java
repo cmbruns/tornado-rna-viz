@@ -39,7 +39,7 @@ import org.simtk.molecularstructure.atom.PDBAtomSet;
  *
  * \brief A single molecule of protein.
  */
-public class Protein extends Biopolymer {
+public class Protein extends BiopolymerClass {
     public Protein() {} // Empty molecule
     public Protein(PDBAtomSet atomSet) {super(atomSet);}
 

@@ -26,13 +26,11 @@
  */
 package org.simtk.molecularstructure;
 
-import java.util.Collection;
 import org.simtk.geometry3d.Vector3D;
+import org.simtk.molecularstructure.atom.PDBAtom;
 
-public interface StructureResidue extends Residue {
-    public Collection getHydrogenBondDonors();
-    public Collection getHydrogenBondAcceptors();
-    public Vector3D getBackbonePosition();
-    public Vector3D getSideChainPosition();
-    public StructureMolecule get(FunctionalGroup fg); // TODO
+public interface MutableStructureMolecule extends StructureMolecule {
+    public void translate(Vector3D t);
+    public void addAtom(PDBAtom atom);
+    public void removeAtom(PDBAtom atom);
 }

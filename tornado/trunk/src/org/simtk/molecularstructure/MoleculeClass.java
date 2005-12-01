@@ -49,7 +49,7 @@ import org.simtk.mvc.*;
  *
  * \brief A single molecule structure.
  */
-public class MoleculeClass extends MoleculeMVCModel {
+public class MoleculeClass extends MoleculeMVCModel implements MutableStructureMolecule {
     private LinkedHashSet atoms = new LinkedHashSet();
     // protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();
@@ -61,7 +61,7 @@ public class MoleculeClass extends MoleculeMVCModel {
     public double getMass() {
         return mass;
     }
-    public Vector3DClass getCenterOfMass() {
+    public Vector3D getCenterOfMass() {
         if (mass <= 0) return null;
         return centerOfMass;
     }
@@ -237,9 +237,9 @@ public class MoleculeClass extends MoleculeMVCModel {
         return molecule;
     }
 
-    public static MoleculeClass createFactoryPDBMolecule(String fileName) throws IOException {
+    public static StructureMolecule createFactoryPDBMolecule(String fileName) throws IOException {
 		FileInputStream fileStream = new FileInputStream(fileName);
-		MoleculeClass molecule = createFactoryPDBMolecule(fileStream);
+		StructureMolecule molecule = createFactoryPDBMolecule(fileStream);
         fileStream.close();
         return molecule;
     }
@@ -389,7 +389,7 @@ public class MoleculeClass extends MoleculeMVCModel {
 
         // If it has enough residues, it may still be a polymer
         if ((residueCount - solventCount) > 2) {
-            return new Biopolymer(bagOfAtoms);
+            return new BiopolymerClass(bagOfAtoms);
         }
         
         // OK, it's some other kind of molecule

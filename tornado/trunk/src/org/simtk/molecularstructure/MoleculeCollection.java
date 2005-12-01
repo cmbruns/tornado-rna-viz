@@ -80,7 +80,7 @@ public class MoleculeCollection {
     public Vector molecules() {return molecules;}
     
     public int getMoleculeCount() {return molecules.size();}
-    public MoleculeClass getMolecule(int i) {return (MoleculeClass) molecules.elementAt(i);}
+    public StructureMolecule getMolecule(int i) {return (StructureMolecule) molecules.elementAt(i);}
     
     public int getAtomCount() {return atoms.size();}
     
@@ -142,7 +142,7 @@ public class MoleculeCollection {
         // Populate title
         if (title.length() > 0) setTitle(title);
         
-		MoleculeClass mol = MoleculeClass.createFactoryPDBMolecule(reader);
+		StructureMolecule mol = MoleculeClass.createFactoryPDBMolecule(reader);
 
 		// TODO do something more proactive if there are no molecules (such as throw an exception)
 		if (mol == null) {return;}

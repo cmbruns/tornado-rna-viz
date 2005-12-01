@@ -41,7 +41,7 @@ import org.simtk.geometry3d.*;
  *
  * \brief A single molecule of DNA or RNA
  */
-public class NucleicAcid extends Biopolymer {    
+public class NucleicAcid extends BiopolymerClass {    
     public NucleicAcid() {} // Empty molecule
     public NucleicAcid(PDBAtomSet atomSet) {super(atomSet);}
     
@@ -89,7 +89,7 @@ public class NucleicAcid extends Biopolymer {
         for (Iterator i = this.residues().iterator(); i.hasNext();) {
             PDBResidue residue = (PDBResidue) i.next();
             if (residue instanceof Nucleotide) {
-                MoleculeClass base = residue.get(Nucleotide.baseGroup);
+                StructureMolecule base = residue.get(Nucleotide.baseGroup);
                 Vector3DClass centroid = base.getCenterOfMass();
                 
                 residueCentroids.put(residue, centroid);

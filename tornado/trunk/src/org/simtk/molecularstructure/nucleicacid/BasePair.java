@@ -90,14 +90,14 @@ implements MyIterable
         // 1) compute best plane containing base group atoms
         Vector planeAtoms = new Vector();
         if (residue1 != null) {
-            MoleculeClass base = residue1.get(Nucleotide.baseGroup);
+            StructureMolecule base = residue1.get(Nucleotide.baseGroup);
             for (Iterator i = base.getAtomIterator(); i.hasNext();) {
                 LocatedAtom a = (LocatedAtom) i.next();
                 planeAtoms.addElement(a.getCoordinates());
             }
         }
         if (residue2 != null) {
-            MoleculeClass base = residue2.get(Nucleotide.baseGroup);
+            StructureMolecule base = residue2.get(Nucleotide.baseGroup);
             for (Iterator i = base.getAtomIterator(); i.hasNext();) {
                 LocatedAtom a = (LocatedAtom) i.next();
                 planeAtoms.addElement(a.getCoordinates());
@@ -114,7 +114,7 @@ implements MyIterable
     public Vector3DClass getHelixCenter() {
         // 1) compute best plane containing base group atoms
         Vector planeAtoms = new Vector();
-        MoleculeClass base = residue1.get(Nucleotide.baseGroup);
+        StructureMolecule base = residue1.get(Nucleotide.baseGroup);
         for (Iterator i = base.getAtomIterator(); i.hasNext();) {
             LocatedAtom a = (LocatedAtom) i.next();
             planeAtoms.addElement(a.getCoordinates());

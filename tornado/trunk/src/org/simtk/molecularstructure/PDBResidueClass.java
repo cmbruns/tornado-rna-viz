@@ -147,9 +147,9 @@ public abstract class PDBResidueClass extends MoleculeClass implements Selectabl
         ((HashSet)genericBonds.get(atom2)).add(atom1);
     }
     
-    public MoleculeClass get(FunctionalGroup fg) {
+    public StructureMolecule get(FunctionalGroup fg) {
         String[] groupAtomNames = fg.getAtomNames();
-        MoleculeClass mol = new MoleculeClass();
+        StructureMolecule mol = new MoleculeClass();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
             PDBAtom atom = getAtom(atomName);
