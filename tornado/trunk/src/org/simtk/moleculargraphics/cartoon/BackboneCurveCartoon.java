@@ -117,12 +117,12 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
         // baseCaps.unSelect();
         studs.unSelect();
     }
-    public void highlight(Molecule m) {
+    public void highlight(StructureMolecule m) {
         baseRods.highlight(m);
         // baseCaps.highlight(m);
         studs.highlight(m);
     }
-    public void hide(Molecule m) {
+    public void hide(StructureMolecule m) {
         baseRods.hide(m);
         // baseCaps.hide(m);
         studs.hide(m);
@@ -136,7 +136,7 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
     
 
     
-    public void show(Molecule m) {
+    public void show(StructureMolecule m) {
         baseRods.show(m);
         // baseCaps.show(m);
         studs.show(m);
@@ -144,16 +144,16 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
         addMolecule(m);
     }
 
-    public void addMolecule(Molecule molecule) {
-        if (! (molecule instanceof Biopolymer)) return;
-        Biopolymer biopolymer = (Biopolymer) molecule;
+    public void addMolecule(StructureMolecule molecule) {
+        if (! (molecule instanceof BiopolymerClass)) return;
+        BiopolymerClass biopolymer = (BiopolymerClass) molecule;
         
         vtkPoints linePoints = new vtkPoints();
         vtkPoints lineNormals = new vtkPoints();
         vtkFloatArray lineScalars = new vtkFloatArray();
         
         for (Iterator i = biopolymer.residues().iterator(); i.hasNext();) {
-            Residue residue = (Residue) i.next();
+            PDBResidue residue = (PDBResidue) i.next();
             Vector3D backbonePosition = residue.getBackbonePosition();
             Vector3D sideChainPosition = residue.getSideChainPosition();
 

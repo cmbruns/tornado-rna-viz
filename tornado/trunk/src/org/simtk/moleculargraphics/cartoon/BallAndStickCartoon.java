@@ -33,6 +33,7 @@ package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.util.*;
 import org.simtk.molecularstructure.*;
+
 import vtk.*;
 
 /** 
@@ -68,15 +69,15 @@ public class BallAndStickCartoon extends MolecularCartoonNewWay {
         sticks.unSelect();
         balls.unSelect();
     }
-    public void highlight(Molecule m) {
+    public void highlight(StructureMolecule m) {
         sticks.highlight(m);
         balls.highlight(m);
     }
-    public void hide(Molecule m) {
+    public void hide(StructureMolecule m) {
         sticks.hide(m);
         balls.hide(m);
     }
-    public void show(Molecule m) {
+    public void show(StructureMolecule m) {
         sticks.show(m);
         balls.show(m);
     }

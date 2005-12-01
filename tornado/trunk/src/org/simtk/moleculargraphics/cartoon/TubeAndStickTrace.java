@@ -33,6 +33,7 @@ package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.util.*;
 import org.simtk.molecularstructure.*;
+
 import vtk.*;
 
 /** 
@@ -78,15 +79,15 @@ public class TubeAndStickTrace extends MolecularCartoonNewWay {
         tubes.unSelect();
         rods.unSelect();
     }
-    public void highlight(Molecule m) {
+    public void highlight(StructureMolecule m) {
         tubes.highlight(m);
         rods.highlight(m);
     }
-    public void hide(Molecule m) {
+    public void hide(StructureMolecule m) {
         tubes.hide(m);
         rods.hide(m);
     }
-    public void show(Molecule m) {
+    public void show(StructureMolecule m) {
         tubes.show(m);
         rods.show(m);
     }

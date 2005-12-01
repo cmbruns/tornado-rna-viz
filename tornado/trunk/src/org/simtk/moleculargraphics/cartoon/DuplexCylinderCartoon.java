@@ -67,12 +67,12 @@ public class DuplexCylinderCartoon extends MolecularCartoonNewWay
     public void select(Selectable s) {} // TODO
     public void unSelect(Selectable s) {} // TODO
     public void unSelect() {} // TODO
-    public void highlight(Molecule molecule) {} // TODO
-    public void show(Molecule molecule) {
+    public void highlight(StructureMolecule molecule) {} // TODO
+    public void show(StructureMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         addNucleicAcid((NucleicAcid) molecule);
     }
-    public void hide(Molecule molecule) {} // TODO
+    public void hide(StructureMolecule molecule) {} // TODO
     public void clear() {} // TODO
 
     public void addNucleicAcid(NucleicAcid nucleicAcid) {

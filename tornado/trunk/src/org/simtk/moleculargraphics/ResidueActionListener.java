@@ -31,7 +31,7 @@
  */
 package org.simtk.moleculargraphics;
 
-import org.simtk.molecularstructure.Residue;
+import org.simtk.molecularstructure.*;
 import org.simtk.util.*;
 
 /**

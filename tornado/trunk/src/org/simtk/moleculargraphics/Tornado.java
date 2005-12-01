@@ -284,10 +284,10 @@ implements ResidueActionListener
         // for (BasePair bp : basePairs) {
         for (Iterator i = basePairs.iterator(); i.hasNext();) {
             BasePair bp = (BasePair) i.next();
-            Molecule base1 = bp.getResidue1().get(Nucleotide.baseGroup);
-            Molecule base2 = bp.getResidue2().get(Nucleotide.baseGroup);
-            Vector3DClass centroid1 = base1.getCenterOfMass();
-            Vector3DClass centroid2 = base2.getCenterOfMass();
+            StructureMolecule base1 = bp.getResidue1().get(Nucleotide.baseGroup);
+            StructureMolecule base2 = bp.getResidue2().get(Nucleotide.baseGroup);
+            Vector3D centroid1 = base1.getCenterOfMass();
+            Vector3D centroid2 = base2.getCenterOfMass();
             Plane3D plane1 = base1.bestPlane3D();
             Plane3D plane2 = base2.bestPlane3D();
             
@@ -1119,17 +1119,17 @@ implements ResidueActionListener
         (new CartoonAction(canvas.currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Center camera on new molecule
-        Vector3DClass com = molecules.getCenterOfMass();
+        Vector3D com = molecules.getCenterOfMass();
         canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
 
         // Display sequence of first molecule that has a sequence
         residueActionBroadcaster.fireClearResidues();
-        Biopolymer bp = null;
+        BiopolymerClass bp = null;
         // for (Molecule molecule : molecules.molecules()) {
         for (Iterator i1 = molecules.molecules().iterator(); i1.hasNext();) {
-            Molecule molecule = (Molecule) i1.next();
-            if (molecule instanceof Biopolymer) {
-                bp = (Biopolymer) molecule;
+            StructureMolecule molecule = (StructureMolecule) i1.next();
+            if (molecule instanceof BiopolymerClass) {
+                bp = (BiopolymerClass) molecule;
                 
                 // for (Residue residue : bp.residues())
                 for (Iterator i2 = bp.residues().iterator(); i2.hasNext(); ) {
@@ -1366,8 +1366,8 @@ implements ResidueActionListener
     
     private Residue currentHighlightedResidue = null;
     
-    private Residue firstResidue = null;
-    private Residue finalResidue = null;
+    private PDBResidue firstResidue = null;
+    private PDBResidue finalResidue = null;
     private vtkProp currentHighlight;
 
     private boolean useRotationThread = true;

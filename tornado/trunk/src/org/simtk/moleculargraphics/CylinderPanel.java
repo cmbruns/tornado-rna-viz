@@ -86,7 +86,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		 // Test reading of PDB file
 		 RNA rna = new RNA();
 		 try {
-		     rna = (RNA) Molecule.createFactoryPDBMolecule("1x8w.pdb2");
+		     rna = (RNA) MoleculeClass.createFactoryPDBMolecule("1x8w.pdb2");
 			 System.out.println("" + rna.getAtomCount() + " atoms read");
 		 }
 		 catch (java.io.FileNotFoundException e) {System.err.println(e);}
@@ -96,7 +96,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		 // (start with spheres)
 		 Vector3D previousCenter = null;
 		 for (int r = 0; r < rna.getResidueCount(); r++) {
-		     Residue residue = rna.getResidue(r);
+		     PDBResidue residue = rna.getResidue(r);
 		     PDBAtom phosphorus = residue.getAtom("P");
 		     if (phosphorus != null) {
 		         // Create sphere at phosphate
@@ -152,7 +152,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 	}
 	
 	int sphereCount = 0;
-	public void addSphere(Vector3D center, double radius, Color color, Residue residue) {
+	public void addSphere(Vector3D center, double radius, Color color, PDBResidue residue) {
 	    sphereCount ++;
 	    
 	    vtkSphereSource sphere = new vtkSphereSource();
@@ -257,7 +257,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 			            // System.out.println(propName);
 		            }
 
-		            Residue pickedResidue = (Residue) vtkPropObjects.get(prop);
+		            PDBResidueClass pickedResidue = (PDBResidueClass) vtkPropObjects.get(prop);
 		            if (pickedResidue != null) {
 		                String residueLabel = "Residue " + pickedResidue.getOneLetterCode() + " " + pickedResidue.residueNumber;
 			            System.out.println(residueLabel);

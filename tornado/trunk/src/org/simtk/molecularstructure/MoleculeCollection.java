@@ -152,7 +152,7 @@ public class MoleculeCollection {
 
 		    double myMassProportion = getMass() / (getMass() + mol.getMass());
 		    centerOfMass = new Vector3DClass( centerOfMass.scale(myMassProportion).plus(
-		            mol.getCenterOfMass().scale(1.0 - myMassProportion) ) );
+		            mol.getCenterOfMass().times(1.0 - myMassProportion) ) );
 		    
 		    mass += mol.getMass();
 		    

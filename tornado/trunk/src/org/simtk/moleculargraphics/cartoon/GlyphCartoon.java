@@ -148,12 +148,12 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
         glyphColors.select(s);
     }
 
-    public void highlight(Molecule molecule) {
+    public void highlight(StructureMolecule molecule) {
         glyphColors.highlight(molecule);
         return;
     }
     
-    public void hide(Molecule molecule) {
+    public void hide(StructureMolecule molecule) {
         glyphColors.hide(molecule);
         return;
     }

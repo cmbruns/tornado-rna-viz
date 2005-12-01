@@ -130,11 +130,11 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOff();
     }
 
-    public void show(Molecule molecule) {
+    public void show(StructureMolecule molecule) {
         addMolecule(molecule);
     }
 
-    void addMolecule(Molecule molecule) {
+    void addMolecule(StructureMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         NucleicAcid nucleicAcid = (NucleicAcid) molecule;
         Vector duplexen = nucleicAcid.identifyHairpins();
@@ -167,10 +167,10 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                 // Make it all neatly orthogonal
                 residueDirection = (MutableVector3D) thirdDirection.cross(duplexDirection);                
 
-                Residue residues[] = {residue1, residue2};
+                PDBResidue residues[] = {residue1, residue2};
                 
                 for (int i = 0; i < 2; i++) {
-                    Residue residue = residues[i];
+                    PDBResidue residue = residues[i];
                     
                     Vector currentObjects = new Vector(); // assign molecular object on which to index this wedge
                     currentObjects.add(molecule);

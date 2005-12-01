@@ -36,6 +36,7 @@ import java.util.*;
 
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
+
 import vtk.*;
 
 public class BackboneStick extends GlyphCartoon {
@@ -129,12 +130,12 @@ public class BackboneStick extends GlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOn();
     }
 
-    public void show(Molecule molecule) {
+    public void show(StructureMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
 
-    void addMolecule(Molecule molecule, Vector parentObjects) {
+    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -149,20 +150,20 @@ public class BackboneStick extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof Residue) {
-            Residue residue = (Residue) molecule;
+        if (molecule instanceof PDBResidueClass) {
+            PDBResidue residue = (PDBResidue) molecule;
             currentObjects.remove(currentObjects.size() - 1); 
             addResidue(residue, currentObjects);
         }
-        else if (molecule instanceof Biopolymer) {
-            Biopolymer biopolymer = (Biopolymer) molecule;
+        else if (molecule instanceof BiopolymerClass) {
+            BiopolymerClass biopolymer = (BiopolymerClass) molecule;
             for (Iterator iterResidue = biopolymer.residues().iterator(); iterResidue.hasNext(); ) {
-                addMolecule((Residue) iterResidue.next(), currentObjects);
+                addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
             }
         }
     }
     
-    void addResidue(Residue residue, Vector parentObjects) {
+    void addResidue(PDBResidue residue, Vector parentObjects) {
         if (residue == null) return;
         
         // Don't add things that have already been added
@@ -172,12 +173,14 @@ public class BackboneStick extends GlyphCartoon {
         if (backbonePosition == null) return;
 
         Vector3D nextPosition = null;
-        if (residue.getNextResidue() != null) 
-            nextPosition = residue.getNextResidue().getBackbonePosition();
+        if (residue.getNextResidue() != null)
+            if (residue.getNextResidue() instanceof StructureResidue)
+                nextPosition = ((StructureResidue)residue.getNextResidue()).getBackbonePosition();
 
         Vector3D previousPosition = null;
         if (residue.getPreviousResidue() != null) 
-            previousPosition = residue.getPreviousResidue().getBackbonePosition();
+            if (residue.getPreviousResidue() instanceof StructureResidue)
+                previousPosition = ((StructureResidue)residue.getPreviousResidue()).getBackbonePosition();
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();

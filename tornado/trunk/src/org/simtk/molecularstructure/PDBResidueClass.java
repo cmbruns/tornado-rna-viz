@@ -81,9 +81,9 @@ public abstract class PDBResidueClass extends MoleculeClass implements Selectabl
     }
 
     public void setNextResidue(PDBResidueClass r) {nextResidue = r;}
-    public PDBResidueClass getNextResidue(){return nextResidue;}
+    public Residue getNextResidue(){return nextResidue;}
     public void setPreviousResidue(PDBResidueClass r) {previousResidue = r;}
-    public PDBResidueClass getPreviousResidue(){return previousResidue;}
+    public Residue getPreviousResidue(){return previousResidue;}
     
     abstract public char getOneLetterCode();
     abstract public String getResidueName();
@@ -149,7 +149,7 @@ public abstract class PDBResidueClass extends MoleculeClass implements Selectabl
     
     public StructureMolecule get(FunctionalGroup fg) {
         String[] groupAtomNames = fg.getAtomNames();
-        StructureMolecule mol = new MoleculeClass();
+        MutableStructureMolecule mol = new MoleculeClass();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
             PDBAtom atom = getAtom(atomName);

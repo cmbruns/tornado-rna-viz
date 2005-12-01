@@ -71,7 +71,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         glyphActor.GetProperty().SetLineWidth(2.0);
     }
     
-    void addMolecule(Molecule molecule, Vector parentObjects) {
+    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -86,17 +86,17 @@ public class WireFrameCartoon extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof Residue) {
-            Residue residue = (Residue) molecule;
+        if (molecule instanceof PDBResidueClass) {
+            PDBResidueClass residue = (PDBResidueClass) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
                 PDBAtom atom = (PDBAtom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
-        else if (molecule instanceof Biopolymer) {
-            Biopolymer biopolymer = (Biopolymer) molecule;
+        else if (molecule instanceof BiopolymerClass) {
+            BiopolymerClass biopolymer = (BiopolymerClass) molecule;
             for (Iterator iterResidue = biopolymer.residues().iterator(); iterResidue.hasNext(); ) {
-                addMolecule((Residue) iterResidue.next(), currentObjects);
+                addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
@@ -138,7 +138,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         }
     }
 
-    public void show(Molecule molecule) {
+    public void show(StructureMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
@@ -147,7 +147,7 @@ public class WireFrameCartoon extends GlyphCartoon {
      * 
      * @param molecule
      */
-    public void updateCoordinates(Molecule molecule) {
+    public void updateCoordinates(StructureMolecule molecule) {
         // Each bond glyph depends on two atoms, asymmetrically
         
         boolean modified = false;

@@ -69,12 +69,12 @@ public class ResidueSphereCartoon extends GlyphCartoon {
     }
     
     
-    public void show(Molecule molecule) {
+    public void show(StructureMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
 
-    void addMolecule(Molecule molecule, Vector parentObjects) {
+    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -89,20 +89,20 @@ public class ResidueSphereCartoon extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof Residue) {
-            Residue residue = (Residue) molecule;
+        if (molecule instanceof PDBResidueClass) {
+            PDBResidueClass residue = (PDBResidueClass) molecule;
             currentObjects.remove(currentObjects.size() - 1); // This object will be re-added
             addResidue(residue, currentObjects);
         }
-        else if (molecule instanceof Biopolymer) {
-            Biopolymer biopolymer = (Biopolymer) molecule;
+        else if (molecule instanceof BiopolymerClass) {
+            BiopolymerClass biopolymer = (BiopolymerClass) molecule;
             for (Iterator iterResidue = biopolymer.residues().iterator(); iterResidue.hasNext(); ) {
-                addResidue((Residue) iterResidue.next(), currentObjects);
+                addResidue((PDBResidueClass) iterResidue.next(), currentObjects);
             }
         }
     }
     
-    void addResidue(Residue residue, Vector parentObjects) {
+    void addResidue(PDBResidueClass residue, Vector parentObjects) {
         if (residue == null) return;
         
         // Don't add things that have already been added

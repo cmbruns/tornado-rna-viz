@@ -63,8 +63,8 @@ public class RelaxCoordinates {
         URL pdbFileURL = thisApp.getClass().getClassLoader().getResource("resources/structures/OneRNAHairpin.pdb");
         System.out.println(""+pdbFileURL);
 
-        Molecule molecule = null;
-        try { molecule = Molecule.createFactoryPDBMolecule(pdbFileURL); }
+        MoleculeClass molecule = null;
+        try { molecule = MoleculeClass.createFactoryPDBMolecule(pdbFileURL); }
         catch (IOException exc) {System.out.println(""+exc);System.exit(0);}
 
         if (molecule != null) {

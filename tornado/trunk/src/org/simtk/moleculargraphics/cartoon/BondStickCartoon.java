@@ -35,11 +35,8 @@ import java.awt.Color;
 import java.util.Iterator;
 import java.util.Vector;
 
-import org.simtk.geometry3d.Vector3D;
-import org.simtk.geometry3d.Vector3DClass;
-import org.simtk.molecularstructure.Biopolymer;
-import org.simtk.molecularstructure.Molecule;
-import org.simtk.molecularstructure.Residue;
+import org.simtk.geometry3d.*;
+import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.*;
 
 import vtk.vtkCylinderSource;
@@ -84,12 +81,12 @@ public class BondStickCartoon extends GlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOn();
     }
 
-    public void show(Molecule molecule) {
+    public void show(StructureMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
 
-    void addMolecule(Molecule molecule, Vector parentObjects) {
+    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -104,16 +101,18 @@ public class BondStickCartoon extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof Residue) {
-            Residue residue = (Residue) molecule;
+        if (molecule instanceof StructureResidue) {
+            StructureResidue residue = (StructureResidue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
                 addAtom((PDBAtom)i.next(), currentObjects);
             }
         }
         else if (molecule instanceof Biopolymer) {
             Biopolymer biopolymer = (Biopolymer) molecule;
-            for (Iterator iterResidue = biopolymer.residues().iterator(); iterResidue.hasNext(); ) {
-                addMolecule((Residue) iterResidue.next(), currentObjects);
+            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
+                Residue residue = (Residue) iterResidue.next();
+                if (residue instanceof StructureResidue)
+                    addMolecule((StructureResidue) residue, currentObjects);
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
@@ -145,15 +144,15 @@ public class BondStickCartoon extends GlyphCartoon {
         // For bonded atoms, draw a line for each bond
         for (Iterator i2 = atom.getBonds().iterator(); i2.hasNext(); ) {
             PDBAtom atom2 = (PDBAtom) i2.next();
-            Vector3DClass midpoint = new Vector3DClass( c.plus(atom2.getCoordinates()).times(0.5) ); // middle of bond
-            Vector3DClass b = new Vector3DClass( c.plus(midpoint).times(0.5) ); // middle of half-bond
-            Vector3DClass n = new Vector3DClass( midpoint.minus(c).unit() ); // direction vector
+            Vector3D midpoint = new Vector3DClass( c.plus(atom2.getCoordinates()).times(0.5) ); // middle of bond
+            Vector3D b = new Vector3DClass( c.plus(midpoint).times(0.5) ); // middle of half-bond
+            MutableVector3D n = new Vector3DClass( midpoint.minus(c).unit() ); // direction vector
 
             // Use sticks to tile path from atom center, c, to bond midpoint
             int numberOfSticks = (int) Math.ceil(c.distance(midpoint) / stickLength);
 
-            Vector3DClass startStickCenter = new Vector3DClass( c.plus(n.scale(stickLength * 0.5)) );
-            Vector3DClass endStickCenter = new Vector3DClass( midpoint.minus(n.scale(stickLength * 0.5)) );
+            Vector3D startStickCenter = new Vector3DClass( c.plus(n.times(stickLength * 0.5)) );
+            Vector3D endStickCenter = new Vector3DClass( midpoint.minus(n.times(stickLength * 0.5)) );
 
             // Direction of this half bond
             // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
@@ -161,12 +160,12 @@ public class BondStickCartoon extends GlyphCartoon {
                 n.timesEquals(-1.0);
             }
             
-            Vector3DClass stickCenterVector = new Vector3DClass( endStickCenter.minus(startStickCenter) );
+            Vector3D stickCenterVector = new Vector3DClass( endStickCenter.minus(startStickCenter) );
             for (int s = 0; s < numberOfSticks; s++) {
                 double alpha = 0.0;
                 if (numberOfSticks > 1)
                     alpha = s / (numberOfSticks - 1.0);
-                Vector3DClass stickCenter = new Vector3DClass( startStickCenter.plus(stickCenterVector.scale(alpha)) );
+                Vector3D stickCenter = new Vector3DClass( startStickCenter.plus(stickCenterVector.times(alpha)) );
             
                 linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
                 lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());

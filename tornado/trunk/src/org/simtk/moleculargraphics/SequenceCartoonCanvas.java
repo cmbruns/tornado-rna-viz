@@ -35,8 +35,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import org.simtk.util.*;
-
-import org.simtk.molecularstructure.Residue;
+import org.simtk.molecularstructure.*;
 
 /**
  *  

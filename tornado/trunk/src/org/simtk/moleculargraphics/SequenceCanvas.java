@@ -59,7 +59,7 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     // Parameters describing the region of sequence being shown
     int leftEdgeVirtualPixel = 0;
     
-    private Biopolymer sequenceMolecule = null;
+    private BiopolymerClass sequenceMolecule = null;
 
     // Track mapping of string positions to residue objects
     protected Hashtable residuePositions = new Hashtable();
@@ -180,7 +180,7 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
             g.setFont(numberFont);
             g.setColor(getForeground());
             for (int r = leftPosition; r <= rightPosition; r++) {
-                Residue res = (Residue) positionResidues.get(new Integer(r));
+                PDBResidue res = (PDBResidue) positionResidues.get(new Integer(r));
                 if (res != null) {
                     int residueNumber = res.getResidueNumber();
                     
@@ -214,11 +214,11 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     }
     
     public void update(Observable observable, Object object) {
-        if (!(observable instanceof Biopolymer)) return;
+        if (!(observable instanceof BiopolymerClass)) return;
         // TODO respond to molecule change, but only if it's a sequence change
     }
 
-    public void setMolecule(Biopolymer molecule) {
+    public void setMolecule(BiopolymerClass molecule) {
         if (molecule == sequenceMolecule) return; // no change
 
         // Remove interest in old molecule
@@ -235,7 +235,7 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         positionResidues.clear();
         residueSymbols.clear();
         for (Iterator iterResidue = molecule.residues().iterator(); iterResidue.hasNext();) {
-            Residue residue = (Residue) iterResidue.next();
+            PDBResidue residue = (PDBResidue) iterResidue.next();
             Integer indexInteger = new Integer(numberOfResidues);
             residuePositions.put(residue, indexInteger);
             positionResidues.put(indexInteger, residue);

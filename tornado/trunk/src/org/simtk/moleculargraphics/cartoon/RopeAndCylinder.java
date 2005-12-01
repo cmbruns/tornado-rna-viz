@@ -33,6 +33,7 @@ package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.util.*;
 import org.simtk.molecularstructure.*;
+
 import vtk.*;
 
 /** 
@@ -64,15 +65,15 @@ public class RopeAndCylinder extends MolecularCartoonNewWay {
         duplexes.unSelect();
         ropes.unSelect();
     }
-    public void highlight(Molecule m) {
+    public void highlight(StructureMolecule m) {
         duplexes.highlight(m);
         ropes.highlight(m);
     }
-    public void hide(Molecule m) {
+    public void hide(StructureMolecule m) {
         duplexes.hide(m);
         ropes.hide(m);
     }
-    public void show(Molecule m) {
+    public void show(StructureMolecule m) {
         duplexes.show(m);
         ropes.show(m);
     }

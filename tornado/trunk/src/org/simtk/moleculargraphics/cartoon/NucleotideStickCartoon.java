@@ -126,12 +126,12 @@ public class NucleotideStickCartoon extends GlyphCartoon {
 
     }
 
-    public void show(Molecule molecule) {
+    public void show(StructureMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
 
-    void addMolecule(Molecule molecule, Vector parentObjects) {
+    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added

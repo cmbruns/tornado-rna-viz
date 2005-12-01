@@ -316,9 +316,11 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
 
         if (e.isControlDown()) { // Control click preserves other selections
             if (residueActionBroadcaster.getSelected().contains(clickedResidue))
-                residueActionBroadcaster.fireUnSelect(clickedResidue);
+                if (clickedResidue instanceof Selectable)
+                    residueActionBroadcaster.fireUnSelect((Selectable)clickedResidue);
             else
-                residueActionBroadcaster.fireSelect(clickedResidue);
+                if (clickedResidue instanceof Selectable)
+                    residueActionBroadcaster.fireSelect((Selectable)clickedResidue);
         }
         else { // Normal click - unselect all
             residueActionBroadcaster.fireUnSelect();
@@ -370,7 +372,8 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         for (Iterator i = temporarilySelectedResidues.iterator(); i.hasNext(); ) {
             Residue r = (Residue) i.next();
             if (r != null)
-                residueActionBroadcaster.fireSelect(r);
+                if (r instanceof Selectable)
+                    residueActionBroadcaster.fireSelect((Selectable) r);
         }
         
         temporarilySelectedResidues.clear();
