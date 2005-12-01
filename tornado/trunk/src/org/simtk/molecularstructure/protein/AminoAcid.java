@@ -65,7 +65,7 @@ abstract public class AminoAcid extends PDBResidueClass {
     }
 
     public Vector3D getSideChainPosition() {
-        Molecule sideChain = get(sideChainGroup);
+        MoleculeClass sideChain = get(sideChainGroup);
         if (sideChain.getAtomCount() >= 1)
             return get(sideChainGroup).getCenterOfMass();
         // TODO - handle glycine and other no side chain cases

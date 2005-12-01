@@ -31,6 +31,4 @@ import org.simtk.molecularstructure.atom.*;
 public interface PDBResidue extends StructureResidue {
     public char getInsertionCode();
     public PDBAtom getAtom(String atomName);
-
-    public void setInsertionCode(char insertionCode);
 }

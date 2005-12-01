@@ -49,7 +49,7 @@ import org.simtk.mvc.*;
  *
  * \brief A single molecule structure.
  */
-public class Molecule extends MoleculeMVCModel {
+public class MoleculeClass extends MoleculeMVCModel {
     private LinkedHashSet atoms = new LinkedHashSet();
     // protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();
@@ -142,8 +142,8 @@ public class Molecule extends MoleculeMVCModel {
 
     }
 
-    public Molecule() {} // Empty molecule
-	public Molecule(PDBAtomSet atomSet) {
+    public MoleculeClass() {} // Empty molecule
+	public MoleculeClass(PDBAtomSet atomSet) {
         // for (Atom atom : atomSet) {
         for (Iterator i = atomSet.iterator(); i.hasNext();) {
             PDBAtom atom = (PDBAtom) i.next();
@@ -230,21 +230,21 @@ public class Molecule extends MoleculeMVCModel {
 	public int getAtomCount() {return atoms.size();}
 	// public Atom getAtom(int i) {return (Atom) atoms.get(i);}
 	
-    public static Molecule createFactoryPDBMolecule(URL url) throws IOException {
+    public static MoleculeClass createFactoryPDBMolecule(URL url) throws IOException {
         InputStream inStream = url.openStream();
-        Molecule molecule = createFactoryPDBMolecule(inStream);        
+        MoleculeClass molecule = createFactoryPDBMolecule(inStream);        
         inStream.close();
         return molecule;
     }
 
-    public static Molecule createFactoryPDBMolecule(String fileName) throws IOException {
+    public static MoleculeClass createFactoryPDBMolecule(String fileName) throws IOException {
 		FileInputStream fileStream = new FileInputStream(fileName);
-		Molecule molecule = createFactoryPDBMolecule(fileStream);
+		MoleculeClass molecule = createFactoryPDBMolecule(fileStream);
         fileStream.close();
         return molecule;
     }
 
-    static Molecule createFactoryPDBMolecule(InputStream is) throws IOException {
+    static MoleculeClass createFactoryPDBMolecule(InputStream is) throws IOException {
 		LineNumberReader reader = new LineNumberReader(new InputStreamReader(is));
 		return createFactoryPDBMolecule(reader);
     }
@@ -255,7 +255,7 @@ public class Molecule extends MoleculeMVCModel {
      * @return
      * @throws IOException
      */
-    public static Molecule createFactoryPDBMolecule(LineNumberReader reader) throws IOException {
+    public static MoleculeClass createFactoryPDBMolecule(LineNumberReader reader) throws IOException {
         PDBAtomSet currentMoleculeAtoms = new PDBAtomSet();
         
         char chainIdentifier = '\0';
@@ -269,7 +269,7 @@ public class Molecule extends MoleculeMVCModel {
 			// Stop parsing after the END record
 			if (PDBLine.substring(0,3).equals("END")) {
 			    reader.reset(); // Leave the END tag for the next guy
-                Molecule molecule = Molecule.createFactoryPDBMolecule(currentMoleculeAtoms); // empty molecule
+                MoleculeClass molecule = MoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms); // empty molecule
 				return molecule;
 			}
 
@@ -308,7 +308,7 @@ public class Molecule extends MoleculeMVCModel {
 				    }
 				    else { // Not the same molecule - return
 				        reader.reset(); // Put latest atom back into the stream
-				        Molecule molecule = Molecule.createFactoryPDBMolecule(currentMoleculeAtoms);
+				        MoleculeClass molecule = MoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
                         return molecule;
 				    }
 				}
@@ -316,10 +316,10 @@ public class Molecule extends MoleculeMVCModel {
 			
 			reader.mark(200); // Commit to reading this far into the file
 		}
-        return Molecule.createFactoryPDBMolecule(currentMoleculeAtoms);
+        return MoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
     }
 
-    static Molecule createFactoryPDBMolecule(PDBAtomSet bagOfAtoms) {
+    static MoleculeClass createFactoryPDBMolecule(PDBAtomSet bagOfAtoms) {
         if (bagOfAtoms == null) return null;
         if (bagOfAtoms.size() == 0) return null;
         
@@ -393,7 +393,7 @@ public class Molecule extends MoleculeMVCModel {
         }
         
         // OK, it's some other kind of molecule
-        return new Molecule(bagOfAtoms);
+        return new MoleculeClass(bagOfAtoms);
     }
 
     // Create covalent bonds where it seems that they are needed

@@ -72,7 +72,7 @@ public class MoleculeCollection {
     
     public void relaxCoordinates() {
         for (Iterator i = molecules.iterator(); i.hasNext(); ) {
-            Molecule m = (Molecule) i.next();
+            MoleculeClass m = (MoleculeClass) i.next();
             m.relaxCoordinates();
         }
     }
@@ -80,7 +80,7 @@ public class MoleculeCollection {
     public Vector molecules() {return molecules;}
     
     public int getMoleculeCount() {return molecules.size();}
-    public Molecule getMolecule(int i) {return (Molecule) molecules.elementAt(i);}
+    public MoleculeClass getMolecule(int i) {return (MoleculeClass) molecules.elementAt(i);}
     
     public int getAtomCount() {return atoms.size();}
     
@@ -142,7 +142,7 @@ public class MoleculeCollection {
         // Populate title
         if (title.length() > 0) setTitle(title);
         
-		Molecule mol = Molecule.createFactoryPDBMolecule(reader);
+		MoleculeClass mol = MoleculeClass.createFactoryPDBMolecule(reader);
 
 		// TODO do something more proactive if there are no molecules (such as throw an exception)
 		if (mol == null) {return;}
@@ -161,7 +161,7 @@ public class MoleculeCollection {
                 atoms.addElement(a);
             }
 		    
-		    mol = Molecule.createFactoryPDBMolecule(reader);
+		    mol = MoleculeClass.createFactoryPDBMolecule(reader);
 		    if (mol == null) break;
 		}
 	}

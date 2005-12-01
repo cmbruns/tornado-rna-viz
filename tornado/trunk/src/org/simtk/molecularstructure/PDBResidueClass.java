@@ -46,7 +46,7 @@ import org.simtk.util.*;
  * \brief One monomer residue of a Biopolymer
  *
  */
-public abstract class PDBResidueClass extends Molecule implements Selectable, PDBResidue {
+public abstract class PDBResidueClass extends MoleculeClass implements Selectable, MutablePDBResidue {
     private static Color defaultColor = new Color(255, 255, 255);
 
     Hashtable genericBonds = new Hashtable(); // maps atom names of bondable atoms
@@ -147,9 +147,9 @@ public abstract class PDBResidueClass extends Molecule implements Selectable, PD
         ((HashSet)genericBonds.get(atom2)).add(atom1);
     }
     
-    public Molecule get(FunctionalGroup fg) {
+    public MoleculeClass get(FunctionalGroup fg) {
         String[] groupAtomNames = fg.getAtomNames();
-        Molecule mol = new Molecule();
+        MoleculeClass mol = new MoleculeClass();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
             PDBAtom atom = getAtom(atomName);

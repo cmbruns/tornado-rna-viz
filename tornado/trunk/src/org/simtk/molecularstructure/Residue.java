@@ -26,13 +26,13 @@
  */
 package org.simtk.molecularstructure;
 
-import java.util.Collection;
-import org.simtk.geometry3d.Vector3D;
+import java.awt.Color;
 
-public interface StructureResidue extends Residue {
-    public Collection getHydrogenBondDonors();
-    public Collection getHydrogenBondAcceptors();
-    public Vector3D getBackbonePosition();
-    public Vector3D getSideChainPosition();
-    public MoleculeClass get(FunctionalGroup fg); // TODO
+public interface Residue {
+    public Color getDefaultColor();
+    public Residue getPreviousResidue();
+    public Residue getNextResidue();
+    public char getOneLetterCode();
+    public String getResidueName();
+    public int getResidueNumber();
 }

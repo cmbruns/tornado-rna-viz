@@ -40,7 +40,7 @@ import org.simtk.molecularstructure.atom.*;
  *
  * \brief A macromolecular heteropolymer, such as protein or DNA
  */
-public class Biopolymer extends Molecule {
+public class Biopolymer extends MoleculeClass {
 	Vector residues = new Vector();
     Hashtable residueNumbers = new Hashtable();
     // maps atom names of bondable atoms that bond one residue to the next

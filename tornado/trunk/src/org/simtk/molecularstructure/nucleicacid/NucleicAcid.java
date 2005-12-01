@@ -89,7 +89,7 @@ public class NucleicAcid extends Biopolymer {
         for (Iterator i = this.residues().iterator(); i.hasNext();) {
             PDBResidue residue = (PDBResidue) i.next();
             if (residue instanceof Nucleotide) {
-                Molecule base = residue.get(Nucleotide.baseGroup);
+                MoleculeClass base = residue.get(Nucleotide.baseGroup);
                 Vector3DClass centroid = base.getCenterOfMass();
                 
                 residueCentroids.put(residue, centroid);
