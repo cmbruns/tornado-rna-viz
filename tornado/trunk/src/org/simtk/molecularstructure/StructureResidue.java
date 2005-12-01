@@ -29,6 +29,12 @@ package org.simtk.molecularstructure;
 import java.util.Collection;
 import org.simtk.geometry3d.Vector3D;
 
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * A residue whose atomic positions are known
+ */
 public interface StructureResidue extends Residue, StructureMolecule {
     public Collection getHydrogenBondDonors();
     public Collection getHydrogenBondAcceptors();

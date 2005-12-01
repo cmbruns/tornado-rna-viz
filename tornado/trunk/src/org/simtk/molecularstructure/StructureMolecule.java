@@ -30,6 +30,12 @@ import java.util.Iterator;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.atom.PDBAtom;
 
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * A molecule whose atomic positions are known
+ */
 public interface StructureMolecule extends Molecule {
     public double getMass();
     public Vector3D getCenterOfMass();

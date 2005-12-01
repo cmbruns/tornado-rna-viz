@@ -28,6 +28,13 @@ package org.simtk.molecularstructure;
 
 import org.simtk.molecularstructure.atom.*;
 
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * A residue containing all of the information typically found in the 
+  * Protein Data Bank (PDB) file format.
+ */
 public interface PDBResidue extends StructureResidue {
     public char getInsertionCode();
     public PDBAtom getAtom(String atomName);

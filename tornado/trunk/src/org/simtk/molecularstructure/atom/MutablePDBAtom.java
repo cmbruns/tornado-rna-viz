@@ -29,43 +29,18 @@ package org.simtk.molecularstructure.atom;
 import java.text.ParseException;
 
 public interface MutablePDBAtom extends PDBAtom {
-    public char getAlternateLocationIndicator();
     public void setAlternateLocationIndicator(char alternateLocationIndicator);
-
-    public String getPDBAtomName();
     public void setPDBAtomName(String atomName);
-
-    public char getChainIdentifier();
     public void setChainIdentifier(char chainIdentifier);
-
-    public String getPDBCharge();
     public void setPDBCharge(String charge);
-
-    public String getPDBElementName();
     public void setPDBElementName(String elementName);
-
-    public char getInsertionCode();
     public void setInsertionCode(char insertionCode);
-
-    public double getOccupancy();
     public void setOccupancy(double occupancy);
-
-    public String getPDBRecordName();
     public void setPDBRecordName(String recordName);
-
-    public int getResidueNumber();
     public void setResidueNumber(int residueIndex);
-
-    public String getPDBResidueName();
     public void setPDBResidueName(String residueName);
-
-    public String getSegmentIdentifier();
     public void setSegmentIdentifier(String segmentIdentifier);
-
-    public int getPDBAtomSerialNumber();
     public void setPDBAtomSerialNumber(int serialNumber);
-
-    public double getTemperatureFactor();
     public void setTemperatureFactor(double temperatureFactor);
 
     /** 
