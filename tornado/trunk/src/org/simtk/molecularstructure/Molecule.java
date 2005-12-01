@@ -300,7 +300,7 @@ public class Molecule extends MoleculeMVCModel {
 				    boolean isSameResidue = ( (atom.getResidueNumber() == residueIndex)
 				       &&(atom.getInsertionCode() == insertionCode) );
 				    boolean isSameChain = ( atom.getChainIdentifier() == chainIdentifier );
-				    boolean isSolvent = Residue.isSolvent(atom.getPDBResidueName());
+				    boolean isSolvent = PDBResidueClass.isSolvent(atom.getPDBResidueName());
 
 				    if ( isSameChain && (isSameResidue || !isSolvent) ) {
 					    // Still the same molecule
@@ -345,18 +345,18 @@ public class Molecule extends MoleculeMVCModel {
 			String residueKey = "" + atom.getChainIdentifier() + atom.getResidueNumber() + atom.getInsertionCode();
 			if (residues.contains(residueKey)) continue; // Already saw this residue before
 			
-			if (Residue.isSolvent(atom.getPDBResidueName())) solventCount ++;
-			if (Residue.isProtein(atom.getPDBResidueName())) proteinCount ++;
-			if (Residue.isNucleicAcid(atom.getPDBResidueName())) nucleicCount ++;
-			if (Residue.isDNA(atom.getPDBResidueName())) DNACount ++;
-			if (Residue.isRNA(atom.getPDBResidueName())) RNACount ++;
+			if (PDBResidueClass.isSolvent(atom.getPDBResidueName())) solventCount ++;
+			if (PDBResidueClass.isProtein(atom.getPDBResidueName())) proteinCount ++;
+			if (PDBResidueClass.isNucleicAcid(atom.getPDBResidueName())) nucleicCount ++;
+			if (PDBResidueClass.isDNA(atom.getPDBResidueName())) DNACount ++;
+			if (PDBResidueClass.isRNA(atom.getPDBResidueName())) RNACount ++;
 			
 			residues.add(residueKey);
 			residueCount ++;
         }
 
         if (residueCount == 1)
-            return Residue.createFactoryResidue(bagOfAtoms);
+            return PDBResidueClass.createFactoryResidue(bagOfAtoms);
         
         // If there are protein residues, this is a protein
         if ((proteinCount >= 1) && (proteinCount >= nucleicCount)) {

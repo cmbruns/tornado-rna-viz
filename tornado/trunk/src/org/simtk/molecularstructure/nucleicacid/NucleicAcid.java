@@ -87,7 +87,7 @@ public class NucleicAcid extends Biopolymer {
         Hash3D centroidHash = new Hash3D(4.0);
         // for (Residue residue : this.residues()) {
         for (Iterator i = this.residues().iterator(); i.hasNext();) {
-            Residue residue = (Residue) i.next();
+            PDBResidue residue = (PDBResidue) i.next();
             if (residue instanceof Nucleotide) {
                 Molecule base = residue.get(Nucleotide.baseGroup);
                 Vector3DClass centroid = base.getCenterOfMass();
@@ -101,10 +101,10 @@ public class NucleicAcid extends Biopolymer {
         HashSet residuesAlreadyTested = new HashSet(); // only check each residue once
         for (Iterator iterCentroid = centroidHash.keySet().iterator(); iterCentroid.hasNext(); ) {
             Vector3D centroid = (Vector3D) iterCentroid.next();
-            Residue residue = (Residue) centroidHash.get(centroid);
+            PDBResidueClass residue = (PDBResidueClass) centroidHash.get(centroid);
             residuesAlreadyTested.add(residue);
             for (Iterator iterOtherResidue = centroidHash.neighborValues(centroid, centroidDistanceCutoff).iterator(); iterOtherResidue.hasNext(); ) {
-                Residue otherResidue = (Residue) iterOtherResidue.next();
+                PDBResidueClass otherResidue = (PDBResidueClass) iterOtherResidue.next();
                 if (residue == otherResidue) continue; // no self hits
                 if (residuesAlreadyTested.contains(otherResidue)) continue;
                 // If we got here there are two residues within 8 Angstroms of one another
@@ -290,7 +290,7 @@ public class NucleicAcid extends Biopolymer {
         Hash3D donorAtoms = new Hash3D(3.50);
         Hashtable donorNucleotides = new Hashtable();
         for (Iterator iterResidue = residues().iterator(); iterResidue.hasNext(); ) {
-            Residue residue = (Residue) iterResidue.next();
+            PDBResidue residue = (PDBResidue) iterResidue.next();
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide nucleotide = (Nucleotide) residue;
             for (Iterator iterAtom = nucleotide.getHydrogenBondDonors().iterator(); iterAtom.hasNext(); ) {
@@ -302,7 +302,7 @@ public class NucleicAcid extends Biopolymer {
         
         // Loop over acceptor atoms, try to find donors
         for (Iterator iterResidue = residues().iterator(); iterResidue.hasNext(); ) {
-            Residue residue = (Residue) iterResidue.next();
+            PDBResidue residue = (PDBResidue) iterResidue.next();
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide acceptorNucleotide = (Nucleotide) residue;
             for (Iterator iterAcceptorAtom = acceptorNucleotide.getHydrogenBondAcceptors().iterator(); iterAcceptorAtom.hasNext(); ) {

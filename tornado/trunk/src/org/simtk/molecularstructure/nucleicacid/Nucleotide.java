@@ -44,7 +44,7 @@ import org.simtk.molecularstructure.atom.*;
  * \brief One nucleotide base in a DNA or RNA molecule
  *
  */
-public class Nucleotide extends Residue {
+public class Nucleotide extends PDBResidueClass {
 
     static private Color defaultColor = new Color(255,150,255); // magenta for unknown nucleotide
     public Color getDefaultColor() {return defaultColor;}

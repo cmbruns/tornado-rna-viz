@@ -47,13 +47,13 @@ public class Biopolymer extends Molecule {
     Hashtable genericResidueBonds = new Hashtable(); 
 
 	// Distinguish between array index of residues and their sequence "number"
-	public Residue getResidue(int i) {return (Residue) residues.get(i);} // array index
+	public PDBResidue getResidue(int i) {return (PDBResidue) residues.get(i);} // array index
     public Vector residues() {return residues;}
 
     // sequence number
-    public Residue getResidueByNumber(int i) {return getResidueByNumber(new Integer(i).toString());}
-    public Residue getResidueByNumber(int i, char insertionCode) {return getResidueByNumber(new Integer(i).toString() + insertionCode);}
-    public Residue getResidueByNumber(String n) {return (Residue) residueNumbers.get(n);}
+    public PDBResidue getResidueByNumber(int i) {return getResidueByNumber(new Integer(i).toString());}
+    public PDBResidue getResidueByNumber(int i, char insertionCode) {return getResidueByNumber(new Integer(i).toString() + insertionCode);}
+    public PDBResidue getResidueByNumber(String n) {return (PDBResidue) residueNumbers.get(n);}
 
     public int getResidueCount() {return residues.size();}
 	
@@ -75,7 +75,7 @@ public class Biopolymer extends Molecule {
             String residueKey = "" + atom.getResidueNumber() + atom.getInsertionCode();
             if (!residueKey.equals(previousResidueKey)) { // Start a new residue, flush the old one
                 if (newResidueAtoms.size() > 0) {
-                    Residue residue = Residue.createFactoryResidue(newResidueAtoms);
+                    PDBResidue residue = PDBResidueClass.createFactoryResidue(newResidueAtoms);
                     residues.addElement(residue);
                     String numberString = "" + residue.getResidueNumber();
                     String fullString = numberString + residue.getInsertionCode();
@@ -92,7 +92,7 @@ public class Biopolymer extends Molecule {
         }
         // Flush final set of atoms
         if (newResidueAtoms.size() > 0) {
-            Residue residue = Residue.createFactoryResidue(newResidueAtoms);
+            PDBResidue residue = PDBResidueClass.createFactoryResidue(newResidueAtoms);
             residues.addElement(residue);
             String numberString = "" + residue.getResidueNumber();
             String fullString = numberString + residue.getInsertionCode();
@@ -106,9 +106,9 @@ public class Biopolymer extends Molecule {
         createResidueBonds();
         
         // Connect residues in a doubly linked list
-        Residue previousResidue = null;
+        PDBResidueClass previousResidue = null;
         for (Iterator i = residues.iterator(); i.hasNext(); ) {
-            Residue residue = (Residue) i.next();
+            PDBResidueClass residue = (PDBResidueClass) i.next();
         // for (Residue residue : residues) {
             if (previousResidue != null) {
                 residue.setPreviousResidue(previousResidue);
@@ -133,9 +133,9 @@ public class Biopolymer extends Molecule {
      * 
      */
     protected void createResidueBonds() {
-        Residue previousResidue = null;
+        PDBResidue previousResidue = null;
         for (Iterator r1 = residues.iterator(); r1.hasNext(); ) {
-            Residue residue = (Residue) r1.next();
+            PDBResidue residue = (PDBResidue) r1.next();
             if (previousResidue != null) {
                 for (Iterator s2 = genericResidueBonds.keySet().iterator(); s2.hasNext(); ) {
                     String firstAtomName = (String) s2.next();

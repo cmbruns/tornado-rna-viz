@@ -40,7 +40,7 @@ import org.simtk.molecularstructure.atom.*;
  * 
  * One protein amino acid residue
  */
-abstract public class AminoAcid extends Residue {
+abstract public class AminoAcid extends PDBResidueClass {
     public AminoAcid() {}
     public AminoAcid(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
 

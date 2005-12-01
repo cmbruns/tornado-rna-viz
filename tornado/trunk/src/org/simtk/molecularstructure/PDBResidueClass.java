@@ -46,7 +46,7 @@ import org.simtk.util.*;
  * \brief One monomer residue of a Biopolymer
  *
  */
-public abstract class Residue extends Molecule implements Selectable {
+public abstract class PDBResidueClass extends Molecule implements Selectable, PDBResidue {
     private static Color defaultColor = new Color(255, 255, 255);
 
     Hashtable genericBonds = new Hashtable(); // maps atom names of bondable atoms
@@ -55,8 +55,8 @@ public abstract class Residue extends Molecule implements Selectable {
     Hashtable atomNames = new Hashtable();
 
     // Even if there is a break in the sequence, the next residue train should probably jump over the gap
-    Residue nextResidue;
-    Residue previousResidue;
+    PDBResidueClass nextResidue;
+    PDBResidueClass previousResidue;
 
     public Color getDefaultColor() {return defaultColor;}
     
@@ -76,14 +76,14 @@ public abstract class Residue extends Molecule implements Selectable {
     /**
      * Create an empty Residue object with no atoms.
      */
-    public Residue() {
+    public PDBResidueClass() {
         addGenericBonds();
     }
 
-    public void setNextResidue(Residue r) {nextResidue = r;}
-    public Residue getNextResidue(){return nextResidue;}
-    public void setPreviousResidue(Residue r) {previousResidue = r;}
-    public Residue getPreviousResidue(){return previousResidue;}
+    public void setNextResidue(PDBResidueClass r) {nextResidue = r;}
+    public PDBResidueClass getNextResidue(){return nextResidue;}
+    public void setPreviousResidue(PDBResidueClass r) {previousResidue = r;}
+    public PDBResidueClass getPreviousResidue(){return previousResidue;}
     
     abstract public char getOneLetterCode();
     abstract public String getResidueName();
@@ -96,7 +96,7 @@ public abstract class Residue extends Molecule implements Selectable {
      * 
      * @param bagOfAtoms
      */
-    public Residue(PDBAtomSet bagOfAtoms) {
+    public PDBResidueClass(PDBAtomSet bagOfAtoms) {
         super(bagOfAtoms);
         addGenericBonds();
         indexAtoms(bagOfAtoms);
@@ -237,7 +237,7 @@ public abstract class Residue extends Molecule implements Selectable {
      * Create a new Residue of the correct type, e.g. AminoAcid, Adenosine, etc.
      * @return Returns a Residue object of the correct subtype
      */
-    static Residue createFactoryResidue(PDBAtomSet bagOfAtoms) {
+    static PDBResidueClass createFactoryResidue(PDBAtomSet bagOfAtoms) {
         if (bagOfAtoms == null) return null;
         if (bagOfAtoms.size() == 0) return null;
         PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);

@@ -157,7 +157,7 @@ implements MyIterable
                 return false;
             }
             public Object next() {
-                Residue answer = null;
+                PDBResidue answer = null;
                 if (residueIndex == 1) answer = residue1;
                 else if (residueIndex == 2) answer = residue2;
                 else { 

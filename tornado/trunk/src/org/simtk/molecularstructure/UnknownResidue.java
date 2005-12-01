@@ -33,7 +33,7 @@ package org.simtk.molecularstructure;
 
 import org.simtk.molecularstructure.atom.*;
 
-public class UnknownResidue extends Residue {
+public class UnknownResidue extends PDBResidueClass {
 
     UnknownResidue(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
     
