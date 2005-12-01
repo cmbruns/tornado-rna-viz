@@ -103,7 +103,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
         }
         else if (molecule instanceof BiopolymerClass) {
             BiopolymerClass biopolymer = (BiopolymerClass) molecule;
-            for (Iterator iterResidue = biopolymer.residues().iterator(); iterResidue.hasNext(); ) {
+            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
                 addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
             }
         }

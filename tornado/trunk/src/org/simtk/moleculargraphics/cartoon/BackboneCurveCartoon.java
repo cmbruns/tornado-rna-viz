@@ -152,7 +152,7 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
         vtkPoints lineNormals = new vtkPoints();
         vtkFloatArray lineScalars = new vtkFloatArray();
         
-        for (Iterator i = biopolymer.residues().iterator(); i.hasNext();) {
+        for (Iterator i = biopolymer.getResidueIterator(); i.hasNext();) {
             PDBResidue residue = (PDBResidue) i.next();
             Vector3D backbonePosition = residue.getBackbonePosition();
             Vector3D sideChainPosition = residue.getSideChainPosition();

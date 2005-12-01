@@ -153,7 +153,7 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         }
         else if (molecule instanceof NucleicAcid) {
             NucleicAcid nucleicAcid = (NucleicAcid) molecule;
-            for (Iterator iterResidue = nucleicAcid.residues().iterator(); iterResidue.hasNext(); ) {
+            for (Iterator iterResidue = nucleicAcid.getResidueIterator(); iterResidue.hasNext(); ) {
                 addMolecule((Nucleotide) iterResidue.next(), currentObjects);
             }
         }

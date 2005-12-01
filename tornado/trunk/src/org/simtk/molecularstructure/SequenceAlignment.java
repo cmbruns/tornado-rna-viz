@@ -38,10 +38,11 @@ import java.util.*;
   * Not every residue need be aligned.
  */
 public class SequenceAlignment {
+    
     private Biopolymer molecule1 = null;
     private Biopolymer molecule2 = null;
-    private Vector alignedResidues = new Vector();
-    
+    private Vector alignedResidues = new Vector();    
+
     public SequenceAlignment(Biopolymer m1, Biopolymer m2) {
         this.molecule1 = m1;
         this.molecule2 = m2;
@@ -67,13 +68,23 @@ public class SequenceAlignment {
             alignedResidues.add(new ResiduePair((Residue) i1.next(), (Residue) i2.next()));
     }
     
-    class ResiduePair {
-        private Residue residue1;
-        private Residue residue2;
-        
-        ResiduePair(Residue r1, Residue r2) {
-            this.residue1 = r1;
-            this.residue2 = r2;
-        }
-    }
+
+}
+
+class ResiduePair {
+    private Residue residue1;
+    private Residue residue2;
+    static final AlignmentMethod MANUAL_METHOD = AlignmentMethod.MANUAL;
+    static final AlignmentMethod AUTOMATIC_METHOD = AlignmentMethod.MANUAL;
+    
+    ResiduePair(Residue r1, Residue r2) {
+        this.residue1 = r1;
+        this.residue2 = r2;
+    }    
+}
+
+class AlignmentMethod {
+    static final AlignmentMethod MANUAL = new AlignmentMethod();
+    static final AlignmentMethod AUTOMATIC = new AlignmentMethod();
+    private AlignmentMethod(){}
 }

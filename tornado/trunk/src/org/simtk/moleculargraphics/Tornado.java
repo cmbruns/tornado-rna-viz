@@ -1132,7 +1132,7 @@ implements ResidueActionListener
                 bp = (BiopolymerClass) molecule;
                 
                 // for (Residue residue : bp.residues())
-                for (Iterator i2 = bp.residues().iterator(); i2.hasNext(); ) {
+                for (Iterator i2 = bp.getResidueIterator(); i2.hasNext(); ) {
                     Residue residue = (Residue) i2.next();
                     residueActionBroadcaster.fireAdd(residue);
                 }

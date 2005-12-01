@@ -86,7 +86,7 @@ public class NucleicAcid extends BiopolymerClass {
         // Close in space
         Hash3D centroidHash = new Hash3D(4.0);
         // for (Residue residue : this.residues()) {
-        for (Iterator i = this.residues().iterator(); i.hasNext();) {
+        for (Iterator i = this.getResidueIterator(); i.hasNext();) {
             PDBResidue residue = (PDBResidue) i.next();
             if (residue instanceof Nucleotide) {
                 StructureMolecule base = residue.get(Nucleotide.baseGroup);
@@ -289,7 +289,7 @@ public class NucleicAcid extends BiopolymerClass {
         // Create a hash of hydrogen bond donor atoms
         Hash3D donorAtoms = new Hash3D(3.50);
         Hashtable donorNucleotides = new Hashtable();
-        for (Iterator iterResidue = residues().iterator(); iterResidue.hasNext(); ) {
+        for (Iterator iterResidue = getResidueIterator(); iterResidue.hasNext(); ) {
             PDBResidue residue = (PDBResidue) iterResidue.next();
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide nucleotide = (Nucleotide) residue;
@@ -301,7 +301,7 @@ public class NucleicAcid extends BiopolymerClass {
         }
         
         // Loop over acceptor atoms, try to find donors
-        for (Iterator iterResidue = residues().iterator(); iterResidue.hasNext(); ) {
+        for (Iterator iterResidue = getResidueIterator(); iterResidue.hasNext(); ) {
             PDBResidue residue = (PDBResidue) iterResidue.next();
             if (! (residue instanceof Nucleotide)) continue;
             Nucleotide acceptorNucleotide = (Nucleotide) residue;

@@ -96,7 +96,10 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		 // (start with spheres)
 		 Vector3D previousCenter = null;
 		 for (int r = 0; r < rna.getResidueCount(); r++) {
-		     PDBResidue residue = rna.getResidue(r);
+             if (! (rna.getResidue(r) instanceof PDBResidue))
+                 continue;
+
+		     PDBResidue residue = (PDBResidue) rna.getResidue(r);
 		     PDBAtom phosphorus = residue.getAtom("P");
 		     if (phosphorus != null) {
 		         // Create sphere at phosphate
