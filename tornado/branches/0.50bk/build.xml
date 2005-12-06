@@ -3,15 +3,15 @@
   <property file="build.properties"/>
 
   <!-- use these defaults if there is no property file -->
-  <property name="vtk.bin.dir" value="/usr/local/lib/vtk"/>
-  <property name="jogl.bin.dir" value="/Users/bkeller/src/jogl"/>
+  <property name="vtk.bin.dir" value="/Users/bkeller1/src/vtk"/>
+  <property name="jogl.bin.dir" value="/Users/bkeller1/src/jogl"/>
   <property name="build.dir" value="out"/>
   <property name="classes.build.dir" value="${build.dir}/classes"/>
   <property name="jar.build.dir" value="${build.dir}/jar"/>
   <property name="webstart.dir" value="webstart"/>
   <property name="jar.name" value="tornado.jar"/>
 
-  <property name="lib" value="${jar.build.dir}/${jar.name}:${vtk.bin.dir}/vtk.jar:${webstart.dir}/jogl.jar:${webstart.dir}/Jama.jar:jnlp.jar"/>
+  <property name="lib" value="${jar.build.dir}/${jar.name}:${vtk.bin.dir}/vtk.jar:${jogl.bin.dir}/jogl.jar:${webstart.dir}/Jama.jar:browserlaunch.jar:jnlp.jar"/>
 
   <target name="run" depends="jar">
     <java fork="yes" classpath="${lib}" classname="org.simtk.moleculargraphics.Tornado">
