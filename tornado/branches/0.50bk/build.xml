@@ -60,15 +60,19 @@
               aboutmenuname="${mac.bundle.name}"
               icon="mac/Tornado.icns"
               mainclass="org.simtk.moleculargraphics.Tornado" 
-              jars="${jar.build.dir}/${jar.name} ${vtk.bin.dir}/vtk.jar ${webstart.dir}/jogl.jar ${webstart.dir}/Jama.jar jnlp.jar"
+              jars="${jar.build.dir}/${jar.name} ${vtk.bin.dir}/vtk.jar ${jogl.bin.dir}/jogl.jar ${webstart.dir}/Jama.jar browserlaunch.jar jnlp.jar"
               antialiasedgraphics="true"
               antialiasedtext="true" 
               jvmversion="1.4+"
               screenmenu="true"
-              version="0.47"
+              version="0.50"
     />
     <copy todir="${build.dir}/${mac.bundle.name}.app/Contents/Resources/Java">
-      <fileset dir="mac/native">
+      <fileset dir="${vtk.bin.dir}">
+        <include name="*.jnilib"/>
+        <include name="*.dylib"/>
+      </fileset>
+      <fileset dir="${jogl.bin.dir}">
         <include name="*.jnilib"/>
       </fileset>
     </copy>

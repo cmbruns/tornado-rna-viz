@@ -743,6 +743,7 @@ public class Tornado3DCanvas extends vtkPanel
                 selectedAtoms.addAtom(a);
             }
         }
+        repaint();
 
     }
     public void unSelect(Selectable r) {
@@ -758,6 +759,7 @@ public class Tornado3DCanvas extends vtkPanel
                 selectedAtoms.removeAtom(a);
             }
         }
+        repaint();
 
     }
     public void unSelect() {
@@ -766,6 +768,7 @@ public class Tornado3DCanvas extends vtkPanel
         
         // Empty out our personal selected atoms container
         selectedAtoms = new Molecule();
+        repaint();
 
     }
     public void add(Residue r) {}    
