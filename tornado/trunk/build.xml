@@ -11,7 +11,7 @@
   <property name="webstart.dir" value="webstart"/>
   <property name="jar.name" value="tornado.jar"/>
 
-  <property name="lib" value="${jar.build.dir}/${jar.name}:${vtk.bin.dir}/vtk.jar:${webstart.dir}/jogl.jar:${webstart.dir}/Jama.jar:jnlp.jar"/>
+  <property name="lib" value="${jar.build.dir}/${jar.name}:${vtk.bin.dir}/vtk.jar:${jogl.bin.dir}/jogl.jar:${webstart.dir}/Jama.jar:jnlp.jar"/>
 
   <target name="run" depends="jar">
     <java fork="yes" classpath="${lib}" classname="org.simtk.moleculargraphics.Tornado">
