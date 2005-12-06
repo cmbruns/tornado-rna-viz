@@ -21,24 +21,16 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Dec 6, 2005
  * Original author: Christopher Bruns
  */
 package org.simtk.molecularstructure;
 
-import java.util.Collection;
-import org.simtk.geometry3d.Vector3D;
+import org.simtk.geometry3d.*;
+import org.simtk.mvc.ObservableInterface;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * A residue whose atomic positions are known
- */
-public interface StructureResidue extends Residue, StructureMolecule {
-    public Collection getHydrogenBondDonors();
-    public Collection getHydrogenBondAcceptors();
-    public Vector3D getBackbonePosition();
-    public Vector3D getSideChainPosition();
-    public StructureMolecule get(FunctionalGroup fg); // TODO
+public interface MovableMolecule extends LocatedMolecule, ObservableInterface {
+    public void translate(Vector3D t);
+    public void rotate(Matrix3D m);
+    public void transform(HomogeneousTransform h);
 }

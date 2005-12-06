@@ -69,15 +69,15 @@ public class BallAndStickCartoon extends MolecularCartoonNewWay {
         sticks.unSelect();
         balls.unSelect();
     }
-    public void highlight(StructureMolecule m) {
+    public void highlight(LocatedMolecule m) {
         sticks.highlight(m);
         balls.highlight(m);
     }
-    public void hide(StructureMolecule m) {
+    public void hide(LocatedMolecule m) {
         sticks.hide(m);
         balls.hide(m);
     }
-    public void show(StructureMolecule m) {
+    public void show(LocatedMolecule m) {
         sticks.show(m);
         balls.show(m);
     }

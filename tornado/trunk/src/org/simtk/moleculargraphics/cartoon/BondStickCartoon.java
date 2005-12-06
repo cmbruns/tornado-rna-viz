@@ -81,12 +81,12 @@ public class BondStickCartoon extends GlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOn();
     }
 
-    public void show(StructureMolecule molecule) {
+    public void show(LocatedMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
 
-    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
+    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -101,8 +101,8 @@ public class BondStickCartoon extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof StructureResidue) {
-            StructureResidue residue = (StructureResidue) molecule;
+        if (molecule instanceof LocatedResidue) {
+            LocatedResidue residue = (LocatedResidue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
                 addAtom((PDBAtom)i.next(), currentObjects);
             }
@@ -111,8 +111,8 @@ public class BondStickCartoon extends GlyphCartoon {
             Biopolymer biopolymer = (Biopolymer) molecule;
             for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
                 Residue residue = (Residue) iterResidue.next();
-                if (residue instanceof StructureResidue)
-                    addMolecule((StructureResidue) residue, currentObjects);
+                if (residue instanceof LocatedResidue)
+                    addMolecule((LocatedResidue) residue, currentObjects);
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {

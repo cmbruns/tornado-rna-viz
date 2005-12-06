@@ -21,13 +21,14 @@
  */
 
 /*
- * Created on Nov 14, 2005
+ * Created on Dec 6, 2005
  * Original author: Christopher Bruns
  */
 package org.simtk.molecularstructure.atom;
 
-import java.util.Collection;
+import org.simtk.geometry3d.Vector3D;
 
-public interface MoleculeAtom extends Atom {
-    public Collection getBonds();
+public interface MovableAtom extends LocatedAtom {
+    public void setCoordinates(Vector3D coordinates);
+    public void translate(Vector3D v);
 }

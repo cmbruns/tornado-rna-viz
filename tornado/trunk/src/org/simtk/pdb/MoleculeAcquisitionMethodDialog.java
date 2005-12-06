@@ -47,6 +47,7 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
     MoleculeFileChooser moleculeFileChooser = null;
     String defaultPdbId = "1MRP";
     private String pdbId = null;
+    private ProgressDialog progressDialog = null;
     
     private LoadPDBProcess loadPDBProcess = null;
     private ProgressManager progressManager = null;
@@ -93,10 +94,11 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
 //        initializeDialog();
 //   }
     
-    public MoleculeAcquisitionMethodDialog(JFrame f) {
+    public MoleculeAcquisitionMethodDialog(JFrame f, ProgressDialog p) {
         super(f);
         // System.out.println("MoleculeAcquisitionMethodDialog constructor");
         parent = f;
+        progressDialog = p;
         initializeDialog();
         fileLoadObservable.addObserver(this);
     }
@@ -207,8 +209,15 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
             loadPDBProcess.start();
             
             // And another process to monitor the download process
-            progressManager = 
-                new ProgressManager(loadPDBProcess, this, "Loading structure " + inputFile.getName());
+            if (progressDialog == null)
+                progressManager = 
+                    new ProgressManager(
+                            loadPDBProcess, 
+                            this, 
+                            "Loading structure " + inputFile.getName());
+            else 
+                progressManager = new ProgressManager(loadPDBProcess, progressDialog);
+            
             progressManager.start();
 
         }
@@ -233,8 +242,14 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
             loadPDBProcess.start();
 
             // And another process to monitor the download process
-            progressManager = 
-                new ProgressManager(loadPDBProcess, this, "Downloading structure " + idField.getText());
+            if (progressDialog == null)
+                progressManager = 
+                    new ProgressManager(loadPDBProcess, 
+                            this, 
+                            "Downloading structure " + idField.getText()
+                            );
+            else progressManager = new ProgressManager(loadPDBProcess, progressDialog);
+
             progressManager.start();
             
             setVisible(false);

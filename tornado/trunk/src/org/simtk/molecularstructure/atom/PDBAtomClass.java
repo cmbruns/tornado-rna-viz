@@ -85,7 +85,7 @@ public class PDBAtomClass implements MutablePDBAtom {
     public void translate(Vector3D v) {setCoordinates(getCoordinates().plus(v));}
 
     // MoleculeAtom interface methods
-    public void addBond(ChemicalElement atom2) {m_bonds.add(atom2);}
+    public void addBond(MoleculeAtom atom2) {m_bonds.add(atom2);}
     public Collection getBonds() {return m_bonds;}
     
     protected void setElement(ChemicalElement element) {

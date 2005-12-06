@@ -147,9 +147,9 @@ public abstract class PDBResidueClass extends MoleculeClass implements Selectabl
         ((HashSet)genericBonds.get(atom2)).add(atom1);
     }
     
-    public StructureMolecule get(FunctionalGroup fg) {
+    public LocatedMolecule get(FunctionalGroup fg) {
         String[] groupAtomNames = fg.getAtomNames();
-        MutableStructureMolecule mol = new MoleculeClass();
+        MutableLocatedMolecule mol = new MoleculeClass();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
             PDBAtom atom = getAtom(atomName);
@@ -194,7 +194,7 @@ public abstract class PDBResidueClass extends MoleculeClass implements Selectabl
         ATOM1: for (Iterator a1 = getAtomIterator(); a1.hasNext(); ) {
             LocatedAtom atom = (LocatedAtom) a1.next();
             if (! (atom instanceof PDBAtomClass)) continue ATOM1;
-            PDBAtomClass atom1 = (PDBAtomClass) atom;
+            MutablePDBAtom atom1 = (MutablePDBAtom) atom;
             
             // Assign bonds from residue dictionary
             if (genericBonds.containsKey(atom1.getPDBAtomName())) {
@@ -202,7 +202,7 @@ public abstract class PDBResidueClass extends MoleculeClass implements Selectabl
                     String a2Name = (String) b2.next();
                     if (! atomNames.containsKey(a2Name)) continue BOND;
                     ATOM2: for (Iterator a2 = ((Vector)atomNames.get(a2Name)).iterator(); a2.hasNext(); ) {
-                        PDBAtom atom2 = (PDBAtom) a2.next();
+                        MutablePDBAtom atom2 = (MutablePDBAtom) a2.next();
                         if (! (atom2 instanceof PDBAtom)) continue ATOM2;
     
                         PDBAtom pdbAtom2 = (PDBAtom) atom2;

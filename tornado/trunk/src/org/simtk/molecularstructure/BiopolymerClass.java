@@ -140,11 +140,11 @@ public class BiopolymerClass extends MoleculeClass implements ObservableBiopolym
             if (previousResidue != null) {
                 for (Iterator s2 = genericResidueBonds.keySet().iterator(); s2.hasNext(); ) {
                     String firstAtomName = (String) s2.next();
-                    PDBAtom firstAtom = previousResidue.getAtom(firstAtomName);
+                    MutablePDBAtom firstAtom = (MutablePDBAtom) previousResidue.getAtom(firstAtomName);
                     if (firstAtom != null) {
                         for (Iterator s3 = ((HashSet)genericResidueBonds.get(firstAtomName)).iterator(); s3.hasNext(); ) {
                             String secondAtomName = (String) s3.next();
-                            PDBAtom secondAtom = residue.getAtom(secondAtomName);
+                            MutablePDBAtom secondAtom = (MutablePDBAtom) residue.getAtom(secondAtomName);
                             if (secondAtom != null) {
                                 // TODO check distance
                                 firstAtom.addBond(secondAtom);

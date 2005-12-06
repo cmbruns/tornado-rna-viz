@@ -28,7 +28,7 @@ package org.simtk.molecularstructure.atom;
 
 import java.text.ParseException;
 
-public interface MutablePDBAtom extends PDBAtom {
+public interface MutablePDBAtom extends PDBAtom, MovableAtom, MutableMoleculeAtom {
     public void setAlternateLocationIndicator(char alternateLocationIndicator);
     public void setPDBAtomName(String atomName);
     public void setChainIdentifier(char chainIdentifier);

@@ -71,7 +71,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         glyphActor.GetProperty().SetLineWidth(2.0);
     }
     
-    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
+    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -138,7 +138,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         }
     }
 
-    public void show(StructureMolecule molecule) {
+    public void show(LocatedMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
@@ -147,7 +147,7 @@ public class WireFrameCartoon extends GlyphCartoon {
      * 
      * @param molecule
      */
-    public void updateCoordinates(StructureMolecule molecule) {
+    public void updateCoordinates(LocatedMolecule molecule) {
         // Each bond glyph depends on two atoms, asymmetrically
         
         boolean modified = false;

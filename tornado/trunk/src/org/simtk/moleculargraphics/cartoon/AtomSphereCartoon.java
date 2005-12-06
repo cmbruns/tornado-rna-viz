@@ -74,12 +74,12 @@ public class AtomSphereCartoon extends GlyphCartoon {
     
     public void setScale(double s) {sizeScale = s;}
     
-    public void show(StructureMolecule molecule) {
+    public void show(LocatedMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
 
-    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
+    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added

@@ -79,15 +79,15 @@ public class TubeAndStickTrace extends MolecularCartoonNewWay {
         tubes.unSelect();
         rods.unSelect();
     }
-    public void highlight(StructureMolecule m) {
+    public void highlight(LocatedMolecule m) {
         tubes.highlight(m);
         rods.highlight(m);
     }
-    public void hide(StructureMolecule m) {
+    public void hide(LocatedMolecule m) {
         tubes.hide(m);
         rods.hide(m);
     }
-    public void show(StructureMolecule m) {
+    public void show(LocatedMolecule m) {
         tubes.show(m);
         rods.show(m);
     }

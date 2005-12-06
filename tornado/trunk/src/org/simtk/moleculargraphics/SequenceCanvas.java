@@ -218,6 +218,10 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         // TODO respond to molecule change, but only if it's a sequence change
     }
 
+    public ObservableBiopolymer getMolecule() {
+        return sequenceMolecule;
+    }
+
     public void setMolecule(ObservableBiopolymer molecule) {
         if (molecule == sequenceMolecule) return; // no change
 

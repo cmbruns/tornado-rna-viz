@@ -284,8 +284,8 @@ implements ResidueActionListener
         // for (BasePair bp : basePairs) {
         for (Iterator i = basePairs.iterator(); i.hasNext();) {
             BasePair bp = (BasePair) i.next();
-            StructureMolecule base1 = bp.getResidue1().get(Nucleotide.baseGroup);
-            StructureMolecule base2 = bp.getResidue2().get(Nucleotide.baseGroup);
+            LocatedMolecule base1 = bp.getResidue1().get(Nucleotide.baseGroup);
+            LocatedMolecule base2 = bp.getResidue2().get(Nucleotide.baseGroup);
             Vector3D centroid1 = base1.getCenterOfMass();
             Vector3D centroid2 = base2.getCenterOfMass();
             Plane3D plane1 = base1.bestPlane3D();
@@ -661,14 +661,14 @@ implements ResidueActionListener
     }
 
     class CartoonAction implements ActionListener {
-        MolecularCartoon.CartoonType type;
+        MolecularCartoon.CartoonType type = null;
         CartoonAction(MolecularCartoon.CartoonType t) {
             type = t;
         }
         public void actionPerformed(ActionEvent e) {
             setWait("Calculating geometry...");
             
-            canvas.setMolecules(moleculeCollection, null);
+            canvas.setMolecules(moleculeCollection, type);
             
 //            canvas.currentCartoonType = type;
 //
@@ -821,7 +821,7 @@ implements ResidueActionListener
     }
 
     class LoadStructureDialog extends MoleculeAcquisitionMethodDialog {
-        LoadStructureDialog(JFrame f) {super(f);}
+        LoadStructureDialog(JFrame f) {super(f, null);}
 
         public void readStructureFromMoleculeCollection(MoleculeCollection molecules)
         {
@@ -1127,7 +1127,7 @@ implements ResidueActionListener
         BiopolymerClass bp = null;
         // for (Molecule molecule : molecules.molecules()) {
         for (Iterator i1 = molecules.molecules().iterator(); i1.hasNext();) {
-            StructureMolecule molecule = (StructureMolecule) i1.next();
+            LocatedMolecule molecule = (LocatedMolecule) i1.next();
             if (molecule instanceof BiopolymerClass) {
                 bp = (BiopolymerClass) molecule;
                 

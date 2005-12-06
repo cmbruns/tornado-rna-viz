@@ -117,12 +117,12 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
         // baseCaps.unSelect();
         studs.unSelect();
     }
-    public void highlight(StructureMolecule m) {
+    public void highlight(LocatedMolecule m) {
         baseRods.highlight(m);
         // baseCaps.highlight(m);
         studs.highlight(m);
     }
-    public void hide(StructureMolecule m) {
+    public void hide(LocatedMolecule m) {
         baseRods.hide(m);
         // baseCaps.hide(m);
         studs.hide(m);
@@ -136,7 +136,7 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
     
 
     
-    public void show(StructureMolecule m) {
+    public void show(LocatedMolecule m) {
         baseRods.show(m);
         // baseCaps.show(m);
         studs.show(m);
@@ -144,7 +144,7 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
         addMolecule(m);
     }
 
-    public void addMolecule(StructureMolecule molecule) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (! (molecule instanceof BiopolymerClass)) return;
         BiopolymerClass biopolymer = (BiopolymerClass) molecule;
         

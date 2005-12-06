@@ -130,12 +130,12 @@ public class BackboneStick extends GlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOn();
     }
 
-    public void show(StructureMolecule molecule) {
+    public void show(LocatedMolecule molecule) {
         addMolecule(molecule, null);
         glyphColors.show(molecule);
     }
 
-    void addMolecule(StructureMolecule molecule, Vector parentObjects) {
+    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -174,13 +174,13 @@ public class BackboneStick extends GlyphCartoon {
 
         Vector3D nextPosition = null;
         if (residue.getNextResidue() != null)
-            if (residue.getNextResidue() instanceof StructureResidue)
-                nextPosition = ((StructureResidue)residue.getNextResidue()).getBackbonePosition();
+            if (residue.getNextResidue() instanceof LocatedResidue)
+                nextPosition = ((LocatedResidue)residue.getNextResidue()).getBackbonePosition();
 
         Vector3D previousPosition = null;
         if (residue.getPreviousResidue() != null) 
-            if (residue.getPreviousResidue() instanceof StructureResidue)
-                previousPosition = ((StructureResidue)residue.getPreviousResidue()).getBackbonePosition();
+            if (residue.getPreviousResidue() instanceof LocatedResidue)
+                previousPosition = ((LocatedResidue)residue.getPreviousResidue()).getBackbonePosition();
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -202,13 +202,6 @@ public class BackboneStick extends GlyphCartoon {
             // Point midway between two residues
             Vector3DClass midPosition = new Vector3DClass( backbonePosition.plus(previousPosition).times(0.5) );
 
-            // TODO debug new Vector3D arithmetic problem
-            System.out.println("previousPosition = " + previousPosition);
-            System.out.println("midPosition = " + midPosition);
-            System.out.println("backbonePosition = " + backbonePosition);
-            System.out.println();
-
-            
             // Direction of this half bond
             // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
             if (residue.getResidueNumber() > residue.getPreviousResidue().getResidueNumber())
@@ -221,12 +214,6 @@ public class BackboneStick extends GlyphCartoon {
             // Point midway between two residues
             Vector3DClass midPosition = new Vector3DClass( backbonePosition.plus(nextPosition).times(0.5) );
 
-            // TODO debug new Vector3D arithmetic problem
-            System.out.println("backbonePosition = " + backbonePosition);
-            System.out.println("midPosition = " + midPosition);
-            System.out.println("nextPosition = " + backbonePosition);
-            System.out.println();
-
             // Direction of this half bond
             // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
             if (residue.getResidueNumber() > residue.getNextResidue().getResidueNumber())
@@ -238,11 +225,9 @@ public class BackboneStick extends GlyphCartoon {
     
     private void tileSticks(Vector3D segmentStart, Vector3D segmentEnd, Vector currentObjects, int colorScalar) {
         Vector3D segmentDirection = segmentEnd.minus(segmentStart);
-        System.out.println("segmentDirection = " + segmentDirection);
 
         // Use sticks to tile path from atom center, c, to bond midpoint
         int numberOfSticks = (int) Math.ceil(segmentDirection.length() / stickLength);
-        System.out.println("number of sticks = " + numberOfSticks);
 
         // Scale to unit length.  NOTE - effect of this on calculations above and below
         segmentDirection = segmentDirection.unit().v3();

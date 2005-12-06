@@ -26,6 +26,6 @@
  */
 package org.simtk.molecularstructure;
 
-public interface MutablePDBResidue extends PDBResidue, MutableStructureResidue {
+public interface MutablePDBResidue extends PDBResidue, MutableLocatedResidue {
     public void setInsertionCode(char insertionCode);
 }

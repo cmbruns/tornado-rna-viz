@@ -65,15 +65,15 @@ public class RopeAndCylinder extends MolecularCartoonNewWay {
         duplexes.unSelect();
         ropes.unSelect();
     }
-    public void highlight(StructureMolecule m) {
+    public void highlight(LocatedMolecule m) {
         duplexes.highlight(m);
         ropes.highlight(m);
     }
-    public void hide(StructureMolecule m) {
+    public void hide(LocatedMolecule m) {
         duplexes.hide(m);
         ropes.hide(m);
     }
-    public void show(StructureMolecule m) {
+    public void show(LocatedMolecule m) {
         duplexes.show(m);
         ropes.show(m);
     }

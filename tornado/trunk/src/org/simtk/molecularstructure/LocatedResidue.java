@@ -26,25 +26,19 @@
  */
 package org.simtk.molecularstructure;
 
-import java.util.Iterator;
-import org.simtk.geometry3d.*;
-import org.simtk.molecularstructure.atom.PDBAtom;
+import java.util.Collection;
+import org.simtk.geometry3d.Vector3D;
 
 /**
  *  
   * @author Christopher Bruns
   * 
-  * A molecule whose atomic positions are known
+  * A residue whose atomic positions are known
  */
-public interface StructureMolecule extends Molecule {
-    public double getMass();
-    public Vector3D getCenterOfMass();
-    /**
-     * Change the position of the molecule by the specified amount
-     * @param t amount to translate
-     */
-    public Iterator getAtomIterator();
-    public Plane3D bestPlane3D();
-    public boolean containsAtom(PDBAtom atom);
-    public int getAtomCount();
+public interface LocatedResidue extends Residue, LocatedMolecule {
+    public Collection getHydrogenBondDonors();
+    public Collection getHydrogenBondAcceptors();
+    public Vector3D getBackbonePosition();
+    public Vector3D getSideChainPosition();
+    public LocatedMolecule get(FunctionalGroup fg); // TODO
 }

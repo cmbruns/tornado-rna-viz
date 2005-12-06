@@ -26,6 +26,6 @@
  */
 package org.simtk.molecularstructure;
 
-public interface PDBMolecule extends StructureMolecule {
+public interface PDBMolecule extends LocatedMolecule {
     public Residue getResidueByNumber(int i, char insertionCode);
 }

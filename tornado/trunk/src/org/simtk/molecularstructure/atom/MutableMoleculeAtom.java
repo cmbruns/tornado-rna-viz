@@ -21,11 +21,12 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Dec 6, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure;
+package org.simtk.molecularstructure.atom;
 
-public interface MutableStructureResidue extends StructureResidue, MutableResidue {
-    public void addGenericBond(String atom1, String atom2);
+public interface MutableMoleculeAtom extends MoleculeAtom {
+    // TODO add bond valence information to bonds
+    public void addBond(MoleculeAtom atom2);
 }

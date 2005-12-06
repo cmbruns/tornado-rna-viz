@@ -41,27 +41,61 @@ public class ChemicalElementClass implements ChemicalElement {
     double m_VanDerWaalsRadius;
     double m_CovalentRadius;
     Color m_DefaultColor;
+    static private Color classDefaultColor = Color.cyan;
     
-    static public ChemicalElementClass HYDROGEN = 
-        new ChemicalElementClass("hydrogen",        "H",   1.008, 1.20, 0.37, Color.white);
-    static public ChemicalElementClass CARBON = 
+    static public ChemicalElement HYDROGEN = 
+        new ChemicalElementClass("hydrogen",        "H",  1.008,  1.20, 0.37, Color.white);
+    static public ChemicalElement LITHIUM = 
+        new ChemicalElementClass("lithium",        "Li",  6.941,  1.82, 1.34, classDefaultColor);
+    static public ChemicalElement BORON = 
+        new ChemicalElementClass("boron",           "B", 10.811,  1.75, 0.82, classDefaultColor);
+    static public ChemicalElement CARBON = 
         new ChemicalElementClass("carbon",          "C",  12.01,  1.70, 0.77, Color.GRAY);
-    static public ChemicalElementClass NITROGEN = 
+    static public ChemicalElement NITROGEN = 
         new ChemicalElementClass("nitrogen",        "N",  14.01,  1.55, 0.75, new Color(110, 170, 255)); // blue
-    static public ChemicalElementClass OXYGEN = 
+    static public ChemicalElement OXYGEN = 
         new ChemicalElementClass("oxygen",          "O",  16.00,  1.52, 0.73, new Color(255, 90, 115)); // red
-    static public ChemicalElementClass MAGNESIUM = 
-        new ChemicalElementClass("magnesium",       "Mg", 24.0,   1.73, 1.30, Color.cyan);
-    static public ChemicalElementClass PHOSPHORUS = 
-        new ChemicalElementClass("phosphorus",      "P",  31.0,   1.80, 1.06, new Color(200, 255, 80)); // green
-    static public ChemicalElementClass SULFUR = 
+    static public ChemicalElement FLUORINE = 
+        new ChemicalElementClass("fluorine",        "F",  19.00,  1.47, 0.71, classDefaultColor);
+    static public ChemicalElement SODIUM = 
+        new ChemicalElementClass("sodium",          "Na", 22.00,  2.27, 1.54, classDefaultColor);
+    static public ChemicalElement MAGNESIUM = 
+        new ChemicalElementClass("magnesium",       "Mg", 24.00,  1.73, 1.30, classDefaultColor);
+    static public ChemicalElement PHOSPHORUS = 
+        new ChemicalElementClass("phosphorus",      "P",  31.00,  1.80, 1.06, new Color(200, 255, 80)); // green
+    static public ChemicalElement SULFUR = 
         new ChemicalElementClass("sulfur",          "S",  32.06,  1.80, 1.02, new Color(255, 255, 150)); // yellow
-    static public ChemicalElementClass UNKNOWN_ELEMENT = 
-        new ChemicalElementClass("unknown element", "?",  10.0,   1.50, 0.75, Color.PINK);
+    static public ChemicalElement CHLORINE = 
+        new ChemicalElementClass("chlorine",        "Cl", 35.453, 1.75, 0.99, Color.green);
+    static public ChemicalElement POTASSIUM = 
+        new ChemicalElementClass("potassium",        "K", 39.098, 2.75, 1.96, classDefaultColor);
+    static public ChemicalElement CALCIUM = 
+        new ChemicalElementClass("calcium",         "Ca", 40.078, 1.94, 1.74, new Color(220, 210, 200)); // warm white
+    static public ChemicalElement MANGANESE = 
+        new ChemicalElementClass("manganese",       "Mn", 54.938, 1.61, 1.39, classDefaultColor);
+    static public ChemicalElement IRON = 
+        new ChemicalElementClass("iron",            "Fe", 55.845, 1.56, 1.25, classDefaultColor);
+    static public ChemicalElement NICKEL = 
+        new ChemicalElementClass("nickel",          "Ni", 58.693, 1.63, 1.21, classDefaultColor);
+    static public ChemicalElement COPPER = 
+        new ChemicalElementClass("copper",          "Cu", 63.546, 1.40, 1.38, Color.orange);
+    static public ChemicalElement ZINC = 
+        new ChemicalElementClass("zinc",            "Zn", 65.409, 1.39, 1.31, Color.gray);
+    static public ChemicalElement SELENIUM = 
+        new ChemicalElementClass("selenium",        "Se", 78.96,  1.90, 1.16, classDefaultColor);
+    static public ChemicalElement BROMINE = 
+        new ChemicalElementClass("bromine",         "Br", 79.904, 1.85, 1.14, classDefaultColor);
+    static public ChemicalElement IODINE = 
+        new ChemicalElementClass("iodine",          "I", 126.90,  1.98, 1.33, new Color(180, 0, 255)); // purple
+    static public ChemicalElement UNKNOWN_ELEMENT = 
+        new ChemicalElementClass("unknown element", "?",  10.0,   1.50, 0.75, classDefaultColor);
 
     // TODO make sure this has all of the elements in it
-    static private ChemicalElementClass[] staticElements = {
-        HYDROGEN, CARBON, NITROGEN, OXYGEN, MAGNESIUM, PHOSPHORUS, SULFUR
+    static private ChemicalElement[] staticElements = {
+        HYDROGEN, LITHIUM, BORON, CARBON, NITROGEN, OXYGEN, 
+        FLUORINE, SODIUM, MAGNESIUM, PHOSPHORUS, SULFUR,
+        CHLORINE, POTASSIUM, CALCIUM, MANGANESE, IRON,
+        NICKEL, COPPER, ZINC, SELENIUM, BROMINE, IODINE
     };
 
     static ChemicalElement getElementByName(String elementName) {

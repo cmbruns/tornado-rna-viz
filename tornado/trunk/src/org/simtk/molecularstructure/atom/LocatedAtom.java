@@ -39,10 +39,5 @@ public interface LocatedAtom extends Atom {
     /**
      * @param coordinates The coordinates to set.
      */
-    public void setCoordinates(Vector3D coordinates);
-
     public double distance(LocatedAtom atom2);
-
-    public void translate(Vector3D v);
-
 }

@@ -49,7 +49,7 @@ import org.simtk.mvc.*;
  *
  * \brief A single molecule structure.
  */
-public class MoleculeClass extends MoleculeMVCModel implements MutableStructureMolecule {
+public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMolecule {
     private LinkedHashSet atoms = new LinkedHashSet();
     // protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();
@@ -158,8 +158,25 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableStructureM
      */
     public void translate(Vector3D t) {
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            PDBAtom a = (PDBAtom) i.next();
-            a.translate(t);
+            Object o = i.next();
+            MovableAtom atom = (MovableAtom) o;
+            atom.translate(t);
+        }
+    }
+    
+    public void rotate(Matrix3D m) {
+        for (Iterator i = getAtomIterator(); i.hasNext(); ) {
+            Object o = i.next();
+            MovableAtom atom = (MovableAtom) o;
+            atom.setCoordinates(m.times(atom.getCoordinates()));
+        }
+    }
+    
+    public void transform(HomogeneousTransform h) {
+        for (Iterator i = getAtomIterator(); i.hasNext(); ) {
+            Object o = i.next();
+            MovableAtom atom = (MovableAtom) o;
+            atom.setCoordinates(h.times(atom.getCoordinates()));
         }
     }
     
@@ -175,10 +192,10 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableStructureM
         int atomCount = getAtomCount();
         float[] coordinateArray = new float[3 * atomCount];
 
-        // TODO
         int arrayIndex = 0;
         for (Iterator i = getAtomIterator(); i.hasNext(); ) {
-            PDBAtom atom = (PDBAtom) i.next();
+            Object o = i.next();
+            MovableAtom atom = (MovableAtom) o;
             for (Iterator i2 = atom.getCoordinates().iterator(); i2.hasNext(); ) {
                 Double coord = (Double) i2.next();
                 coordinateArray[arrayIndex] = coord.floatValue();
@@ -237,9 +254,9 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableStructureM
         return molecule;
     }
 
-    public static StructureMolecule createFactoryPDBMolecule(String fileName) throws IOException {
+    public static LocatedMolecule createFactoryPDBMolecule(String fileName) throws IOException {
 		FileInputStream fileStream = new FileInputStream(fileName);
-		StructureMolecule molecule = createFactoryPDBMolecule(fileStream);
+		LocatedMolecule molecule = createFactoryPDBMolecule(fileStream);
         fileStream.close();
         return molecule;
     }
@@ -405,14 +422,14 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableStructureM
         // Create a hash for rapid access
         Hash3D atomHash = new Hash3D(maxCovalentRadius);
         for (Iterator a = atoms.iterator(); a.hasNext(); ) {
-            PDBAtom atom = (PDBAtom) a.next();
+            LocatedMoleculeAtom atom = (LocatedMoleculeAtom) a.next();
             atomHash.put(atom.getCoordinates(), atom);
         }
         for (Iterator a1 = atoms.iterator(); a1.hasNext(); ) {
-            PDBAtom atom1 = (PDBAtom) a1.next();
+            MutablePDBAtom atom1 = (MutablePDBAtom) a1.next();
             double cutoffDistance = (atom1.getCovalentRadius() + maxCovalentRadius) * 1.5;
             for (Iterator a2 = atomHash.neighborValues(atom1.getCoordinates(), cutoffDistance).iterator(); a2.hasNext(); ) {
-                PDBAtom atom2 = (PDBAtom) a2.next();
+                MutablePDBAtom atom2 = (MutablePDBAtom) a2.next();
                 if (atom1.equals(atom2)) continue;
                 
                 // Make sure the bond length is about right

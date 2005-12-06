@@ -21,13 +21,14 @@
  */
 
 /*
- * Created on Nov 14, 2005
+ * Created on Dec 1, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure.atom;
+package org.simtk.molecularstructure;
 
-import java.util.Collection;
+import org.simtk.molecularstructure.atom.PDBAtom;
 
-public interface MoleculeAtom extends Atom {
-    public Collection getBonds();
+public interface MutableLocatedMolecule extends MovableMolecule {
+    public void addAtom(PDBAtom atom);
+    public void removeAtom(PDBAtom atom);
 }

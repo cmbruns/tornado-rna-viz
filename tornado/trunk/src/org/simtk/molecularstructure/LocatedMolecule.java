@@ -26,11 +26,25 @@
  */
 package org.simtk.molecularstructure;
 
-import org.simtk.geometry3d.Vector3D;
+import java.util.Iterator;
+import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.atom.PDBAtom;
 
-public interface MutableStructureMolecule extends StructureMolecule {
-    public void translate(Vector3D t);
-    public void addAtom(PDBAtom atom);
-    public void removeAtom(PDBAtom atom);
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * A molecule whose atomic positions are known
+ */
+public interface LocatedMolecule extends Molecule {
+    public double getMass();
+    public Vector3D getCenterOfMass();
+    /**
+     * Change the position of the molecule by the specified amount
+     * @param t amount to translate
+     */
+    public Iterator getAtomIterator();
+    public Plane3D bestPlane3D();
+    public boolean containsAtom(PDBAtom atom);
+    public int getAtomCount();
 }

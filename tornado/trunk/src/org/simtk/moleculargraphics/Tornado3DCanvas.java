@@ -65,7 +65,7 @@ public class Tornado3DCanvas extends StructureCanvas
 
     vtkProp currentHighlight;
     PDBResidue currentHighlightedResidue;
-    MutableStructureMolecule selectedAtoms = new MoleculeClass();
+    MutableLocatedMolecule selectedAtoms = new MoleculeClass();
     
     boolean useLogoOverlay = true;
     
@@ -612,8 +612,8 @@ public class Tornado3DCanvas extends StructureCanvas
         if (r == currentHighlightedResidue) return;
         unHighlightResidue();
         
-        if (r instanceof StructureResidue) {
-            StructureResidue sr = (StructureResidue) r;
+        if (r instanceof LocatedResidue) {
+            LocatedResidue sr = (LocatedResidue) r;
             Lock();
             currentCartoon.highlight(sr);
             UnLock();
@@ -639,7 +639,7 @@ public class Tornado3DCanvas extends StructureCanvas
             selectedAtoms.addAtom((PDBAtom)r);
         }
         else if (r instanceof MoleculeClass) {
-            for (Iterator i = ((StructureMolecule)r).getAtomIterator(); i.hasNext();) {
+            for (Iterator i = ((LocatedMolecule)r).getAtomIterator(); i.hasNext();) {
                 PDBAtom a = (PDBAtom) i.next();
                 selectedAtoms.addAtom(a);
             }
@@ -656,7 +656,7 @@ public class Tornado3DCanvas extends StructureCanvas
             selectedAtoms.removeAtom((PDBAtom)r);
         }
         else if (r instanceof MoleculeClass) {
-            for (Iterator i = ((StructureMolecule)r).getAtomIterator(); i.hasNext();) {
+            for (Iterator i = ((LocatedMolecule)r).getAtomIterator(); i.hasNext();) {
                 PDBAtom a = (PDBAtom) i.next();
                 selectedAtoms.removeAtom(a);
             }
@@ -678,9 +678,9 @@ public class Tornado3DCanvas extends StructureCanvas
     public void clearResidues() {}
 
     public void centerOn(Residue residue) {
-        if (! (residue instanceof StructureResidue)) return;
+        if (! (residue instanceof LocatedResidue)) return;
         
-        StructureResidue r = (StructureResidue) residue;
+        LocatedResidue r = (LocatedResidue) residue;
         
         double  FPoint[] = cam.GetFocalPoint() ;
         double  PPoint[] = cam.GetPosition();
@@ -705,7 +705,7 @@ public class Tornado3DCanvas extends StructureCanvas
      * @param tX pixels to move horizontally
      * @param tY pixels to move vertically
      */
-    void translateMoleculeXY(MutableStructureMolecule mol, double tX, double tY) {
+    void translateMoleculeXY(MutableLocatedMolecule mol, double tX, double tY) {
         if (mol == null) return;
         Vector3D translation = screenToWorldTranslation(tX, tY);
 

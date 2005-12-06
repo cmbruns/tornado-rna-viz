@@ -21,13 +21,11 @@
  */
 
 /*
- * Created on Nov 14, 2005
+ * Created on Dec 1, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure.atom;
+package org.simtk.molecularstructure;
 
-import java.util.Collection;
-
-public interface MoleculeAtom extends Atom {
-    public Collection getBonds();
+public interface MutableLocatedResidue extends LocatedResidue, MutableResidue {
+    public void addGenericBond(String atom1, String atom2);
 }

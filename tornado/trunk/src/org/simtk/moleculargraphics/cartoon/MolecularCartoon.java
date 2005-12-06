@@ -70,10 +70,10 @@ abstract public class MolecularCartoon implements SelectionListener {
      * Create the graphics primitives if they do not already exist.
      * @param molecule
      */
-    abstract public void show(StructureMolecule molecule);
+    abstract public void show(LocatedMolecule molecule);
     public void show(MoleculeCollection moleculeCollection) {
         for (Iterator iterMolecule = moleculeCollection.molecules().iterator(); iterMolecule.hasNext(); ) {
-            show((StructureMolecule) iterMolecule.next());
+            show((LocatedMolecule) iterMolecule.next());
         }
     }
 
@@ -81,7 +81,7 @@ abstract public class MolecularCartoon implements SelectionListener {
      * Make the specified structure invisible
      * @param molecule
      */
-    abstract public void hide(StructureMolecule molecule);
+    abstract public void hide(LocatedMolecule molecule);
 
     /**
      * Remove all graphics primitives and data structures.
@@ -102,5 +102,5 @@ abstract public class MolecularCartoon implements SelectionListener {
      * Note: only put highlights on things that are already visible.
      * @param molecule
      */
-    abstract public void highlight(StructureMolecule molecule);
+    abstract public void highlight(LocatedMolecule molecule);
 }
