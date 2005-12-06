@@ -672,16 +672,11 @@ implements ResidueActionListener
             vtkAssembly assembly = canvas.currentCartoon.getAssembly();
             
             if (assembly != null) {
-                canvas.Lock();
-                canvas.GetRenderer().RemoveAllProps();
-                
-                // AddProp deprecated in vtk 5.0
-                // try{canvas.GetRenderer().AddViewProp(assembly);}
-                // catch(NoSuchMethodError exc){canvas.GetRenderer().AddProp(assembly);}
-                canvas.GetRenderer().AddProp(assembly);
-
-                canvas.UnLock();
+                canvas.GetRenderer().RemoveAllViewProps();
+                canvas.GetRenderer().AddViewProp(assembly);
             }
+
+            canvas.repaint();
             
             // TODO loaded molecule does not paint
             // assembly.Modified();
@@ -695,7 +690,6 @@ implements ResidueActionListener
 //                Molecule molecule = (Molecule) i.next();
 //                if (molecule instanceof Biopolymer) {
 //                    Biopolymer bp = (Biopolymer) molecule;
-//                    canvas.Lock();
 //                    // canvas.clearResidueHighlights();
 //                    boolean isFirstResidue = true;
 //                    // for (Residue residue : bp.residues()) {
@@ -708,7 +702,6 @@ implements ResidueActionListener
 //                        isFirstResidue = false;
 //                        finalResidue = residue;
 //                    }
-//                    canvas.UnLock();
 //                    break; // only put the sequence of the first molecule with a sequence
 //                }
 //            }
@@ -1155,9 +1148,7 @@ implements ResidueActionListener
                 }
                 vtkWindowToImageFilter wti = new vtkWindowToImageFilter();
                 wti.SetInput(canvas.GetRenderWindow());
-                canvas.Lock();
                 wti.Update();
-                canvas.UnLock();
 
                 vtkPNGWriter writer = new vtkPNGWriter();
                 try {
@@ -1327,7 +1318,7 @@ implements ResidueActionListener
     }
     
     static {
-        loadNativeLibraries();
+        //loadNativeLibraries();
         
         // Keep vtk canvas from obscuring swing widgets
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
