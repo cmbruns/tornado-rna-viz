@@ -68,7 +68,7 @@ public class Tornado3DCanvas extends vtkPanel
     
     boolean doFog = true;
     boolean fogLinear = true;
-    GL gl;
+    GLContext glCtx;
 
     Color backgroundColor = new Color((float)0.92, (float)0.96, (float)1.0);
     
@@ -80,12 +80,13 @@ public class Tornado3DCanvas extends vtkPanel
     Residue currentHighlightedResidue;
     Molecule selectedAtoms = new Molecule();
     
-    boolean useLogoOverlay = true;
+    boolean useLogoOverlay = false;
     
     vtkRenderer overlayRenderer;
     vtkImageData logoImageData = null;
     vtkPNGReader logoReader;
     vtkImageActor logoActor;
+    Image logoImage;
     int logoWidth;
     int logoHeight;
 
@@ -121,6 +122,7 @@ public class Tornado3DCanvas extends vtkPanel
         // Required for fog to work?
         // createTestObject();
     }
+
     
     private void setUpLights() {
         // Remove or dim that darn initial headlight.
@@ -173,7 +175,7 @@ public class Tornado3DCanvas extends vtkPanel
 
         // Create vtk image pixel by pixel
         
-        Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk3.png"));
+        logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk3.png"));
         MediaTracker tracker = new MediaTracker(this);
         tracker.addImage(logoImage, 0);
         try {tracker.waitForAll();}
@@ -241,19 +243,15 @@ public class Tornado3DCanvas extends vtkPanel
                     backgroundColor.getBlue()/255.0);
         }
 
-        if (gl != null) {
+        if (glCtx != null) {
             float[] fogColor = new float[] {
                     (float) (backgroundColor.getRed()/255.0),
                     (float) (backgroundColor.getGreen()/255.0),
                     (float) (backgroundColor.getBlue()/255.0)
             };
-            Lock(); 
-            gl.glFogfv(GL.GL_FOG_COLOR, FloatBuffer.wrap(fogColor));
-            UnLock();
+            glCtx.getGL().glFogfv(GL.GL_FOG_COLOR, FloatBuffer.wrap(fogColor));
         }
     }
-    
-    boolean firstPaint = true;
     
     Stopwatch fpsStopWatch = new Stopwatch();
     int frameCount = 0;
@@ -265,9 +263,9 @@ public class Tornado3DCanvas extends vtkPanel
 
         if (ren.VisibleActorCount() <= 0) return;
 
-        Lock();
-
         fpsStopWatch.restart();
+        
+        Lock();
 
         super.paint(g);
         
@@ -278,41 +276,35 @@ public class Tornado3DCanvas extends vtkPanel
             frameCount = 0;
             // System.err.println("Frames per second (rendering only) = " + 1000.0/fpsRing.mean());
         }
-        
-        // The very first time we paint, turn on fog
-        if ( (ren != null) && (firstPaint) && (doFog) ) {
-            
-            // This needs to follow a Render command?
-            GLCapabilities capabilities = new GLCapabilities();
-            capabilities.setHardwareAccelerated(true);
-            GLCanvas glCanvas = GLDrawableFactory.getFactory().
-                                  createGLCanvas(capabilities);
-            gl = glCanvas.getGL();
-            // Render();
 
-            if (fogLinear) { // Linear Fog
-                gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
-                gl.glFogf(GL.GL_FOG_START, (float)0.0);
-                gl.glFogf(GL.GL_FOG_END, (float)100.0);
-            }
-            else { // Exponential Fog
-                gl.glFogi(GL.GL_FOG_MODE, GL.GL_EXP2);
-                gl.glFogf(GL.GL_FOG_DENSITY, 0.2f);
-            }
-
-            float[] fogColor = new float[] {
-                    (float) (backgroundColor.getRed()/255.0),
-                    (float) (backgroundColor.getGreen()/255.0),
-                    (float) (backgroundColor.getBlue()/255.0)
-            };
-            
-            gl.glFogfv(GL.GL_FOG_COLOR, FloatBuffer.wrap(fogColor));
-            gl.glEnable(GL.GL_FOG);
-            gl.glFogf(GL.GL_FOG_DENSITY, (float)0.8);
-
-            firstPaint = false;
-        }
-        UnLock();
+		if (glCtx == null) {
+		    glCtx = GLDrawableFactory.getFactory().createExternalGLContext();
+	
+			if (doFog) {
+			    GL gl = glCtx.getGL();
+				
+		        if (fogLinear) { // Linear Fog
+		            gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
+		            gl.glFogf(GL.GL_FOG_START, (float)0.0);
+		            gl.glFogf(GL.GL_FOG_END, (float)100.0);
+		        } else { // Exponential Fog
+		            gl.glFogi(GL.GL_FOG_MODE, GL.GL_EXP2);
+		            gl.glFogf(GL.GL_FOG_DENSITY, 0.2f);
+		        }
+		
+		        float[] fogColor = new float[] {
+		            (float) (backgroundColor.getRed()/255.0),
+		            (float) (backgroundColor.getGreen()/255.0),
+		            (float) (backgroundColor.getBlue()/255.0)
+		        };
+		
+		        gl.glFogfv(GL.GL_FOG_COLOR, FloatBuffer.wrap(fogColor));
+		        gl.glEnable(GL.GL_FOG);
+		   	    gl.glFogf(GL.GL_FOG_DENSITY, (float)0.8);
+			}
+		}
+    
+		
     }
     
     public void componentResized(ComponentEvent e) 
@@ -382,16 +374,15 @@ public class Tornado3DCanvas extends vtkPanel
         
         
         cam.SetClippingRange(frontClip, backClip);
-        if ( (doFog) && (gl != null) ) {
-               Lock();
+        if ( (doFog) && (glCtx != null) ) {
+               GL gl = glCtx.getGL();
             // if (fogLinear) {
                 gl.glFogf(GL.GL_FOG_START, 0.90f * distanceToFocus);
                 gl.glFogf(GL.GL_FOG_END, backClip);
             // }
             // else 
-                gl.glFogf(GL.GL_FOG_DENSITY, 0.7f / distanceToFocus);                          UnLock();
-        }
-        
+                gl.glFogf(GL.GL_FOG_DENSITY, 0.7f / distanceToFocus); 
+    	}    
     }
 
     public void testFullScreen() {
@@ -417,10 +408,6 @@ public class Tornado3DCanvas extends vtkPanel
         GetRenderer().AddActor(coneActor);
         
     }
-    
-    // Make the lock/unlock methods public
-    public int Lock() {return super.Lock();}
-    public int UnLock() {return super.UnLock();}
     
 	public void mouseDragged(MouseEvent event) {
         // TODO - implement mode for model modification
