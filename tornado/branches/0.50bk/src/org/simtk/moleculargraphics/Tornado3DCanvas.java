@@ -219,7 +219,6 @@ public class Tornado3DCanvas extends vtkPanel implements MouseMotionListener,
 	}
 
 	public void notifyNewMolecule() {
-        addSimtkLogo();
         newMolecule = true;
         repaint();
 	}
