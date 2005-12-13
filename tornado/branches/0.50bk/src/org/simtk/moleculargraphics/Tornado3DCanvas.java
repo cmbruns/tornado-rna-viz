@@ -263,10 +263,9 @@ public class Tornado3DCanvas extends vtkPanel implements MouseMotionListener,
 		if (glCtx == null) {
 			glCtx = GLDrawableFactory.getFactory().createExternalGLContext();
 			
-			//the context should already be current, so no need to call glCtx.makeCurrent()
-			GL gl = glCtx.getGL();
-
 			if (doFog) {
+				//the context should already be current, so no need to call glCtx.makeCurrent()
+				GL gl = glCtx.getGL();
 
 				if (fogLinear) { // Linear Fog
 					gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
@@ -281,22 +280,22 @@ public class Tornado3DCanvas extends vtkPanel implements MouseMotionListener,
 				gl.glFogf(GL.GL_FOG_DENSITY, (float) 0.8);
 
 				setFogColor(gl);
-
+				
+				repaint();
 			}
 				
 
 		}
 		
 		if (newMolecule) {
-			float distanceToFocus = (float) cam.GetDistance();
-			
-			//the context should already be current, so no need to call glCtx.makeCurrent()
-			GL gl = glCtx.getGL();
-			setFogDensity(gl, distanceToFocus);
-
+			if (doFog) {
+				//the context should already be current, so no need to call glCtx.makeCurrent()
+				GL gl = glCtx.getGL();
+				float distanceToFocus = (float) cam.GetDistance();
+				setFogDensity(gl, distanceToFocus);
+				repaint();
+			}
 			newMolecule = false;
-
-			repaint();
 		}
 
 	}
