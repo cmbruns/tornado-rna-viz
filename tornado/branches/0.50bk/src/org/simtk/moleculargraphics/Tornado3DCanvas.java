@@ -32,11 +32,13 @@
 package org.simtk.moleculargraphics;
 
 import java.awt.*;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.nio.FloatBuffer;
+import java.io.IOException;
+import javax.imageio.*;
 import vtk.*;
 import java.awt.event.*;
 import javax.media.opengl.*;
@@ -69,7 +71,7 @@ public class Tornado3DCanvas extends vtkPanel
     boolean doFog = true;
     boolean fogLinear = true;
     GLContext glCtx;
-
+    
     Color backgroundColor = new Color((float)0.92, (float)0.96, (float)1.0);
     
     public static final long serialVersionUID = 1L;
@@ -80,21 +82,13 @@ public class Tornado3DCanvas extends vtkPanel
     Residue currentHighlightedResidue;
     Molecule selectedAtoms = new Molecule();
     
-    boolean useLogoOverlay = false;
+    boolean showLogo = true;
+    int logoWidth, logoHeight;
+    vtkActor2D logoActor;
     
-    vtkRenderer overlayRenderer;
-    vtkImageData logoImageData = null;
-    vtkPNGReader logoReader;
-    vtkImageActor logoActor;
-    Image logoImage;
-    int logoWidth;
-    int logoHeight;
-
     Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     
-    ClassLoader classLoader;
-
     MolecularCartoon.CartoonType currentCartoonType = MolecularCartoon.CartoonType.WIRE_FRAME; // default starting type
     MolecularCartoon currentCartoon = new WireFrameCartoon();
     
@@ -102,16 +96,15 @@ public class Tornado3DCanvas extends vtkPanel
     public void setSelectionColor(Color c) {
         selectionColor = c;
     }
-
+    
     Tornado3DCanvas(ResidueActionBroadcaster b) {
         super();
         
         residueActionBroadcaster = b;
-        classLoader = getClass().getClassLoader();
         
         // Display logo
-        if (useLogoOverlay)
-            loadSimtkLogo();
+        loadSimtkLogo();
+        addSimtkLogo();
         
         setUpLights();
         
@@ -123,7 +116,6 @@ public class Tornado3DCanvas extends vtkPanel
         // createTestObject();
     }
 
-    
     private void setUpLights() {
         // Remove or dim that darn initial headlight.
         lgt.SetIntensity(0.0);
@@ -146,72 +138,38 @@ public class Tornado3DCanvas extends vtkPanel
     }
     
     private void loadSimtkLogo() {
-        // Discover version of vtk we are using
-        vtkVersion versionVTK = new vtkVersion();
-        int vtkMajorVersion = versionVTK.GetVTKMajorVersion();
-        int vtkMinorVersion = versionVTK.GetVTKMinorVersion();
-        int vtkBuildVersion = versionVTK.GetVTKBuildVersion();
-        double vtkDoubleVersion = vtkMajorVersion + 0.1 * vtkMinorVersion + 0.001 * vtkBuildVersion;
+    		BufferedImage logoImage;
+    		try {
+    			logoImage = ImageIO.read(getClass().getResourceAsStream("/resources/images/simtk3.png"));
+    		} catch (IOException x) {
+    			x.printStackTrace();
+    			return;
+    		}
         
-        // Use a front layer to decorate the display
-        overlayRenderer = new vtkRenderer();
-        rw.AddRenderer(overlayRenderer);
-        rw.SetNumberOfLayers(2);
-        overlayRenderer.InteractiveOff();
-        overlayRenderer.GetActiveCamera().ParallelProjectionOn();
-        overlayRenderer.GetActiveCamera().SetParallelScale(100);
+        logoWidth = logoImage.getWidth();
+        logoHeight = logoImage.getHeight();
         
-        // Layer order depends upon vtk version
-        if (vtkDoubleVersion >= 4.5) {
-            ren.SetLayer(0);
-            overlayRenderer.SetLayer(1);                
-        }
-        else {
-            ren.SetLayer(1);
-            overlayRenderer.SetLayer(0);
-        }
-
-        // Create logo image for lower right hand corner
-
+        int[] rgbArray = logoImage.getRGB(0, 0, logoWidth, logoHeight, null, 0, logoWidth);
+        
         // Create vtk image pixel by pixel
         
-        logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk3.png"));
-        MediaTracker tracker = new MediaTracker(this);
-        tracker.addImage(logoImage, 0);
-        try {tracker.waitForAll();}
-        catch (InterruptedException e) {}
-        
-        int w = logoImage.getWidth(this);
-        int h = logoImage.getHeight(this);
-        PixelGrabber pixelGrabber = new PixelGrabber(logoImage, 0, 0, w, h, true);
-
-        // System.out.println("Reading pixel data, width = "+w+", height = "+h);
-        try{pixelGrabber.grabPixels();}
-        catch (Exception e){System.out.println("PixelGrabber exception");}
-        int pixels[] = (int[]) pixelGrabber.getPixels();
-
-        logoImageData = new vtkImageData();
-        logoImageData.SetDimensions(w, h, 1);
+        vtkImageData logoImageData = new vtkImageData();
+        logoImageData.SetDimensions(logoWidth, logoHeight, 1);
         logoImageData.SetScalarTypeToUnsignedChar();
         logoImageData.SetNumberOfScalarComponents(4);
         logoImageData.AllocateScalars();
         
-        int pixelCount = 0;
-        int opaquePixelCount = 0;
-        for (int x = 0; x < w; x++) {
-            for (int y = 0; y < h; y++) {
-                int pixel = y * w + x;
-                int color = pixels[pixel];
-
+        for (int x = 0; x < logoWidth; x++) {
+            for (int y = 0; y < logoHeight; y++) {
+               
+            		int color = rgbArray[x + y*logoWidth];         
+                
                 int alpha = (color & 0xFF000000) >> 24;
                 int red   = (color & 0x00FF0000) >> 16;
                 int green = (color & 0x0000FF00) >> 8;
                 int blue  = (color & 0x000000FF);
-
-                pixelCount ++;
-                if (alpha > 0) opaquePixelCount ++;
                 
-                int iy = h - 1 - y;
+                int iy = logoHeight - 1 - y;
                 
                 // SetScalarComponentFromDouble causes no such method error
                 logoImageData.SetScalarComponentFromDouble(x, iy, 0, 3, alpha);
@@ -220,28 +178,29 @@ public class Tornado3DCanvas extends vtkPanel
                 logoImageData.SetScalarComponentFromDouble(x, iy, 0, 2, blue);
             }
         }
-        logoWidth = w;
-        logoHeight = h;
             
-        logoActor = new vtkImageActor();
-
-        if (logoImageData != null)
-            logoActor.SetInput(logoImageData);
-        else
-            throw new RuntimeException("Logo load failed");
-
-        overlayRenderer.AddActor(logoActor);        
+        vtkImageMapper logoMapper = new vtkImageMapper();
+        logoMapper.SetInput(logoImageData);
+        logoMapper.SetColorWindow(255.5); 
+        logoMapper.SetColorLevel(127.5);
+        
+        logoActor = new vtkActor2D();
+        logoActor.SetMapper(logoMapper);
+    }
+    
+    void addSimtkLogo() {
+		if (showLogo) {
+			ren.AddActor(logoActor);
+		}
     }
     
     public void setBackgroundColor(Color c) {
         backgroundColor = c;
 
-        if (ren != null) {
-            ren.SetBackground(
-                    backgroundColor.getRed()/255.0,
-                    backgroundColor.getGreen()/255.0,
-                    backgroundColor.getBlue()/255.0);
-        }
+        ren.SetBackground(
+                backgroundColor.getRed()/255.0,
+                backgroundColor.getGreen()/255.0,
+                backgroundColor.getBlue()/255.0);
 
         if (glCtx != null) {
             float[] fogColor = new float[] {
@@ -251,6 +210,8 @@ public class Tornado3DCanvas extends vtkPanel
             };
             glCtx.getGL().glFogfv(GL.GL_FOG_COLOR, FloatBuffer.wrap(fogColor));
         }
+        
+        repaint();
     }
     
     Stopwatch fpsStopWatch = new Stopwatch();
@@ -259,13 +220,7 @@ public class Tornado3DCanvas extends vtkPanel
     
     public void paint(Graphics g) {
 
-        if (ren == null) return;
-
-        if (ren.VisibleActorCount() <= 0) return;
-
         fpsStopWatch.restart();
-        
-        Lock();
 
         super.paint(g);
         
@@ -277,58 +232,56 @@ public class Tornado3DCanvas extends vtkPanel
             // System.err.println("Frames per second (rendering only) = " + 1000.0/fpsRing.mean());
         }
 
-		if (glCtx == null) {
-		    glCtx = GLDrawableFactory.getFactory().createExternalGLContext();
-	
-			if (doFog) {
-			    GL gl = glCtx.getGL();
+    		if (ren.VisibleActorCount() > 0) {
+
+            Lock();
+        	
+			//After the first call to super.paint() after loading a molecule, the GL context has
+            //been created by VTK. Now we want to enable fog on that context...
+	        if (glCtx == null) {
+			    glCtx = GLDrawableFactory.getFactory().createExternalGLContext();
+
+			    if (glCtx.makeCurrent() != GLContext.CONTEXT_NOT_CURRENT) {
+			    
+				    GL gl = glCtx.getGL();
+				    
+					if (doFog) {
+						
+				        if (fogLinear) { // Linear Fog
+				            gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
+				            gl.glFogf(GL.GL_FOG_START, (float)0.0);
+				            gl.glFogf(GL.GL_FOG_END, (float)100.0);
+				        } else { // Exponential Fog
+				            gl.glFogi(GL.GL_FOG_MODE, GL.GL_EXP2);
+				            gl.glFogf(GL.GL_FOG_DENSITY, 0.2f);
+				        }
 				
-		        if (fogLinear) { // Linear Fog
-		            gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
-		            gl.glFogf(GL.GL_FOG_START, (float)0.0);
-		            gl.glFogf(GL.GL_FOG_END, (float)100.0);
-		        } else { // Exponential Fog
-		            gl.glFogi(GL.GL_FOG_MODE, GL.GL_EXP2);
-		            gl.glFogf(GL.GL_FOG_DENSITY, 0.2f);
-		        }
-		
-		        float[] fogColor = new float[] {
-		            (float) (backgroundColor.getRed()/255.0),
-		            (float) (backgroundColor.getGreen()/255.0),
-		            (float) (backgroundColor.getBlue()/255.0)
-		        };
-		
-		        gl.glFogfv(GL.GL_FOG_COLOR, FloatBuffer.wrap(fogColor));
-		        gl.glEnable(GL.GL_FOG);
-		   	    gl.glFogf(GL.GL_FOG_DENSITY, (float)0.8);
+				        float[] fogColor = new float[] {
+				            (float) (backgroundColor.getRed()/255.0),
+				            (float) (backgroundColor.getGreen()/255.0),
+				            (float) (backgroundColor.getBlue()/255.0)
+				        };
+				
+				        gl.glFogfv(GL.GL_FOG_COLOR, FloatBuffer.wrap(fogColor));
+				        gl.glEnable(GL.GL_FOG);
+				   	    gl.glFogf(GL.GL_FOG_DENSITY, (float)0.8);
+					}
+					
+					glCtx.release();
+			    }
+				
 			}
-		}
-    
-		
-    }
-    
-    public void componentResized(ComponentEvent e) 
-    {
-        // System.err.println("resize");
-        
-        if ((overlayRenderer != null) && (overlayRenderer.GetActiveCamera() != null)) {
+			
+	        UnLock();
 
-            // Keep the logo small
-            overlayRenderer.GetActiveCamera().SetParallelScale(getHeight()/2);
-            
-            if (logoImageData != null)
-                logoImageData.SetOrigin(getWidth()/2 - logoWidth, -getHeight()/2, 0);
-            else if (logoReader != null)
-                // Keep the logo in the lower right corner
-                logoReader.SetDataOrigin(getWidth()/2 - logoWidth, -getHeight()/2, 0);
-
-            
-            // Cause update
-            myResetCameraClippingRange(); // somehow this is needed for screen update
-            
-            // repaint();
         }
+        
     }
+    
+    public void componentResized(ComponentEvent e) {
+    		logoActor.SetPosition(getWidth() - logoWidth, 0);
+    }
+
     public void componentMoved(ComponentEvent e) {}
     public void componentHidden(ComponentEvent e) {}
     public void componentShown(ComponentEvent e) {}
@@ -343,16 +296,20 @@ public class Tornado3DCanvas extends vtkPanel
 
         rw.StereoRenderOn();
         
+        repaint();
+        
     }
     public void setStereoInterlaced() {
         
         rw.SetStereoTypeToInterlaced();
         rw.StereoRenderOn();
+        repaint();
         
     }
     public void setStereoOff() {
         
         rw.StereoRenderOff();
+        repaint();
         
     }
     public void setStereoCrossEye() {
@@ -405,7 +362,7 @@ public class Tornado3DCanvas extends vtkPanel
         vtkActor coneActor = new vtkActor();
         coneActor.SetMapper(coneMapper);
             
-        GetRenderer().AddActor(coneActor);
+        ren.AddActor(coneActor);
         
     }
     
@@ -907,3 +864,4 @@ public class Tornado3DCanvas extends vtkPanel
         super.keyReleased(e);
     }
 }
+

@@ -674,6 +674,7 @@ implements ResidueActionListener
             if (assembly != null) {
                 canvas.GetRenderer().RemoveAllViewProps();
                 canvas.GetRenderer().AddViewProp(assembly);
+                canvas.addSimtkLogo();
             }
 
             canvas.repaint();
