@@ -40,6 +40,7 @@ import java.nio.FloatBuffer;
 import java.io.IOException;
 import javax.imageio.*;
 import vtk.*;
+
 import java.awt.event.*;
 import javax.media.opengl.*;
 import org.simtk.moleculargraphics.cartoon.*;
@@ -96,8 +97,6 @@ public class Tornado3DCanvas extends vtkPanel implements MouseMotionListener,
 
 	vtkActor2D logoActor, nullActor;
 	
-	boolean newMolecule = true;
-
 	Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
 
 	Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -217,10 +216,22 @@ public class Tornado3DCanvas extends vtkPanel implements MouseMotionListener,
 			ren.AddActor(nullActor);
 		}
 	}
+	
+	void setNewMolecule(MolecularCartoon.CartoonType type, MoleculeCollection moleculeCollection) {
+        currentCartoonType = type;
 
-	public void notifyNewMolecule() {
-        newMolecule = true;
-        repaint();
+        currentCartoon = type.newInstance();
+        
+        currentCartoon.show(moleculeCollection);
+        vtkAssembly assembly = currentCartoon.getAssembly();
+        
+        if (assembly != null) {
+        		ren.RemoveAllViewProps();
+        		ren.AddViewProp(assembly);
+        		addSimtkLogo();
+        		resetCameraClippingRange();
+        		repaint();
+        }
 	}
 
 	public void setBackgroundColor(Color c) {
@@ -286,17 +297,6 @@ public class Tornado3DCanvas extends vtkPanel implements MouseMotionListener,
 
 		}
 		
-		if (newMolecule) {
-			if (doFog) {
-				//the context should already be current, so no need to call glCtx.makeCurrent()
-				GL gl = glCtx.getGL();
-				float distanceToFocus = (float) cam.GetDistance();
-				setFogDensity(gl, distanceToFocus);
-				repaint();
-			}
-			newMolecule = false;
-		}
-
 	}
 	
 	private void setFogColor(GL gl) {
@@ -307,15 +307,6 @@ public class Tornado3DCanvas extends vtkPanel implements MouseMotionListener,
 
 		gl.glFogfv(GL.GL_FOG_COLOR, FloatBuffer.wrap(fogColor));
 	}
-	
-	private void setFogDensity(GL gl, float distanceToFocus) {
-		float backClip = 2.00f * distanceToFocus;
-		
-		gl.glFogf(GL.GL_FOG_START, 0.90f * distanceToFocus);
-		gl.glFogf(GL.GL_FOG_END, backClip);
-		gl.glFogf(GL.GL_FOG_DENSITY, 0.7f / distanceToFocus);
-	}
-
 	
 	public void componentResized(ComponentEvent e) {
 		logoActor.SetPosition(getWidth() - logoWidth, 0);
@@ -377,8 +368,10 @@ public class Tornado3DCanvas extends vtkPanel implements MouseMotionListener,
 		if (doFog && glCtx != null && glCtx.makeCurrent() != GLContext.CONTEXT_NOT_CURRENT) {
 			GL gl = glCtx.getGL();
 			
-			setFogDensity(gl, distanceToFocus);
-				
+			gl.glFogf(GL.GL_FOG_START, 0.90f * distanceToFocus);
+			gl.glFogf(GL.GL_FOG_END, backClip);
+			gl.glFogf(GL.GL_FOG_DENSITY, 0.7f / distanceToFocus);
+			
 			glCtx.release();
 		}
 	}

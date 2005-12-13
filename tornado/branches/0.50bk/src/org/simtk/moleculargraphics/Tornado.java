@@ -664,18 +664,7 @@ implements ResidueActionListener
         public void actionPerformed(ActionEvent e) {
             setWait("Calculating geometry...");
             
-            canvas.currentCartoonType = type;
-
-            canvas.currentCartoon = type.newInstance();
-            
-            canvas.currentCartoon.show(moleculeCollection);
-            vtkAssembly assembly = canvas.currentCartoon.getAssembly();
-            
-            if (assembly != null) {
-                canvas.GetRenderer().RemoveAllViewProps();
-                canvas.GetRenderer().AddViewProp(assembly);
-                canvas.addSimtkLogo();
-            }
+            canvas.setNewMolecule(type, moleculeCollection);
 
             // TODO loaded molecule does not paint
             // assembly.Modified();
@@ -1089,13 +1078,13 @@ implements ResidueActionListener
         moleculeCollection = molecules;
         
         updateTitleBar();
-        
-        // Create graphical representation of the molecule
-        (new CartoonAction(canvas.currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Center camera on new molecule
         DoubleVector3D com = molecules.getCenterOfMass();
         canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
+        
+        // Create graphical representation of the molecule
+        (new CartoonAction(canvas.currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Display sequence of first molecule that has a sequence
         residueActionBroadcaster.fireClearResidues();
@@ -1118,7 +1107,6 @@ implements ResidueActionListener
 
         // TODO - create one subroutine for updating the sequences
         // maybe in the ResidueSelector interface
-        canvas.notifyNewMolecule();
 
         sequencePane.repaint();
         sequenceCartoonCanvas.repaint();
