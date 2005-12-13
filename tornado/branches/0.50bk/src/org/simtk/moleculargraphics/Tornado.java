@@ -674,11 +674,9 @@ implements ResidueActionListener
             if (assembly != null) {
                 canvas.GetRenderer().RemoveAllViewProps();
                 canvas.GetRenderer().AddViewProp(assembly);
-                canvas.addSimtkLogo();
+                canvas.notifyNewMolecule();
             }
 
-            canvas.repaint();
-            
             // TODO loaded molecule does not paint
             // assembly.Modified();
             // canvas.repaint();

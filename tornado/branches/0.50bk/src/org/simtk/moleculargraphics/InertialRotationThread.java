@@ -86,7 +86,7 @@ public class InertialRotationThread extends Thread {
                 
                 canvas.Azimuth(actualRotation);
                 
-                canvas.myResetCameraClippingRange();
+                canvas.resetCameraClippingRange();
                 canvas.repaint();
                 
                 // We are done, so let another action come along
