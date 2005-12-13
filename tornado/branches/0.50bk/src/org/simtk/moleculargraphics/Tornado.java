@@ -674,7 +674,6 @@ implements ResidueActionListener
             if (assembly != null) {
                 canvas.GetRenderer().RemoveAllViewProps();
                 canvas.GetRenderer().AddViewProp(assembly);
-                canvas.notifyNewMolecule();
             }
 
             // TODO loaded molecule does not paint
@@ -1118,7 +1117,8 @@ implements ResidueActionListener
 
         // TODO - create one subroutine for updating the sequences
         // maybe in the ResidueSelector interface
-        canvas.repaint();
+        canvas.notifyNewMolecule();
+
         sequencePane.repaint();
         sequenceCartoonCanvas.repaint();
         repaint();
