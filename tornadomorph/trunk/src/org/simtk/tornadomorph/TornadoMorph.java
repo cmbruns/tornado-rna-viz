@@ -43,6 +43,9 @@ public class TornadoMorph extends JFrame {
     static Color panelColor = new Color(240, 240, 240); // light grey
     static Color buttonColor = new Color(190, 210, 255); // pale blue (not used)
     
+    Color originColor = Color.red;
+    Color goalColor = Color.blue;
+    
     MoleculeLoadBroadcaster startingMoleculeLoadBroadcaster = new MoleculeLoadBroadcaster();
     MoleculeLoadBroadcaster targetMoleculeLoadBroadcaster = new MoleculeLoadBroadcaster();
     
@@ -87,7 +90,9 @@ public class TornadoMorph extends JFrame {
                 startingMoleculeLabel,
                 finalMoleculeLabel,
                 startingMoleculeLoadBroadcaster,
-                targetMoleculeLoadBroadcaster
+                targetMoleculeLoadBroadcaster,
+                originColor,
+                goalColor
                 ));
         
         // Panel to hold Play button, Pause button, etc.
@@ -328,7 +333,11 @@ public class TornadoMorph extends JFrame {
             
             // Starting structure
             SingleStructurePanel startingStructurePanel = 
-                new SingleStructurePanel(startingMoleculeLabel, "1D9V", startingMoleculeLoadBroadcaster);
+                new SingleStructurePanel(
+                        startingMoleculeLabel, 
+                        "1D9V", 
+                        startingMoleculeLoadBroadcaster,
+                        originColor);
             startingMoleculeLoadBroadcaster.addObserver(startingStructurePanel);
             gridbag.setConstraints(startingStructurePanel, gbc);
             panel.add(startingStructurePanel);
@@ -342,7 +351,11 @@ public class TornadoMorph extends JFrame {
             
             // Target structure
             SingleStructurePanel targetStructurePanel = 
-                new SingleStructurePanel("Goal", "1MRP", targetMoleculeLoadBroadcaster);
+                new SingleStructurePanel(
+                        finalMoleculeLabel, 
+                        "1MRP", 
+                        targetMoleculeLoadBroadcaster,
+                        goalColor);
             targetMoleculeLoadBroadcaster.addObserver(targetStructurePanel);
             gbc.weightx = 1.0; // stretch
             gbc.gridwidth = GridBagConstraints.REMAINDER; // finish row
@@ -365,16 +378,25 @@ public class TornadoMorph extends JFrame {
 
             JButton loadButton = new JButton("Load Molecule...");
             Container loadPanel = new WhitePanel();
-            Container progressPanel = new LoadProgressPanel();
+            LoadProgressPanel progressPanel = new LoadProgressPanel();
 
             // Editable text description field above the structure
             JTextField userLabelField = new JTextField("(no molecule loaded)");
 
-            SingleStructurePanel(String label, String pdbId, MoleculeLoadBroadcaster broadcaster) {
+            SingleStructurePanel(
+                    String label, 
+                    String pdbId, 
+                    MoleculeLoadBroadcaster broadcaster,
+                    Color moleculeColor
+                    ) {
                 initializeStructurePanel();
+                structurePanelLabel.setForeground(moleculeColor);
                 structurePanelLabel.setText(label);
 
-                loadDialog = new MorphStructDialog(TornadoMorph.this, broadcaster);
+                loadDialog = new MorphStructDialog(
+                        TornadoMorph.this, 
+                        broadcaster,
+                        progressPanel);
                 loadDialog.setDefaultPdbId(pdbId);
             }
             
@@ -443,7 +465,29 @@ public class TornadoMorph extends JFrame {
             }
             
             private void setMolecules(MoleculeCollection molecules) {
-                structureCanvas.setMolecules(molecules, MolecularCartoon.CartoonType.BACKBONE_STICK);
+                // MutableMolecularCartoon cartoon = new AtomSphereCartoon(); // This works
+                // MutableMolecularCartoon cartoon = new WireFrameCartoon(); // works
+                MutableMolecularCartoon cartoon = new ProteinRibbon();
+                // MutableMolecularCartoon cartoon = new BackboneStick(); // works
+
+                // Doesn't help
+                // MutableMolecularCartoon cartoon = MolecularCartoonClass.CartoonType.BACKBONE_STICK.newInstance();
+                
+                System.out.println("Number of Paths = " + cartoon.getAssembly().GetNumberOfPaths());
+
+                for (Iterator i = molecules.molecules().iterator(); i.hasNext();) {
+                    Object o = i.next();
+                    if (o instanceof LocatedMolecule) {
+                        cartoon.add((LocatedMolecule)o);
+                        break; // TODO this is just for debugging
+                    }
+                }
+
+                System.out.println("Number of Paths = "+cartoon.getAssembly().GetNumberOfPaths());
+
+                // cartoon.add(molecules);
+                // structureCanvas.setMolecules(molecules, MolecularCartoonClass.CartoonType.BACKBONE_STICK);
+                structureCanvas.add(cartoon);
 
                 String pdbId = molecules.getPdbId();
                 
@@ -488,8 +532,11 @@ public class TornadoMorph extends JFrame {
                 // StructureCanvas dialogTargetCanvas;
                 MoleculeLoadBroadcaster broadcaster;
                 
-                MorphStructDialog(JFrame f, MoleculeLoadBroadcaster b) {
-                    super(f);
+                MorphStructDialog(JFrame f, 
+                        MoleculeLoadBroadcaster b,
+                        ProgressPanel p
+                        ) {
+                    super(f, p);
                     broadcaster = b;
                 }
                 

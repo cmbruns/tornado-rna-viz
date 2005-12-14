@@ -32,16 +32,21 @@ import javax.swing.*;
 import java.util.*;
 import org.simtk.moleculargraphics.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.geometry3d.*;
 import org.simtk.mvc.*;
 
 class AlignmentPanel extends MinimizablePanel implements ComponentListener {
     AlignmentTextArea alignmentTextArea;
     AlignmentScrollBar alignmentScrollBar;
+    SequenceAlignment sequenceAlignment = null; // TODO
+    
     AlignmentPanel(
             String startingMoleculeLabel,
             String finalMoleculeLabel,
             ObservableInterface startingMoleculeLoadBroadcaster,
-            ObservableInterface targetMoleculeLoadBroadcaster
+            ObservableInterface targetMoleculeLoadBroadcaster, 
+            Color startingMoleculeColor,
+            Color targetMoleculeColor
     ) {
         super("Sequence Alignment");
         
@@ -54,7 +59,9 @@ class AlignmentPanel extends MinimizablePanel implements ComponentListener {
                 startingMoleculeLabel,
                 finalMoleculeLabel,
                 startingMoleculeLoadBroadcaster,
-                targetMoleculeLoadBroadcaster
+                targetMoleculeLoadBroadcaster,
+                startingMoleculeColor,
+                targetMoleculeColor
         );
         panel.add(alignmentTextArea);
         
@@ -65,6 +72,44 @@ class AlignmentPanel extends MinimizablePanel implements ComponentListener {
         
         addComponentListener(this);
         // updateScrollBarParameters();
+    }
+    
+    public Biopolymer getStartingMolecule() {
+        return alignmentTextArea.getStartingMolecule();
+    }
+    
+    public Biopolymer getTargetMolecule() {
+        return alignmentTextArea.getTargetMolecule();
+    }
+    
+    /** 
+     * Update sequence alignment structure and scrollbar geometry
+     * after a new sequence has been loaded
+     *
+     */
+    private void respondToNewSequence() {
+        // Update sequence alignment
+        if ( (getStartingMolecule() != null) && (getTargetMolecule() != null) ) {
+            sequenceAlignment = 
+                new SequenceAlignment(
+                        getStartingMolecule(), 
+                        getTargetMolecule());
+            sequenceAlignment.alignNaively();
+        }
+        
+        // TODO update display to reflect sequence alignment
+        
+        // TODO update superposition
+        if (sequenceAlignment != null) {
+            HomogeneousTransform transform = 
+                sequenceAlignment.getSuperposition();
+            
+            System.out.println("Molecular transform = " + transform);
+            // TODO
+        }
+
+        // New sequence may cause change in scroll bar geometry
+        updateScrollBarParameters();                        
     }
     
     /**
@@ -97,11 +142,6 @@ class AlignmentPanel extends MinimizablePanel implements ComponentListener {
         alignmentScrollBar.setVisibleAmount(newVisibleAmount);
         alignmentScrollBar.setBlockIncrement( (int)(0.95 * windowWidth) );
         alignmentScrollBar.setUnitIncrement(alignmentTextArea.getResidueWidth());
-        
-        System.out.println("scrollbar value = " + barValue);
-        System.out.println("window width = " + windowWidth);
-        System.out.println("sequence width = " + sequenceWidth);
-        
     }
     
     // Panel where the alignment text is shown
@@ -113,23 +153,37 @@ class AlignmentPanel extends MinimizablePanel implements ComponentListener {
                 String startingMoleculeLabel,
                 String finalMoleculeLabel,
                 ObservableInterface startingMoleculeLoadBroadcaster,
-                ObservableInterface targetMoleculeLoadBroadcaster
+                ObservableInterface targetMoleculeLoadBroadcaster,
+                Color startingMoleculeColor,
+                Color targetMoleculeColor
                 ) {
             GridBagLayout gridBag = new GridBagLayout();
             setLayout(gridBag);
             
-            startingSequencePanel = new SequenceTextPanel(gridBag);
-            targetSequencePanel = new SequenceTextPanel(gridBag);
+            startingSequencePanel = new SequenceTextPanel(gridBag, startingMoleculeColor);
+            targetSequencePanel = new SequenceTextPanel(gridBag, targetMoleculeColor);
             
             // First sequence
-            add(new SequenceLabel(startingMoleculeLabel + ": ", gridBag));
+            SequenceLabel startLabel = new SequenceLabel(startingMoleculeLabel + ": ", gridBag);
+            startLabel.setForeground(startingMoleculeColor);
+            add(startLabel);
             startingMoleculeLoadBroadcaster.addObserver(startingSequencePanel);
             add(startingSequencePanel);
             
             // Second sequence
-            add(new SequenceLabel(finalMoleculeLabel + ": ", gridBag));
+            SequenceLabel finalLabel = new SequenceLabel(finalMoleculeLabel + ": ", gridBag);
+            finalLabel.setForeground(targetMoleculeColor);
+            add(finalLabel);
             targetMoleculeLoadBroadcaster.addObserver(targetSequencePanel);
             add(targetSequencePanel);
+        }
+        
+        public Biopolymer getStartingMolecule() {
+            return startingSequencePanel.getMolecule();
+        }
+        
+        public Biopolymer getTargetMolecule() {
+            return targetSequencePanel.getMolecule();
         }
         
         private int getResidueWidth() {
@@ -162,7 +216,8 @@ class AlignmentPanel extends MinimizablePanel implements ComponentListener {
         class SequenceTextPanel extends BasePanel implements Observer {
             SequenceCanvas sequenceCanvas = new SequenceCanvas();
             
-            SequenceTextPanel(GridBagLayout gb) {
+            SequenceTextPanel(GridBagLayout gb, Color moleculeColor) {
+                
                 GridBagConstraints gc = new GridBagConstraints();
                 gc.fill = GridBagConstraints.HORIZONTAL; // stretch
                 gc.weightx = 1.0; // stretch
@@ -174,11 +229,16 @@ class AlignmentPanel extends MinimizablePanel implements ComponentListener {
                 setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
                 
                 sequenceCanvas.setParentContainer(this);
+                sequenceCanvas.setSequenceColor(moleculeColor);
                 
                 add(sequenceCanvas);
                 add(Box.createHorizontalGlue()); // Keep alignment on the left side
                 
                 setBackground(Color.white);
+            }
+            
+            public Biopolymer getMolecule() {
+                return sequenceCanvas.getMolecule();
             }
             
             public void setBackground(Color c) {
@@ -207,7 +267,7 @@ class AlignmentPanel extends MinimizablePanel implements ComponentListener {
             private void setMolecules(MoleculeCollection molecules) {
                 ObservableBiopolymer singleMolecule = null;
                 for (Iterator molIter = molecules.molecules().iterator(); molIter.hasNext();) {
-                    StructureMolecule molecule = (StructureMolecule) molIter.next();
+                    LocatedMolecule molecule = (LocatedMolecule) molIter.next();
                     if (molecule instanceof ObservableBiopolymer) {
                         singleMolecule = (ObservableBiopolymer) molecule;
                         break;
@@ -217,8 +277,7 @@ class AlignmentPanel extends MinimizablePanel implements ComponentListener {
                 if ((sequenceCanvas != null) && (singleMolecule != null)) 
                     sequenceCanvas.setMolecule(singleMolecule);
                 
-                // New sequence may cause change in scroll bar geometry
-                AlignmentPanel.this.updateScrollBarParameters();
+                AlignmentPanel.this.respondToNewSequence();
             }
             
             int getResidueWidth() {
