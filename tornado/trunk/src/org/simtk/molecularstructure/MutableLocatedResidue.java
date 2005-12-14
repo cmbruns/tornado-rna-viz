@@ -27,5 +27,4 @@
 package org.simtk.molecularstructure;
 
 public interface MutableLocatedResidue extends LocatedResidue, MutableResidue {
-    public void addGenericBond(String atom1, String atom2);
 }

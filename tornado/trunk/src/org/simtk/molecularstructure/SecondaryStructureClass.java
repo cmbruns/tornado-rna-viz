@@ -21,22 +21,27 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Dec 12, 2005
  * Original author: Christopher Bruns
  */
 package org.simtk.molecularstructure;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * PDBMolecule interface applies to both chains and residues
- */
-public interface PDBMolecule extends LocatedMolecule {
+import java.util.*;
 
-    // getResidueByNumber is not for individual residues
-    // public Residue getResidueByNumber(int i, char insertionCode);
+public class SecondaryStructureClass implements SecondaryStructure {
+    private Collection residues = new Vector();
+    private Biopolymer molecule = null;
 
-    public String getChainID();
-    public void setChainID(String chainID);
+    public Iterator getResidueIterator() {
+        return this.residues.iterator();
+    }
+
+    public void addResidue(Residue residue) {
+        this.residues.add(residue);
+    }
+
+    public void setMolecule(Biopolymer biopolymer) {
+        this.molecule = biopolymer;
+    }
+
 }

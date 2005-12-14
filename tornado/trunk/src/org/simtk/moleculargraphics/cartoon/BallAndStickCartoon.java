@@ -41,7 +41,7 @@ import vtk.*;
  * 
  * Small spheres on each atom with cylinders connecting bonded atoms
  */
-public class BallAndStickCartoon extends MolecularCartoonNewWay {
+public class BallAndStickCartoon extends MolecularCartoonClass {
 
     BondStickCartoon sticks = new BondStickCartoon(0.15);
     AtomSphereCartoon balls = new AtomSphereCartoon(0.25);
@@ -77,15 +77,33 @@ public class BallAndStickCartoon extends MolecularCartoonNewWay {
         sticks.hide(m);
         balls.hide(m);
     }
+    public void hide() {
+        sticks.hide();
+        balls.hide();
+    }
     public void show(LocatedMolecule m) {
         sticks.show(m);
         balls.show(m);
     }
+    public void show() {
+        sticks.show();
+        balls.show();
+    }
+    public void add(LocatedMolecule m) {
+        sticks.add(m);
+        balls.add(m);
+        super.add(m);
+    }
     public void clear() {
+        super.clear();
         sticks.clear();
         balls.clear();
     }
     public vtkAssembly getAssembly() {return assembly;}
+    public void updateCoordinates() {
+        sticks.updateCoordinates();
+        balls.updateCoordinates();
+    }
     
 //    // TODO - update bond positions
 //    Hashtable bondPositions = 

@@ -32,11 +32,11 @@ import java.util.*;
 import javax.swing.*;
 import org.simtk.geometry3d.*;
 import org.simtk.moleculargraphics.cartoon.*;
-import org.simtk.molecularstructure.*;
+// import org.simtk.molecularstructure.*;
 import vtk.*;
 
 public class StructureCanvas extends vtkPanel 
-implements MouseMotionListener, MouseListener, MouseWheelListener, Observer
+implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, MassBody
 {
     static {
         // Keep vtk canvas from obscuring swing widgets
@@ -54,14 +54,21 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer
     }
     MouseDragAction mouseDragAction = MouseDragAction.CAMERA_ROTATE;
 
-    MolecularCartoon.CartoonType currentCartoonType = MolecularCartoon.CartoonType.WIRE_FRAME; // default starting type
-    public MolecularCartoon currentCartoon = new WireFrameCartoon();
+    // MolecularCartoonClass.CartoonType currentCartoonType = MolecularCartoonClass.CartoonType.WIRE_FRAME; // default starting type
+    // public MolecularCartoonClass currentCartoon = new WireFrameCartoon();
     Color backgroundColor = new Color((float)0.92, (float)0.96, (float)1.0);
+    
+    // private double totalMass = 0.0;
+    // private Vector3D centerOfMass = new Vector3DClass(0, 0, 0);
+    MassBodyClass massBody = new MassBodyClass();
 
     public StructureCanvas() {
         addMouseWheelListener(this);
         setUpLights();
     }
+    
+    public double getMass() {return massBody.getMass();}
+    public Vector3D getCenterOfMass() {return massBody.getCenterOfMass();}
     
     protected void setUpLights() {
         // Remove or dim that darn initial headlight.
@@ -95,20 +102,18 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer
         }
     }
 
-    public void setMolecules(MoleculeCollection molecules, MolecularCartoon.CartoonType cartoonType) {
-        // TODO this routine does not work for TornadoMorph
-        if (cartoonType != null)
-            currentCartoonType = cartoonType;
-        currentCartoon = currentCartoonType.newInstance();
+    // public void setMolecules(MoleculeCollection molecules, MolecularCartoonClass.CartoonType cartoonType) {
+    // }
+    public void add(MolecularCartoon cartoon) {
         
-        currentCartoon.show(molecules);
+        vtkAssembly assembly = cartoon.getAssembly();
         
-        vtkAssembly assembly = currentCartoon.getAssembly();
-        Vector3D com = molecules.getCenterOfMass();
-
         if (assembly != null) {
+
+            // Update mass distribution in display
+            massBody.add(cartoon);
+
             Lock();
-            GetRenderer().RemoveAllProps();
             
             // AddProp deprecated in vtk 5.0
             // try{canvas.GetRenderer().AddViewProp(assembly);}
@@ -117,7 +122,12 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer
             // System.out.println("Number of assembly paths = " + assembly.GetNumberOfPaths());
             
             GetRenderer().AddProp(assembly);
-            GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
+            
+            System.out.println("Assembly added");
+            
+            // TODO This centering should be optional
+            // TODO The view should also be scaled
+            centerByMass();
     
             UnLock();
             repaint();
@@ -348,6 +358,16 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer
     }
     public void stepNutation(double nutationStepAngle) {
         // TODO adjust camera for a single nutation wobble step
+    }
+
+    public void clear() {
+        GetRenderer().RemoveAllProps();
+        massBody.clear();
+    }
+    
+    public void centerByMass() {
+        Vector3D centerOfMass = massBody.getCenterOfMass();
+        GetRenderer().GetActiveCamera().SetFocalPoint(centerOfMass.getX(), centerOfMass.getY(), centerOfMass.getZ());        
     }
     
     static final long serialVersionUID = 01L;

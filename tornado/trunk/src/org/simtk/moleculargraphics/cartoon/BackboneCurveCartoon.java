@@ -45,12 +45,11 @@ import org.simtk.util.Selectable;
  * 
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
-public class BackboneCurveCartoon extends MolecularCartoonNewWay {
+public class BackboneCurveCartoon extends MolecularCartoonClass {
     double baseRodRadius = 0.50;
     double ribbonThickness = 0.70;
     double studElevation = 0.50;
     double ribbonWidth = 1.5;
-    
     /**
      * How many spline segments per residue
      */
@@ -102,6 +101,10 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
         assembly.AddPart(studs.getActor());
     }
     
+    public void updateCoordinates() {
+        // TODO
+    }
+    
     public void select(Selectable s) {
         baseRods.select(s);
         // baseCaps.select(s);
@@ -127,6 +130,21 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
         // baseCaps.hide(m);
         studs.hide(m);
     }
+    public void hide() {
+        baseRods.hide();
+        // baseCaps.hide(m);
+        studs.hide();
+    }
+    public void show(LocatedMolecule m) {
+        baseRods.show(m);
+        // baseCaps.show(m);
+        studs.show(m);
+    }
+    public void show() {
+        baseRods.show();
+        // baseCaps.show(m);
+        studs.show();
+    }
     public void clear() {
         baseRods.clear();
         // baseCaps.clear();
@@ -136,12 +154,12 @@ public class BackboneCurveCartoon extends MolecularCartoonNewWay {
     
 
     
-    public void show(LocatedMolecule m) {
-        baseRods.show(m);
+    public void add(LocatedMolecule m) {
+        baseRods.add(m);
         // baseCaps.show(m);
-        studs.show(m);
-        
+        studs.add(m);        
         addMolecule(m);
+        super.add(m);
     }
 
     public void addMolecule(LocatedMolecule molecule) {

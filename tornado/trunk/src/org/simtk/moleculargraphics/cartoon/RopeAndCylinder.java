@@ -41,7 +41,7 @@ import vtk.*;
  * 
  * Rope and cylinder RNA structure, using modular components
  */
-public class RopeAndCylinder extends MolecularCartoonNewWay {
+public class RopeAndCylinder extends MolecularCartoonClass {
 
     DuplexCylinderCartoon duplexes = new DuplexCylinderCartoon();
     TubeAndStickTrace ropes = new TubeAndStickTrace(0.20, 0.20);
@@ -76,6 +76,22 @@ public class RopeAndCylinder extends MolecularCartoonNewWay {
     public void show(LocatedMolecule m) {
         duplexes.show(m);
         ropes.show(m);
+    }
+    public void hide() {
+        duplexes.hide();
+        ropes.hide();
+    }
+    public void show() {
+        duplexes.show();
+        ropes.show();
+    }
+    public void updateCoordinates() {
+        duplexes.updateCoordinates();
+        ropes.updateCoordinates();
+    }
+    public void add(LocatedMolecule m) {
+        duplexes.add(m);
+        ropes.add(m);
     }
     public void clear() {
         duplexes.clear();

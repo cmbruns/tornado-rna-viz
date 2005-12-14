@@ -41,6 +41,8 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     int numberOfResidues = 0; // number of residues in the sequence
     int minHeight = 10;
     int minWidth = 100;
+    
+    private Color sequenceColor = null;
 
     protected Graphics myGraphics = null; // Notice when Graphics object is available
     JComponent parentContainer = null;
@@ -71,6 +73,10 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         font = new Font("Monospaced", Font.BOLD, 20);
         numberFont = new Font("SanSerif", Font.PLAIN, 9);
         // setSize(minWidth, minHeight); // This is needed to make the container exist...
+    }
+    
+    public void setSequenceColor(Color c) {
+        this.sequenceColor = c;
     }
     
     public void setParentContainer(JComponent parent) {
@@ -171,7 +177,12 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         else {
             // Draw sequence
             g.setFont(font);
-            g.setColor(getForeground());
+
+            if (sequenceColor == null)
+                g.setColor(getForeground());
+            else
+                g.setColor(sequenceColor);
+            
             for (int r = leftPosition; r <= rightPosition; r++) {
                 g.drawString((String) residueSymbols.get(r), positionPixel(r), baseLine);
             }

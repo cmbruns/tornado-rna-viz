@@ -27,6 +27,7 @@
 package org.simtk.molecularstructure;
 
 import java.awt.Color;
+import java.util.*;
 
 public interface Residue {
     public Color getDefaultColor();
@@ -35,4 +36,8 @@ public interface Residue {
     public char getOneLetterCode();
     public String getResidueName();
     public int getResidueNumber();
+    public Iterator getSecondaryStructures();
+    public void addSecondaryStructure(SecondaryStructure structure);
+    public void setPreviousResidue(PDBResidueClass r);
+    public void setNextResidue(PDBResidueClass r);
 }

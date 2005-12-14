@@ -21,22 +21,27 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Dec 9, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure;
+package org.simtk.molecularstructure.protein;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * PDBMolecule interface applies to both chains and residues
- */
-public interface PDBMolecule extends LocatedMolecule {
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.PDBAtomSet;
 
-    // getResidueByNumber is not for individual residues
-    // public Residue getResidueByNumber(int i, char insertionCode);
+public class PDBProteinClass extends BiopolymerClass implements PDBMolecule, LocatedProtein {
+    // TODO put chainID into one class to be shared by all PDB instantiated classes
+    private String chainID = " ";
+    
+    public PDBProteinClass() {} // Empty molecule
+    public PDBProteinClass(PDBAtomSet atomSet) {super(atomSet);}
 
-    public String getChainID();
-    public void setChainID(String chainID);
+    public String getChainID() {return this.chainID;}
+    public void setChainID(String chainID) { this.chainID = chainID; }
+    
+    protected void addGenericResidueBonds() {
+        super.addGenericResidueBonds();
+        // TODO this is not working
+        addGenericResidueBond(" C  ", " N  ");
+    }
 }

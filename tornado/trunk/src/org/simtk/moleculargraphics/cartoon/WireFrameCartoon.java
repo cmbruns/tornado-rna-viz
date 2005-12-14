@@ -138,9 +138,9 @@ public class WireFrameCartoon extends GlyphCartoon {
         }
     }
 
-    public void show(LocatedMolecule molecule) {
+    public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        glyphColors.show(molecule);
+        super.add(molecule);
     }
 
     /** Change graphics primitives only for those objects that have moved

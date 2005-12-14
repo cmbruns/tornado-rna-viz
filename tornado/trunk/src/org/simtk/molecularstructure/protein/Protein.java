@@ -32,20 +32,11 @@
 package org.simtk.molecularstructure.protein;
 
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.PDBAtomSet;
 
 /**
  * @author Christopher Bruns
  *
  * \brief A single molecule of protein.
  */
-public class Protein extends BiopolymerClass {
-    public Protein() {} // Empty molecule
-    public Protein(PDBAtomSet atomSet) {super(atomSet);}
-
-    protected void addGenericResidueBonds() {
-        super.addGenericResidueBonds();
-        // TODO this is not working
-        addGenericResidueBond(" C  ", " N  ");
-    }
+public interface Protein extends Biopolymer {
 }

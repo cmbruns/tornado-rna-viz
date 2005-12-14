@@ -21,22 +21,13 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Dec 12, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure;
+package org.simtk.molecularstructure.protein;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * PDBMolecule interface applies to both chains and residues
- */
-public interface PDBMolecule extends LocatedMolecule {
+import org.simtk.molecularstructure.SecondaryStructureClass;
 
-    // getResidueByNumber is not for individual residues
-    // public Residue getResidueByNumber(int i, char insertionCode);
+public class BetaStrand extends SecondaryStructureClass {
 
-    public String getChainID();
-    public void setChainID(String chainID);
 }

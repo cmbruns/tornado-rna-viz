@@ -74,11 +74,11 @@ public class AtomSphereCartoon extends GlyphCartoon {
     
     public void setScale(double s) {sizeScale = s;}
     
-    public void show(LocatedMolecule molecule) {
+    public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        glyphColors.show(molecule);
+        super.add(molecule); // TODO make sure all cartoon classes do this
     }
-
+    
     void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
@@ -94,15 +94,15 @@ public class AtomSphereCartoon extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof PDBResidueClass) {
-            PDBResidueClass residue = (PDBResidueClass) molecule;
+        if (molecule instanceof PDBResidue) {
+            PDBResidue residue = (PDBResidue) molecule;
             for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
                 PDBAtom atom = (PDBAtom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
-        else if (molecule instanceof BiopolymerClass) {
-            BiopolymerClass biopolymer = (BiopolymerClass) molecule;
+        else if (molecule instanceof Biopolymer) {
+            Biopolymer biopolymer = (Biopolymer) molecule;
             for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
                 addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
             }

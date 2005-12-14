@@ -49,15 +49,40 @@ import org.simtk.mvc.*;
  *
  * \brief A single molecule structure.
  */
-public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMolecule {
-    private LinkedHashSet atoms = new LinkedHashSet();
+public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocatedMolecule, PDBMolecule {
+    private Collection atoms = new LinkedHashSet();
     // protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();
 	// Vector bonds = new Vector();
 
     Vector3DClass centerOfMass = new Vector3DClass();
     double mass = 0;
+    private String chainID = " ";
 
+    public Vector3D[] getCoordinates() {
+        Vector3D[] answer = new Vector3DClass[atoms.size()];
+        Iterator atomIterator = atoms.iterator();
+        for (int i = 0; i < atoms.size(); i++) {
+            LocatedAtom atom = (LocatedAtom) atomIterator.next();
+            answer[i] = atom.getCoordinates();
+        }
+        return answer;
+    }
+    
+    public void setChainID(String chainID) {this.chainID = chainID;}
+    public String getChainID() {return this.chainID;}
+    
+    public void setCoordinates(Vector3D[] coordinates) {
+        if (coordinates.length != atoms.size())
+            throw new RuntimeException("Coordinate array mismatch");
+
+        Iterator atomIterator = atoms.iterator();
+        for (int atomIndex = 0; atomIndex < atoms.size(); atomIndex ++) {
+            MovableAtom atom = (MovableAtom) atomIterator.next();
+            atom.setCoordinates(coordinates[atomIndex]);
+        }
+    }
+    
     public double getMass() {
         return mass;
     }
@@ -142,8 +167,8 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMol
 
     }
 
-    public MoleculeClass() {} // Empty molecule
-	public MoleculeClass(PDBAtomSet atomSet) {
+    public PDBMoleculeClass() {} // Empty molecule
+	public PDBMoleculeClass(PDBAtomSet atomSet) {
         // for (Atom atom : atomSet) {
         for (Iterator i = atomSet.iterator(); i.hasNext();) {
             PDBAtom atom = (PDBAtom) i.next();
@@ -247,21 +272,21 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMol
 	public int getAtomCount() {return atoms.size();}
 	// public Atom getAtom(int i) {return (Atom) atoms.get(i);}
 	
-    public static MoleculeClass createFactoryPDBMolecule(URL url) throws IOException {
+    public static PDBMolecule createFactoryPDBMolecule(URL url) throws IOException {
         InputStream inStream = url.openStream();
-        MoleculeClass molecule = createFactoryPDBMolecule(inStream);        
+        PDBMolecule molecule = createFactoryPDBMolecule(inStream);        
         inStream.close();
         return molecule;
     }
 
-    public static LocatedMolecule createFactoryPDBMolecule(String fileName) throws IOException {
+    public static PDBMolecule createFactoryPDBMolecule(String fileName) throws IOException {
 		FileInputStream fileStream = new FileInputStream(fileName);
-		LocatedMolecule molecule = createFactoryPDBMolecule(fileStream);
+        PDBMolecule molecule = createFactoryPDBMolecule(fileStream);
         fileStream.close();
         return molecule;
     }
 
-    static MoleculeClass createFactoryPDBMolecule(InputStream is) throws IOException {
+    static PDBMolecule createFactoryPDBMolecule(InputStream is) throws IOException {
 		LineNumberReader reader = new LineNumberReader(new InputStreamReader(is));
 		return createFactoryPDBMolecule(reader);
     }
@@ -272,7 +297,7 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMol
      * @return
      * @throws IOException
      */
-    public static MoleculeClass createFactoryPDBMolecule(LineNumberReader reader) throws IOException {
+    public static PDBMolecule createFactoryPDBMolecule(LineNumberReader reader) throws IOException {
         PDBAtomSet currentMoleculeAtoms = new PDBAtomSet();
         
         char chainIdentifier = '\0';
@@ -282,11 +307,16 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMol
         
 		String PDBLine;
 		reader.mark(200);
+        
+        // NOTE - parsing of the header section of PDB files occurs in the class MoleculeCollection
+        // This routine parses coordinates, presumably after the header has already been parsed.
+        
 		FILE_LINE: while ((PDBLine = reader.readLine()) != null) {
-			// Stop parsing after the END record
+
+            // Stop parsing after the END record
 			if (PDBLine.substring(0,3).equals("END")) {
 			    reader.reset(); // Leave the END tag for the next guy
-                MoleculeClass molecule = MoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms); // empty molecule
+                PDBMolecule molecule = PDBMoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms); // empty molecule
 				return molecule;
 			}
 
@@ -325,18 +355,24 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMol
 				    }
 				    else { // Not the same molecule - return
 				        reader.reset(); // Put latest atom back into the stream
-				        MoleculeClass molecule = MoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
+                        PDBMolecule molecule = PDBMoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
                         return molecule;
 				    }
 				}
 			} // ATOM or HETATM record
 			
+            
 			reader.mark(200); // Commit to reading this far into the file
 		}
-        return MoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
+
+        PDBMolecule answer =  PDBMoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
+        
+        answer.setChainID(new String("" + chainIdentifier));
+        
+        return answer;
     }
 
-    static MoleculeClass createFactoryPDBMolecule(PDBAtomSet bagOfAtoms) {
+    static PDBMolecule createFactoryPDBMolecule(PDBAtomSet bagOfAtoms) {
         if (bagOfAtoms == null) return null;
         if (bagOfAtoms.size() == 0) return null;
         
@@ -378,7 +414,7 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMol
         // If there are protein residues, this is a protein
         if ((proteinCount >= 1) && (proteinCount >= nucleicCount)) {
             // This is a protein molecule
-            return new Protein(bagOfAtoms);
+            return new PDBProteinClass(bagOfAtoms);
         }
  
         // If there are nucleic acid residues, this is a nucleic acid
@@ -410,7 +446,7 @@ public class MoleculeClass extends MoleculeMVCModel implements MutableLocatedMol
         }
         
         // OK, it's some other kind of molecule
-        return new MoleculeClass(bagOfAtoms);
+        return new PDBMoleculeClass(bagOfAtoms);
     }
 
     // Create covalent bonds where it seems that they are needed

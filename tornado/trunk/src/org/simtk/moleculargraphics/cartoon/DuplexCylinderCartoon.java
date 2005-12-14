@@ -49,7 +49,7 @@ import org.simtk.util.*;
   * 
   * A transparent blue cylinder around each duplex
  */
-public class DuplexCylinderCartoon extends MolecularCartoonNewWay 
+public class DuplexCylinderCartoon extends MolecularCartoonClass 
 {
     // Size of the cylinders surrounding the double helices
     static double defaultbarrelRadius = 8.0; // 11.5 to consume most atoms
@@ -62,17 +62,25 @@ public class DuplexCylinderCartoon extends MolecularCartoonNewWay
     public DuplexCylinderCartoon() {
     }
 
+    public void updateCoordinates() {
+        // TODO
+    }
+    
     public vtkAssembly getAssembly() {return assembly;}
     
     public void select(Selectable s) {} // TODO
     public void unSelect(Selectable s) {} // TODO
     public void unSelect() {} // TODO
     public void highlight(LocatedMolecule molecule) {} // TODO
-    public void show(LocatedMolecule molecule) {
+    public void add(LocatedMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         addNucleicAcid((NucleicAcid) molecule);
+        super.add(molecule);
     }
     public void hide(LocatedMolecule molecule) {} // TODO
+    public void hide() {} // TODO
+    public void show(LocatedMolecule molecule) {} // TODO
+    public void show() {} // TODO
     public void clear() {} // TODO
 
     public void addNucleicAcid(NucleicAcid nucleicAcid) {

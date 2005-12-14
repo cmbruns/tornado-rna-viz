@@ -40,11 +40,12 @@ import org.simtk.molecularstructure.atom.*;
  *
  * \brief A macromolecular heteropolymer, such as protein or DNA
  */
-public class BiopolymerClass extends MoleculeClass implements ObservableBiopolymer {
+public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopolymer {
 	Vector residues = new Vector();
     Hashtable residueNumbers = new Hashtable();
     // maps atom names of bondable atoms that bond one residue to the next
     Hashtable genericResidueBonds = new Hashtable(); 
+    private Collection secondaryStructure = new Vector();
 
 	// Distinguish between array index of residues and their sequence "number"
 	public Residue getResidue(int i) {return (Residue) residues.get(i);} // array index
@@ -119,6 +120,12 @@ public class BiopolymerClass extends MoleculeClass implements ObservableBiopolym
         }
     }
 
+    public void addSecondaryStructure(SecondaryStructure ss) {
+        this.secondaryStructure.add(ss);
+    }
+    
+    public Iterator getSecondaryStructures() {return this.secondaryStructure.iterator();}
+    
     protected void addGenericResidueBond(String atom1, String atom2) {
         // Don't add bond in both directions; these bonds have a direction
         if (!genericResidueBonds.containsKey(atom1))

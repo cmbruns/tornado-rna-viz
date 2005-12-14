@@ -130,8 +130,9 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOff();
     }
 
-    public void show(LocatedMolecule molecule) {
+    public void add(LocatedMolecule molecule) {
         addMolecule(molecule);
+        super.add(molecule);
     }
 
     void addMolecule(LocatedMolecule molecule) {

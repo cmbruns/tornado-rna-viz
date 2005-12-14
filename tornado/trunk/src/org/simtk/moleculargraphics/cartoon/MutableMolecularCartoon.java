@@ -21,22 +21,19 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Dec 8, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure;
+package org.simtk.moleculargraphics.cartoon;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * PDBMolecule interface applies to both chains and residues
- */
-public interface PDBMolecule extends LocatedMolecule {
+import org.simtk.molecularstructure.*;
 
-    // getResidueByNumber is not for individual residues
-    // public Residue getResidueByNumber(int i, char insertionCode);
-
-    public String getChainID();
-    public void setChainID(String chainID);
+public interface MutableMolecularCartoon extends MolecularCartoon, MovableMolecularCartoon {
+    public void clear();
+    
+    /**
+     * Add a new molecule to this cartoon
+     * @param m
+     */
+    public void add(LocatedMolecule m);
 }

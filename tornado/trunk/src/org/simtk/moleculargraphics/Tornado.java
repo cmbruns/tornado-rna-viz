@@ -68,6 +68,10 @@ implements ResidueActionListener
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
     protected Tornado3DCanvas canvas;
     private LoadStructureDialog loadStructureDialog = new LoadStructureDialog(this);
+    
+    private MolecularCartoonClass.CartoonType cartoonType = 
+        MolecularCartoonClass.CartoonType.WIRE_FRAME;
+    private MutableMolecularCartoon currentCartoon = cartoonType.newInstance();
 
     Tornado() {
         super("toRNAdo: (no structures currently loaded)");
@@ -77,7 +81,7 @@ implements ResidueActionListener
         classLoader = getClass().getClassLoader();
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        canvas = new Tornado3DCanvas(residueActionBroadcaster); // must create before menus
+        canvas = new Tornado3DCanvas(); // must create before menus
         createMenuBar();
 
         JPanel panel = new JPanel();
@@ -153,7 +157,7 @@ implements ResidueActionListener
         setMessage("No molecules are currently loaded");
         
         residueActionBroadcaster.addSelectionListener(sequencePane);
-        residueActionBroadcaster.addSelectionListener(canvas);
+        // residueActionBroadcaster.addSelectionListener(canvas);
         residueActionBroadcaster.addSelectionListener(sequenceCartoonCanvas);
         residueActionBroadcaster.addSelectionListener(this);
         if (drawSecondaryStructure)
@@ -441,27 +445,35 @@ implements ResidueActionListener
         viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
 
-        addCartoonSelection( MolecularCartoon.CartoonType.BALL_AND_STICK,
+        addCartoonSelection( MolecularCartoonClass.CartoonType.BALL_AND_STICK,
                 "Ball and Stick",
                 new ImageIcon(classLoader.getResource("resources/images/po4_stick_icon.png")) );
 
-        addCartoonSelection( MolecularCartoon.CartoonType.SPACE_FILLING,
+        addCartoonSelection( MolecularCartoonClass.CartoonType.SPACE_FILLING,
                 "Space-filling Atoms",
                 new ImageIcon(classLoader.getResource("resources/images/nuc_fill_icon.png")) );
 
-        addCartoonSelection( MolecularCartoon.CartoonType.ROPE_AND_CYLINDER2,
+        addCartoonSelection( MolecularCartoonClass.CartoonType.ROPE_AND_CYLINDER2,
                 "Rope and Cylinder",
                 new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")) );
 
-        addCartoonSelection( MolecularCartoon.CartoonType.RESIDUE_SPHERE,
+        addCartoonSelection( MolecularCartoonClass.CartoonType.RESIDUE_SPHERE,
                 "Residue Spheres",
                 null );
 
-        addCartoonSelection( MolecularCartoon.CartoonType.BACKBONE_TRACE,
+        addCartoonSelection( MolecularCartoonClass.CartoonType.BACKBONE_TRACE,
                 "Backbone Trace",
                 null );
 
-        addCartoonSelection( MolecularCartoon.CartoonType.WIRE_FRAME,
+        addCartoonSelection( MolecularCartoonClass.CartoonType.PROTEIN_RIBBON,
+                "Protein Ribbon",
+                null );
+
+        addCartoonSelection( MolecularCartoonClass.CartoonType.PROTEIN_RIBBON_TEST,
+                "Protein Ribbon Test",
+                null );
+
+        addCartoonSelection( MolecularCartoonClass.CartoonType.WIRE_FRAME,
                 "Line Drawing",
                 null );
         
@@ -651,24 +663,31 @@ implements ResidueActionListener
     class RelaxCoordinatesAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             moleculeCollection.relaxCoordinates();
-            
-            // TODO update cartoon
-            canvas.currentCartoon.clear();
-            canvas.currentCartoon.show(moleculeCollection);
+            currentCartoon.updateCoordinates();
             
             // System.out.println("Hey, this isn't relaxing the coordinates!?!?!");
         }
     }
 
     class CartoonAction implements ActionListener {
-        MolecularCartoon.CartoonType type = null;
-        CartoonAction(MolecularCartoon.CartoonType t) {
+        MolecularCartoonClass.CartoonType type = null;
+        CartoonAction(MolecularCartoonClass.CartoonType t) {
             type = t;
         }
+        
         public void actionPerformed(ActionEvent e) {
             setWait("Calculating geometry...");
             
-            canvas.setMolecules(moleculeCollection, type);
+            canvas.clear();
+            currentCartoon = type.newInstance();
+
+            for (Iterator iterMolecule = moleculeCollection.molecules().iterator(); iterMolecule.hasNext(); ) {
+                Object o = iterMolecule.next();
+                if (o instanceof LocatedMolecule)
+                    currentCartoon.add((LocatedMolecule)o);
+            }
+
+            canvas.add(currentCartoon);
             
 //            canvas.currentCartoonType = type;
 //
@@ -1116,11 +1135,11 @@ implements ResidueActionListener
         updateTitleBar();
         
         // Create graphical representation of the molecule
-        (new CartoonAction(canvas.currentCartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
+        (new CartoonAction(cartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Center camera on new molecule
-        Vector3D com = molecules.getCenterOfMass();
-        canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
+        // Vector3D com = molecules.getCenterOfMass();
+        // canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
 
         // Display sequence of first molecule that has a sequence
         residueActionBroadcaster.fireClearResidues();
@@ -1279,7 +1298,7 @@ implements ResidueActionListener
      * Put all hooks for adding a new molecule representation here
      * Call this from createMenuBar()
      */
-    private void addCartoonSelection(MolecularCartoon.CartoonType cartoonType, 
+    private void addCartoonSelection(MolecularCartoonClass.CartoonType cartoonType, 
                                      String description,
                                      ImageIcon imageIcon) {
         if (viewMenu == null)
@@ -1298,7 +1317,7 @@ implements ResidueActionListener
         
         checkItem.setEnabled(true);
         checkItem.addActionListener(new CartoonAction(cartoonType));
-        checkItem.setState(canvas.currentCartoonType == cartoonType);
+        checkItem.setState(cartoonType == cartoonType);
         cartoonGroup.add(checkItem);
         cartoonMenu.add(checkItem);        
     }

@@ -46,18 +46,24 @@ import org.simtk.util.*;
  * \brief One monomer residue of a Biopolymer
  *
  */
-public abstract class PDBResidueClass extends MoleculeClass implements Selectable, MutablePDBResidue {
+public abstract class PDBResidueClass extends PDBMoleculeClass implements Selectable, MutablePDBResidue {
     private static Color defaultColor = new Color(255, 255, 255);
 
     Hashtable genericBonds = new Hashtable(); // maps atom names of bondable atoms
     char insertionCode = ' ';
     public int residueNumber = 0; // TODO create accessors
     Hashtable atomNames = new Hashtable();
+    private Collection secondaryStructures = new HashSet();
 
     // Even if there is a break in the sequence, the next residue train should probably jump over the gap
     PDBResidueClass nextResidue;
     PDBResidueClass previousResidue;
 
+    public Iterator getSecondaryStructures() {return secondaryStructures.iterator();}
+    public void addSecondaryStructure(SecondaryStructure structure) {
+        secondaryStructures.add(structure);
+    }
+        
     public Color getDefaultColor() {return defaultColor;}
     
     public Collection getHydrogenBondDonors() {
@@ -149,7 +155,7 @@ public abstract class PDBResidueClass extends MoleculeClass implements Selectabl
     
     public LocatedMolecule get(FunctionalGroup fg) {
         String[] groupAtomNames = fg.getAtomNames();
-        MutableLocatedMolecule mol = new MoleculeClass();
+        MutableLocatedMolecule mol = new PDBMoleculeClass();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
             PDBAtom atom = getAtom(atomName);
@@ -237,7 +243,7 @@ public abstract class PDBResidueClass extends MoleculeClass implements Selectabl
      * Create a new Residue of the correct type, e.g. AminoAcid, Adenosine, etc.
      * @return Returns a Residue object of the correct subtype
      */
-    static PDBResidueClass createFactoryResidue(PDBAtomSet bagOfAtoms) {
+    static PDBResidue createFactoryResidue(PDBAtomSet bagOfAtoms) {
         if (bagOfAtoms == null) return null;
         if (bagOfAtoms.size() == 0) return null;
         PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);

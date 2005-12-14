@@ -21,22 +21,12 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Dec 8, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure;
+package org.simtk.geometry3d;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * PDBMolecule interface applies to both chains and residues
- */
-public interface PDBMolecule extends LocatedMolecule {
-
-    // getResidueByNumber is not for individual residues
-    // public Residue getResidueByNumber(int i, char insertionCode);
-
-    public String getChainID();
-    public void setChainID(String chainID);
+public interface MassBody {
+    public Vector3D getCenterOfMass();
+    public double getMass();
 }

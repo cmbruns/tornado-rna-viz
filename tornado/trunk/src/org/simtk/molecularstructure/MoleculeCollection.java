@@ -35,6 +35,7 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import org.simtk.molecularstructure.atom.*;
+import org.simtk.molecularstructure.protein.*;
 
 import org.simtk.geometry3d.*;
 
@@ -72,7 +73,7 @@ public class MoleculeCollection {
     
     public void relaxCoordinates() {
         for (Iterator i = molecules.iterator(); i.hasNext(); ) {
-            MoleculeClass m = (MoleculeClass) i.next();
+            PDBMoleculeClass m = (PDBMoleculeClass) i.next();
             m.relaxCoordinates();
         }
     }
@@ -104,6 +105,11 @@ public class MoleculeCollection {
         String PDBLine;
         String title = "";
         
+        Collection secondaryStructures = new Vector();
+        HashMap secondaryStructureStarts = new HashMap();
+        HashMap secondaryStructureEnds = new HashMap();
+        HashMap chainMolecules = new HashMap();
+
         reader.mark(200);
         FILE_LINE: while ((PDBLine = reader.readLine()) != null) {
 
@@ -136,33 +142,142 @@ public class MoleculeCollection {
                 }
             }
 
+            // Parse secondary structure
+            else if (PDBLine.substring(0,6).equals("HELIX ")) {
+
+                String helixID = PDBLine.substring(11, 14);
+
+                String initResidueName = PDBLine.substring(15, 18);
+                String initResidueChain = PDBLine.substring(19, 20);
+                int initResidueNumber = new Integer(PDBLine.substring(21, 25).trim()).intValue();
+                String initICode = PDBLine.substring(25, 26);
+                
+                String endResidueName = PDBLine.substring(27, 30);
+                String endResidueChain = PDBLine.substring(31, 32);
+                int endResidueNumber = new Integer(PDBLine.substring(33, 37).trim()).intValue();
+                String endICode = PDBLine.substring(37, 38);
+                
+                int helixClass = new Integer(PDBLine.substring(38, 40).trim()).intValue();
+
+                Helix helix = new Helix();
+                switch(helixClass) {
+                case 1:
+                    helix.setHelixType(Helix.ALPHA); break;
+                case 2:
+                    helix.setHelixType(Helix.RIGHT_HANDED_OMEGA); break;
+                case 3:
+                    helix.setHelixType(Helix.RIGHT_HANDED_PI); break;
+                case 4:
+                    helix.setHelixType(Helix.RIGHT_HANDED_GAMMA); break;
+                case 5:
+                    helix.setHelixType(Helix.RIGHT_HANDED_310); break;
+                case 6:
+                    helix.setHelixType(Helix.LEFT_HANDED_ALPHA); break;
+                case 7:
+                    helix.setHelixType(Helix.LEFT_HANDED_OMEGA); break;
+                case 8:
+                    helix.setHelixType(Helix.LEFT_HANDED_GAMMA); break;
+                case 9:
+                    helix.setHelixType(Helix.RIBBON_HELIX_27); break;
+                case 10:
+                    helix.setHelixType(Helix.POLYPROLINE); break;
+                default:
+                    helix.setHelixType(Helix.ALPHA); break;                    
+                }
+                
+                // System.out.println("HELIX record found");
+                
+                // Remember residue ranges
+                secondaryStructureStarts.put(helix, PDBLine.substring(15, 26));
+                secondaryStructureEnds.put(helix, PDBLine.substring(27, 38));                
+                
+                secondaryStructures.add(helix);
+            }
+            else if (PDBLine.substring(0,6).equals("SHEET ")) {
+                BetaStrand strand = new BetaStrand();
+
+                // Make beta strand residue descriptions look like alpha helix residue descriptions
+                String initString = PDBLine.substring(17, 22) + " " + PDBLine.substring(22, 27);
+                String endString = PDBLine.substring(28, 33) + " " + PDBLine.substring(33, 38);                
+                
+                secondaryStructureStarts.put(strand, initString);
+                secondaryStructureEnds.put(strand, endString);
+                
+                secondaryStructures.add(strand);
+            }
+            
             reader.mark(200); // Commit to reading this far into the file
         }
         
         // Populate title
         if (title.length() > 0) setTitle(title);
         
-		LocatedMolecule mol = MoleculeClass.createFactoryPDBMolecule(reader);
+        // Now that the header section of the PDB file has been parsed,
+        // Read one molecule at a time
+        PDBMolecule mol = null;
+        do {
+            mol = PDBMoleculeClass.createFactoryPDBMolecule(reader);
+		    if (mol == null) break;
 
-		// TODO do something more proactive if there are no molecules (such as throw an exception)
-		if (mol == null) {return;}
-		
-		while (mol.getAtomCount() > 0) {
-		    molecules.addElement(mol);
+            molecules.addElement(mol);
 
-		    double myMassProportion = getMass() / (getMass() + mol.getMass());
-		    centerOfMass = new Vector3DClass( centerOfMass.scale(myMassProportion).plus(
-		            mol.getCenterOfMass().times(1.0 - myMassProportion) ) );
-		    
-		    mass += mol.getMass();
-		    
+            // Hash molecule by chain ID for later resolution of secondary structure
+            String chainID = mol.getChainID();
+            if (! chainMolecules.containsKey(chainID))
+                chainMolecules.put(chainID, new Vector());
+            Collection m = (Collection) chainMolecules.get(chainID);
+            m.add(mol);
+            
+            // Update center of mass of entire molecule collection            
+            double myMassProportion = getMass() / (getMass() + mol.getMass());
+            centerOfMass = new Vector3DClass( centerOfMass.scale(myMassProportion).plus(
+                    mol.getCenterOfMass().times(1.0 - myMassProportion) ) );
+            
+            mass += mol.getMass();
+
+            // Populate the collection-wide atoms array
             for (Iterator i = mol.getAtomIterator(); i.hasNext(); ) {
                 LocatedAtom a = (LocatedAtom) i.next();
                 atoms.addElement(a);
             }
-		    
-		    mol = MoleculeClass.createFactoryPDBMolecule(reader);
-		    if (mol == null) break;
-		}
+            
+        } while (mol.getAtomCount() > 0);
+
+        // Apply secondary structures
+        for (Iterator i = secondaryStructures.iterator(); i.hasNext(); ) {
+            
+            SecondaryStructure structure = (SecondaryStructure) i.next();
+
+            String startResidueString = (String) secondaryStructureStarts.get(structure);
+            String chainID = startResidueString.substring(4, 5);
+            String startInsertionCode = startResidueString.substring(10, 11);
+            int startResidueNumber = (new Integer(startResidueString.substring(6, 10).trim())).intValue();
+
+            String endResidueString = (String) secondaryStructureEnds.get(structure);
+            String endInsertionCode = endResidueString.substring(10, 11);
+            int endResidueNumber = (new Integer(endResidueString.substring(6, 10).trim())).intValue();
+
+            Collection m = (Collection) chainMolecules.get(chainID);
+            
+            if (m != null) {
+                for (Iterator molIter = m.iterator(); molIter.hasNext();) {
+                    PDBMolecule molecule = (PDBMolecule) molIter.next();
+
+                    if (molecule instanceof Biopolymer) {
+                        Biopolymer biopolymer = (Biopolymer) molecule;
+                        for (int res = startResidueNumber; res <= endResidueNumber; res++) {
+                            Residue residue = biopolymer.getResidueByNumber(res);
+    
+                            // Set relationship among residue/biopolymer/structure
+                            structure.addResidue(residue);
+                            structure.setMolecule(biopolymer);
+                            biopolymer.addSecondaryStructure(structure);
+                            residue.addSecondaryStructure(structure);
+                        }
+                    }
+                }
+            }
+        }
+        
 	}
 }

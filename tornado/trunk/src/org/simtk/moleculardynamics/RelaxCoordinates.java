@@ -63,8 +63,8 @@ public class RelaxCoordinates {
         URL pdbFileURL = thisApp.getClass().getClassLoader().getResource("resources/structures/OneRNAHairpin.pdb");
         System.out.println(""+pdbFileURL);
 
-        MoleculeClass molecule = null;
-        try { molecule = MoleculeClass.createFactoryPDBMolecule(pdbFileURL); }
+        LocatedMolecule molecule = null;
+        try { molecule = PDBMoleculeClass.createFactoryPDBMolecule(pdbFileURL); }
         catch (IOException exc) {System.out.println(""+exc);System.exit(0);}
 
         if (molecule != null) {
@@ -88,7 +88,8 @@ public class RelaxCoordinates {
             }
 
             // Keep official coordinates in a float array
-            float[] actualCoordinateArray = molecule.packCoordinatesIntoFloatArray();
+            // TODO - potentially dangerous cast here
+            float[] actualCoordinateArray = ((PDBMoleculeClass)molecule).packCoordinatesIntoFloatArray();
             
             relaxCoordinates1(
                     atomCount,

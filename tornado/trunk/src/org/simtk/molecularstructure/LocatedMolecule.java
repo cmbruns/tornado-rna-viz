@@ -36,7 +36,7 @@ import org.simtk.molecularstructure.atom.PDBAtom;
   * 
   * A molecule whose atomic positions are known
  */
-public interface LocatedMolecule extends Molecule {
+public interface LocatedMolecule extends Molecule, MassBody {
     public double getMass();
     public Vector3D getCenterOfMass();
     /**
@@ -47,4 +47,5 @@ public interface LocatedMolecule extends Molecule {
     public Plane3D bestPlane3D();
     public boolean containsAtom(PDBAtom atom);
     public int getAtomCount();
+    public Vector3D[] getCoordinates();
 }

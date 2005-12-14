@@ -81,9 +81,9 @@ public class BondStickCartoon extends GlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOn();
     }
 
-    public void show(LocatedMolecule molecule) {
+    public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        glyphColors.show(molecule);
+        super.add(molecule);
     }
 
     void addMolecule(LocatedMolecule molecule, Vector parentObjects) {

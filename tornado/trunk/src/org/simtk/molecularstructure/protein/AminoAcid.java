@@ -34,6 +34,7 @@ package org.simtk.molecularstructure.protein;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.*;
+import java.util.*;
 
 /** 
  * @author Christopher Bruns
@@ -48,6 +49,32 @@ abstract public class AminoAcid extends PDBResidueClass {
     abstract public String getThreeLetterCode();
     abstract public String getResidueName();
 
+    public boolean isStrand() {
+        for (Iterator i = getSecondaryStructures(); i.hasNext();) {
+            SecondaryStructure structure = (SecondaryStructure) i.next();
+            if (structure instanceof BetaStrand)
+                return true;
+        }
+        return false;        
+    }
+    public boolean isHelix() {
+        for (Iterator i = getSecondaryStructures(); i.hasNext();) {
+            SecondaryStructure structure = (SecondaryStructure) i.next();
+            if (structure instanceof Helix)
+                return true;
+        }
+        return false;        
+    }
+    public boolean isAlphaHelix() {
+        for (Iterator i = getSecondaryStructures(); i.hasNext();) {
+            SecondaryStructure structure = (SecondaryStructure) i.next();
+            if ((structure instanceof Helix) && 
+                    (((Helix)structure).getHelixType() == Helix.ALPHA) )
+                return true;
+        }
+        return false;
+    }
+    
     static String[] sideChainAtomNames = {
         " CA ", " CB ", " CG ", " CG1", " CG2", " OG ", " OG1", " SG ", 
         " CD ", " CD1", " CD2", " OD ", " OD1", " OD2", " ND ", " ND1", " ND2", " SD ",

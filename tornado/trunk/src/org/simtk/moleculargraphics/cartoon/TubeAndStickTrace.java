@@ -41,7 +41,7 @@ import vtk.*;
  * 
  * Tubes connecting backbone, plus rods for nucleotides
  */
-public class TubeAndStickTrace extends MolecularCartoonNewWay {
+public class TubeAndStickTrace extends MolecularCartoonClass {
     double backboneRadius = 1.50;
     double rodRadius = 0.50;
 
@@ -90,6 +90,22 @@ public class TubeAndStickTrace extends MolecularCartoonNewWay {
     public void show(LocatedMolecule m) {
         tubes.show(m);
         rods.show(m);
+    }
+    public void hide() {
+        tubes.hide();
+        rods.hide();
+    }
+    public void show() {
+        tubes.show();
+        rods.show();
+    }
+    public void updateCoordinates() {
+        tubes.updateCoordinates();
+        rods.updateCoordinates();
+    }
+    public void add(LocatedMolecule m) {
+        tubes.add(m);
+        rods.add(m);
     }
     public void clear() {
         tubes.clear();

@@ -40,18 +40,18 @@ import java.util.*;
   * 
   * Double helix of RNA or DNA
  */
-public class Duplex implements SecondaryStructure {
+public class Duplex extends SecondaryStructureClass {
     static final long serialVersionUID = 1L;
-    private HashSet residues = new HashSet();
+    // private HashSet residues = new HashSet();
     private Vector basePairs = new Vector();
     
     // TODO these should be const
-    public Collection residues() {return residues;}
+    // public Collection residues() {return residues;}
     public List basePairs() {return basePairs;}
     
     public void addBasePair(BasePair bp) {
         basePairs.add(bp);
-        residues.add(bp.getResidue1());
-        residues.add(bp.getResidue2());
+        this.addResidue(bp.getResidue1());
+        this.addResidue(bp.getResidue2());
     }
 }

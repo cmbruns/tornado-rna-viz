@@ -33,4 +33,5 @@ public interface MovableMolecule extends LocatedMolecule, ObservableInterface {
     public void translate(Vector3D t);
     public void rotate(Matrix3D m);
     public void transform(HomogeneousTransform h);
+    public void setCoordinates(Vector3D[] coordinates);
 }

@@ -27,7 +27,6 @@
 package org.simtk.molecularstructure;
 
 public interface MutableResidue extends Residue {
-    public void setPreviousResidue(PDBResidueClass r);
-    public void setNextResidue(PDBResidueClass r);
     public void setResidueNumber(int residueNumber);
+    public void addGenericBond(String atom1, String atom2);
 }

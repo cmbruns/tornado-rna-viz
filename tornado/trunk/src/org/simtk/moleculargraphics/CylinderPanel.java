@@ -86,7 +86,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		 // Test reading of PDB file
 		 RNA rna = new RNA();
 		 try {
-		     rna = (RNA) MoleculeClass.createFactoryPDBMolecule("1x8w.pdb2");
+		     rna = (RNA) PDBMoleculeClass.createFactoryPDBMolecule("1x8w.pdb2");
 			 System.out.println("" + rna.getAtomCount() + " atoms read");
 		 }
 		 catch (java.io.FileNotFoundException e) {System.err.println(e);}

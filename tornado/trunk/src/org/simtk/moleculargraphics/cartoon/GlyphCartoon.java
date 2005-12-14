@@ -46,7 +46,7 @@ import vtk.*;
   * @author Christopher Bruns
   * 
  */
-public abstract class GlyphCartoon extends MolecularCartoonNewWay {
+public abstract class GlyphCartoon extends MolecularCartoonClass {
     vtkLookupTable lut = new vtkLookupTable();
     static final int selectionColorIndex = 255;
     static final int highlightColorIndex = 254;
@@ -69,6 +69,8 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
     vtkAssembly assembly = new vtkAssembly();
     vtkActor glyphActor = new vtkActor();
 
+    // private MassBodyClass massBody = new MassBodyClass();
+    
     GlyphCartoon() {
         super();
         
@@ -101,6 +103,25 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
         assembly.AddPart(glyphActor);
     }
 
+    public void add(LocatedMolecule m) {
+        // glyphColors.show(m);
+        super.add(m);
+    }
+    
+    public void show() {
+        assembly.SetVisibility(1);
+        glyphColors.show();
+    }
+
+    public void show(LocatedMolecule m) {
+        glyphColors.show(m);
+    }
+
+    // Derived classes should update this too
+    public void updateCoordinates() {
+        // TODO
+    }
+
     // Override these functions to use TensorGlyph rather than vtkGlyph3D
     public void setGlyphSource(vtkPolyData data) {
         lineGlyph.SetSource(data);
@@ -123,6 +144,7 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
     public vtkActor getActor() {return glyphActor;}
     
     public void clear() {
+        super.clear();
         lineNormals.Reset();
         lineNormals.Squeeze();
         lineScalars.Reset();
@@ -163,7 +185,7 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
         return;
     }
     
-    class GlyphPosition {
+    class GlyphPosition implements Hidable {
         private vtkPolyData glyphData;
         vtkDataArray colorIndexArray;
         int arrayIndex;
@@ -208,7 +230,7 @@ public abstract class GlyphCartoon extends MolecularCartoonNewWay {
     }
     
     
-    class GlyphIndex implements SelectionListener {
+    class GlyphIndex implements SelectionListener, Hidable {
         static final long serialVersionUID = 0L;
 
         // Hashtable residueGlyphs = new Hashtable();
