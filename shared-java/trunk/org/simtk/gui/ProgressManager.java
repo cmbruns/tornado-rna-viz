@@ -28,6 +28,8 @@ package org.simtk.gui;
 
 import javax.swing.*;
 import java.awt.*;
+import org.simtk.mvc.*;
+import java.util.*;
 
 /**
  *  
@@ -35,20 +37,35 @@ import java.awt.*;
   * 
   * Watches a background process and updates a progress dialog
  */
-public class ProgressManager extends Thread {
+public class ProgressManager extends Thread implements ObservableInterface {
+    
     private MonitoredProcess managedProcess;
     private ProgressDialog progressDialog;
     private boolean processIsRunning = true;
+    private ObservableInterface observable = new SimpleObservable();
+    // private ProgressPanel progressPanel = null;
     
-    public ProgressManager(MonitoredProcess process, Component parent, String description) {
+    public ProgressManager(MonitoredProcess process, ProgressDialog progressPanel) {
         managedProcess = process;
-        progressDialog = new ProgressDialog(description);
-        progressDialog.setLocationRelativeTo(parent);
-        progressDialog.show();
+        this.progressDialog = progressPanel;
+    }
+    
+    public ProgressManager(MonitoredProcess process, 
+            Component parent, 
+            String description) {
+
+        managedProcess = process;
+        
+        ProgressDialogClass progressDialogClass = new ProgressDialogClass(description);
+        progressDialogClass.setLocationRelativeTo(parent);
+        progressDialogClass.show();
+        this.progressDialog = progressDialogClass;
     }
 
     public void run() {
         try {
+            progressDialog.setStartTime(new Date());
+            
             while(processIsRunning) {
                 // Update dialog every 200 milliseconds
                 sleep(200);
@@ -60,7 +77,7 @@ public class ProgressManager extends Thread {
             }
         }
         catch (InterruptedException exc) {
-            hideDialog();
+            hideDialog(); // do this first, abort could take a while
             managedProcess.abort();
             // TODO figure out how to reenable the user to launch another process
         }
@@ -69,6 +86,14 @@ public class ProgressManager extends Thread {
         }
     }
 
+    // Delegate observable interface
+    public void addObserver(Observer observer) {observable.addObserver(observer);}
+    public void deleteObserver(Observer observer) {observable.deleteObserver(observer);}
+    public void deleteObservers() {observable.deleteObservers();}
+    public void notifyObservers(Object object) {observable.notifyObservers(object);}
+    public void notifyObservers() {observable.notifyObservers();}
+    public boolean hasChanged() {return observable.hasChanged();}
+    
     public void hideDialog() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -92,6 +117,9 @@ public class ProgressManager extends Thread {
         else if ( (managedProcess.isFailed()) || (! managedProcess.isAlive()) ) {
             processIsRunning = false;
             // TODO show error dialog
+        }
+        else if (progressDialog.isCancelled()) {
+            abort();
         }
         // Update process status
         else {

@@ -21,17 +21,13 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 9, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure.protein;
 
-import java.util.Date;
+import org.simtk.molecularstructure.*;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public interface LocatedProtein extends Protein, LocatedMolecule {
+
 }

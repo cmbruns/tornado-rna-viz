@@ -21,33 +21,32 @@
  */
 
 /*
- * Created on Nov 17, 2005
+ * Created on Nov 14, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure.atom;
 
-import javax.swing.*;
+import java.text.ParseException;
 
-public class Throbber extends JLabel {
-    private Icon[] icons;
-    private int iconIndex = 0;
-    
-    public Throbber(Icon[] i) {
-        icons = i;
-        iconIndex = 0;
-        setIcon((Icon)icons[iconIndex]);
-    }
-    
-    /**
-     * Change image to the next one in the animation sequence
-     *
+public interface MutablePDBAtom extends PDBAtom, MovableAtom, MutableMoleculeAtom {
+    public void setAlternateLocationIndicator(char alternateLocationIndicator);
+    public void setPDBAtomName(String atomName);
+    public void setChainIdentifier(char chainIdentifier);
+    public void setPDBCharge(String charge);
+    public void setPDBElementName(String elementName);
+    public void setInsertionCode(char insertionCode);
+    public void setOccupancy(double occupancy);
+    public void setPDBRecordName(String recordName);
+    public void setResidueNumber(int residueIndex);
+    public void setPDBResidueName(String residueName);
+    public void setSegmentIdentifier(String segmentIdentifier);
+    public void setPDBAtomSerialNumber(int serialNumber);
+    public void setTemperatureFactor(double temperatureFactor);
+
+    /** 
+     * \brief Populate an PDBAtom's attributes from one line of a PDB structure file.
+     * @param PDBLine A string containing one ATOM or HETATM record from a PDB structure file.
+     * @throws ParseException
      */
-    public void increment() {
-        iconIndex ++;
-        if (iconIndex >= icons.length) iconIndex = 0;
-        setIcon((Icon)icons[iconIndex]);
-        repaint();
-    }
-    
-    static final long serialVersionUID = 01L;
+    public void readPDBLine(String PDBLine) throws ParseException;
 }

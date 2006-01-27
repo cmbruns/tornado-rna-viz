@@ -21,17 +21,20 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Nov 29, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.geometry3d;
 
-import java.util.Date;
-
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * 4x4 matrix used to encapsulate a rotation and a translation in 3 dimensions
+ */
+public interface HomogeneousTransform extends MathMatrix {
+    public Matrix3D getRotation();
+    public Vector3D getTranslation();
+    public Vector3D times(Vector3D v);
+    public HomogeneousTransform times(HomogeneousTransform m);
 }

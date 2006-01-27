@@ -21,17 +21,24 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 1, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure;
 
-import java.util.Date;
+import java.util.Collection;
+import org.simtk.geometry3d.Vector3D;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * A residue whose atomic positions are known
+ */
+public interface LocatedResidue extends Residue, LocatedMolecule {
+    public Collection getHydrogenBondDonors();
+    public Collection getHydrogenBondAcceptors();
+    public Vector3D getBackbonePosition();
+    public Vector3D getSideChainPosition();
+    public LocatedMolecule get(FunctionalGroup fg); // TODO
 }

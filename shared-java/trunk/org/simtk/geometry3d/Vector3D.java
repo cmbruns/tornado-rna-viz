@@ -21,17 +21,18 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Nov 23, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.geometry3d;
 
-import java.util.Date;
+public interface Vector3D extends MathVector {
+    public double getX();
+    public double getY();
+    public double getZ();
+    public Vector3D cross(Vector3D v2);
+    public Vector3D rotate(Vector3D axis, double angle);
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+    public Vector3D plus(Vector3D v2);
+    public Vector3D minus(Vector3D v2);
 }

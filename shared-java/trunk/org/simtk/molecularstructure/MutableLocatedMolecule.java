@@ -21,17 +21,14 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 1, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure;
 
-import java.util.Date;
+import org.simtk.molecularstructure.atom.PDBAtom;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public interface MutableLocatedMolecule extends MovableMolecule {
+    public void addAtom(PDBAtom atom);
+    public void removeAtom(PDBAtom atom);
 }

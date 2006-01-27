@@ -21,17 +21,12 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 6, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure.atom;
 
-import java.util.Date;
-
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public interface MutableMoleculeAtom extends MoleculeAtom {
+    // TODO add bond valence information to bonds
+    public void addBond(MoleculeAtom atom2);
 }

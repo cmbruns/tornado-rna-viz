@@ -21,17 +21,31 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 8, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.geometry3d;
 
-import java.util.Date;
+public class MassBodyClass implements MassBody {
+    private Vector3D centerOfMass = new Vector3DClass(0,0,0);
+    private double mass = 0.0;
+    
+    public Vector3D getCenterOfMass() {
+        return centerOfMass;
+    }
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+    public double getMass() {
+        return mass;
+    }
+
+    public void clear() {
+        centerOfMass = new Vector3DClass(0,0,0);
+        mass = 0.0;        
+    }
+    
+    public void add (MassBody m) {
+        double massFraction = m.getMass() / (m.getMass() + this.getMass());
+        this.centerOfMass = m.getCenterOfMass().times(massFraction).plus(this.getCenterOfMass().times(1.0 - massFraction)).v3();
+        this.mass += m.getMass();
+    }
 }

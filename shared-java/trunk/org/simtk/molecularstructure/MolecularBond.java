@@ -21,17 +21,18 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Nov 15, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure;
 
-import java.util.Date;
+import java.util.*;
+import org.simtk.molecularstructure.atom.*;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public interface MolecularBond {
+    public Collection atoms();
+    public MoleculeAtom getOtherAtom(MoleculeAtom firstAtom);
+    public Iterator iterator(); // on atoms
+    public Atom getAtom1();
+    public Atom getAtom2();
 }

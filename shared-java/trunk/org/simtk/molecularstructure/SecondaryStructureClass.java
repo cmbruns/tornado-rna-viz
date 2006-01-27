@@ -21,17 +21,27 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 12, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure;
 
-import java.util.Date;
+import java.util.*;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public class SecondaryStructureClass implements SecondaryStructure {
+    private Collection residues = new Vector();
+    private Biopolymer molecule = null;
+
+    public Iterator getResidueIterator() {
+        return this.residues.iterator();
+    }
+
+    public void addResidue(Residue residue) {
+        this.residues.add(residue);
+    }
+
+    public void setMolecule(Biopolymer biopolymer) {
+        this.molecule = biopolymer;
+    }
+
 }

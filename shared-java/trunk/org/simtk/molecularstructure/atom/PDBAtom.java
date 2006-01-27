@@ -21,17 +21,23 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Nov 14, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure.atom;
 
-import java.util.Date;
-
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public interface PDBAtom extends LocatedMoleculeAtom {
+    public abstract char getAlternateLocationIndicator();
+    public abstract String getPDBAtomName();
+    public abstract char getChainIdentifier();
+    public abstract String getPDBCharge();
+    public abstract String getPDBElementName();
+    public abstract char getInsertionCode();
+    public abstract double getOccupancy();
+    public abstract String getPDBRecordName();
+    public abstract int getResidueNumber();
+    public abstract String getPDBResidueName();
+    public abstract String getSegmentIdentifier();
+    public abstract int getPDBAtomSerialNumber();
+    public abstract double getTemperatureFactor();
 }

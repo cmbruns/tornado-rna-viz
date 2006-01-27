@@ -21,17 +21,40 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Nov 30, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.geometry3d;
 
-import java.util.Date;
+public class TestSuperposition {
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        // Answer should be a 90 degree rotation about the Y axis
+
+        Vector3D[] v1 = {
+                new Vector3DClass(1, 0, 0), // x
+                new Vector3DClass(0, 1, 0), // y
+                new Vector3DClass(0, 0, 1) // z
+                };
+        
+        Vector3D[] v2 = {
+                new Vector3DClass(0, 0, 1), // z
+                new Vector3DClass(0, 1, 0), // y
+                new Vector3DClass(-1, 0, 0) // -x
+                };
+
+        HomogeneousTransform t = 
+            Superposition.kabsch78(v1, v2, null);
+        
+        System.out.println(t);
+
+        System.out.println(t.times(new Vector3DClass(1, 0, 0)));
+        System.out.println(t.times(new Vector3DClass(0, 1, 0)));
+        System.out.println(t.times(new Vector3DClass(0, 0, 1)));
+        
+    }
+
 }

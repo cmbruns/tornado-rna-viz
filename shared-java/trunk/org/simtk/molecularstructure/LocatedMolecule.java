@@ -21,17 +21,31 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 1, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure;
 
-import java.util.Date;
+import java.util.Iterator;
+import org.simtk.geometry3d.*;
+import org.simtk.molecularstructure.atom.PDBAtom;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * A molecule whose atomic positions are known
+ */
+public interface LocatedMolecule extends Molecule, MassBody {
+    public double getMass();
+    public Vector3D getCenterOfMass();
+    /**
+     * Change the position of the molecule by the specified amount
+     * @param t amount to translate
+     */
+    public Iterator getAtomIterator();
+    public Plane3D bestPlane3D();
+    public boolean containsAtom(PDBAtom atom);
+    public int getAtomCount();
+    public Vector3D[] getCoordinates();
 }

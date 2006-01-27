@@ -21,17 +21,27 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 9, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure.protein;
 
-import java.util.Date;
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.PDBAtomSet;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public class PDBProteinClass extends BiopolymerClass implements PDBMolecule, LocatedProtein {
+    // TODO put chainID into one class to be shared by all PDB instantiated classes
+    private String chainID = " ";
+    
+    public PDBProteinClass() {} // Empty molecule
+    public PDBProteinClass(PDBAtomSet atomSet) {super(atomSet);}
+
+    public String getChainID() {return this.chainID;}
+    public void setChainID(String chainID) { this.chainID = chainID; }
+    
+    protected void addGenericResidueBonds() {
+        super.addGenericResidueBonds();
+        // TODO this is not working
+        addGenericResidueBond(" C  ", " N  ");
+    }
 }

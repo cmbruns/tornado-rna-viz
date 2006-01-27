@@ -21,17 +21,23 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Dec 1, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure;
 
-import java.util.Date;
+import java.awt.Color;
+import java.util.*;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public interface Residue {
+    public Color getDefaultColor();
+    public Residue getPreviousResidue();
+    public Residue getNextResidue();
+    public char getOneLetterCode();
+    public String getResidueName();
+    public int getResidueNumber();
+    public Iterator getSecondaryStructures();
+    public void addSecondaryStructure(SecondaryStructure structure);
+    public void setPreviousResidue(PDBResidueClass r);
+    public void setNextResidue(PDBResidueClass r);
 }

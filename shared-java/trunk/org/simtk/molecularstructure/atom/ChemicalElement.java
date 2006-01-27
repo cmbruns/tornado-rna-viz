@@ -21,17 +21,18 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Nov 14, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.molecularstructure.atom;
 
-import java.util.Date;
+import java.awt.Color;
 
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public interface ChemicalElement {
+    public Color getDefaultAtomColor();
+    public String getElementSymbol();
+    public String getElementName();
+    public double getMass();
+    public double getCovalentRadius();
+    public double getVanDerWaalsRadius();
 }

@@ -21,17 +21,18 @@
  */
 
 /*
- * Created on Nov 28, 2005
+ * Created on Nov 29, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.gui;
+package org.simtk.geometry3d;
 
-import java.util.Date;
-
-public interface ProgressDialog {
-    public void hide();
-    public boolean isCancelled();
-    public void setCancelled(boolean isCancelled);
-    public void updateState();
-    public void setStartTime(Date startTime);
+public interface MutableMathMatrix extends MathMatrix {
+    public void set(int m, int n, double d);
+    public void plusEquals(MathMatrix m2);
+    public void minusEquals(MathMatrix m2);
+    public void timesEquals(double d);
+    public void timesEquals(MathMatrix m);
+    public void setRow(int i, MathVector v);
+    public void setColumn(int j, MathVector v);
+    public void copy(MathMatrix m);
 }
