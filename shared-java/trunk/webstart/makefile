@@ -28,3 +28,8 @@ all_classes: $(SRCS)
 ### In this case, no special content is need in the manifest file
 $(MANIFEST_FILE):
 	touch $(MANIFEST_FILE)
+
+clean:
+	rm -rf $(BUILD_DIR)
+	rm $(JAR_FILE)
+
