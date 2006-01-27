@@ -1,3 +1,7 @@
+SRC_DIR = ..
+SRCS = $(SRC_DIR)/org/simtk/*/*.java
+BUILD_DIR = build
+
 default: test
 
 SimtkSharedJava.jar: ../../bin/org/simtk/*/*.class ../../bin/resources/*
