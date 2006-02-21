@@ -42,21 +42,34 @@ import java.awt.event.*;
   * For complex parameter sets, it is recommended to override the "equals" method
   * of the parameters object.
  */
-public abstract class UndoableDialog extends JDialog implements ActionListener {
+public abstract class UndoableDialog extends JDialog 
+implements ActionListener
+{
+    private ParameterSetModel currentParameterState = new ParameterSetModel();
+    
     // Store previous choices in an array
     private Vector parameterHistory = new Vector();
     private int currentHistoryPosition = parameterHistory.size() - 1;
-    private Object latestAcceptedParameters;
+    // private Object latestAcceptedParameters;
 
     private JButton undoButton = new JButton("Undo");
     private JButton redoButton = new JButton("Redo");
-    private JButton okayButton = new JButton("Okay");
-    private JButton cancelButton = new JButton("Cancel");
+    // private JButton acceptButton = new JButton("Accept");
+    // private JButton okayButton = new JButton("Okay");
+    private JButton closeButton = new JButton("Close");
     
     private JPanel contentPane = new JPanel();
     
+    protected UndoableDialog(Frame parentFrame) {
+        super(parentFrame);
+        initialize();
+    }
+
     protected UndoableDialog() {
-        
+        initialize();
+    }
+
+    private void initialize() {
         // Set up GUI
         
         // Buttons
@@ -65,13 +78,13 @@ public abstract class UndoableDialog extends JDialog implements ActionListener {
         buttonPane.add(Box.createHorizontalGlue());
         buttonPane.add(undoButton);
         buttonPane.add(redoButton);
-        buttonPane.add(okayButton);
-        buttonPane.add(cancelButton);
+        // buttonPane.add(okayButton);
+        buttonPane.add(closeButton);
         
         undoButton.addActionListener(this);
         redoButton.addActionListener(this);
-        okayButton.addActionListener(this);
-        cancelButton.addActionListener(this);
+        // okayButton.addActionListener(this);
+        closeButton.addActionListener(this);
         
         Container parentPane = super.getContentPane();
         parentPane.add(contentPane, BorderLayout.CENTER);
@@ -82,18 +95,22 @@ public abstract class UndoableDialog extends JDialog implements ActionListener {
         pack();
     }
 
-    public void setAcceptedParameters(Object parameters) {
-        latestAcceptedParameters = parameters;
-        displayNewParameters(parameters);
-    }
+//    public void setAcceptedParameters(Object parameters) {
+//        latestAcceptedParameters = parameters;
+//        displayNewParameters(parameters);
+//    }
     
     public Container getContentPane() {
         return contentPane;
     }
     
     // Update the current displayed parameter to a different set of parameters
-    protected void displayNewParameters(Object parameters) {
+    // And append the parameters to the history list
+    protected void setNewParameters(Object parameters) {
         if ( parameters.equals(getCurrentParameters()) ) return; // No change? => do nothing
+        
+        currentParameterState.setParameters(parameters);
+        // latestAcceptedParameters = parameters;
 
         // Put the new parameter into the stack
         currentHistoryPosition ++;
@@ -109,45 +126,24 @@ public abstract class UndoableDialog extends JDialog implements ActionListener {
         
         // System.out.println("currentHistoryPosition = " + currentHistoryPosition);
         
-        updateParametersDisplay(parameters);
+        // updateParametersDisplay(parameters);
     }
     
+    public void addParametersListener(Observer o) {
+        currentParameterState.addObserver(o);
+    }
+    
+    // Look up parameters from the history stack
+    // Other methods must keep the history stack in sync with the currentParameterState
     Object getCurrentParameters() {
         if (currentHistoryPosition < 0) return null;
         return parameterHistory.elementAt(currentHistoryPosition);
     }
     
-    // Derived classes should override acceptParameters to actually respond to the user's choice
-    private void fireAcceptParameters(Object parameters) {
-        latestAcceptedParameters = parameters;
-        acceptParameters(parameters); // derived class specific action
-    }
-    
-    protected abstract void acceptParameters(Object parameters);
-    
-    // Derived classes should override updateParametersDisplay to update the display to the current provisional parameters
-    /**
-     * Update the dialog display to reflect selection of a particular set of parameters.
-     * This must be overridden by derived classes.
-     */
-    protected abstract void updateParametersDisplay(Object parameters);
-
     public void actionPerformed(ActionEvent event) {
 
-        // Okay button
-        if (event.getSource() == okayButton) {
-            System.out.println("okay");
-            fireAcceptParameters(getCurrentParameters()); // set current parameters in stone
-            setVisible(false);
-        }
-
-        // Cancel button
-        else if (event.getSource() == cancelButton) {
-            System.out.println("cancel");
-            
-            // I'm unsure if this is needed... TODO
-            // displayNewParameters(latestAcceptedParameters); // revert display to actual used parameters
-
+        // Close button
+        if (event.getSource() == closeButton) {
             setVisible(false);
         }
         
@@ -156,7 +152,7 @@ public abstract class UndoableDialog extends JDialog implements ActionListener {
 
             if (currentHistoryPosition > 0)
                 currentHistoryPosition --;
-            updateParametersDisplay(getCurrentParameters());
+            currentParameterState.setParameters(getCurrentParameters());
 
             checkButtons();
             // System.out.println("currentHistoryPosition = " + currentHistoryPosition);
@@ -167,7 +163,7 @@ public abstract class UndoableDialog extends JDialog implements ActionListener {
 
             if (currentHistoryPosition < (parameterHistory.size() - 1) )
                 currentHistoryPosition ++;
-            updateParametersDisplay(getCurrentParameters());
+            currentParameterState.setParameters(getCurrentParameters());
 
             checkButtons();
             // System.out.println("currentHistoryPosition = " + currentHistoryPosition);

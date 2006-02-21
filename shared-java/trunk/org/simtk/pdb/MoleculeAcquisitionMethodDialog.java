@@ -69,6 +69,15 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
 //       if (structureStream == null) throw new IOException("Attempt to load structure from null stream");
 //   }
    
+    public MoleculeAcquisitionMethodDialog(JFrame f, ProgressDialog p) {
+        super(f);
+        // System.out.println("MoleculeAcquisitionMethodDialog constructor");
+        parent = f;
+        progressDialog = p;
+        initializeDialog();
+        fileLoadObservable.addObserver(this);
+    }
+    
    /**
     * Overload this to make use of preloaded molecule collection
     * 
@@ -95,15 +104,6 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
    //   MoleculeAcquisitionMethodDialog() {
 //        initializeDialog();
 //   }
-    
-    public MoleculeAcquisitionMethodDialog(JFrame f, ProgressDialog p) {
-        super(f);
-        // System.out.println("MoleculeAcquisitionMethodDialog constructor");
-        parent = f;
-        progressDialog = p;
-        initializeDialog();
-        fileLoadObservable.addObserver(this);
-    }
     
     void initializeDialog() {
         setTitle("Choose Molecule Source");

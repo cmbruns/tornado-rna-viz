@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2005, Stanford University. All rights reserved. 
+ * Copyright (c) 2005, Christopher M. Bruns and Stanford University. 
+ * All rights reserved. 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions
  * are met: 
@@ -28,7 +29,13 @@
 /*
  * Created on May 3, 2005
  *
+ * I have previously implemented this algorithm/data structure in perl, 
+ * C++, and Java.  This is one case where the Java implementation is by 
+ * far the prettiest of the three.
+ *
+ * -CMB
  */
+
 package org.simtk.geometry3d;
 
 import java.util.*;
@@ -37,44 +44,87 @@ import java.util.*;
  *  
   * @author Christopher Bruns
   * 
-  * Container to speed up finding objects that are near one another in 3D space.
+  * Container class to speed up finding objects that are near one another in 
+  * 3D Cartesian space.
   * 
-  * Only one object should be placed at each unique position.  If another one is placed
-  * at the same location, the one that was there earlier will be gone.
-  * There may be a problem with having the same object at multiple positions.
+  * This data structure and algorithm can be used to answer the question "Find 
+  * all pairs of objects withing 50 meters of one another" in linear time and 
+  * space complexity, O(n), where n is the number of objects.  The naive method
+  * takes O(n^2) time.  Linear time complexity can be achieved under the following
+  * circumstances:
+  *
+  * 1) There is an upper bound on the density of objects in the volume.  
+  * (Collections of objects with arbitrarily high densities may tend to have 
+  * O(n^2) asymptotic *size* complexity for the *answer* to the question "How 
+  * many pairs with distance less than X, and thus cannot have linear time 
+  * complexity for producing that answer.)
+  * 
+  * 2) Each object is located at a single distinct point in space.  This works well
+  * for atoms and other spherically symmetric objects in Cartesian space.
+  * 
+  * This implementation does NOT require that the objects in the volume
+  * satisfy any minimimum density criterion, unlike some neighbor list
+  * methods in molecular simulation.
+  * 
+  * Only one object should be placed at each unique position.  If another one is 
+  * placed at the same location, the one that was there earlier will be gone.
+  * There may also be a problem with having the same object at multiple positions.
+  * TODO - modify data structure to remove these restrictions.
+  * 
+  * Set the size parameter in the constructor a bit lower than the
+  * distances you intend to query.
+  * 
+  * A size parameter, s, much larger than the test distance will tend to slow
+  * the method by a factor of O(s^3).
+  * 
+  * A size parameter, s, much smaller than the test distance will tend to slow
+  * the method by a factor of O((1/s)^3 * ln(1/s)).  This effect will kick in
+  * more slowly than the "s too big" effect.
  */
-public class Hash3D
-extends Hashtable
-// implements Map<Vector3D, V>
+public class Hash3D extends Hashtable
+// implements Map<Vector3D, V> // Java 1.5 only...
 {
-    public static final long serialVersionUID = 2L;
-    private double cubeletSize = 1.0;
+    // The base class hashtable maps exact positions to the object at that position
+    // Use of this map is one source of the one-position:one-object restriction
+
+    private double cubeletSize; // Fundamental distance of this data structure
+
+    // Store little cubes at canonical positions
+    // The possible positions of these cubes are independent of the data.
+    // Deciding which cubes are instantiated does depend upon the data.
     private Hashtable cubelets = new Hashtable();
-    private Hashtable positionObjects = this;
-    
+
+
+    // Constructor
     public Hash3D(double r) {
         cubeletSize = r;
     }
     
-    public void clear() {
-        cubelets.clear();
-        super.clear();
-    }
-    
-    public Object clone() {
-        Hash3D answer = new Hash3D(cubeletSize);
-        // for (BaseVector3D v : positionObjects.keySet())
-        for (Iterator i = positionObjects.keySet().iterator(); i.hasNext();) {
-            Vector3D v = (Vector3D) i.next();
-            answer.put(v, get(v));
-        }
-        return answer;
-    }
-    
-    public Object remove(Object key) {
-        if (! (key instanceof Vector3DClass)) return null;
+    /**
+     * Inserts an object into the data structure at a particular position.
+     * This method is the primary means of populating the data structure.
+     * 
+     * @param position 
+     * @param object
+     * @return
+     */
+    public Object put(Vector3D position, Object object) {
+        // Place the object into its parent cubelet
+        Cubelet cubelet = getCubelet(position);
+        cubelet.put(position, object);
 
-        Vector3DClass vec = (Vector3DClass) key;
+        return super.put(position, object);
+    }
+    
+    /**
+     * Remove the object at a particular position
+     * 
+     * @param key the position of the object to remove
+     */
+    public Object remove(Object key) {
+        if (! (key instanceof Vector3D)) return null;
+
+        Vector3D vec = (Vector3D) key;
         Object value = get(vec);
         if (value == null) return null;
         
@@ -84,41 +134,53 @@ extends Hashtable
         return super.remove(key);
     }
     
-    public Object put(Vector3D position, Object object) {
-        Object answer = get(position);
-        
-        Cubelet cubelet = getCubelet(position);
-        cubelet.put(position, object);
-
-        return super.put(position, object);
+    // Empty the entire data structure
+    public void clear() {
+        cubelets.clear();
+        super.clear();
     }
     
-//     public Collection<Vector3D> positions() {
-//         return positionObjects.keySet();
-//     }
+    // Duplicate the data structure
+    // (deep copy of container and positions)
+    // (shallow copy of contained objects)
+    public Object clone() {
+        Hash3D answer = new Hash3D(cubeletSize);
+        Iterator i = keySet().iterator();
+        while (i.hasNext()) {
+            Vector3D v = (Vector3D) i.next();
+            answer.put(v, get(v));
+        }
+        return answer;
+    }
     
     /**
      * Return the closest object to a particular position
      * If no object is within the specified radius, return null.
+     * This method has constant asymptotic time complexity.
+     * 
      * @param position
      * @param radius
      * @return
      */
     public Object getClosest(Vector3D position, double radius) {
-        // TODO - more efficient implementation, starting with central cubelet
-        //  follow expanding shells as required
         Object answer = null;
 
+        // Use squared distances to minimize expensive flops (i.e. sqrt())
+        // The code complexity:optimization tradeoff is not bad for this optimization.
         double radiusSquared = radius * radius; // Absolute cutoff distance
         double minDistanceSquared = radiusSquared + 1; // Distance to the closest thing we have found so far
         
         // TODO - sort neighboring cubelets by minimum distance to position
-        // TODO - terminate when the closest object found is closer than the next cubelet's minimum distance
-        
-        // TODO - but, for now, just loop over all objects within the radius
+        // (and terminate when the closest object found is closer than the next 
+        // cubelet's minimum distance)
+        // But for now, just loop over all objects within the radius
+        // This is all that is needed to preserve linear time complexity.
+        // Those other TODO above are just light (and possibly premature) 
+        // optimization
+
         Vector3D closestPoint = null;
-        // for (BaseVector3D v : neighborKeys(position, radius)) {
-        for (Iterator i = neighborKeys(position, radius).iterator(); i.hasNext(); ) {
+        Iterator i = neighborKeys(position, radius).iterator();
+        while (i.hasNext()) {
             Vector3D v = (Vector3D) i.next();
             double d = position.distanceSquared(v);
             if ((d < radiusSquared) && (d < minDistanceSquared)) {
@@ -133,14 +195,16 @@ extends Hashtable
     
     /**
      * Find all objects within a specified radius of a specified point
+     * This method has constant asymptotic time complexity.
+     * 
      * @param position
      * @param radius
      * @return
      */
     public Collection neighborValues(Vector3D position, double radius) {
         Vector neighbors = new Vector();
-        // for (BaseVector3D v : neighborKeys(position, radius)) {
-        for (Iterator i = neighborKeys(position, radius).iterator(); i.hasNext(); ) {
+        Iterator i = neighborKeys(position, radius).iterator();
+        while (i.hasNext()) {
             Vector3D v = (Vector3D) i.next();
             Object object = get(v);
             if (object != null) neighbors.add(object);
@@ -149,7 +213,9 @@ extends Hashtable
     }
 
     /**
-     * Find all objects within a specified radius of a specified point
+     * Find positions of all objects within a specified radius of a specified point.
+     * This method has constant asymptotic time complexity.
+     * 
      * @param position
      * @param radius
      * @return
@@ -158,6 +224,7 @@ extends Hashtable
         Vector neighbors = new Vector();
         double dSquared = radius * radius;
         
+        // Figure out the set of nearby cubelets that we might need to search
         int minX = hashKey(position.getX() - radius);
         int minY = hashKey(position.getY() - radius);
         int minZ = hashKey(position.getZ() - radius);
@@ -171,7 +238,6 @@ extends Hashtable
                     String key = hashKey(x,y,z);
                     if (!cubelets.containsKey(key)) continue; // no such cubelet
                     Cubelet cubelet = (Cubelet) cubelets.get(key);
-                    // for (BaseVector3D v : cubelet.keySet()) {
                     for (Iterator i = cubelet.keySet().iterator(); i.hasNext(); ) {
                         Vector3D v = (Vector3D) i.next();
                         // Check distance
@@ -183,14 +249,23 @@ extends Hashtable
         return neighbors;
     }
 
+    // Generate the integer index for one dimension of a cubelet containing a
+    // particular position along that dimension.
     private int hashKey(double d) {
+        // Note: be careful about what happens as you cross the origin.
+        // Being less efficient there might be OK,
+        // But doing the wrong thing is not OK.
         return (int)Math.floor(d/cubeletSize);
     }
-    
+
+    // Generate a hash key for a cubelet with the particular integer indices.
+    // Basically convert a triple of integers to a unique string.
     private String hashKey(int x, int y, int z) {
         return "" + x + "#" + y + "#" + z;
     }
     
+    // Generate a hash key containing the integer indices of a cubelet that
+    // contains the given point
     private String hashKey(Vector3D position) {
         int x = hashKey(position.getX());
         int y = hashKey(position.getY());
@@ -198,6 +273,8 @@ extends Hashtable
         return hashKey(x,y,z);
     }
 
+    // If there is not yet a cubelet containing the specified position,
+    // this routine will create one.
     private Cubelet getCubelet(Vector3D position) {
         String key = hashKey(position);
         if ( !cubelets.containsKey(key) )
@@ -206,6 +283,8 @@ extends Hashtable
     }
 
     private class Cubelet extends Hashtable {
-        static final long serialVersionUID = 1L;
+        static final long serialVersionUID = 1L; // serialization tag
     }
+
+    public static final long serialVersionUID = 3L; // serialization tag
 }
