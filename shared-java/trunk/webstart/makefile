@@ -18,7 +18,7 @@ s_$(JAR_FILE): $(JAR_FILE)
 	jarsigner -keystore /cygwin/home/cmbruns/private/myKeystore -signedJar s_$(JAR_FILE) $(JAR_FILE) myself
 
 test: s_$(JAR_FILE)
-	svn commit -m "latest jar file"
+	svn commit -m "automated commit during build testing"
 	javaws SimtkSharedJava.jnlp
 
 all_classes: $(SRCS)
