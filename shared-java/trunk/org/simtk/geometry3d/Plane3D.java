@@ -108,10 +108,10 @@ public class Plane3D {
         }
 
         Matrix eigenVectors = eigenSystem.getV();
-        Vector3DClass largestEigenVector = new Vector3DClass (
-                eigenVectors.get(0, largestEigenValueIndex),
-                eigenVectors.get(1, largestEigenValueIndex),
-                eigenVectors.get(2, largestEigenValueIndex));
+//        Vector3DClass largestEigenVector = new Vector3DClass (
+//                eigenVectors.get(0, largestEigenValueIndex),
+//                eigenVectors.get(1, largestEigenValueIndex),
+//                eigenVectors.get(2, largestEigenValueIndex));
         Vector3DClass smallestEigenVector = new Vector3DClass (
                 eigenVectors.get(0, smallestEigenValueIndex),
                 eigenVectors.get(1, smallestEigenValueIndex),

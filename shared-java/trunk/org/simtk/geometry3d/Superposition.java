@@ -75,7 +75,7 @@ public class Superposition {
         }
         centroid1.timesEquals(1.0 / mass);
         centroid2.timesEquals(1.0 / mass);
-        Vector3D translation = centroid2.minus(centroid1);
+        // Vector3D translation = centroid2.minus(centroid1);
         
         // 3) generate matrix R from equation 3 of Kabsh 1978
         MutableMatrix3D R = new Matrix3DClass();

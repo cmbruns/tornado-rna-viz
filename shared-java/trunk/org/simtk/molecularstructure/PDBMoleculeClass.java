@@ -33,7 +33,7 @@ package org.simtk.molecularstructure;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.ByteOrder;
+// import java.nio.ByteOrder;
 import java.text.ParseException;
 import java.util.*; // Vector
 
@@ -110,10 +110,10 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
     public void relaxCoordinates() {
         
         int atomCount = getAtomCount();
-        int duplexCount = 0;
+//        int duplexCount = 0;
         float referenceCoordinates[] = new float[atomCount * 3];
-        int duplexRanges[] = new int[duplexCount * 4];
-        boolean swapBytes = (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN);
+//        int duplexRanges[] = new int[duplexCount * 4];
+//        boolean swapBytes = (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN);
         
         // First time relaxing the coordinates?  Store the initial configuration
         if ( (referenceCoordinates == null) || (referenceCoordinates.length != atomCount) )
@@ -288,7 +288,7 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
         PDBAtomSet currentMoleculeAtoms = new PDBAtomSet();
         
         char chainIdentifier = '\0';
-        String residueName = null;
+        // String residueName;
         char insertionCode = '\0';
         int residueIndex = -1;
         
@@ -324,7 +324,7 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
 				if (currentMoleculeAtoms.size() == 0) { // The very first atom of the molecule
 					currentMoleculeAtoms.addElement(atom);
 
-					residueName = atom.getPDBResidueName();
+					// residueName = atom.getPDBResidueName();
 					insertionCode = atom.getInsertionCode();
 					chainIdentifier = atom.getChainIdentifier();
 					residueIndex = atom.getResidueNumber();

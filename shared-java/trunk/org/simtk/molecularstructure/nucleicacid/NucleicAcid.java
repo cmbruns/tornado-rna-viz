@@ -283,7 +283,7 @@ public class NucleicAcid extends BiopolymerClass {
     
     public Collection computeBaseHydrogenBonds() {
         double maxHydrogenBondDistance = 3.50;
-        Angle minHydrogenBondAngle = new Angle(270, Angle.Units.DEGREES);        
+        // Angle minHydrogenBondAngle = new Angle(270, Angle.Units.DEGREES);        
         Vector answer = new Vector();
 
         // Create a hash of hydrogen bond donor atoms

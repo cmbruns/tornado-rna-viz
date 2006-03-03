@@ -145,17 +145,17 @@ public class MoleculeCollection {
             // Parse secondary structure
             else if (PDBLine.substring(0,6).equals("HELIX ")) {
 
-                String helixID = PDBLine.substring(11, 14);
-
-                String initResidueName = PDBLine.substring(15, 18);
-                String initResidueChain = PDBLine.substring(19, 20);
-                int initResidueNumber = new Integer(PDBLine.substring(21, 25).trim()).intValue();
-                String initICode = PDBLine.substring(25, 26);
-                
-                String endResidueName = PDBLine.substring(27, 30);
-                String endResidueChain = PDBLine.substring(31, 32);
-                int endResidueNumber = new Integer(PDBLine.substring(33, 37).trim()).intValue();
-                String endICode = PDBLine.substring(37, 38);
+//                String helixID = PDBLine.substring(11, 14);
+//
+//                String initResidueName = PDBLine.substring(15, 18);
+//                String initResidueChain = PDBLine.substring(19, 20);
+//                int initResidueNumber = new Integer(PDBLine.substring(21, 25).trim()).intValue();
+//                String initICode = PDBLine.substring(25, 26);
+//                
+//                String endResidueName = PDBLine.substring(27, 30);
+//                String endResidueChain = PDBLine.substring(31, 32);
+//                int endResidueNumber = new Integer(PDBLine.substring(33, 37).trim()).intValue();
+//                String endICode = PDBLine.substring(37, 38);
                 
                 int helixClass = new Integer(PDBLine.substring(38, 40).trim()).intValue();
 
@@ -250,11 +250,11 @@ public class MoleculeCollection {
 
             String startResidueString = (String) secondaryStructureStarts.get(structure);
             String chainID = startResidueString.substring(4, 5);
-            String startInsertionCode = startResidueString.substring(10, 11);
+            // String startInsertionCode = startResidueString.substring(10, 11);
             int startResidueNumber = (new Integer(startResidueString.substring(6, 10).trim())).intValue();
 
             String endResidueString = (String) secondaryStructureEnds.get(structure);
-            String endInsertionCode = endResidueString.substring(10, 11);
+            // String endInsertionCode = endResidueString.substring(10, 11);
             int endResidueNumber = (new Integer(endResidueString.substring(6, 10).trim())).intValue();
 
             Collection m = (Collection) chainMolecules.get(chainID);

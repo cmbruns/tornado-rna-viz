@@ -43,7 +43,7 @@ abstract class LoadPDBProcess extends Thread implements MonitoredProcess {
     private volatile boolean m_isFailed = false;
     private volatile SimpleObservable m_loadMoleculeObservable;
     protected volatile MoleculeCollection molecules = null;
-    private volatile InputStream m_inputStream;
+    // private volatile InputStream m_inputStream;
     private volatile boolean isCancelled = false;
     
     LoadPDBProcess(SimpleObservable loadMoleculeObservable) {
