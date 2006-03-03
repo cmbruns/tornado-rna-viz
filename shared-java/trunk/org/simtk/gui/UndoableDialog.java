@@ -81,6 +81,12 @@ implements ActionListener
         // buttonPane.add(okayButton);
         buttonPane.add(closeButton);
         
+        
+        // This was causing a null pointer exception on the Mac...
+        JRootPane rootPane = getRootPane();
+        if (rootPane != null)   
+            rootPane.setDefaultButton(closeButton);
+        
         undoButton.addActionListener(this);
         redoButton.addActionListener(this);
         // okayButton.addActionListener(this);
