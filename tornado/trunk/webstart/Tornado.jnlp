@@ -1,5 +1,5 @@
 <jnlp spec="1.0+"
-  codebase="https://simtk.org/svn/rna-viz-proto/tornado/trunk/webstart"
+  codebase="https://public.simtk.org/~cmbruns/tornado/webstart/"
   href="Tornado.jnlp"
 >
   <information>
@@ -12,7 +12,7 @@
   <resources>
     <j2se version="1.4+" />
     <extension href="TornadoLib.jnlp" name="toRNAdo"/>
-    <extension href="https://simtk.org/svn/rna-viz-proto/shared-java/trunk/webstart/SimtkSharedJava.jnlp" name="SimTK shared java classes"/>
+    <extension href="https://public.simtk.org/~cmbruns/simtk_shared_java/webstart/SimtkSharedJava.jnlp" name="SimTK shared java classes"/>
     <jar href="s_Tornado.jar"/>
   </resources>
   <security>
