@@ -191,12 +191,12 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
 
         setPdbId(null);
         
+        // Tell everyone we are busy
+        inactivate();
+
         // Load structure from file
         if ( e.getSource() == loadFileButton ) {
             // Load molecule from file using file browser dialog
-
-            // Tell everyone we are busy
-            inactivate();
 
             String [] extensions = {"pdb", "pqr"};
             if (moleculeFileChooser == null) moleculeFileChooser = new MoleculeFileChooser(parent, extensions);
@@ -207,21 +207,27 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
             File inputFile = moleculeFileChooser.getFile();
 
             // Convert to URL and start the loading process
-            try {
-                URL moleculeUrl = inputFile.toURI().toURL();
-                handleMoleculeUrl(moleculeUrl);
+            
+            if (inputFile != null) {
+                try {
+                    URL moleculeUrl = inputFile.toURI().toURL();
+                    handleMoleculeUrl(moleculeUrl);
+                }
+                catch (IOException exc) {
+                    // failure
+    
+                    // Show error dialog
+                    JOptionPane.showMessageDialog(this, 
+                            "Unexpected error: problem creating URL from file name: " +
+                            inputFile.getName());
+    
+                    setVisible(true);
+                }
             }
-            catch (IOException exc) {
-                // failure
-
-                // Show error dialog
-                JOptionPane.showMessageDialog(this, 
-                        "Unexpected error: problem creating URL from file name: " +
-                        inputFile.getName());
-
-                setVisible(true);
-                return;
-            }
+            
+            // No file was loaded, give the user another chance by reactivating the method dialog
+            else setVisible(true);
+            
         }
 
         // Download structure from PDB web site
@@ -253,7 +259,6 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
                         pdbId);
 
                 setVisible(true);
-                return;
             }
              
             setVisible(false);
@@ -269,9 +274,10 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
 
             // forget that the process was ever our friend
             loadPDBProcess = null;
-            reactivate();
             setVisible(false); // hide dialog
         }
+        
+        reactivate();
     }
 
     protected void handleMoleculeUrl(URL moleculeURL) throws IOException {
