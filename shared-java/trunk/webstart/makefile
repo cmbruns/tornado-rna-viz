@@ -4,6 +4,8 @@ BUILD_DIR = build
 MANIFEST_FILE = simtkjava_manifest.tmp
 JAR_FILE = SimtkSharedJava.jar
 
+PROD_KEYSTORE = D:\simtkjava_signing\simtkjava.store
+
 default: test
 
 ### Create initial jar file using compiled classes, manifest, and resources
@@ -14,12 +16,13 @@ $(JAR_FILE): all_classes $(MANIFEST_FILE) $(SRC_DIR)/resources/*/*
 # SimtkSharedJava.jar: ../../bin/org/simtk/*/*.class ../../bin/resources/*
 # 	jar cf SimtkSharedJava.jar -C ../../bin .
 
-s_$(JAR_FILE): $(JAR_FILE)
-	jarsigner -keystore /cygwin/home/cmbruns/private/myKeystore -signedJar s_$(JAR_FILE) $(JAR_FILE) myself
+# Implicit rule to sign jar files for production
+s_%.jar: %.jar
+	jarsigner -keystore $(PROD_KEYSTORE) -signedJar $@ $? simtkjava
 
 test: s_$(JAR_FILE)
 	svn commit -m "automated commit during build testing"
-	javaws SimtkSharedJava.jnlp
+	javaws SimtkSharedJava_test.jnlp
 
 all_classes: $(SRCS)
 	mkdir -p $(BUILD_DIR)
