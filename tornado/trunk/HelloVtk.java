@@ -33,8 +33,20 @@ public class HelloVtk extends JPanel implements ActionListener {
         System.loadLibrary("vtkIO"); 
         System.loadLibrary("vtkImaging"); 
         System.loadLibrary("vtkGraphics"); 
+        System.loadLibrary("vtksys"); 
+        System.loadLibrary("vtkDICOMParser"); 
+
+        System.loadLibrary("vtkCommonJava"); 
+        System.loadLibrary("vtkFilteringJava"); 
+        System.loadLibrary("vtkIOJava"); 
+        System.loadLibrary("vtkImagingJava"); 
+        System.loadLibrary("vtkGraphicsJava"); 
+
+        System.loadLibrary("vtkMPEG2Encode");
         System.loadLibrary("vtkRendering"); 
-        System.loadLibrary("vtkHybrid"); 
+        System.loadLibrary("vtkRenderingJava");        
+        
+        // System.loadLibrary("vtkHybrid"); 
     }
 
     
@@ -51,8 +63,8 @@ public class HelloVtk extends JPanel implements ActionListener {
     
     vtkCylinderSource cylinder = new vtkCylinderSource();
     cylinder.SetResolution(20);
-    cylinder.SetHeight(50);
-    cylinder.SetRadius(10);
+    cylinder.SetHeight(2);
+    cylinder.SetRadius(1);
     vtkPolyDataMapper cylinderMapper = new vtkPolyDataMapper();
     cylinderMapper.SetInput(cylinder.GetOutput());
         
