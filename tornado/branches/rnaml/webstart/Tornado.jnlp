@@ -1,0 +1,22 @@
+<jnlp spec="1.0+"
+  codebase="http://public.simtk.org/~cmbruns/tornado/webstart/"
+  href="Tornado.jnlp"
+>
+  <information>
+    <title>toRNAdo RNA visualization prototype</title>
+    <vendor>Stanford National Center for Biomedical Computation</vendor>
+    <homepage href="http://simtk.org/" />
+    <description>View RNA structures</description>
+  </information>
+  <offline-allowed/>
+  <resources>
+    <j2se version="1.4+" />
+    <extension href="TornadoLib.jnlp" name="toRNAdo"/>
+    <extension href="http://public.simtk.org/~cmbruns/simtk_shared_java/webstart/SimtkSharedJava.jnlp" name="SimTK shared java classes"/>
+    <jar href="s_Tornado.jar"/>
+  </resources>
+  <security>
+    <all-permissions/>
+  </security>
+<application-desc main-class="org.simtk.moleculargraphics.Tornado" />
+</jnlp>
