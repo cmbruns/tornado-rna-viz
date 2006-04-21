@@ -1,5 +1,5 @@
 <jnlp spec="1.0+"
-  codebase="http://simtk.org/cmbruns/java"
+  codebase="http://public.simtk.org/~cmbruns/os_arch/"
   href="OsArch.jnlp"
 >
   <information>

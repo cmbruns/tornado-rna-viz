@@ -72,12 +72,12 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
     
     protected void setUpLights() {
         // Remove or dim that darn initial headlight.
-        lgt.SetIntensity(0.0);
+        lgt.SetIntensity(0.40);
 
         vtkLightKit lightKit = new vtkLightKit();
         lightKit.MaintainLuminanceOn();
 
-        lightKit.SetKeyLightIntensity(0.9);
+        lightKit.SetKeyLightIntensity(0.60);
         lightKit.SetKeyLightWarmth(0.65); // Orange sun
         lightKit.SetKeyLightAngle(60, -40); // Upper left rear
         lightKit.SetKeyToHeadRatio(4); // Very dim head light
@@ -86,7 +86,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
         
         lightKit.SetBackLightWarmth(0.32);
         lightKit.SetFillLightWarmth(0.32);
-        lightKit.SetHeadlightWarmth(0.45);
+        lightKit.SetHeadLightWarmth(0.50);
         
         lightKit.AddLightsToRenderer(ren);        
     }
@@ -135,6 +135,13 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
         else {
             System.out.println("No assembly in cartoon");
         }
+    }
+    
+    public void add(vtkActor actor) {
+        Lock();
+        GetRenderer().AddViewProp(actor);        
+        UnLock();
+        repaint();
     }
     
     public void update(Observable observable, Object object) {
@@ -366,8 +373,11 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
     }
     
     public void centerByMass() {
-        Vector3D centerOfMass = massBody.getCenterOfMass();
-        GetRenderer().GetActiveCamera().SetFocalPoint(centerOfMass.getX(), centerOfMass.getY(), centerOfMass.getZ());        
+        setCenter(massBody.getCenterOfMass());
+    }
+    
+    public void setCenter(Vector3D center) {
+        GetRenderer().GetActiveCamera().SetFocalPoint(center.getX(), center.getY(), center.getZ());        
     }
     
     static final long serialVersionUID = 01L;

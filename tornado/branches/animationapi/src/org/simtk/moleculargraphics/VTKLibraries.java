@@ -44,8 +44,12 @@ public class VTKLibraries {
     }
     
     private static void loadNativeLibraries() {
+        loadOneNativeLibrary("jogl"); 
+
         // To supplement those libraries loaded by vtkPanel
         // when in Java Web Start mode
+        loadOneNativeLibrary("vtkNetCDF");
+        loadOneNativeLibrary("vtkexoIIc");
         loadOneNativeLibrary("vtkfreetype"); 
         loadOneNativeLibrary("vtkexpat"); 
         loadOneNativeLibrary("vtkjpeg"); 
@@ -56,12 +60,14 @@ public class VTKLibraries {
         loadOneNativeLibrary("vtkCommon"); 
         loadOneNativeLibrary("vtkFiltering"); 
         loadOneNativeLibrary("vtkDICOMParser"); 
-        loadOneNativeLibrary("vtkIO"); 
+        loadOneNativeLibrary("vtkMPEG2Encode");
+        
         loadOneNativeLibrary("vtkImaging"); 
         loadOneNativeLibrary("vtkGraphics"); 
-        loadOneNativeLibrary("vtkRendering"); 
+        loadOneNativeLibrary("vtkIO"); 
+        loadOneNativeLibrary("vtkRendering");
+        loadOneNativeLibrary("vtkVolumeRendering");
         loadOneNativeLibrary("vtkHybrid"); 
-        loadOneNativeLibrary("jogl"); 
         // loadOneNativeLibrary("jogl_cg"); 
 
         
@@ -71,6 +77,7 @@ public class VTKLibraries {
         loadOneNativeLibrary("vtkImagingJava"); 
         loadOneNativeLibrary("vtkGraphicsJava"); 
         loadOneNativeLibrary("vtkRenderingJava"); 
+        loadOneNativeLibrary("vtkVolumeRenderingJava");
         loadOneNativeLibrary("vtkHybridJava");
     }
     

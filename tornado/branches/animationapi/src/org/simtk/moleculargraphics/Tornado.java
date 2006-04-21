@@ -67,7 +67,7 @@ implements ResidueActionListener
     
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
     protected Tornado3DCanvas canvas;
-    private LoadStructureDialog loadStructureDialog = new LoadStructureDialog(this);
+    private LoadStructureDialog loadStructureDialog;
     
     private MolecularCartoonClass.CartoonType cartoonType = 
         MolecularCartoonClass.CartoonType.WIRE_FRAME;
@@ -78,6 +78,12 @@ implements ResidueActionListener
         
         // loadNativeLibraries();
         
+        // for full screen testing
+        // (must happen before frame becomes "displayable")
+        // setUndecorated(true);
+        
+        loadStructureDialog = new LoadStructureDialog(this);
+
         classLoader = getClass().getClassLoader();
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -528,10 +534,10 @@ implements ResidueActionListener
         backgroundGroup.add(checkItem);
         menu.add(checkItem);
         
-//        menuItem = new JMenuItem("Test Full Screen");
-//        viewMenu.add(menuItem);
-//        menuItem.setEnabled(true);
-//        checkItem.addActionListener(new TestFullScreenAction());
+        menuItem = new JMenuItem("Test Full Screen");
+        viewMenu.add(menuItem);
+        menuItem.setEnabled(true);
+        menuItem.addActionListener(new TestFullScreenAction());
 
         menu = new JMenu("Stereoscopic 3D");
         viewMenu.add(menu);
@@ -642,7 +648,8 @@ implements ResidueActionListener
 
     class TestFullScreenAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            canvas.testFullScreen();
+            System.out.println("Test full screen mode selected");
+            testVTKFullScreenMode();
         }
     }
 
@@ -1294,6 +1301,55 @@ implements ResidueActionListener
     // Private
     // 
 
+    private void testJavaFullScreenMode() {
+
+        GraphicsDevice screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+        if (screen.isFullScreenSupported()) {
+
+            System.out.println("full screen supported!");
+
+
+            this.hide();
+            // setUndecorated(true);
+            
+            // System.out.println("Sleeping...");
+
+            try {
+                screen.setFullScreenWindow(this);
+
+                // try {Thread.sleep(5000);} catch(Exception e) {}
+                // System.out.println("Awake");
+            }
+
+            finally {
+                // Leave full screen mode
+                // screen.setFullScreenWindow(null);
+            }
+          }
+          else {
+            System.out.println("full screen NOT supported");
+          }
+        
+    }
+
+    private void testVTKFullScreenMode() {
+
+        try {
+            canvas.GetRenderWindow().SetFullScreen(1);
+
+            try {Thread.sleep(5000);} catch(Exception e) {}
+            System.out.println("Awake");
+        }
+
+        finally {
+            // Leave full screen mode
+            // screen.setFullScreenWindow(null);
+            canvas.GetRenderWindow().SetFullScreen(0);
+        }
+        
+    }
+    
     /**
      * Put all hooks for adding a new molecule representation here
      * Call this from createMenuBar()
