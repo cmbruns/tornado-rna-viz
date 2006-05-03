@@ -1,0 +1,85 @@
+/**
+ * JavaCC file
+ */
+ 
+options {
+  JDK_VERSION = "1.4";
+}
+PARSER_BEGIN(RasMolParser)
+
+package org.simtk.parse.rasmol;
+
+public class RasMolParser {
+  public static void main(String args[]) throws ParseException {
+    RasMolParser parser = new RasMolParser(System.in);
+    System.out.println("Reading from standard input...");
+    System.out.print("Enter an atom expression :");
+    try {
+      RasMolParser.one_command();
+    } catch (Exception e) {
+      System.out.println("NOK.");
+      System.out.println(e.getMessage());
+      RasMolParser.ReInit(System.in);
+    } catch (Error e) {
+      System.out.println("Oops.");
+      System.out.println(e.getMessage());
+    }
+  }
+}
+PARSER_END(RasMolParser)
+
+SKIP :
+{
+ 	" "
+|	"\r"
+|	"\t"
+|	"\n"
+}
+TOKEN :
+{
+    < CONSTANT: ( <DIGIT> )+ >
+|   < #DIGIT: ["0" - "9"] >
+}
+
+//
+// Start of comment. Don't return as token, instead
+// shift to special lexical state.
+//
+SPECIAL_TOKEN: {  <"#"> : WithinComment }
+
+//
+// While inside the comment lexicals state, look for end
+// of comment (either another '--' or EOL). Don't return
+// the (accumulated data). Instead switch back to normal
+// lexical state
+//
+<WithinComment> SPECIAL_TOKEN:
+{
+    <"\n"> : DEFAULT
+}
+
+//
+// While inside the comment state, accumulate all contents
+//
+<WithinComment> MORE: { <~[]> }
+
+int one_command() : {}
+{
+  RASMOL_COMMAND() <EOF> { return 0; }
+}
+
+void RASMOL_COMMAND() : {}
+{
+	ATOM_EXPRESSION()
+}
+
+void COMPOUND_RASMOL_COMMAND() : {}
+{
+	RASMOL_COMMAND() ";" COMPOUND_RASMOL_COMMAND()
+}
+
+void ATOM_EXPRESSION() : {}
+{
+	<CONSTANT>
+}
+
