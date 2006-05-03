@@ -26,28 +26,24 @@
  */
 package org.simtk.chem.toon;
 
-import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.*;
-
+import org.simtk.chem.*;
 import vtk.*;
-
-import java.util.*;
 
 public class SpaceFillingMolecule extends BaseMolToon {
 
-    public SpaceFillingMolecule(LocatedMolecule molecule) {
-        Iterator iAtom = molecule.getAtomIterator();
-        while (iAtom.hasNext()) {
-            LocatedAtom atom = (LocatedAtom) iAtom.next();
-            add(new SpaceFillingAtom(atom));
+    public SpaceFillingMolecule(LocatedMolecular molecule) {
+        for (Atom a : molecule.atoms()) {
+            if (a instanceof LocatedAtom) {
+                LocatedAtom atom = (LocatedAtom) a;
+                add(new SpaceFillingAtom(atom));
+            }
         }
     }
     
     public SpaceFillingMolecule(MoleculeCollection moleculeCollection) {
-        for (int m = 0; m < moleculeCollection.getMoleculeCount(); m++) {
-            Molecule molecule = moleculeCollection.getMolecule(m);
-            if (molecule instanceof LocatedMolecule)
-                add(new SpaceFillingMolecule((LocatedMolecule) molecule));
+        for (Molecule molecule : moleculeCollection) {
+            if (molecule instanceof LocatedMolecular)
+                add(new SpaceFillingMolecule((LocatedMolecular) molecule));
         }
     }
     

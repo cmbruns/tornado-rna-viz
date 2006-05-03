@@ -21,44 +21,19 @@
  */
 
 /*
- * Created on Apr 19, 2006
+ * Created on Dec 1, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.mol.toon;
+package org.simtk.chem.pdb;
 
-import java.util.*;
+import org.simtk.chem.LocatedMolecular;
 
-public abstract class BaseMolToon implements MolToon {
-
-    protected HashSet<MolToon> components = new HashSet<MolToon>(); 
-    protected MolColorMethod molColorMethod;
-
-    public void setColorMethod(MolColorMethod m) {
-        molColorMethod = m;
-    }
-
-    public Collection<MolToon> getComponents() {
-        return components;
-    }
-
-    public void show() {
-        for (MolToon t: components) t.show();
-    }
-
-    public void hide() {
-        for (MolToon t: components) t.hide();
-    }
-    
-    public void add(MolToon component) {
-        if (! components.contains(component))
-            components.add(component);
-    }
-    
-    public boolean update() {
-        boolean isChanged = false;
-        for (MolToon t: components) {
-            if (t.update()) isChanged = true;        
-        }
-        return isChanged;
-    }
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * PDBMolecule interface applies to both chains and residues
+ */
+public interface PdbMolecular extends LocatedMolecular {
+    public char getChainId();
 }

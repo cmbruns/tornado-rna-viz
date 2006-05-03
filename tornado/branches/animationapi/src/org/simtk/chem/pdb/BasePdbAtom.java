@@ -29,8 +29,12 @@
  * Created on Apr 21, 2005
  *
  */
-package org.simtk.chem;
+package org.simtk.chem.pdb;
 
+import org.simtk.chem.BaseLocatedAtom;
+import org.simtk.chem.ChemicalElement;
+import org.simtk.chem.ChemicalElementClass;
+import org.simtk.chem.pdb.*;
 import org.simtk.geometry3d.*;
 
 import java.text.ParseException;
@@ -41,9 +45,9 @@ import java.text.ParseException;
  * \brief A chemical atom including members found in Protein Data Bank flat structure files.
  * 
  */
-public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
+public class BasePdbAtom extends BaseLocatedAtom implements PdbAtom {
 
-    // PDB fields
+    // Pdb fields
     private double temperatureFactor;
     private double occupancy;	
     private String recordName;
@@ -52,16 +56,16 @@ public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
     private char alternateLocationIndicator;
     private String pdbElementName;
     private String charge;
-	// PDB Residue information
+	// Pdb Residue information
     private String residueName;
     private int residueIndex;
     private char insertionCode;
-	// PDB Molecule information
+	// Pdb Molecule information
     private char chainIdentifier;
     private String segmentIdentifier;
 
-    static PDBAtom createAtom(String PdbLine) throws ParseException {
-        PDBAtomClass answer = new PDBAtomClass();
+    static public PdbAtom createAtom(String PdbLine) throws ParseException {
+        BasePdbAtom answer = new BasePdbAtom();
         
         String atomName = getAtomName(PdbLine);
         Vector3D coordinates = getCoordinates(PdbLine);
@@ -70,14 +74,14 @@ public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
         // Use superclass initializer
         answer.initialize(coordinates, element, atomName);
 
-        answer.setPDBRecordName(getRecordName(PdbLine));
-        if ((! answer.getPDBRecordName().equals("ATOM  ")) && (! answer.getPDBRecordName().equals("HETATM"))) 
+        answer.setPdbRecordName(getRecordName(PdbLine));
+        if ((! answer.getPdbRecordName().equals("ATOM  ")) && (! answer.getPdbRecordName().equals("HETATM"))) 
             throw new ParseException("ATOM record field not found in line: " + PdbLine, 0);
     
-        answer.setPDBAtomSerialNumber(getSerialNumber(PdbLine));
-        // answer.setPDBAtomName(getAtomName(PdbLine)); // redundant
+        answer.setPdbAtomSerialNumber(getSerialNumber(PdbLine));
+        // answer.setPdbAtomName(getAtomName(PdbLine)); // redundant
         answer.setAlternateLocationIndicator(getAltLoc(PdbLine));
-        answer.setPDBResidueName(getResidueName(PdbLine));
+        answer.setPdbResidueName(getResidueName(PdbLine));
         answer.setChainIdentifier(getChainId(PdbLine));
         answer.setResidueNumber(getResidueNum(PdbLine));
         answer.setInsertionCode(getInsertionCode(PdbLine));
@@ -85,14 +89,15 @@ public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
         answer.setOccupancy(getOccupancy(PdbLine));
         answer.setTemperatureFactor(getBValue(PdbLine));
         answer.setSegmentIdentifier(getSegId(PdbLine));
-        answer.setPDBElementName(getElementName(PdbLine));
-        answer.setPDBCharge(getChargeString(PdbLine));
+        answer.setPdbElementName(getElementName(PdbLine));
+        answer.setPdbCharge(getChargeString(PdbLine));
 
         return answer;
     }
     
-    protected PDBAtomClass() {}
-    // PDB Fields: A applies to Atom, R to Residue, M to molecule
+    protected BasePdbAtom() {}
+    
+    // Pdb Fields: A applies to Atom, R to Residue, M to molecule
     //A    1 -  6        Record name     "HETATM" or "ATOM  "
     //
     //A    7 - 11        Integer         serial         Atom serial number.
@@ -160,17 +165,17 @@ public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
         return element;        
     }
 
-    // PDBAtom interface methods
+    // PdbAtom interface methods
     public char getAlternateLocationIndicator() {
         return alternateLocationIndicator;
     }
     protected void setAlternateLocationIndicator(char alternateLocationIndicator) {
         this.alternateLocationIndicator = alternateLocationIndicator;
     }
-//    public String getPDBAtomName() {
+//    public String getPdbAtomName() {
 //        return atomName;
 //    }
-//    protected void setPDBAtomName(String atomName) {
+//    protected void setPdbAtomName(String atomName) {
 //        this.atomName = atomName;
 //    }
     public char getChainIdentifier() {
@@ -179,16 +184,16 @@ public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
     protected void setChainIdentifier(char chainIdentifier) {
         this.chainIdentifier = chainIdentifier;
     }
-    public String getPDBCharge() {
+    public String getPdbCharge() {
         return charge;
     }
-    protected void setPDBCharge(String charge) {
+    protected void setPdbCharge(String charge) {
         this.charge = charge;
     }
-    public String getPDBElementName() {
+    public String getPdbElementName() {
         return pdbElementName;
     }
-    protected void setPDBElementName(String elementName) {
+    protected void setPdbElementName(String elementName) {
         this.pdbElementName = elementName;
     }
     public char getInsertionCode() {
@@ -203,10 +208,10 @@ public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
     protected void setOccupancy(double occupancy) {
         this.occupancy = occupancy;
     }
-    public String getPDBRecordName() {
+    public String getPdbRecordName() {
         return recordName;
     }
-    protected void setPDBRecordName(String recordName) {
+    protected void setPdbRecordName(String recordName) {
         this.recordName = recordName;
     }
     public int getResidueNumber() {
@@ -215,10 +220,10 @@ public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
     protected void setResidueNumber(int residueIndex) {
         this.residueIndex = residueIndex;
     }
-    public String getPDBResidueName() {
+    public String getPdbResidueName() {
         return residueName;
     }
-    protected void setPDBResidueName(String residueName) {
+    protected void setPdbResidueName(String residueName) {
         this.residueName = residueName;
     }
     public String getSegmentIdentifier() {
@@ -227,10 +232,10 @@ public class PDBAtomClass extends BaseLocatedAtom implements PDBAtom {
     protected void setSegmentIdentifier(String segmentIdentifier) {
         this.segmentIdentifier = segmentIdentifier;
     }
-    public int getPDBAtomSerialNumber() {
+    public int getPdbAtomSerialNumber() {
         return serialNumber;
     }
-    protected void setPDBAtomSerialNumber(int serialNumber) {
+    protected void setPdbAtomSerialNumber(int serialNumber) {
         this.serialNumber = serialNumber;
     }
     public double getTemperatureFactor() {

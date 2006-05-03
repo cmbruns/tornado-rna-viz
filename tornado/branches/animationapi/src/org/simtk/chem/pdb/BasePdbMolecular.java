@@ -24,11 +24,13 @@
  * Created on Apr 26, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.chem;
+package org.simtk.chem.pdb;
 
-public class BasePDBMolecular extends BaseLocatedMolecular implements PDBMolecular {
+import org.simtk.chem.BaseLocatedMolecular;
+
+public class BasePdbMolecular extends BaseLocatedMolecular implements PdbMolecular {
     protected char chainId = ' ';
         
     public char getChainId() {return chainId;}
-    public void setChainId(char chainId) {this.chainId = chainId;}
+    protected void setChainId(char chainId) {this.chainId = chainId;}
 }

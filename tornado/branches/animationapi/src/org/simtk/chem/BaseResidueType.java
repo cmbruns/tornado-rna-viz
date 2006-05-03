@@ -28,6 +28,8 @@ package org.simtk.chem;
 
 import java.util.*;
 
+import org.simtk.chem.pdb.PdbAtom;
+
 public class BaseResidueType implements ResidueType {
     static public ResidueType UNKNOWN = new BaseResidueType();
     
@@ -35,10 +37,10 @@ public class BaseResidueType implements ResidueType {
     private String residueName = "(unknown residue)";
     private Collection<GenericBond> genericBonds = new HashSet<GenericBond>();
 
-    static public ResidueType getType(PDBAtom atom) {
+    static public ResidueType getType(PdbAtom atom) {
         ResidueType answer = UNKNOWN;
 
-        String residueCode = atom.getPDBResidueName();
+        String residueCode = atom.getPdbResidueName();
 
         if (Nucleotide.isNucleotideCode(residueCode))
             answer = Nucleotide.get(residueCode);

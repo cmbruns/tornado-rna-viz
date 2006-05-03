@@ -27,6 +27,7 @@
 package org.simtk.chem;
 
 public interface ChemicalElement extends Chemical {
+    public int getAtomicNumber();
     public String getElementSymbol();
     public String getElementName();
     public double getCovalentRadius();

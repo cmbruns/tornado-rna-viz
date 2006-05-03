@@ -27,4 +27,5 @@
 package org.simtk.chem;
 
 public interface Molecule extends Molecular {
+    public MoleculeType getMoleculeType();
 }

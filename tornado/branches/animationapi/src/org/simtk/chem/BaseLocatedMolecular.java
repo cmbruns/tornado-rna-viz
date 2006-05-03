@@ -27,6 +27,7 @@
 package org.simtk.chem;
 
 import org.simtk.hash3d.Hash3D;
+import org.simtk.chem.pdb.PdbAtom;
 import org.simtk.geometry3d.Vector3D;
 
 public class BaseLocatedMolecular extends BaseMolecular implements LocatedMolecular {
@@ -34,15 +35,13 @@ public class BaseLocatedMolecular extends BaseMolecular implements LocatedMolecu
     protected BaseLocatedMolecular() {}
     
     protected BaseLocatedMolecular(AtomCollection atoms) {
-        for (Atom atom : atoms) this.atoms().add(atom);
+        for (Atom atom : atoms) addAtom(atom);
         createBonds();
     }
     
     private void addBond(Atom atom1, Atom atom2) {
         Bond bond = new CovalentBond(atom1, atom2);
-        atom1.bonds().add(bond);
-        atom2.bonds().add(bond);
-        bonds().add(bond);
+        addBond(bond);
     }
     
     // Create covalent bonds where it seems that they are needed
@@ -86,9 +85,9 @@ public class BaseLocatedMolecular extends BaseMolecular implements LocatedMolecu
                     if (distance > maxDistance) continue;
                     
                     // Make sure it is in the same molecule or part
-                    if ( (atom1 instanceof PDBAtom) && (atom2 instanceof PDBAtom) ) {
-                        PDBAtom pdbAtom1 = (PDBAtom) atom1;
-                        PDBAtom pdbAtom2 = (PDBAtom) atom2;
+                    if ( (atom1 instanceof PdbAtom) && (atom2 instanceof PdbAtom) ) {
+                        PdbAtom pdbAtom1 = (PdbAtom) atom1;
+                        PdbAtom pdbAtom2 = (PdbAtom) atom2;
                         // Must be in the same chain
                         if (pdbAtom1.getChainIdentifier() != pdbAtom2.getChainIdentifier()) continue;
                         // Must be in the same alternate location group

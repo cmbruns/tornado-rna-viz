@@ -40,7 +40,7 @@ public interface Residue extends Molecular, ResidueType {
     
     public int getResidueNumber();
 
-    public Atom getAtom(String atomName);
+    public Atom getAtomByName(String atomName);
     
     public ResidueType getResidueType();
 }

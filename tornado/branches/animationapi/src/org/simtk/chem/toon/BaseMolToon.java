@@ -29,6 +29,7 @@ package org.simtk.chem.toon;
 import java.util.*;
 
 public abstract class BaseMolToon implements MolToon {
+    private BoundingBox boundingBox = BoundingBox.NO_BOX;
 
     protected HashSet<MolToon> components = new HashSet<MolToon>(); 
     protected MolColorMethod molColorMethod;
@@ -52,6 +53,8 @@ public abstract class BaseMolToon implements MolToon {
     public void add(MolToon component) {
         if (! components.contains(component))
             components.add(component);
+        if (getBoundingBox() == null) setBoundingBox(component.getBoundingBox());
+        else setBoundingBox(getBoundingBox().combine(component.getBoundingBox()));
     }
     
     public boolean update() {
@@ -60,5 +63,11 @@ public abstract class BaseMolToon implements MolToon {
             if (t.update()) isChanged = true;        
         }
         return isChanged;
+    }
+    
+    public BoundingBox getBoundingBox() {return boundingBox;}
+    
+    protected void setBoundingBox(BoundingBox boundingBox) {
+        this.boundingBox = boundingBox;
     }
 }

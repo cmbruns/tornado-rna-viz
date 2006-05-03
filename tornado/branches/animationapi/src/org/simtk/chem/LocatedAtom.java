@@ -29,4 +29,5 @@ package org.simtk.chem;
 import org.simtk.geometry3d.Vector3D;
 
 public interface LocatedAtom extends Atom, Vector3D {
+    public Vector3D getCoordinates();
 }

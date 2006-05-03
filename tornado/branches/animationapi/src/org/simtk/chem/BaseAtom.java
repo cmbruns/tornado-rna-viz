@@ -46,6 +46,7 @@ public class BaseAtom extends BaseMolecular implements Atom {
     public String getAtomName() {return name;}
     
     // ChemicalElement interface - delegate to element
+    public int getAtomicNumber() {return element.getAtomicNumber();}
     public String getElementSymbol() {return element.getElementSymbol();}
     public String getElementName() {return element.getElementName();}
     public double getCovalentRadius() {return element.getCovalentRadius();}

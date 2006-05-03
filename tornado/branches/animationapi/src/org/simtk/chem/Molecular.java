@@ -26,14 +26,13 @@
  */
 package org.simtk.chem;
 
-import java.util.*;
-
 /** 
  *  
   * @author Christopher Bruns
   * 
   * Common interface for molecules, functional groups, and residues
  */
-public interface Molecular extends Bondable, Chemical, Iterable<Atom> {
-    public Collection<Atom> atoms();
+public interface Molecular extends Bondable, Chemical {
+    public Iterable<Atom> atoms();
+    public void addAtom(Atom atom);
 }

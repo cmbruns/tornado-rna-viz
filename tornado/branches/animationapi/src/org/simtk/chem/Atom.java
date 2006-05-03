@@ -26,6 +26,6 @@
  */
 package org.simtk.chem;
 
-public interface Atom extends ChemicalElement, Bondable {
+public interface Atom extends ChemicalElement {
     public String getAtomName();
 }

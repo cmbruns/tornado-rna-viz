@@ -21,23 +21,24 @@
  */
 
 /*
- * Created on Nov 14, 2005
+ * Created on Apr 26, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.chem;
+package org.simtk.chem.pdb;
 
-public interface PDBAtom extends LocatedAtom {    
-    public abstract char getAlternateLocationIndicator();
-    // public abstract String getPDBAtomName(); // use Atom.getAtomName() instead
-    public abstract char getChainIdentifier();
-    public abstract String getPDBCharge();
-    public abstract String getPDBElementName();
-    public abstract char getInsertionCode();
-    public abstract double getOccupancy();
-    public abstract String getPDBRecordName();
-    public abstract int getResidueNumber();
-    public abstract String getPDBResidueName();
-    public abstract String getSegmentIdentifier();
-    public abstract int getPDBAtomSerialNumber();
-    public abstract double getTemperatureFactor();
+import java.text.ParseException;
+
+import org.simtk.chem.Molecule;
+import org.simtk.chem.Polymer;
+import org.simtk.chem.pdb.*;
+
+// TODO - Some molecules are polymers, others are not
+// This distinction is (also) encoded in Molecule.getMoleculeType()
+// It would be nice if the Polymer interface is only available when appropriate...
+public interface PdbMolecule extends Molecule, PdbMolecular, Polymer {
+    public PdbAtom getAtom(String pdbLine) throws ParseException;
+    public PdbResidue getResidue(String resName, int resNum, char iCode);
+
+    public PdbAtom creativeGetAtom(String pdbLine) throws ParseException;
+    public PdbResidue creativeGetResidue(String resName, int resNum, char iCode);
 }

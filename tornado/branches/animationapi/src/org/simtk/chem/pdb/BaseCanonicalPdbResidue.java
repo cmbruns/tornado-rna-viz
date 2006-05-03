@@ -21,39 +21,21 @@
  */
 
 /*
- * Created on Apr 19, 2006
+ * Created on Apr 27, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.mol.toon;
+package org.simtk.chem.pdb;
 
-import java.util.*;
-import org.simtk.moleculargraphics.cartoon.*;
+import org.simtk.chem.CanonicalResidueType;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * Interface intended for future implemenations
-  * of molecule representations, atom glyphs,
-  * and maybe even secondary structure diagrams
- */
-public interface MolToon {
+public class BaseCanonicalPdbResidue extends BasePdbResidue implements CanonicalPdbResidue {
+    private CanonicalResidueType type;
     
-    // Check if relevant parts of the data model have changed, 
-    // and if so, change the rendering of this toon.
-    /**
-     * @return true if the underlying data changed, otherwise false
-     */
-    public boolean update();
+    private BaseCanonicalPdbResidue(CanonicalResidueType type) {
+        setResidueType(type);
+        this.type = type;
+    }
     
-    // set the coloring method, possibly including the color itself
-    public void setColorMethod(MolColorMethod m);
-
-    // MolToons can be trees
-    public Collection<MolToon> getComponents();
-    
-    public void show(); // Ensure display
-    public void hide(); // Remove from display
-    
-    public void add(MolToon component); // Add a subcomponent
+    public char getOneLetterCode() {return type.getOneLetterCode();}
+    public CanonicalResidueType getResidueType() {return type;}
 }

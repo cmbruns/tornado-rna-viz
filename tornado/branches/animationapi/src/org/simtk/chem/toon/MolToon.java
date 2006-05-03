@@ -28,8 +28,6 @@ package org.simtk.chem.toon;
 
 import java.util.*;
 
-import org.simtk.chem.*;
-
 /**
  *  
   * @author Christopher Bruns
@@ -58,4 +56,5 @@ public interface MolToon {
     // MolToons can be trees
     Collection<MolToon> getComponents();
     
+    public BoundingBox getBoundingBox();    
 }

@@ -28,7 +28,7 @@ package org.simtk.chem.toon;
 
 import java.awt.*;
 
-import org.simtk.molecularstructure.atom.*;
+import org.simtk.chem.*;
 
 public class AtomColorScheme implements ColorScheme {
     private Color lightGray = new Color(230, 230, 230);

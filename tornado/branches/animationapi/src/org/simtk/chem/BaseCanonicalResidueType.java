@@ -33,17 +33,6 @@ public abstract class BaseCanonicalResidueType extends BaseResidueType implement
     protected void initialize(String name, char oneLetterCode, String threeLetterCode) {
         initialize(name, threeLetterCode);
         setOneLetterCode(oneLetterCode);
-        
-        // indexResidueCode(threeLetterCode);
-        // indexResidueCode(""+oneLetterCode);
-        // indexResidueCode(name);
-
-//        nameTypes.put(threeLetterCode, this);
-//        nameTypes.put(threeLetterCode.toUpperCase(), this);
-//        nameTypes.put(""+oneLetterCode, this);
-//        nameTypes.put((""+oneLetterCode).toUpperCase(), this);
-//        nameTypes.put(name, this);
-//        nameTypes.put(name.toUpperCase(), this);
     }
     
     public char getOneLetterCode() {return oneLetterCode;}

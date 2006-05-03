@@ -26,5 +26,5 @@
  */
 package org.simtk.chem;
 
-public interface SecondaryStructure extends Molecular {
+public interface SecondaryStructure extends Iterable<Residue> {
 }

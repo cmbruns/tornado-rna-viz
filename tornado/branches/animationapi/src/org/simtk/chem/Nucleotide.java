@@ -75,6 +75,34 @@ public class Nucleotide extends BaseCanonicalResidueType {
         return false;
     }
     
+    static public boolean isDnaCode(String code) {
+        String uCode = code.toUpperCase().trim();
+
+        if (uCode.equals("A")) return true;
+        if (uCode.equals("C")) return true;
+        if (uCode.equals("G")) return true;
+        if (uCode.equals("T")) return true;
+
+        return false;
+    }
+
+    static public boolean isRnaCode(String code) {
+        String uCode = code.toUpperCase().trim();
+
+        if (uCode.equals("A")) return true;
+        if (uCode.equals("C")) return true;
+        if (uCode.equals("G")) return true;
+        if (uCode.equals("U")) return true;
+
+        if (uCode.equals("+A")) return true;
+        if (uCode.equals("+C")) return true;
+        if (uCode.equals("+G")) return true;
+        if (uCode.equals("+U")) return true;
+
+        return false;
+    }
+    
+    
     protected void initialize(String name, char oneLetterCode, String threeLetterCode) {
         super.initialize(name, oneLetterCode, threeLetterCode);
         indexResidueCode(threeLetterCode);

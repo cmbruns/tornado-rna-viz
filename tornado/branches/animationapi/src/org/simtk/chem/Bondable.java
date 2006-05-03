@@ -26,8 +26,7 @@
  */
 package org.simtk.chem;
 
-import java.util.Collection;
-
 public interface Bondable {
-    public Collection<Bond> bonds(); // covalent bonds
+    public Iterable<Bond> bonds(); // covalent bonds
+    public void addBond(Bond bond);
 }

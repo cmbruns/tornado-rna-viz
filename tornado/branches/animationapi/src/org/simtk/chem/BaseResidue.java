@@ -28,6 +28,8 @@ package org.simtk.chem;
 
 import java.util.*;
 
+import org.simtk.chem.pdb.PdbAtom;
+
 public class BaseResidue extends BaseMolecular implements Residue {
     private Residue previousResidue;
     private Residue nextResidue;
@@ -40,25 +42,15 @@ public class BaseResidue extends BaseMolecular implements Residue {
     private Map<String, Collection<Atom> > atomNames = new Hashtable<String, Collection<Atom> >();
     private GenericBondCollection genericBonds = new GenericBondCollection();
     
-    public static Residue createResidue(AtomCollection atoms) {
-        Residue answer = null;
-
-        BaseResidue baseResidue = new BaseResidue();
-        baseResidue.initializeFromAtoms(atoms);
-        answer = baseResidue;
-        
-        return answer;
-    }
-    
     public String getThreeLetterCode() {return threeLetterCode;}
     public Residue getPreviousResidue() {return previousResidue;}
     public Residue getNextResidue() {return nextResidue;}
     public String getResidueName() {return residueName;}
     public int getResidueNumber() {return residueNumber;}
 
-    public Atom getAtom(String atomName) {
+    public Atom getAtomByName(String atomName) {
         if (!atomNames.containsKey(atomName)) return null;
-        return (PDBAtom) ((Vector)atomNames.get(atomName)).firstElement();
+        return (PdbAtom) ((Vector)atomNames.get(atomName)).firstElement();
     }    
 
     public Collection<GenericBond> genericBonds() {return genericBonds;}
@@ -66,37 +58,23 @@ public class BaseResidue extends BaseMolecular implements Residue {
     public ResidueType getResidueType() {return residueType;}
     protected void setResidueType(ResidueType type) {residueType = type;}
     
-    protected void initializeFromAtoms(Collection<Atom> atoms) {
-        super.initializeFromAtoms(atoms);
-
-        setThreeLetterCode(guessThreeLetterCode(atoms));
-        
-        PDBAtom atom = getOnePDBAtom(atoms);
-        if (atom != null) {
-            setResidueNumber(atom.getResidueNumber());
-            setResidueType(BaseResidueType.getType(atom));
-        }
-        
-        indexAtoms();
-    }
-    
     protected static String guessThreeLetterCode(Collection<Atom> atoms) {
 
         String threeLetterCode = "UNK";
         
-        PDBAtom atom = getOnePDBAtom(atoms);
+        PdbAtom atom = getOnePdbAtom(atoms);
         if (atom != null) {
-            threeLetterCode = atom.getPDBResidueName();
+            threeLetterCode = atom.getPdbResidueName();
         }
         
         return threeLetterCode;        
     }
     
-    protected static PDBAtom getOnePDBAtom(Collection<Atom> atoms) {
-        PDBAtom answer = null;
+    protected static PdbAtom getOnePdbAtom(Collection<Atom> atoms) {
+        PdbAtom answer = null;
         for (Atom atom : atoms) {
-            if (atom instanceof PDBAtom) {
-                answer = (PDBAtom) atom;
+            if (atom instanceof PdbAtom) {
+                answer = (PdbAtom) atom;
             }
         } 
         return answer;
@@ -131,43 +109,18 @@ public class BaseResidue extends BaseMolecular implements Residue {
                 if (! atomNames.containsKey(atomName2)) continue NAME2;
                 ATOM2: for (Atom atom2 : atomNames.get(atomName2)) {
 
-                    // PDB atoms should not bond if they have separate altloc values
-                    if ((atom1 instanceof PDBAtom) && (atom2 instanceof PDBAtom)) {
-                        if ( ((PDBAtom)atom1).getAlternateLocationIndicator() != ((PDBAtom)atom2).getAlternateLocationIndicator() )
+                    // Pdb atoms should not bond if they have separate altloc values
+                    if ((atom1 instanceof PdbAtom) && (atom2 instanceof PdbAtom)) {
+                        if ( ((PdbAtom)atom1).getAlternateLocationIndicator() != ((PdbAtom)atom2).getAlternateLocationIndicator() )
                             continue ATOM2;
                     }
                     
                     Bond bond = new CovalentBond(atom1, atom2);
-                    atom1.bonds().add(bond);
-                    atom2.bonds().add(bond);
-                    bonds().add(bond);
+                    addBond(bond);
                 }
             }
         }
             
     }
     
-    private void indexAtoms() {
-        for (Atom atom : atoms()) {
-
-            // Short atom name
-            String atomName = atom.getAtomName();
-            
-            if (! atomNames.containsKey(atomName)) atomNames.put(atomName, new Vector<Atom>());
-            atomNames.get(atomName).add(atom);
-            
-            if (atom instanceof PDBAtom) { // Include altloc field for PDB atoms
-                PDBAtom pdbAtom = (PDBAtom) (atom);
-    
-                // Insertion code qualified atom name
-                char altLoc = pdbAtom.getAlternateLocationIndicator();
-                String fullAtomName = atomName + ":";
-                if (altLoc != ' ') {fullAtomName = fullAtomName + altLoc;}
-                
-                if (! atomNames.containsKey(fullAtomName)) atomNames.put(fullAtomName, new Vector<Atom>());
-                atomNames.get(fullAtomName).add(atom);
-            }
-        }
-    }    
-
 }

@@ -24,14 +24,23 @@
  * Created on Dec 1, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.chem;
+package org.simtk.chem.pdb;
+
+import java.text.ParseException;
+
+import org.simtk.chem.LocatedMolecular;
+import org.simtk.chem.Residue;
 
 /**
  *  
   * @author Christopher Bruns
   * 
-  * PDBMolecule interface applies to both chains and residues
+  * A residue containing all of the information typically found in the 
+  * Protein Data Bank (PDB) file format.
  */
-public interface PDBMolecular extends LocatedMolecular {
-    public char getChainId();
+public interface PdbResidue extends Residue, PdbMolecular, LocatedMolecular {
+    public char getInsertionCode();
+
+    public PdbAtom getAtomFromPdbLine(String pdbLine) throws ParseException;
+    public PdbAtom creativeGetAtomFromPdbLine(String pdbLine) throws ParseException;
 }

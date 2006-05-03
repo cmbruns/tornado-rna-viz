@@ -29,9 +29,14 @@
  * Created on Apr 22, 2005
  *
  */
-package org.simtk.chem;
+package org.simtk.chem.pdb;
 
+import java.text.ParseException;
 import java.util.*;
+
+import org.simtk.chem.Atom;
+import org.simtk.chem.BaseResidue;
+import org.simtk.chem.CanonicalResidue;
 
 /** 
  * @author Christopher Bruns
@@ -39,10 +44,11 @@ import java.util.*;
  * \brief One monomer residue of a Biopolymer
  *
  */
-public class PDBResidueClass extends BaseResidue implements PDBResidue {
+public class BasePdbResidue extends BaseResidue implements PdbResidue {
 
     private char insertionCode = ' ';
     private char chainId = ' ';
+    private Map<String, PdbAtom> keyAtoms = new HashMap<String, PdbAtom>();
     
     /**
      * Creates a new residue object.
@@ -53,14 +59,37 @@ public class PDBResidueClass extends BaseResidue implements PDBResidue {
      * @param bagOfAtoms
      */
     
-    protected void initializeFromAtoms(Collection<Atom> atoms) {
-        super.initializeFromAtoms(atoms);
-
-        PDBAtom atom = getOnePDBAtom(atoms);
-        if (atom != null) {
-            setInsertionCode(atom.getInsertionCode());
-            chainId = atom.getChainIdentifier();
+    public static PdbResidue createResidue(String resName, char chainId, int resNum, char iCode) {
+        BasePdbResidue answer = new BasePdbResidue();
+        answer.setResidueName(resName);
+        answer.setChainId(chainId);
+        answer.setResidueNumber(resNum);
+        answer.setInsertionCode(iCode);
+        return answer;
+    }
+    
+    public void addAtom(Atom atom) {
+        super.addAtom(atom);
+        if (atom instanceof PdbAtom) {
+            PdbAtom pdbAtom = (PdbAtom) atom;
+            keyAtoms.put(atomKey(pdbAtom.getAtomName(), pdbAtom.getAlternateLocationIndicator()), pdbAtom);
         }
+    }
+    private String atomKey(String atomName, char altLoc) {
+        return atomName + ":" + altLoc;
+    }
+    public PdbAtom getAtomFromPdbLine(String pdbLine) throws ParseException {
+        String atomName = BasePdbAtom.getAtomName(pdbLine);
+        char altLoc = BasePdbAtom.getAltLoc(pdbLine);
+        return keyAtoms.get(atomKey(atomName, altLoc));
+    }
+    public PdbAtom creativeGetAtomFromPdbLine(String pdbLine) throws ParseException {
+        PdbAtom answer = getAtomFromPdbLine(pdbLine);
+        if (answer == null) {
+            answer = BasePdbAtom.createAtom(pdbLine);
+            addAtom(answer);
+        }
+        return answer;
     }
 
     /**
@@ -79,6 +108,7 @@ public class PDBResidueClass extends BaseResidue implements PDBResidue {
      * @return Returns the residueNumber.
      */
 
+    protected void setChainId(char chainId) {this.chainId = chainId;}
     public char getChainId() {return chainId;}
     
     public String toString() {
@@ -91,29 +121,4 @@ public class PDBResidueClass extends BaseResidue implements PDBResidue {
         answer = answer + " " + getResidueNumber();
         return answer;
     }
-    
-    public static boolean isSolvent(String residueName) {
-        String trimmedName = residueName.trim().toUpperCase(); // remove spaces
-
-        // Water
-        if (trimmedName.equals("HOH")) return true;
-        if (trimmedName.equals("WAT")) return true;
-        if (trimmedName.equals("H2O")) return true;
-        if (trimmedName.equals("SOL")) return true;
-        if (trimmedName.equals("TIP")) return true;
-
-        // Deuterated water
-        if (trimmedName.equals("DOD")) return true;
-        if (trimmedName.equals("D2O")) return true;
-
-        // Sulfate
-        if (trimmedName.equals("SO4")) return true;
-        if (trimmedName.equals("SUL")) return true;
-
-        // Phosphate
-        if (trimmedName.equals("PO4")) return true;
-
-        return false;
-    }
-    
 }

@@ -21,19 +21,25 @@
  */
 
 /*
- * Created on Apr 20, 2006
+ * Created on Nov 14, 2005
  * Original author: Christopher Bruns
  */
-package org.simtk.mol.toon;
+package org.simtk.chem.pdb;
 
-import java.awt.*;
+import org.simtk.chem.LocatedAtom;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * Interface for ways to color objects
- */
-public interface ColorScheme {
-    public Color color(Object o);
+public interface PdbAtom extends LocatedAtom {    
+    public abstract char getAlternateLocationIndicator();
+    // public abstract String getPdbAtomName(); // use Atom.getAtomName() instead
+    public abstract char getChainIdentifier();
+    public abstract String getPdbCharge();
+    public abstract String getPdbElementName();
+    public abstract char getInsertionCode();
+    public abstract double getOccupancy();
+    public abstract String getPdbRecordName();
+    public abstract int getResidueNumber();
+    public abstract String getPdbResidueName();
+    public abstract String getSegmentIdentifier();
+    public abstract int getPdbAtomSerialNumber();
+    public abstract double getTemperatureFactor();
 }

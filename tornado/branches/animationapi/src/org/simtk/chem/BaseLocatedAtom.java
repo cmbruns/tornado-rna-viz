@@ -26,8 +26,6 @@
  */
 package org.simtk.chem;
 
-import java.util.Collection;
-
 import org.simtk.geometry3d.*;
 
 public class BaseLocatedAtom extends Vector3DClass implements LocatedAtom {
@@ -50,13 +48,14 @@ public class BaseLocatedAtom extends Vector3DClass implements LocatedAtom {
     // Atom interface
     public String getAtomName() {return baseAtom.getAtomName();}
     
+    public Vector3D getCoordinates() {return this;}
+    
     // ChemicalElement interface - delegate to element
+    public int getAtomicNumber() {return baseAtom.getAtomicNumber();}
     public String getElementSymbol() {return baseAtom.getElementSymbol();}
     public String getElementName() {return baseAtom.getElementName();}
     public double getCovalentRadius() {return baseAtom.getCovalentRadius();}
     public double getVanDerWaalsRadius() {return baseAtom.getVanDerWaalsRadius();}
     public double getMassInDaltons() {return baseAtom.getMassInDaltons();}
     
-    // Molecular Interface delegates to baseAtom
-    public Collection<Bond> bonds() {return baseAtom.bonds();} // covalent bonds
 }

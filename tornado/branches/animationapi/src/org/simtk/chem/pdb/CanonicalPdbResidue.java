@@ -24,16 +24,9 @@
  * Created on Apr 27, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.chem;
+package org.simtk.chem.pdb;
 
-public class CanonicalPDBResidueClass extends PDBResidueClass implements CanonicalPDBResidue {
-    private CanonicalResidueType type;
-    
-    private CanonicalPDBResidueClass(CanonicalResidueType type) {
-        setResidueType(type);
-        this.type = type;
-    }
-    
-    public char getOneLetterCode() {return type.getOneLetterCode();}
-    public CanonicalResidueType getResidueType() {return type;}
+import org.simtk.chem.CanonicalResidue;
+
+public interface CanonicalPdbResidue extends CanonicalResidue, PdbResidue {
 }

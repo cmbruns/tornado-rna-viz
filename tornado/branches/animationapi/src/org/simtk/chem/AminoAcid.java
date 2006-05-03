@@ -31,7 +31,30 @@ import java.util.Map;
 
 public class AminoAcid extends BaseCanonicalResidueType {
 
-    static public AminoAcid ALANINE =    new AminoAcid("alanine",     'A', "ALA");
+    static public AminoAcid ALANINE =       new AminoAcid("alanine",           'A', "ALA");
+    static public AminoAcid ASPARXXX =      new AminoAcid("(apartate or asparagine)",     'B', "ASX");
+    static public AminoAcid CYSTEINE =      new AminoAcid("cysteine",          'C', "CYS");
+    static public AminoAcid APARTATE =      new AminoAcid("aspartate",         'D', "ASP");
+    static public AminoAcid GLUTAMATE =     new AminoAcid("glutamate",         'E', "GLU");
+    static public AminoAcid PHENYLALANINE = new AminoAcid("phenylalanine",     'F', "PHE");
+    static public AminoAcid GLYCINE =       new AminoAcid("glycine",           'G', "GLY");
+    static public AminoAcid HISTIDINE =     new AminoAcid("histidine",         'H', "HIS");
+    static public AminoAcid ISOLEUCINE =    new AminoAcid("isoleucine",        'I', "ILE");
+    static public AminoAcid LYSINE =        new AminoAcid("lysine",            'K', "LYS");
+    static public AminoAcid LEUCINE =       new AminoAcid("leucine",           'L', "LEU");
+    static public AminoAcid METHIONINE =    new AminoAcid("methionine",        'M', "MET");
+    static public AminoAcid ASPARAGINE =    new AminoAcid("asparagine",        'N', "ASN");
+    static public AminoAcid PROLINE =       new AminoAcid("proline",           'P', "PRO");
+    static public AminoAcid GLUTAMINE =     new AminoAcid("glutamine",         'Q', "GLN");
+    static public AminoAcid ARGININE =      new AminoAcid("arginine",          'R', "ARG");
+    static public AminoAcid SERINE =        new AminoAcid("serine",            'S', "SER");
+    static public AminoAcid THREONINE =     new AminoAcid("threonine",         'T', "THR");
+    static public AminoAcid SELENOCYSTEINE =new AminoAcid("selenocysteine",    'U', "SEC");
+    static public AminoAcid VALINE =        new AminoAcid("valine",            'V', "VAL");
+    static public AminoAcid TRYPTOPHAN =    new AminoAcid("tryptophan",        'W', "TRP");
+    static public AminoAcid TYROSINE =      new AminoAcid("tyrosine",          'Y', "TYR");
+    static public AminoAcid GLUTAMXXX =     new AminoAcid("(glutamate or glutamine)",     'Z', "GLX");
+
     // TODO
     static public AminoAcid UNKNOWN =      new AminoAcid("(unknown amino acid)", 'X', "UNK");
     
@@ -43,36 +66,6 @@ public class AminoAcid extends BaseCanonicalResidueType {
         else if (nameTypes.containsKey(threeLetterCode.toUpperCase()))
             return nameTypes.get(threeLetterCode.toUpperCase());
         else return UNKNOWN;
-    }
-    
-    static public boolean isAminoAcidCode(String code) {
-        String trimmedName = code.trim().toUpperCase(); // remove spaces
-
-        if (trimmedName.equals("ALA")) return true;
-        if (trimmedName.equals("CYS")) return true;
-        if (trimmedName.equals("ASP")) return true;
-        if (trimmedName.equals("GLU")) return true;
-        if (trimmedName.equals("PHE")) return true;
-        if (trimmedName.equals("GLY")) return true;
-        if (trimmedName.equals("HIS")) return true;
-        if (trimmedName.equals("ILE")) return true;
-        if (trimmedName.equals("LYS")) return true;
-        if (trimmedName.equals("LEU")) return true;
-        if (trimmedName.equals("MET")) return true;
-        if (trimmedName.equals("ASN")) return true;
-        if (trimmedName.equals("PRO")) return true;
-        if (trimmedName.equals("GLN")) return true;
-        if (trimmedName.equals("ARG")) return true;
-        if (trimmedName.equals("SER")) return true;
-        if (trimmedName.equals("THR")) return true;
-        if (trimmedName.equals("VAL")) return true;
-        if (trimmedName.equals("TRP")) return true;
-        if (trimmedName.equals("TYR")) return true;
-
-        if (trimmedName.equals("ASX")) return true;
-        if (trimmedName.equals("GLX")) return true;
-                
-        return false;
     }
     
     protected void initialize(String name, char oneLetterCode, String threeLetterCode) {

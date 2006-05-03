@@ -28,28 +28,24 @@ package org.simtk.chem;
 
 import java.util.*;
 
+import org.simtk.chem.pdb.PdbAtom;
+
 public class BaseMolecular implements Molecular {
     private Collection<Bond> bonds = new Vector<Bond>();
     private AtomCollection atoms = new AtomCollection();
 
-    protected void initializeFromAtoms(Collection<Atom> atoms) {
-        atoms().clear();
-        atoms().addAll(atoms);
-    }
-    
-    protected static PDBAtom getOnePDBAtom(Collection<Atom> atoms) {
-        PDBAtom answer = null;
+    protected static PdbAtom getOnePDBAtom(Collection<Atom> atoms) {
+        PdbAtom answer = null;
         for (Atom atom : atoms) {
-            if (atom instanceof PDBAtom) {
-                answer = (PDBAtom) atom;
+            if (atom instanceof PdbAtom) {
+                answer = (PdbAtom) atom;
             }
         } 
         return answer;
     }
     
-    public Collection<Atom> atoms() {return atoms;}
-    public Collection<Bond> bonds() {return bonds;}
-    public Iterator<Atom> iterator() {return atoms.iterator();}
-
-    
+    public Iterable<Atom> atoms() {return atoms;}
+    public Iterable<Bond> bonds() {return bonds;}
+    public void addBond(Bond bond) {bonds.add(bond);}
+    public void addAtom(Atom atom) {atoms.add(atom);}
 }

@@ -26,7 +26,8 @@
  */
 package org.simtk.chem.toon;
 
-import org.simtk.molecularstructure.atom.*;
+// import org.simtk.molecularstructure.atom.*;
+import org.simtk.chem.LocatedAtom;
 import org.simtk.geometry3d.*;
 import vtk.*;
 import java.awt.*;
@@ -39,7 +40,7 @@ import java.awt.*;
   * There is one private singleton vtkGlyph3D object containing all instances of this class
  */
 public class SpaceFillingAtom extends BaseMolToon {
-
+    
     // singleton vtkGlyph3D container for all instances of this class
     static protected VtkSphereGlyphPipeline vtkSpherePipeline;
     static {
@@ -59,12 +60,19 @@ public class SpaceFillingAtom extends BaseMolToon {
     public SpaceFillingAtom(LocatedAtom atom) {
         this.atom = atom;
         createGlyph();
+        setBoundingBox(new BoundingBox(
+                atom.getX() - cachedRadius,
+                atom.getX() + cachedRadius,
+                atom.getY() - cachedRadius,
+                atom.getY() + cachedRadius,
+                atom.getZ() - cachedRadius,
+                atom.getZ() + cachedRadius));
     }
-    
+
     public boolean update() {
         // Don't update anything if the atom has not changed
         boolean isChanged = false;
-        if (! cachedAtomCenter.equals(atom.getCoordinates())) isChanged = true;
+        if (! cachedAtomCenter.equals(atom)) isChanged = true;
         if (cachedRadius != atom.getVanDerWaalsRadius()) isChanged = true;
         if (isChanged) {
             createGlyph();
@@ -80,7 +88,7 @@ public class SpaceFillingAtom extends BaseMolToon {
     // This routine does not check whether the atom has changed.  See update() for that.
     private void createGlyph() {
         // Update cached values for change checking
-        cachedAtomCenter = new Vector3DClass(atom.getCoordinates());
+        cachedAtomCenter = new Vector3DClass(atom);
         cachedRadius = atom.getVanDerWaalsRadius();
         cachedColor = colorScheme.color(atom);
        

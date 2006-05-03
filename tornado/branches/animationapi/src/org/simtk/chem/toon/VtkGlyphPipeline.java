@@ -27,9 +27,7 @@
 package org.simtk.chem.toon;
 
 import vtk.*;
-
 import org.simtk.geometry3d.*;
-
 import java.awt.Color;
 import java.util.*;
 
