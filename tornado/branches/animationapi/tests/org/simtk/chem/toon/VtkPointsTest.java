@@ -24,36 +24,63 @@
  * Created on Apr 20, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.mol.toon;
+package org.simtk.chem.toon;
 
 import javax.swing.*;
 import org.simtk.moleculargraphics.*;
 import vtk.*;
 
-public class HelloVtkTest {
+public class VtkPointsTest {
 
     public static void main(String[] args) {
         VTKLibraries.load();
         
         // Create graphics window
-        JFrame frame = new JFrame("Test VTK Cone");
+        JFrame frame = new JFrame("Test VTK Point");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         vtkPanel canvas = new vtkPanel();
         frame.getContentPane().add(canvas);
 
-        vtkConeSource cone = new vtkConeSource();
-        cone.SetHeight( 3.0 );
-        cone.SetRadius( 1.0 );
-        cone.SetResolution( 10 );
+        // Prototype shape is a line
+        vtkPointSource point = new vtkPointSource();
+        point.SetNumberOfPoints(1);
+        point.SetRadius(0);
 
-        vtkPolyDataMapper coneMapper = new vtkPolyDataMapper();
-        coneMapper.SetInputConnection(cone.GetOutputPort());
+        // vtk data pipeline objects
+        vtkPolyData polyData = new vtkPolyData();
+        vtkPoints locations = new vtkPoints();    
+        vtkFloatArray normals = new vtkFloatArray(); // bond directions/lengths
+        vtkFloatArray colors = new vtkFloatArray();
+        vtkGlyph3D glyph3D = new vtkGlyph3D();
+        vtkPolyDataMapper polyDataMapper = new vtkPolyDataMapper();
+        vtkActor actor = new vtkActor();
+
+        // Create two points to locate the points at
+        locations.InsertNextPoint(0, 0, 0);
+        locations.InsertNextPoint(3, 0, 0);
+
+        normals.SetNumberOfComponents(3);
+        normals.InsertNextTuple3(1, 0, 0);
+        normals.InsertNextTuple3(1, 0, 0);
+
+        colors.SetNumberOfComponents(1);
+        colors.InsertNextTuple1(1);
+        colors.InsertNextTuple1(1);
+
+        polyData.SetPoints(locations);
+
+        polyData.GetPointData().SetNormals(normals);
+
+        // Glyph3D convolutes the point with the points
+        glyph3D.SetInput(polyData);
+        glyph3D.SetSource(point.GetOutput());
         
-        vtkActor coneActor = new vtkActor();
-        coneActor.SetMapper(coneMapper);
+        polyDataMapper.SetInput(glyph3D.GetOutput());
+
+        actor.SetMapper(polyDataMapper);
         
         vtkRenderer ren1 = canvas.GetRenderer();
-        ren1.AddActor(coneActor);        
+        ren1.AddActor(actor);        
 
         frame.pack();
         frame.setVisible(true);

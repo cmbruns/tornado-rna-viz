@@ -24,50 +24,41 @@
  * Created on Apr 20, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.mol.toon;
-
-import java.text.ParseException;
+package org.simtk.chem.toon;
 
 import javax.swing.*;
-import java.net.*;
 import org.simtk.moleculargraphics.*;
-import org.simtk.molecularstructure.atom.*;
-import org.simtk.molecularstructure.*;
 import vtk.*;
-import java.awt.*;
 
-public class SpaceFillingMoleculeTest {
-    static {VTKLibraries.load();}
+public class StructureCanvasTest {
+    static {
+        VTKLibraries.load();
+    }
 
-    public SpaceFillingMoleculeTest() {
+    public static void main(String[] args) {
+        
         // Create graphics window
-        JFrame frame = new JFrame("Test space filling atoms");
+        JFrame frame = new JFrame("Test VTK Cone");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         StructureCanvas canvas = new StructureCanvas();
         frame.getContentPane().add(canvas);
 
-        ClassLoader classLoader = getClass().getClassLoader();
-        URL structureUrl = classLoader.getResource("resources/structures/OneRNAHairpin.pdb");
-        MoleculeCollection moleculeCollection = new MoleculeCollection();
-        try {moleculeCollection.loadPDBFormat(structureUrl);}
-        catch (Exception exc) {assert(false);}
-        
-        SpaceFillingMolecule toon = new SpaceFillingMolecule(moleculeCollection);
+        vtkConeSource cone = new vtkConeSource();
+        cone.SetHeight( 3.0 );
+        cone.SetRadius( 1.0 );
+        cone.SetResolution( 10 );
 
-        canvas.GetRenderer().AddActor(toon.getVtkAssembly());
-        canvas.setBackgroundColor(Color.white);
+        vtkPolyDataMapper coneMapper = new vtkPolyDataMapper();
+        coneMapper.SetInputConnection(cone.GetOutputPort());
         
-        canvas.setCenter(moleculeCollection.getCenterOfMass());
+        vtkActor coneActor = new vtkActor();
+        coneActor.SetMapper(coneMapper);
+        
+        vtkRenderer ren1 = canvas.GetRenderer();
+        ren1.AddActor(coneActor);        
 
         frame.pack();
-        frame.setVisible(true);        
-    }
-    
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        new SpaceFillingMoleculeTest();
+        frame.setVisible(true);
     }
 
 }

@@ -24,48 +24,50 @@
  * Created on Apr 20, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.mol.toon;
-
-import java.text.ParseException;
+package org.simtk.chem.toon;
 
 import javax.swing.*;
+import java.net.*;
+
 import org.simtk.moleculargraphics.*;
-import org.simtk.molecularstructure.atom.*;
-import vtk.*;
+import org.simtk.chem.pdb.*;
+import java.awt.*;
 
-public class GUISpaceFillingAtomTest {
+public class SpaceFillingMoleculeTest {
+    static {VTKLibraries.load();}
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        VTKLibraries.load();
-        
+    public SpaceFillingMoleculeTest() {
         // Create graphics window
         JFrame frame = new JFrame("Test space filling atoms");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         StructureCanvas canvas = new StructureCanvas();
         frame.getContentPane().add(canvas);
 
-        // Create atom graphics objects
-        String pdbLine1 = "ATOM     32  C1*   A B  97       9.995 -45.008 -47.871  1.00 26.64           C  ";
-        String pdbLine2 = "ATOM     33  C2*   A B  97      12.995 -48.008 -47.871  1.00 26.64           C  ";
-        try {
-            LocatedAtom atom1 = new PDBAtomClass(pdbLine1);
-            SpaceFillingAtom toon1 = new SpaceFillingAtom(atom1);
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL structureUrl = classLoader.getResource("resources/structures/OneRNAHairpin.pdb");
 
-            LocatedAtom atom2 = new PDBAtomClass(pdbLine2);
-            SpaceFillingAtom toon2 = new SpaceFillingAtom(atom2);
+        PdbStructure moleculeCollection = null;
+        // MoleculeCollection moleculeCollection = new MoleculeCollection();
+        try {moleculeCollection = BasePdbStructure.createPdbStructure(structureUrl);}
+        catch (Exception exc) {assert(false);}
+        
+        SpaceFillingMolecule toon = new SpaceFillingMolecule(moleculeCollection);
 
-            canvas.GetRenderer().AddActor(toon1.getVtkAssembly());
-            
-            canvas.setCenter(atom1.getCoordinates());
-        } catch (ParseException exc) { 
-            assert(false);
-        }        
+        canvas.GetRenderer().AddActor(toon.getVtkAssembly());
+        canvas.setBackgroundColor(Color.white);
+        
+        // canvas.setCenter(moleculeCollection.getCenterOfMass());
+        canvas.setCenter(toon.getBoundingBox().getCenter());
 
         frame.pack();
-        frame.setVisible(true);
+        frame.setVisible(true);        
+    }
+    
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        new SpaceFillingMoleculeTest();
     }
 
 }

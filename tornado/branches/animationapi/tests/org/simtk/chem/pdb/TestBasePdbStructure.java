@@ -21,42 +21,39 @@
  */
 
 /*
- * Created on Apr 20, 2006
+ * Created on May 3, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.mol.toon;
+package org.simtk.chem.pdb;
 
-import javax.swing.*;
-import org.simtk.moleculargraphics.*;
-import vtk.*;
+import java.net.URL;
+import junit.framework.TestCase;
+import org.simtk.chem.*;
 
-public class VtkSphereTest {
+public class TestBasePdbStructure extends TestCase {
 
     public static void main(String[] args) {
-        VTKLibraries.load();
-        
-        // Create graphics window
-        JFrame frame = new JFrame("Test VTK sphere");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        vtkPanel canvas = new vtkPanel();
-        frame.getContentPane().add(canvas);
-
-        vtkSphereSource sphere = new vtkSphereSource();
-        sphere.SetRadius( 1.0 );
-        sphere.SetPhiResolution( 8 );
-        sphere.SetThetaResolution( 8 );
-
-        vtkPolyDataMapper sphereMapper = new vtkPolyDataMapper();
-        sphereMapper.SetInputConnection(sphere.GetOutputPort());
-        
-        vtkActor sphereActor = new vtkActor();
-        sphereActor.SetMapper(sphereMapper);
-        
-        vtkRenderer ren1 = canvas.GetRenderer();
-        ren1.AddActor(sphereActor);        
-
-        frame.pack();
-        frame.setVisible(true);
+        junit.textui.TestRunner.run(TestBasePdbStructure.class);
     }
+    
+    public void testBasePdbStructure() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL structureUrl = classLoader.getResource("resources/structures/OneRNAHairpin.pdb");
 
+        PdbStructure moleculeCollection = null;
+        // MoleculeCollection moleculeCollection = new MoleculeCollection();
+        try {moleculeCollection = BasePdbStructure.createPdbStructure(structureUrl);}
+        catch (Exception exc) {assert(false);}
+        
+        int atomCount = 0;
+        for (Molecule molecule : moleculeCollection) {
+            Polymer polymer = (Polymer) molecule;
+            for (Residue residue : polymer.residues()) {
+                for (Atom atom : residue.atoms()) {
+                    atomCount ++;
+                }
+            }
+        }
+        assertEquals(536, atomCount);
+    }
 }

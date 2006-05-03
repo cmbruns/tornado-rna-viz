@@ -21,37 +21,57 @@
  */
 
 /*
- * Created on Apr 19, 2006
+ * Created on Apr 20, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.mol.toon;
+package org.simtk.chem.toon;
 
-import junit.framework.TestCase;
-import org.simtk.moleculargraphics.VTKLibraries;
-import org.simtk.molecularstructure.atom.*;
 import java.text.ParseException;
 
-public class SpaceFillingAtomTest extends TestCase {
-    static {VTKLibraries.load();}
+import javax.swing.*;
 
-    public static void main(String[] args) {
-    }
-    
-    /*
-     * Test method for 'org.simtk.mol.toon.SpaceFillingAtom.SpaceFillingAtom(LocatedAtom)'
+import org.simtk.chem.toon.SpaceFillingAtom;
+import org.simtk.moleculargraphics.VTKLibraries;
+import org.simtk.moleculargraphics.StructureCanvas;
+
+import org.simtk.chem.LocatedAtom;
+import org.simtk.chem.pdb.*;
+
+// import org.simtk.molecularstructure.atom.*;
+
+public class GUISpaceFillingAtomTest {
+
+    /**
+     * @param args
      */
-    public void testSpaceFillingAtom() {
+    public static void main(String[] args) {
+        VTKLibraries.load();
+        
+        // Create graphics window
+        JFrame frame = new JFrame("Test space filling atoms");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        StructureCanvas canvas = new StructureCanvas();
+        frame.getContentPane().add(canvas);
+
+        // Create atom graphics objects
         String pdbLine1 = "ATOM     32  C1*   A B  97       9.995 -45.008 -47.871  1.00 26.64           C  ";
-        String pdbLine2 = "ATOM     33  C2*   A B  97      10.995 -45.008 -47.871  1.00 26.64           C  ";
+        String pdbLine2 = "ATOM     33  C2*   A B  97      12.995 -48.008 -47.871  1.00 26.64           C  ";
         try {
-            LocatedAtom atom1 = new PDBAtomClass(pdbLine1);
+            LocatedAtom atom1 = BasePdbAtom.createAtom(pdbLine1);
             SpaceFillingAtom toon1 = new SpaceFillingAtom(atom1);
 
-            LocatedAtom atom2 = new PDBAtomClass(pdbLine2);
+            LocatedAtom atom2 = BasePdbAtom.createAtom(pdbLine2);
             SpaceFillingAtom toon2 = new SpaceFillingAtom(atom2);
 
+            canvas.GetRenderer().AddActor(toon1.getVtkAssembly());
+            
+            canvas.setCenter(atom1);
         } catch (ParseException exc) { 
             assert(false);
         }        
+
+        frame.pack();
+        frame.setVisible(true);
     }
+
 }
