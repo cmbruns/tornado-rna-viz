@@ -1,5 +1,5 @@
 <jnlp spec="1.0+"
-  codebase="https://simtk.org/svn/rna-viz-proto/tornado/tags/0.50/webstart"
+  codebase="http://public.simtk.org/~cmbruns/tornado/webstart"
   href="Tornado0_50.jnlp"
 >
   <information>
@@ -15,7 +15,7 @@
     <jar href="Tornado0_50.jar"/>
     <jar href="Jama.jar"/>
     <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
-    <extension href="vtk44.jnlp" name="vtk4.4"/>
+    <extension href="http://public.simtk.org/~cmbruns/vtk_binaries/vtk5_0/vtk50.jnlp" name="vtk5.0"/>
   </resources>
   <security>
     <all-permissions/>
