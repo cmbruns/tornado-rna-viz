@@ -26,6 +26,8 @@
  */
 package org.simtk.molecularstructure;
 
+import java.util.Collection;
+
 import org.simtk.molecularstructure.atom.*;
 
 /**
@@ -38,4 +40,5 @@ import org.simtk.molecularstructure.atom.*;
 public interface PDBResidue extends LocatedResidue, PDBMolecule {
     public char getInsertionCode();
     public PDBAtom getAtom(String atomName);
+    public Collection getAtoms();
 }

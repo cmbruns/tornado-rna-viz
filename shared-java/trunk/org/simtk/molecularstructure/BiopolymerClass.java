@@ -48,14 +48,14 @@ public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopo
     private Collection secondaryStructure = new Vector();
 
 	// Distinguish between array index of residues and their sequence "number"
-	public Residue getResidue(int i) {return (Residue) residues.get(i);} // array index
+	public PDBResidue getResidue(int i) {return (PDBResidue) residues.get(i);} // array index
     // public Vector residues() {return residues;}
     public Iterator getResidueIterator() {return residues.iterator();}
 
     // sequence number
-    public Residue getResidueByNumber(int i) {return getResidueByNumber(new Integer(i).toString());}
-    public Residue getResidueByNumber(int i, char insertionCode) {return getResidueByNumber(new Integer(i).toString() + insertionCode);}
-    public Residue getResidueByNumber(String n) {return (Residue) residueNumbers.get(n);}
+    public PDBResidue getResidueByNumber(int i) {return getResidueByNumber(new Integer(i).toString());}
+    public PDBResidue getResidueByNumber(int i, char insertionCode) {return getResidueByNumber(new Integer(i).toString() + insertionCode);}
+    public PDBResidue getResidueByNumber(String n) {return (PDBResidue) residueNumbers.get(n);}
 
     public int getResidueCount() {return residues.size();}
 	

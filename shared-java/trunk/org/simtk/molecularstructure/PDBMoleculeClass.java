@@ -259,6 +259,8 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
 	public int getAtomCount() {return atoms.size();}
 	// public Atom getAtom(int i) {return (Atom) atoms.get(i);}
 	
+	//TODO remove this temp function
+	public Collection getAtoms() {return  atoms;}
     public static PDBMolecule createFactoryPDBMolecule(URL url) throws IOException {
         InputStream inStream = url.openStream();
         PDBMolecule molecule = createFactoryPDBMolecule(inStream);        

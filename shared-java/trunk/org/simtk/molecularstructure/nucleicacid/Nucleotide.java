@@ -175,12 +175,12 @@ public class Nucleotide extends PDBResidueClass {
         if (residueName.equals("U")) return new Uridylate(bagOfAtoms);
 
         // Modified version of nucleotides
-        if (residueName.equals("+A")) return new Adenylate(bagOfAtoms);
-        if (residueName.equals("+C")) return new Cytidylate(bagOfAtoms);
-        if (residueName.equals("+G")) return new Guanylate(bagOfAtoms);
-        if (residueName.equals("+I")) return new Inositate(bagOfAtoms);
-        if (residueName.equals("+T")) return new Thymidylate(bagOfAtoms);
-        if (residueName.equals("+U")) return new Uridylate(bagOfAtoms);
+        if (modifiedAdenylates.contains(residueName)) return new Adenylate(bagOfAtoms);
+        if (modifiedCytidylates.contains(residueName)) return new Cytidylate(bagOfAtoms);
+        if (modifiedGuanylates.contains(residueName)) return new Guanylate(bagOfAtoms);
+        if (modifiedInositates.contains(residueName)) return new Inositate(bagOfAtoms);
+        if (modifiedThymidylates.contains(residueName)) return new Thymidylate(bagOfAtoms);
+        if (modifiedUridylates.contains(residueName)) return new Uridylate(bagOfAtoms);
 
         return new Nucleotide(bagOfAtoms); // default
     }

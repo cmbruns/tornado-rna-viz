@@ -31,6 +31,7 @@ import java.util.*;
 public class SecondaryStructureClass implements SecondaryStructure {
     private Collection residues = new Vector();
     private Biopolymer molecule = null;
+    private String source = "";
 
     public Iterator getResidueIterator() {
         return this.residues.iterator();
@@ -43,5 +44,14 @@ public class SecondaryStructureClass implements SecondaryStructure {
     public void setMolecule(Biopolymer biopolymer) {
         this.molecule = biopolymer;
     }
+
+
+    public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
 
 }

@@ -32,7 +32,7 @@
 package org.simtk.molecularstructure;
 
 import java.util.*;
-import java.awt.*;
+import java.awt.Color;
 
 import org.simtk.molecularstructure.protein.*;
 import org.simtk.molecularstructure.atom.*;
@@ -48,7 +48,25 @@ import org.simtk.util.*;
  */
 public abstract class PDBResidueClass extends PDBMoleculeClass implements Selectable, MutablePDBResidue {
     private static Color defaultColor = new Color(255, 255, 255);
+    
+    public static List modifiedAdenylates   = Arrays.asList("+A","1MA"); 
+    public static List modifiedCytidylates  = Arrays.asList("+C","5MC","OMC","DOC"); 
+    public static List modifiedGuanylates   = Arrays.asList("+G","2MG","7MG","M2G","YG","OMG"); 
+    public static List modifiedInositates   = Arrays.asList("+I"); 
+    public static List modifiedThymidylates = Arrays.asList("+T"); 
+    public static List modifiedUridylates   = Arrays.asList("+U","PSU","H2U","5MU","4SU"); 
+    public static List knownHetatms   		= Arrays.asList("HOH","MG","NA","ZN"); 
 
+    
+/*    public static List ModifiedAdenylates   = Arrays.asList("+A","1MA"); 
+    public static List modifiedCytidylates  = Arrays.asList("+C","OMC","5MC"); 
+    public static List modifiedGuanylates   = Arrays.asList("+G","OMG","2MG","7MG","M2G","YG"); 
+    public static List modifiedInositates   = Arrays.asList("+I"); 
+    public static List modifiedThymidylates = Arrays.asList("+T"); 
+    public static List modifiedUridylates   = Arrays.asList("+U","4SU","5MU","H2U","PSU"); 
+*/
+    
+    
     Hashtable genericBonds = new Hashtable(); // maps atom names of bondable atoms
     char insertionCode = ' ';
     public int residueNumber = 0; // TODO create accessors
@@ -249,8 +267,12 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
         if (isProtein(atom.getPDBResidueName())) return AminoAcid.createFactoryAminoAcid(bagOfAtoms);
         else if (isNucleicAcid(atom.getPDBResidueName())) return Nucleotide.createFactoryNucleotide(bagOfAtoms);
+        else if (isKnownHetatm(atom.getPDBResidueName())) return new UnknownResidue(bagOfAtoms);
         
-        else return new UnknownResidue(bagOfAtoms); // default to base class
+        else {
+			System.out.println("unknown residue: name"+atom.getPDBResidueName()+", record name: "+atom.getPDBRecordName());
+        	return new UnknownResidue(bagOfAtoms); // default to base class
+        }
     }
     
     public String toString() {return "" + getOneLetterCode() + " " + getResidueNumber();}
@@ -318,16 +340,25 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         if (trimmedName.equals("I")) return true;
         if (trimmedName.equals("T")) return true;
         if (trimmedName.equals("U")) return true;
-        if (trimmedName.equals("+A")) return true;
-        if (trimmedName.equals("+C")) return true;
-        if (trimmedName.equals("+G")) return true;
-        if (trimmedName.equals("+I")) return true;
-        if (trimmedName.equals("+T")) return true;
-        if (trimmedName.equals("+U")) return true;
-                 
+        if (modifiedAdenylates.contains(trimmedName)) return true;
+        if (modifiedCytidylates.contains(trimmedName)) return true;
+        if (modifiedGuanylates.contains(trimmedName)) return true;
+        if (modifiedInositates.contains(trimmedName)) return true;
+        if (modifiedThymidylates.contains(trimmedName)) return true;
+        if (modifiedUridylates.contains(trimmedName)) return true;
+                    
         return false;
     }
 
+    public static boolean isKnownHetatm(String residueName) {
+        String trimmedName = residueName.trim().toUpperCase(); // remove spaces
+
+        if (knownHetatms.contains(trimmedName)) return true;
+                    
+        return false;
+    }
+
+    
     public static boolean isDNA(String residueName) {
         String trimmedName = residueName.trim().toUpperCase(); // remove spaces
 
@@ -335,10 +366,11 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         if (trimmedName.equals("C")) return true;
         if (trimmedName.equals("G")) return true;
         if (trimmedName.equals("T")) return true;
-        if (trimmedName.equals("+A")) return true;
-        if (trimmedName.equals("+C")) return true;
-        if (trimmedName.equals("+G")) return true;
-        if (trimmedName.equals("+T")) return true;
+        if (modifiedAdenylates.contains(trimmedName)) return true;
+        if (modifiedCytidylates.contains(trimmedName)) return true;
+        if (modifiedGuanylates.contains(trimmedName)) return true;
+//TODO        if (ModifiedInositates.contains(trimmedName)) return true;
+        if (modifiedThymidylates.contains(trimmedName)) return true;
                  
         return false;
     }
@@ -350,10 +382,11 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         if (trimmedName.equals("C")) return true;
         if (trimmedName.equals("G")) return true;
         if (trimmedName.equals("U")) return true;
-        if (trimmedName.equals("+A")) return true;
-        if (trimmedName.equals("+C")) return true;
-        if (trimmedName.equals("+G")) return true;
-        if (trimmedName.equals("+U")) return true;
+        if (modifiedAdenylates.contains(trimmedName)) return true;
+        if (modifiedCytidylates.contains(trimmedName)) return true;
+        if (modifiedGuanylates.contains(trimmedName)) return true;
+//TODO:Inositates?        if (ModifiedInositates.contains(trimmedName)) return true;
+        if (modifiedUridylates.contains(trimmedName)) return true;
                  
         return false;
     }
