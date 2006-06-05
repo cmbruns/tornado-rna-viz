@@ -41,6 +41,8 @@ import org.simtk.moleculargraphics.GraphicsCylinder;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.PDBAtom;
 import org.simtk.molecularstructure.nucleicacid.*;
+import org.simtk.molecularstructure.protein.AminoAcid;
+import org.simtk.molecularstructure.protein.Helix;
 import org.simtk.util.*;
 
 /** 
@@ -89,6 +91,17 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
             Duplex duplex = (Duplex) iterHairpin.next();
             addDuplex(duplex);
         }
+        
+        // Add duplexes (perhaps should restrict to source = rnaml only?
+        for (Iterator<SecondaryStructure> ss = nucleicAcid.getSecondaryStructures(); ss.hasNext(); ) {
+            SecondaryStructure structure =  ss.next();
+            if (structure instanceof Duplex)  {
+                System.out.println("One duplex found");
+                addDuplex((Duplex) structure);
+            }
+        }
+        
+
     }
     public void addDuplex(Duplex duplex) {
         Cylinder helixCylinder = doubleHelixCylinder(duplex);
