@@ -21,23 +21,16 @@
  */
 
 /*
- * Created on Nov 23, 2005
+ * Created on May 4, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.geometry3d;
 
-public interface Vector3D extends MathVector, Location {
-    public double getX();
-    public double getY();
-    public double getZ();
-    
-    public double x();
-    public double y();
-    public double z();
-    
-    public Vector3D cross(Vector3D v2);
-    public Vector3D rotate(Vector3D axis, double angle);
-
-    public Vector3D plus(Vector3D v2);
-    public Vector3D minus(Vector3D v2);
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * General interface for locations of objects in three dimensions.
+ */
+public interface Location {
 }

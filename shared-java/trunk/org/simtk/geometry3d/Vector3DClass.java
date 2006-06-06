@@ -64,12 +64,23 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
         super.copy(v2);
     }
 
+    protected void initialize(Vector3D v2) {
+        setX(v2.getX());
+        setY(v2.getY());
+        setZ(v2.getZ());
+    }
+    
     public void setX(double d) {set(0, d);}
     public void setY(double d) {set(1, d);}
     public void setZ(double d) {set(2, d);}
+
     public double getX() {return get(0);}
     public double getY() {return get(1);}
     public double getZ() {return get(2);}
+
+    public double x() {return get(0);}
+    public double y() {return get(1);}
+    public double z() {return get(2);}
 
     // Try to return Vector3D objects for methods that return vectors
     public MathVector unit() {
