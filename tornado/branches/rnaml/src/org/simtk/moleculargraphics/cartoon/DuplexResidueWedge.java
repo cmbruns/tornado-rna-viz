@@ -138,7 +138,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
     void addMolecule(LocatedMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         NucleicAcid nucleicAcid = (NucleicAcid) molecule;
-        Vector duplexen = nucleicAcid.identifyHairpins();
+        Collection<Duplex> duplexen = nucleicAcid.identifyHairpins();
         for (Iterator iterDuplex = duplexen.iterator(); iterDuplex.hasNext(); ) {
             Duplex duplex = (Duplex) iterDuplex.next();
             Cylinder duplexCylinder = DuplexCylinderCartoon.doubleHelixCylinder(duplex);

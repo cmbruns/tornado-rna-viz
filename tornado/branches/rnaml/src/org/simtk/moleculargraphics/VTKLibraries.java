@@ -56,11 +56,16 @@ public class VTKLibraries {
         loadOneNativeLibrary("vtkCommon"); 
         loadOneNativeLibrary("vtkFiltering"); 
         loadOneNativeLibrary("vtkDICOMParser"); 
+        loadOneNativeLibrary("vtkMPEG2Encode"); 
         loadOneNativeLibrary("vtkIO"); 
         loadOneNativeLibrary("vtkImaging"); 
         loadOneNativeLibrary("vtkGraphics"); 
         loadOneNativeLibrary("vtkRendering"); 
+        loadOneNativeLibrary("vtkNetCDF"); 
+        loadOneNativeLibrary("vtkexoIIc"); 
         loadOneNativeLibrary("vtkHybrid"); 
+        loadOneNativeLibrary("vtkVolumeRendering"); 
+
         loadOneNativeLibrary("jogl"); 
         // loadOneNativeLibrary("jogl_cg"); 
 

@@ -86,7 +86,8 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
         
         lightKit.SetBackLightWarmth(0.32);
         lightKit.SetFillLightWarmth(0.32);
-        lightKit.SetHeadlightWarmth(0.45);
+        // lightKit.SetHeadLightWarmth(0.45); // vtk 5.0
+        lightKit.SetHeadlightWarmth(0.45); // vtk 4.4
         
         lightKit.AddLightsToRenderer(ren);        
     }
@@ -121,7 +122,8 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
 
             // System.out.println("Number of assembly paths = " + assembly.GetNumberOfPaths());
             
-            GetRenderer().AddProp(assembly);
+            GetRenderer().AddProp(assembly); // vtk 4.4
+            // GetRenderer().AddViewProp(assembly); // vtk 5.0
             
             System.out.println("Assembly added");
             
@@ -361,7 +363,8 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
     }
 
     public void clear() {
-        GetRenderer().RemoveAllProps();
+        GetRenderer().RemoveAllProps(); // vtk 4.4
+        // GetRenderer().RemoveAllViewProps(); // vtk 5.0
         massBody.clear();
     }
     

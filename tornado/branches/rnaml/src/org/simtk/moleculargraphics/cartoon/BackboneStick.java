@@ -134,7 +134,7 @@ public class BackboneStick extends GlyphCartoon {
         addMolecule(molecule, null);
         super.add(molecule);
     }
-
+    
     void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
@@ -150,20 +150,24 @@ public class BackboneStick extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof PDBResidueClass) {
+        if (molecule instanceof PDBResidue) {
             PDBResidue residue = (PDBResidue) molecule;
             currentObjects.remove(currentObjects.size() - 1); 
             addResidue(residue, currentObjects);
         }
-        else if (molecule instanceof BiopolymerClass) {
-            BiopolymerClass biopolymer = (BiopolymerClass) molecule;
-            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
-                addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
+        else if (molecule instanceof Biopolymer) {
+            Biopolymer biopolymer = (Biopolymer) molecule;
+            for (Residue residue : biopolymer.residues()) {
+                if (residue instanceof LocatedResidue)
+                    addMolecule((LocatedResidue) residue, currentObjects);
             }
+//            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
+//                addMolecule((PDBResidue) iterResidue.next(), currentObjects);
+//            }
         }
     }
     
-    void addResidue(PDBResidue residue, Vector parentObjects) {
+    void addResidue(LocatedResidue residue, List parentObjects) {
         if (residue == null) return;
         
         // Don't add things that have already been added
@@ -183,11 +187,9 @@ public class BackboneStick extends GlyphCartoon {
                 previousPosition = ((LocatedResidue)residue.getPreviousResidue()).getBackbonePosition();
         
         // Collect molecular objects on which to index the glyphs
-        Vector currentObjects = new Vector();
-        if (parentObjects != null) {
-            for (int i = 0; i < parentObjects.size(); i++)
-                currentObjects.add(parentObjects.get(i));
-        }
+        Set<Object> currentObjects = new HashSet<Object>();
+        if (parentObjects != null)
+            for (Object o : parentObjects) currentObjects.add(o);
         currentObjects.add(residue);
 
         Color color = residue.getDefaultColor();
@@ -223,7 +225,7 @@ public class BackboneStick extends GlyphCartoon {
         }
     }
     
-    private void tileSticks(Vector3D segmentStart, Vector3D segmentEnd, Vector currentObjects, int colorScalar) {
+    private void tileSticks(Vector3D segmentStart, Vector3D segmentEnd, Set<Object> currentObjects, int colorScalar) {
         Vector3D segmentDirection = segmentEnd.minus(segmentStart);
 
         // Use sticks to tile path from atom center, c, to bond midpoint

@@ -252,7 +252,7 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
             return false;
         }
 
-        public void add(Vector objectKeys, vtkPolyData pointData, int arrayIndex, int colorIndex) {
+        public void add(Collection<Object> objectKeys, vtkPolyData pointData, int arrayIndex, int colorIndex) {
             GlyphPosition glyph = new GlyphPosition(pointData, arrayIndex, colorIndex);
             allGlyphs.add(glyph);
             // Index this one glyph by all of the entities it represents

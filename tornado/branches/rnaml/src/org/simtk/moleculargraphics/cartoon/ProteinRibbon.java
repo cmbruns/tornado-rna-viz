@@ -29,6 +29,7 @@ package org.simtk.moleculargraphics.cartoon;
 import java.util.*;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
 import org.simtk.molecularstructure.protein.*;
 import vtk.*;
 
@@ -667,10 +668,16 @@ public class ProteinRibbon extends MolecularCartoonClass {
         }
         
         // If there are not previous and following residues, use N and C atoms instead
-        if (p == null)
-            p = residue.getAtom(" N  ").getCoordinates();
-        if (f == null)
-            f = residue.getAtom(" C  ").getCoordinates();
+        if (p == null) {
+            LocatedAtom atom = residue.getAtom(" N  ");
+            if (atom != null)
+                p = atom.getCoordinates();
+        }
+        if (f == null) {
+            LocatedAtom atom = residue.getAtom(" C  ");
+            if (atom != null)
+                f = atom.getCoordinates();
+        }
         
         if ( (p != null) && (f != null) ) {
             Vector3D normal = v.minus(p).unit().plus(v.minus(f).unit()).unit().v3();

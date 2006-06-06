@@ -100,6 +100,7 @@ public class BallAndStickCartoon extends MolecularCartoonClass {
         balls.clear();
     }
     public vtkAssembly getAssembly() {return assembly;}
+
     public void updateCoordinates() {
         sticks.updateCoordinates();
         balls.updateCoordinates();

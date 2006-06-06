@@ -170,11 +170,12 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         vtkPoints lineNormals = new vtkPoints();
         vtkFloatArray lineScalars = new vtkFloatArray();
         
-        for (Iterator i = biopolymer.getResidueIterator(); i.hasNext();) {
+        RESIDUE: for (Iterator i = biopolymer.getResidueIterator(); i.hasNext();) {
             PDBResidue residue = (PDBResidue) i.next();
+            
             Vector3D backbonePosition = residue.getBackbonePosition();
             Vector3D sideChainPosition = residue.getSideChainPosition();
-
+            
             Color color = residue.getDefaultColor();
             if (! (colorIndices.containsKey(color))) {
                 colorIndices.put(color, new Integer(baseColorIndex));
@@ -194,7 +195,7 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         vtkPoints backboneNormals = lineNormals;
         
         int numberOfInputPoints = linePoints.GetNumberOfPoints();
-        if (numberOfInputPoints < 1) return;
+        if (numberOfInputPoints < 2) return;
         
         int numberOfOutputPoints = numberOfInputPoints;
         

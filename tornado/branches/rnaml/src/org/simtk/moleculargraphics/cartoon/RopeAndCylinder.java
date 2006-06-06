@@ -33,7 +33,6 @@ package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.util.*;
 import org.simtk.molecularstructure.*;
-
 import vtk.*;
 
 /** 
@@ -44,13 +43,13 @@ import vtk.*;
 public class RopeAndCylinder extends MolecularCartoonClass {
 
     DuplexCylinderCartoon duplexes = new DuplexCylinderCartoon();
-    TubeAndStickTrace ropes = new TubeAndStickTrace(0.20, 0.20);
+    BackboneStick ropes = new BackboneStick();
     
     vtkAssembly assembly = new vtkAssembly();
     
     public RopeAndCylinder() {
         assembly.AddPart(duplexes.getAssembly());
-        assembly.AddPart(ropes.getAssembly());
+        assembly.AddPart(ropes.getActor());
     }
     
     public void select(Selectable s) {
@@ -90,12 +89,15 @@ public class RopeAndCylinder extends MolecularCartoonClass {
         ropes.updateCoordinates();
     }
     public void add(LocatedMolecule m) {
-        duplexes.add(m);
+        super.add(m); // This is needed to avoid hosing display
+        duplexes.add(m);        
         ropes.add(m);
     }
     public void clear() {
+        super.clear();
         duplexes.clear();
         ropes.clear();
     }
+    
     public vtkAssembly getAssembly() {return assembly;}
 }

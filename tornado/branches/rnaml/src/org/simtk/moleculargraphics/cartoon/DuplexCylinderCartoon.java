@@ -86,7 +86,7 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
     public void clear() {} // TODO
 
     public void addNucleicAcid(NucleicAcid nucleicAcid) {
-        Vector hairpins = nucleicAcid.identifyHairpins();
+        Collection<Duplex> hairpins = nucleicAcid.identifyHairpins();
         for (Iterator iterHairpin = hairpins.iterator(); iterHairpin.hasNext(); ) {
             Duplex duplex = (Duplex) iterHairpin.next();
             addDuplex(duplex);
@@ -104,6 +104,8 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
 
     }
     public void addDuplex(Duplex duplex) {
+        if (duplex == null) return;
+        
         Cylinder helixCylinder = doubleHelixCylinder(duplex);
         vtkActor cylinderActor =  GraphicsCylinder.getVtkCylinder(helixCylinder, defaultCylinderColor, defaultCylinderResolution);
         cylinderActor.GetProperty().SetOpacity(defaultCylinderOpacity);

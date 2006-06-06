@@ -61,6 +61,7 @@ import vtk.*;
 public class Tornado extends JFrame 
 implements ResidueActionListener 
 {
+    
     // 
     // Public
     //
@@ -167,8 +168,12 @@ implements ResidueActionListener
     }
     
     public static void main(String[] args) {
+
         // Put the menu bar at the top of the screen on the mac
         System.setProperty("apple.laf.useScreenMenuBar", "true");
+
+        VTKLibraries.load();
+
         Tornado tornadoFrame = new Tornado();
     }
     
@@ -457,6 +462,14 @@ implements ResidueActionListener
                 "Rope and Cylinder",
                 new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")) );
 
+//        addCartoonSelection( MolecularCartoonClass.CartoonType.DUPLEX_CYLINDER,
+//                "Cylinder",
+//                new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")) );
+//
+//        addCartoonSelection( MolecularCartoonClass.CartoonType.BACKBONE_STICK,
+//                "Backbone Stick",
+//                new ImageIcon(classLoader.getResource("resources/images/cylinder_icon.png")) );
+//
         addCartoonSelection( MolecularCartoonClass.CartoonType.RESIDUE_SPHERE,
                 "Residue Spheres",
                 null );
