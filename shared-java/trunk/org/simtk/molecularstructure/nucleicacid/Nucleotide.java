@@ -103,7 +103,10 @@ public class Nucleotide extends PDBResidueClass {
     }
 
     public Vector3D getSideChainPosition() {
-        return get(baseGroup).getCenterOfMass();
+        LocatedMolecule base = get(baseGroup);
+        if (base != null)
+            return base.getCenterOfMass();
+        else return null;
     }
     
     public String getResidueName() {return "(unknown nucleotide type)";}
