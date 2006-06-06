@@ -407,8 +407,8 @@ public class MoleculeCollection {
     	for (int idx=0; idx<hlen; idx++){
     		int PDBpos5 = ((Integer)nTable5.get(pos5i+idx-1));
     		int PDBpos3 = ((Integer)nTable3.get(pos3i-idx-1));
-    		PDBResidue r5 = mol5.getResidueByNumber(PDBpos5);
-    		PDBResidue r3 = mol3.getResidueByNumber(PDBpos3);
+    		Residue r5 = mol5.getResidueByNumber(PDBpos5);
+    		Residue r3 = mol3.getResidueByNumber(PDBpos3);
     		if ((r5!=null)&&(r3!=null)){
     			if (dup == null) {
     				dup = new Duplex();

@@ -356,7 +356,7 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
 
         PDBMolecule answer =  PDBMoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
         
-        answer.setChainID(new String("" + chainIdentifier));
+        if (answer != null) answer.setChainID(new String("" + chainIdentifier));
         
         return answer;
     }

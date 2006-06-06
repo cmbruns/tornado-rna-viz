@@ -41,24 +41,26 @@ import org.simtk.molecularstructure.atom.*;
  * \brief A macromolecular heteropolymer, such as protein or DNA
  */
 public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopolymer {
-	Vector residues = new Vector();
+	List<Residue> residues = new Vector<Residue>();
     Hashtable residueNumbers = new Hashtable();
     // maps atom names of bondable atoms that bond one residue to the next
     Hashtable genericResidueBonds = new Hashtable(); 
     private Collection secondaryStructure = new Vector();
 
 	// Distinguish between array index of residues and their sequence "number"
-	public PDBResidue getResidue(int i) {return (PDBResidue) residues.get(i);} // array index
+	public Residue getResidue(int i) {return (PDBResidue) residues.get(i);} // array index
     // public Vector residues() {return residues;}
     public Iterator getResidueIterator() {return residues.iterator();}
 
     // sequence number
-    public PDBResidue getResidueByNumber(int i) {return getResidueByNumber(new Integer(i).toString());}
-    public PDBResidue getResidueByNumber(int i, char insertionCode) {return getResidueByNumber(new Integer(i).toString() + insertionCode);}
-    public PDBResidue getResidueByNumber(String n) {return (PDBResidue) residueNumbers.get(n);}
+    public Residue getResidueByNumber(int i) {return getResidueByNumber(new Integer(i).toString());}
+    public Residue getResidueByNumber(int i, char insertionCode) {return getResidueByNumber(new Integer(i).toString() + insertionCode);}
+    public Residue getResidueByNumber(String n) {return (PDBResidue) residueNumbers.get(n);}
 
     public int getResidueCount() {return residues.size();}
 	
+    public Collection<Residue> residues() {return residues;}
+    
 	public BiopolymerClass() {
         super();
         addGenericResidueBonds();
@@ -78,7 +80,7 @@ public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopo
             if (!residueKey.equals(previousResidueKey)) { // Start a new residue, flush the old one
                 if (newResidueAtoms.size() > 0) {
                     PDBResidue residue = PDBResidueClass.createFactoryResidue(newResidueAtoms);
-                    residues.addElement(residue);
+                    residues.add(residue);
                     String numberString = "" + residue.getResidueNumber();
                     String fullString = numberString + residue.getInsertionCode();
                     residueNumbers.put(fullString, residue); // number plus insertion code
@@ -95,7 +97,7 @@ public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopo
         // Flush final set of atoms
         if (newResidueAtoms.size() > 0) {
             PDBResidue residue = PDBResidueClass.createFactoryResidue(newResidueAtoms);
-            residues.addElement(residue);
+            residues.add(residue);
             String numberString = "" + residue.getResidueNumber();
             String fullString = numberString + residue.getInsertionCode();
             residueNumbers.put(fullString, residue); // number plus insertion code

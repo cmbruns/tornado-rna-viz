@@ -29,10 +29,12 @@ package org.simtk.molecularstructure;
 import java.util.*;
 
 public interface Biopolymer extends Molecule {
-    public PDBResidue getResidue(int i);
+    public Residue getResidue(int i);
     public Iterator getResidueIterator();
-    public PDBResidue getResidueByNumber(int i);
+    public Residue getResidueByNumber(int i);
     public int getResidueCount();
     public void addSecondaryStructure(SecondaryStructure structure);
     public Iterator getSecondaryStructures();
+    
+    public Collection<Residue> residues();
 }
