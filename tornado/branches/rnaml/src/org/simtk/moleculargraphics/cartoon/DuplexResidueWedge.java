@@ -139,28 +139,46 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         if (! (molecule instanceof NucleicAcid)) return;
         NucleicAcid nucleicAcid = (NucleicAcid) molecule;
         Collection<Duplex> duplexen = nucleicAcid.identifyHairpins();
-        for (Iterator iterDuplex = duplexen.iterator(); iterDuplex.hasNext(); ) {
+        DUPLEX: for (Iterator iterDuplex = duplexen.iterator(); iterDuplex.hasNext(); ) {
             Duplex duplex = (Duplex) iterDuplex.next();
-            Cylinder duplexCylinder = DuplexCylinderCartoon.doubleHelixCylinder(duplex);
+
+            Cylinder duplexCylinder;
+            try {duplexCylinder = DuplexCylinderCartoon.doubleHelixCylinder(duplex);}
+            catch (InsufficientPointsException exc) {continue DUPLEX;}
+       
             MutableVector3D duplexDirection = new Vector3DClass( duplexCylinder.getHead().minus(duplexCylinder.getTail()).unit() );
             Line3D duplexAxis = new Line3D(duplexDirection, duplexCylinder.getTail());
 
-            for (Iterator iterBasePair = duplex.basePairs().iterator(); iterBasePair.hasNext(); ) {
+            BASEPAIR: for (Iterator iterBasePair = duplex.basePairs().iterator(); iterBasePair.hasNext(); ) {
                 BasePair basePair = (BasePair) iterBasePair.next();
                 // Nucleotide residue = (Nucleotide) iterResidue.next();
 
                 Nucleotide residue1 = basePair.getResidue1();
                 Nucleotide residue2 = basePair.getResidue2();
 
-                // Put residue position on cylinder axis
-                Vector3D baseCentroid1 = residue1.get(Nucleotide.baseGroup).getCenterOfMass();
-                Vector3D baseCentroid2 = residue2.get(Nucleotide.baseGroup).getCenterOfMass();
+                // Put residue position on cylinder axis                
+                // Ignore residues lacking base atoms
+                Vector3D baseCentroid1;
+                Vector3D baseCentroid2;
+                try {
+                    baseCentroid1 = residue1.get(Nucleotide.baseGroup).getCenterOfMass();
+                    baseCentroid2 = residue2.get(Nucleotide.baseGroup).getCenterOfMass();
+                } catch (InsufficientAtomsException exc) {
+                    continue BASEPAIR;
+                }
+
                 Vector3D baseCentroid = new Vector3DClass( baseCentroid1.plus(baseCentroid2).times(0.5) );
                 Vector3D helixCenter = duplexAxis.getClosestPoint(baseCentroid);
 
                 // Put residue normal perpendicular to helix axis, along base-pair direction
-                Vector3D backbonePosition1 = residue1.getBackbonePosition();
-                Vector3D backbonePosition2 = residue2.getBackbonePosition();
+                Vector3D backbonePosition1;
+                Vector3D backbonePosition2;
+                try {
+                    backbonePosition1 = residue1.getBackbonePosition();
+                    backbonePosition2 = residue2.getBackbonePosition();
+                } catch (InsufficientAtomsException exc) {
+                    continue BASEPAIR; // Skip pairs lacking backbone positions
+                }
                 
                 MutableVector3D residueDirection = new Vector3DClass( backbonePosition2.minus(backbonePosition1) );
 

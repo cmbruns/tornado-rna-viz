@@ -86,24 +86,25 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
     public void clear() {} // TODO
 
     public void addNucleicAcid(NucleicAcid nucleicAcid) {
-        Collection<Duplex> hairpins = nucleicAcid.identifyHairpins();
-        for (Iterator iterHairpin = hairpins.iterator(); iterHairpin.hasNext(); ) {
-            Duplex duplex = (Duplex) iterHairpin.next();
-            addDuplex(duplex);
-        }
+//        Collection<Duplex> hairpins = nucleicAcid.identifyHairpins();
+//        for (Iterator iterHairpin = hairpins.iterator(); iterHairpin.hasNext(); ) {
+//            Duplex duplex = (Duplex) iterHairpin.next();
+//            addDuplex(duplex);
+//        }
         
         // Add duplexes (perhaps should restrict to source = rnaml only?
         for (Iterator<SecondaryStructure> ss = nucleicAcid.getSecondaryStructures(); ss.hasNext(); ) {
             SecondaryStructure structure =  ss.next();
             if (structure instanceof Duplex)  {
                 System.out.println("One duplex found");
-                addDuplex((Duplex) structure);
+                try {addDuplex((Duplex) structure);}
+                catch (InsufficientPointsException exc) {}
             }
         }
         
 
     }
-    public void addDuplex(Duplex duplex) {
+    public void addDuplex(Duplex duplex) throws InsufficientPointsException {
         if (duplex == null) return;
         
         Cylinder helixCylinder = doubleHelixCylinder(duplex);
@@ -120,30 +121,38 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
      * @param v a list of base pairs to be used to define the helix.
      * @return a cylinder that approximates the location of the base stack.
      */
-    static public Cylinder doubleHelixCylinder(Duplex h) {
+    static public Cylinder doubleHelixCylinder(Duplex h) 
+    throws InsufficientPointsException
+    {
         if (h.basePairs().size() < 1) return null;
 
         // Remember where each residue goes in the cylinder
-        Hashtable basePairCentroids = new Hashtable();
+        Map<BasePair, Vector3D> basePairCentroids = new HashMap<BasePair, Vector3D>();
         
         // Average the direction of the base plane normals
         // Make the helix axis pass through the centroid of the base pair helix center guesses
         Vector3D helixDirection = new Vector3DClass(0,0,0);
         Vector3D helixCentroid = new Vector3DClass(0,0,0);
         // Vector<Vector3D> cylinderPoints = new Vector<Vector3D>();
-        for (Iterator iterBasePair = h.basePairs().iterator(); iterBasePair.hasNext(); ) {
+        BASEPAIR: for (Iterator iterBasePair = h.basePairs().iterator(); iterBasePair.hasNext(); ) {
         // for (int p = 0; p < h.basePairs().size(); p++) {
             BasePair bp = (BasePair) iterBasePair.next();
             
             // Accumulate normals
-            Vector3DClass normal = bp.getBasePlane().getNormal();
-            if (normal.dot(helixDirection) < 0) normal.timesEquals(-1.0);
-            helixDirection = helixDirection.plus(normal);
+            try {
+                Plane3D basePlane = bp.getBasePlane();
+                Vector3DClass normal = bp.getBasePlane().getNormal();
+                if (normal.dot(helixDirection) < 0) normal.timesEquals(-1.0);
+                helixDirection = helixDirection.plus(normal);
             
-            // Accumulate centroid
-            Vector3DClass helixCenter = bp.getHelixCenter();
-            basePairCentroids.put(bp, helixCenter);
-            helixCentroid = helixCentroid.plus(helixCenter);
+                // Accumulate centroid
+                Vector3DClass helixCenter = bp.getHelixCenter();
+                basePairCentroids.put(bp, helixCenter);
+                helixCentroid = helixCentroid.plus(helixCenter);
+
+            } catch (InsufficientAtomsException exc) {
+                continue BASEPAIR; // skip pairs with ill defined planes
+            }
 
             // cylinderPoints.addElement(helixCenter);
         }
@@ -155,7 +164,11 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
                 
         // Find ends of helix
         TreeMap alphaBasePairs = new TreeMap();
-        Vector3DClass somePoint = (Vector3DClass) basePairCentroids.values().iterator().next();
+        
+        if (basePairCentroids.size() < 1) throw new InsufficientPointsException();
+
+        Vector3D somePoint = (Vector3DClass) basePairCentroids.values().iterator().next();
+
         double minAlpha = somePoint.dot(helixAxis.getDirection());
         double maxAlpha = minAlpha;
         for (Iterator i = basePairCentroids.keySet().iterator(); i.hasNext(); ) {

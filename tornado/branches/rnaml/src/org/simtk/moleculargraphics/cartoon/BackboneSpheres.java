@@ -116,7 +116,10 @@ public class BackboneSpheres extends GlyphCartoon {
         // Don't add things that have already been added
         if (glyphColors.containsKey(residue)) return;
 
-        Vector3D backbonePosition = residue.getBackbonePosition();
+        Vector3D backbonePosition;
+        try {backbonePosition = residue.getBackbonePosition();}
+        // Skip residues lacking backbone positions
+        catch (InsufficientAtomsException exc) {return;}
         
         if (backbonePosition == null) return;
 

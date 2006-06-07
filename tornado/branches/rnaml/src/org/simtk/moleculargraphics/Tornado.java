@@ -192,165 +192,165 @@ implements ResidueActionListener
      * compare base pairs in the external file to those in the molecule structre
      * @param fileName
      */
-    public void compareHbonds(String fileName, RNA rna) {
-        // HashSet<BasePair> loadedBasePairs = new HashSet<BasePair>();
-        HashSet loadedBasePairs = new HashSet();
-        
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
-        }
-        catch (FileNotFoundException exc) {return;}
-        String line;
-        int lineCount = 0;
-        try {
-            boolean parsingBasePairs = false; // Are we in the base-pair stanza?
-            LINE: while ((line = reader.readLine()) != null) {
-                lineCount ++;
-                if (line.indexOf("BEGIN_base-pair") >= 0) {
-                    parsingBasePairs = true;
-                    continue LINE;
-                }
-                if (!parsingBasePairs) continue LINE;
-                if (line.indexOf ("END_base-pair") >= 0) {
-                    parsingBasePairs = false;
-                    break LINE;
-                }
-                
-                //     1_182, B:    96 G-C   278 B: +/+ cis         XIX
-                StringTokenizer tokenizer = new StringTokenizer(line);
-                String token;
-                token = tokenizer.nextToken(); // residue index
-                token = tokenizer.nextToken(); // chain
-                token = tokenizer.nextToken(); // first residue number
-                int firstResidueNumber = (new Integer(token)).intValue();
-                token = tokenizer.nextToken(); // one letter codes
-                token = tokenizer.nextToken(); // second residue number
-                int secondResidueNumber = (new Integer(token)).intValue();
-
-                // Only care about distant ones
-                if ( (secondResidueNumber - firstResidueNumber) < 3 ) continue LINE;
-                
-                Nucleotide residue1 = (Nucleotide) rna.getResidueByNumber(firstResidueNumber);
-                Nucleotide residue2 = (Nucleotide) rna.getResidueByNumber(secondResidueNumber);
-                if ( (residue1 != null) && (residue2 != null) ) {
-                    BasePair bp = new BasePair(residue1, residue2);
-                    loadedBasePairs.add(bp);
-                }
-                else System.out.println("!!!Could not find base pair " +firstResidueNumber+ " to " +secondResidueNumber);
-            }
-            reader.close();
-        }
-        catch (IOException exc) {}
-        System.out.println("" + lineCount + " lines read.");
-
-        // Compare both base pair computation methods
-        // HashSet<BasePair> myBasePairs = new HashSet<BasePair>();
-        HashSet myBasePairs = new HashSet();
-        // for (BasePair bp : rna.identifyBasePairs()) myBasePairs.add(bp);
-        for (Iterator i = rna.identifyBasePairs().iterator();
-            i.hasNext();) {
-            BasePair bp = (BasePair) (i.next());
-            myBasePairs.add(bp);
-        }
-        
-        // How many are in common?
-        int commonCount = 0;
-        int uniqueToSelfCount = 0;
-        int uniqueToLoadedCount = 0;
-        System.out.println("Unique to Tornado: ");
-        reportBasePairGeometry(myBasePairs);
-        // for (BasePair bp : myBasePairs) {
-        for (Iterator i = myBasePairs.iterator(); i.hasNext();) {
-            BasePair bp = (BasePair) i.next();
-            if (loadedBasePairs.contains(bp)) commonCount++;
-            else {
-                uniqueToSelfCount ++;
-            }
-        }
-        System.out.println("Unique to RNAMLView: ");
-        reportBasePairGeometry(loadedBasePairs);
-        // for (BasePair bp : loadedBasePairs) {
-        for (Iterator i = loadedBasePairs.iterator(); i.hasNext();) {
-            BasePair bp = (BasePair) i.next();
-            if (myBasePairs.contains(bp)) {}
-            else {
-                uniqueToLoadedCount ++;
-            }
-        }
-        
-        System.out.println("" + commonCount + " base pairs in common.");
-        System.out.println("" + uniqueToLoadedCount + " base pairs unique to RNAMLView.");
-        System.out.println("" + uniqueToSelfCount + " base pairs unique to Tornado.");
-
-    }
-    void reportBasePairGeometry(HashSet basePairs) {
-        TreeSet centroidDistances = new TreeSet();
-        TreeSet planeAngles = new TreeSet();
-        TreeSet planeDistances = new TreeSet();
-        TreeSet atomDistances = new TreeSet();
-
-        // for (BasePair bp : basePairs) {
-        for (Iterator i = basePairs.iterator(); i.hasNext();) {
-            BasePair bp = (BasePair) i.next();
-            LocatedMolecule base1 = bp.getResidue1().get(Nucleotide.baseGroup);
-            LocatedMolecule base2 = bp.getResidue2().get(Nucleotide.baseGroup);
-            Vector3D centroid1 = base1.getCenterOfMass();
-            Vector3D centroid2 = base2.getCenterOfMass();
-            Plane3D plane1 = base1.bestPlane3D();
-            Plane3D plane2 = base2.bestPlane3D();
-            
-            double distance = centroid1.distance(centroid2);
-            centroidDistances.add(new Double(distance));
-            System.out.println("   centroid distance = " + distance);
-            
-            double angle = Math.abs(Math.acos(plane1.getNormal().dot(plane2.getNormal())) * 180.0 / Math.PI);
-            if (angle > 90) angle = 180 - angle;
-            planeAngles.add(new Double(angle));
-            System.out.println("   plane angle = " + angle + " degrees.");
-            
-            double planeDistance1 = plane1.distance(centroid2);
-            double planeDistance2 = plane2.distance(centroid1);
-            planeDistances.add(new Double(planeDistance1));
-            planeDistances.add(new Double(planeDistance2));
-            System.out.println("   plane distances are " + planeDistance1 + " and " + planeDistance2);
-    
-            // Touching criterion
-            double minDistance = 1000;
-            // for (Atom atom1 : bp.getResidue1().getAtoms()) {
-            for (Iterator i1 = bp.getResidue1().getAtomIterator(); i1.hasNext();) {
-                LocatedAtom atom1 = (LocatedAtom) i1.next();
-                
-                // if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
-                if (! ((atom1.getElementName().equals("oxygen")) || (atom1.getElementName().equals("nitrogen")))) continue;
-
-                // for (Atom atom2 : bp.getResidue2().getAtoms()) {
-                for (Iterator i2 = bp.getResidue2().getAtomIterator(); i2.hasNext();) {
-                    PDBAtom atom2 = (PDBAtom) i2.next();
-                    if (! ((atom2.getElementName().equals("oxygen")) || (atom2.getElementName().equals("nitrogen")))) continue;
-                    double testDistance = atom1.distance(atom2);
-                    if (testDistance < minDistance) minDistance = testDistance;
-                }
-            }
-            atomDistances.add(new Double(minDistance));
-            System.out.println("   closest atomic distance = " + minDistance);
-        }
-
-        
-        int cutoffIndex = (int)((centroidDistances.size() - 1.0) * 0.95);
-
-        double cutoffDistance = ((Double) centroidDistances.toArray()[cutoffIndex]).doubleValue();
-        System.out.println("Cutoff centroid distance = " + cutoffDistance);
-        
-        double cutoffAngle = ((Double) (planeAngles.toArray()[cutoffIndex])).doubleValue();
-        System.out.println("Cutoff plane angle = " + cutoffAngle);
-
-        double cutoffPlaneDistance = ((Double) (planeDistances.toArray()[2 * cutoffIndex])).doubleValue();
-        System.out.println("Cutoff plane distance = " + cutoffPlaneDistance);
-
-        double cutoffAtomDistance = ((Double) (atomDistances.toArray()[cutoffIndex])).doubleValue();
-        System.out.println("Cutoff atom distance = " + cutoffAtomDistance);
-    }
+//    public void compareHbonds(String fileName, RNA rna) {
+//        // HashSet<BasePair> loadedBasePairs = new HashSet<BasePair>();
+//        HashSet loadedBasePairs = new HashSet();
+//        
+//        BufferedReader reader;
+//        try {
+//            reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+//        }
+//        catch (FileNotFoundException exc) {return;}
+//        String line;
+//        int lineCount = 0;
+//        try {
+//            boolean parsingBasePairs = false; // Are we in the base-pair stanza?
+//            LINE: while ((line = reader.readLine()) != null) {
+//                lineCount ++;
+//                if (line.indexOf("BEGIN_base-pair") >= 0) {
+//                    parsingBasePairs = true;
+//                    continue LINE;
+//                }
+//                if (!parsingBasePairs) continue LINE;
+//                if (line.indexOf ("END_base-pair") >= 0) {
+//                    parsingBasePairs = false;
+//                    break LINE;
+//                }
+//                
+//                //     1_182, B:    96 G-C   278 B: +/+ cis         XIX
+//                StringTokenizer tokenizer = new StringTokenizer(line);
+//                String token;
+//                token = tokenizer.nextToken(); // residue index
+//                token = tokenizer.nextToken(); // chain
+//                token = tokenizer.nextToken(); // first residue number
+//                int firstResidueNumber = (new Integer(token)).intValue();
+//                token = tokenizer.nextToken(); // one letter codes
+//                token = tokenizer.nextToken(); // second residue number
+//                int secondResidueNumber = (new Integer(token)).intValue();
+//
+//                // Only care about distant ones
+//                if ( (secondResidueNumber - firstResidueNumber) < 3 ) continue LINE;
+//                
+//                Nucleotide residue1 = (Nucleotide) rna.getResidueByNumber(firstResidueNumber);
+//                Nucleotide residue2 = (Nucleotide) rna.getResidueByNumber(secondResidueNumber);
+//                if ( (residue1 != null) && (residue2 != null) ) {
+//                    BasePair bp = new BasePair(residue1, residue2);
+//                    loadedBasePairs.add(bp);
+//                }
+//                else System.out.println("!!!Could not find base pair " +firstResidueNumber+ " to " +secondResidueNumber);
+//            }
+//            reader.close();
+//        }
+//        catch (IOException exc) {}
+//        System.out.println("" + lineCount + " lines read.");
+//
+//        // Compare both base pair computation methods
+//        // HashSet<BasePair> myBasePairs = new HashSet<BasePair>();
+//        HashSet myBasePairs = new HashSet();
+//        // for (BasePair bp : rna.identifyBasePairs()) myBasePairs.add(bp);
+//        for (Iterator i = rna.identifyBasePairs().iterator();
+//            i.hasNext();) {
+//            BasePair bp = (BasePair) (i.next());
+//            myBasePairs.add(bp);
+//        }
+//        
+//        // How many are in common?
+//        int commonCount = 0;
+//        int uniqueToSelfCount = 0;
+//        int uniqueToLoadedCount = 0;
+//        System.out.println("Unique to Tornado: ");
+//        reportBasePairGeometry(myBasePairs);
+//        // for (BasePair bp : myBasePairs) {
+//        for (Iterator i = myBasePairs.iterator(); i.hasNext();) {
+//            BasePair bp = (BasePair) i.next();
+//            if (loadedBasePairs.contains(bp)) commonCount++;
+//            else {
+//                uniqueToSelfCount ++;
+//            }
+//        }
+//        System.out.println("Unique to RNAMLView: ");
+//        reportBasePairGeometry(loadedBasePairs);
+//        // for (BasePair bp : loadedBasePairs) {
+//        for (Iterator i = loadedBasePairs.iterator(); i.hasNext();) {
+//            BasePair bp = (BasePair) i.next();
+//            if (myBasePairs.contains(bp)) {}
+//            else {
+//                uniqueToLoadedCount ++;
+//            }
+//        }
+//        
+//        System.out.println("" + commonCount + " base pairs in common.");
+//        System.out.println("" + uniqueToLoadedCount + " base pairs unique to RNAMLView.");
+//        System.out.println("" + uniqueToSelfCount + " base pairs unique to Tornado.");
+//
+//    }
+//    void reportBasePairGeometry(HashSet basePairs) {
+//        TreeSet centroidDistances = new TreeSet();
+//        TreeSet planeAngles = new TreeSet();
+//        TreeSet planeDistances = new TreeSet();
+//        TreeSet atomDistances = new TreeSet();
+//
+//        // for (BasePair bp : basePairs) {
+//        for (Iterator i = basePairs.iterator(); i.hasNext();) {
+//            BasePair bp = (BasePair) i.next();
+//            LocatedMolecule base1 = bp.getResidue1().get(Nucleotide.baseGroup);
+//            LocatedMolecule base2 = bp.getResidue2().get(Nucleotide.baseGroup);
+//            Vector3D centroid1 = base1.getCenterOfMass();
+//            Vector3D centroid2 = base2.getCenterOfMass();
+//            Plane3D plane1 = base1.bestPlane3D();
+//            Plane3D plane2 = base2.bestPlane3D();
+//            
+//            double distance = centroid1.distance(centroid2);
+//            centroidDistances.add(new Double(distance));
+//            System.out.println("   centroid distance = " + distance);
+//            
+//            double angle = Math.abs(Math.acos(plane1.getNormal().dot(plane2.getNormal())) * 180.0 / Math.PI);
+//            if (angle > 90) angle = 180 - angle;
+//            planeAngles.add(new Double(angle));
+//            System.out.println("   plane angle = " + angle + " degrees.");
+//            
+//            double planeDistance1 = plane1.distance(centroid2);
+//            double planeDistance2 = plane2.distance(centroid1);
+//            planeDistances.add(new Double(planeDistance1));
+//            planeDistances.add(new Double(planeDistance2));
+//            System.out.println("   plane distances are " + planeDistance1 + " and " + planeDistance2);
+//    
+//            // Touching criterion
+//            double minDistance = 1000;
+//            // for (Atom atom1 : bp.getResidue1().getAtoms()) {
+//            for (Iterator i1 = bp.getResidue1().getAtomIterator(); i1.hasNext();) {
+//                LocatedAtom atom1 = (LocatedAtom) i1.next();
+//                
+//                // if (! ((atom1 instanceof PDBOxygen) || (atom1 instanceof PDBNitrogen))) continue;
+//                if (! ((atom1.getElementName().equals("oxygen")) || (atom1.getElementName().equals("nitrogen")))) continue;
+//
+//                // for (Atom atom2 : bp.getResidue2().getAtoms()) {
+//                for (Iterator i2 = bp.getResidue2().getAtomIterator(); i2.hasNext();) {
+//                    PDBAtom atom2 = (PDBAtom) i2.next();
+//                    if (! ((atom2.getElementName().equals("oxygen")) || (atom2.getElementName().equals("nitrogen")))) continue;
+//                    double testDistance = atom1.distance(atom2);
+//                    if (testDistance < minDistance) minDistance = testDistance;
+//                }
+//            }
+//            atomDistances.add(new Double(minDistance));
+//            System.out.println("   closest atomic distance = " + minDistance);
+//        }
+//
+//        
+//        int cutoffIndex = (int)((centroidDistances.size() - 1.0) * 0.95);
+//
+//        double cutoffDistance = ((Double) centroidDistances.toArray()[cutoffIndex]).doubleValue();
+//        System.out.println("Cutoff centroid distance = " + cutoffDistance);
+//        
+//        double cutoffAngle = ((Double) (planeAngles.toArray()[cutoffIndex])).doubleValue();
+//        System.out.println("Cutoff plane angle = " + cutoffAngle);
+//
+//        double cutoffPlaneDistance = ((Double) (planeDistances.toArray()[2 * cutoffIndex])).doubleValue();
+//        System.out.println("Cutoff plane distance = " + cutoffPlaneDistance);
+//
+//        double cutoffAtomDistance = ((Double) (atomDistances.toArray()[cutoffIndex])).doubleValue();
+//        System.out.println("Cutoff atom distance = " + cutoffAtomDistance);
+//    }
     
     // Show the user that some waiting time is needed
     public void setWait(String message) {

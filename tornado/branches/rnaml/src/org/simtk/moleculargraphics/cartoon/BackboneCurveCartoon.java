@@ -173,8 +173,14 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         RESIDUE: for (Iterator i = biopolymer.getResidueIterator(); i.hasNext();) {
             PDBResidue residue = (PDBResidue) i.next();
             
-            Vector3D backbonePosition = residue.getBackbonePosition();
-            Vector3D sideChainPosition = residue.getSideChainPosition();
+            Vector3D backbonePosition;
+            Vector3D sideChainPosition;
+            try {
+                backbonePosition = residue.getBackbonePosition();
+                sideChainPosition = residue.getSideChainPosition();
+            } catch (InsufficientAtomsException exc) {
+                continue RESIDUE;
+            }
             
             Color color = residue.getDefaultColor();
             if (! (colorIndices.containsKey(color))) {

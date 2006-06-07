@@ -64,20 +64,22 @@ public class ProteinRibbonSphereTest extends AtomSphereCartoon {
 
             // Vector3D c = residue.getBackbonePosition();
             
-            Vector3D[] points = createCoilPath(residue);
-
-            double radius = 0.5;
-            
-            for (int i = 0; i < points.length; i++) {
-                Vector3D c = points[i];
+            try {
+                Vector3D[] points = createCoilPath(residue);
+    
+                double radius = 0.5;
                 
-                linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
-            
-                lineNormals.InsertNextTuple3(radius, 0.0, 0.0);
-
-                glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-                lineScalars.InsertNextValue(colorScalar);
-            }
+                for (int i = 0; i < points.length; i++) {
+                    Vector3D c = points[i];
+                    
+                    linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
+                
+                    lineNormals.InsertNextTuple3(radius, 0.0, 0.0);
+    
+                    glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+                    lineScalars.InsertNextValue(colorScalar);
+                }
+            } catch (InsufficientAtomsException exc) {} // skip this residue
             
             // TODO - put spline positions
         }
@@ -97,7 +99,11 @@ public class ProteinRibbonSphereTest extends AtomSphereCartoon {
      * @param startResidue
      * @return
      */
-    private Vector3D[] createCoilPath(AminoAcid startResidue) {
+    private Vector3D[] createCoilPath(AminoAcid startResidue) 
+    throws InsufficientAtomsException 
+    {
+        int numberOfOutputPoints = splineFactor;
+        Vector3D[] answer = new Vector3D[numberOfOutputPoints];
 
         // Set up one spline for each dimension
         vtkCardinalSpline splineX = new vtkCardinalSpline();
@@ -149,8 +155,6 @@ public class ProteinRibbonSphereTest extends AtomSphereCartoon {
         splineZ.AddPoint(2, positionPlusTwo.getZ());
         
         // Generate coordinates
-        int numberOfOutputPoints = splineFactor;
-        Vector3D[] answer = new Vector3D[numberOfOutputPoints];
 
         for (int i = 0; i < numberOfOutputPoints; i++) {
             double t = -0.5 + i * (1 / (double) (numberOfOutputPoints - 1));

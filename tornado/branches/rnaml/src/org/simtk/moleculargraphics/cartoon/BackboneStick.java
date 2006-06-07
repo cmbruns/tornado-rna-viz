@@ -173,18 +173,26 @@ public class BackboneStick extends GlyphCartoon {
         // Don't add things that have already been added
         if (glyphColors.containsKey(residue)) return;
 
-        Vector3D backbonePosition = residue.getBackbonePosition();        
+        Vector3D backbonePosition;        
+        try {backbonePosition = residue.getBackbonePosition();}
+        catch (InsufficientAtomsException exc) {return;}
         if (backbonePosition == null) return;
 
         Vector3D nextPosition = null;
         if (residue.getNextResidue() != null)
-            if (residue.getNextResidue() instanceof LocatedResidue)
-                nextPosition = ((LocatedResidue)residue.getNextResidue()).getBackbonePosition();
+            if (residue.getNextResidue() instanceof LocatedResidue) {
+                try {
+                    nextPosition = ((LocatedResidue)residue.getNextResidue()).getBackbonePosition();
+                } catch (InsufficientAtomsException exc) {}
+            }
 
         Vector3D previousPosition = null;
         if (residue.getPreviousResidue() != null) 
-            if (residue.getPreviousResidue() instanceof LocatedResidue)
-                previousPosition = ((LocatedResidue)residue.getPreviousResidue()).getBackbonePosition();
+            if (residue.getPreviousResidue() instanceof LocatedResidue) {
+                try {
+                    previousPosition = ((LocatedResidue)residue.getPreviousResidue()).getBackbonePosition();
+                } catch (InsufficientAtomsException exc) {}
+            }
         
         // Collect molecular objects on which to index the glyphs
         Set<Object> currentObjects = new HashSet<Object>();
