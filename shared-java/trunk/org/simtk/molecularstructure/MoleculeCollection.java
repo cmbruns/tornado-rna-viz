@@ -419,14 +419,14 @@ public class MoleculeCollection {
     			}
     			else {
     				if (!(r5 instanceof Nucleotide)){
-        				Collection<Atom> r5atoms = ((PDBMoleculeClass) r5).getAtoms();
+        				Collection<LocatedAtom> r5atoms = ((PDBMoleculeClass) r5).getAtoms();
         				Object[] r5atomsArr = r5atoms.toArray();
         				PDBAtom r5a0 = (PDBAtom) r5atomsArr[0];
         				System.out.println("unrecognized residue reported in rnaml as basepaired:");
         				System.out.println("mol5 id "+mol5i+", resno "+PDBpos5+", res name "+r5a0.getPDBResidueName()+", res "+r5);
     				}
     				if (!(r3 instanceof Nucleotide)){
-        				Collection<Atom> r3atoms = ((PDBMoleculeClass) r3).getAtoms();
+        				Collection<LocatedAtom> r3atoms = ((PDBMoleculeClass) r3).getAtoms();
         				Object[] r3atomsArr = r3atoms.toArray();
         				PDBAtom r3a0 = (PDBAtom) r3atomsArr[0];
         				System.out.println("unrecognized residue reported in rnaml as basepaired:");

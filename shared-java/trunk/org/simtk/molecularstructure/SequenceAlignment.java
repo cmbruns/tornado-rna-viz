@@ -90,12 +90,15 @@ public class SequenceAlignment {
             Residue r1 = pair.getResidue1();
             Residue r2 = pair.getResidue2();
             if ( (r1 instanceof LocatedResidue) && (r2 instanceof LocatedResidue) ) {
-                Vector3D vec1 = ((LocatedResidue)r1).getBackbonePosition();
-                Vector3D vec2 = ((LocatedResidue)r2).getBackbonePosition(); 
-                if ( (vec1 != null) && (vec2 != null) ) {
-                    v1.add(vec1);
-                    v2.add(vec2);
+                try {
+                    Vector3D vec1 = ((LocatedResidue)r1).getBackbonePosition();
+                    Vector3D vec2 = ((LocatedResidue)r2).getBackbonePosition(); 
+                    if ( (vec1 != null) && (vec2 != null) ) {
+                        v1.add(vec1);
+                        v2.add(vec2);
+                    }
                 }
+                catch (InsufficientAtomsException exc) {} // no backbone position found
             }
         }
 

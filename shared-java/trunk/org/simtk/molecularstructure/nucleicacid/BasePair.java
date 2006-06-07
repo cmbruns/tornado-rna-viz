@@ -86,24 +86,33 @@ implements MyIterable
     public Nucleotide getResidue1() {return residue1;}
     public Nucleotide getResidue2() {return residue2;}
 
-    public Plane3D getBasePlane() {
+    public Plane3D getBasePlane() 
+    throws InsufficientAtomsException
+    {
         // 1) compute best plane containing base group atoms
-        Vector planeAtoms = new Vector();
+        Set<Vector3D> planeAtoms = new HashSet<Vector3D>();
         if (residue1 != null) {
             LocatedMolecule base = residue1.get(Nucleotide.baseGroup);
-            for (Iterator i = base.getAtomIterator(); i.hasNext();) {
-                LocatedAtom a = (LocatedAtom) i.next();
-                planeAtoms.addElement(a.getCoordinates());
+            if (base != null) {
+                for (LocatedAtom a : base.atoms()) planeAtoms.add(a.getCoordinates());
             }
         }
+        
         if (residue2 != null) {
             LocatedMolecule base = residue2.get(Nucleotide.baseGroup);
-            for (Iterator i = base.getAtomIterator(); i.hasNext();) {
-                LocatedAtom a = (LocatedAtom) i.next();
-                planeAtoms.addElement(a.getCoordinates());
+            if (base != null) {
+                for (LocatedAtom a : base.atoms()) planeAtoms.add(a.getCoordinates());
             }
         }
-        Plane3D basePairPlane = Plane3D.bestPlane3D(planeAtoms);
+        
+        if (planeAtoms.size() < 1) return null;
+
+        Plane3D basePairPlane;
+        try {basePairPlane = Plane3D.bestPlane3D(planeAtoms);}
+        catch (InsufficientPointsException exc) {
+            throw new InsufficientAtomsException(exc);
+        }        
+        
         return basePairPlane;
     }
     
@@ -111,23 +120,34 @@ implements MyIterable
      * Estimate position at center of a double helix containing this base pair
      * @return
      */
-    public Vector3DClass getHelixCenter() {
+    public Vector3DClass getHelixCenter() 
+    throws InsufficientAtomsException
+    {
+        
         // 1) compute best plane containing base group atoms
-        Vector planeAtoms = new Vector();
+        Collection<Vector3D> planeAtoms = new Vector<Vector3D>();
         LocatedMolecule base = residue1.get(Nucleotide.baseGroup);
         for (Iterator i = base.getAtomIterator(); i.hasNext();) {
             LocatedAtom a = (LocatedAtom) i.next();
-            planeAtoms.addElement(a.getCoordinates());
+            planeAtoms.add(a.getCoordinates());
         }
         base = residue2.get(Nucleotide.baseGroup);
         for (Iterator i = base.getAtomIterator(); i.hasNext();) {
             LocatedAtom a = (LocatedAtom) i.next();
-            planeAtoms.addElement(a.getCoordinates());
+            planeAtoms.add(a.getCoordinates());
         }
-        Plane3D basePairPlane = Plane3D.bestPlane3D(planeAtoms);
+        Plane3D basePairPlane;
+        try {basePairPlane = Plane3D.bestPlane3D(planeAtoms);}
+        catch (InsufficientPointsException exc) {
+            throw new InsufficientAtomsException(exc);
+        }
         
         // 2) compute minor-major axis by comparing C1*->C1* axis to base group centroid
-        Vector3D basePairCentroid = Vector3DClass.centroid(planeAtoms);
+        Vector3D basePairCentroid;
+        try {basePairCentroid = Vector3DClass.centroid(planeAtoms);}
+        catch (InsufficientPointsException exc) {
+            throw new InsufficientAtomsException(exc);
+        }
         Vector3D c11 = residue1.getAtom(" C1*").getCoordinates();
         Vector3D c12 = residue2.getAtom(" C1*").getCoordinates();
         Vector3D centerC1 = c11.plus(c12).times(0.5).v3();

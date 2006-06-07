@@ -21,24 +21,14 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Jun 7, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.molecularstructure;
 
-import java.util.Collection;
-import org.simtk.geometry3d.Vector3D;
-
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * A residue whose atomic positions are known
- */
-public interface LocatedResidue extends Residue, LocatedMolecule {
-    public Collection getHydrogenBondDonors();
-    public Collection getHydrogenBondAcceptors();
-    public Vector3D getBackbonePosition() throws InsufficientAtomsException;
-    public Vector3D getSideChainPosition() throws InsufficientAtomsException;
-    public LocatedMolecule get(FunctionalGroup fg) throws InsufficientAtomsException; // TODO
+public class InsufficientAtomsException extends Exception {
+    public InsufficientAtomsException() {super();}
+    public InsufficientAtomsException(String message) {super(message);}
+    public InsufficientAtomsException(String message, Throwable cause) {super(message, cause);}
+    public InsufficientAtomsException(Throwable cause)  {super(cause);}
 }

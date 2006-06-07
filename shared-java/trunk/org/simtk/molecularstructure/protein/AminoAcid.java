@@ -85,13 +85,17 @@ abstract public class AminoAcid extends PDBResidueClass {
     static public FunctionalGroup sideChainGroup = new FunctionalGroup(sideChainAtomNames);
     static public FunctionalGroup backboneGroup = new FunctionalGroup(backboneAtomNames);
 
-    public Vector3D getBackbonePosition() {
+    @Override
+    public Vector3D getBackbonePosition()  throws InsufficientAtomsException
+    {
         LocatedAtom atom = getAtom(" CA ");
         if (atom == null) return null;
         return atom.getCoordinates();
     }
 
-    public Vector3D getSideChainPosition() {
+    @Override
+    public Vector3D getSideChainPosition() throws InsufficientAtomsException 
+    {
         LocatedMolecule sideChain = get(sideChainGroup);
         if (sideChain.getAtomCount() >= 1)
             return get(sideChainGroup).getCenterOfMass();

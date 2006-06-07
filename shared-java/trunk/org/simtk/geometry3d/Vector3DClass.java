@@ -123,14 +123,18 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
      * 
      * Compute the centroid or mean point
      */
-    public static Vector3D centroid(Vector bagOfPoints) {
+    public static Vector3D centroid(Collection<Vector3D> bagOfPoints) 
+    throws InsufficientPointsException
+    {
         Vector3D[] coordinates = new Vector3D[0];
         return centroid((Vector3D[]) (bagOfPoints.toArray(coordinates)), null);
     }
     
-    public static Vector3D centroid(Vector3D[] coordinates, double[] weights)   {
-        if (coordinates == null) throw new NullPointerException();
-        if (coordinates.length < 1) return null;
+    public static Vector3D centroid(Vector3D[] coordinates, double[] weights) 
+    throws InsufficientPointsException
+    {
+        if (coordinates == null) throw new InsufficientPointsException();
+        if (coordinates.length < 1) throw new InsufficientPointsException();
         
         MutableVector3D centroid = new Vector3DClass(0,0,0);
         double totalWeight = 0;

@@ -96,13 +96,13 @@ public class Nucleotide extends PDBResidueClass {
         return answer;
     }
     
-    public Vector3D getBackbonePosition() {
+    public Vector3D getBackbonePosition() throws InsufficientAtomsException {
         LocatedAtom atom = getAtom(" C5*");
         if (atom == null) return null;
         return atom.getCoordinates();
     }
 
-    public Vector3D getSideChainPosition() {
+    public Vector3D getSideChainPosition() throws InsufficientAtomsException {
         LocatedMolecule base = get(baseGroup);
         if (base != null)
             return base.getCenterOfMass();

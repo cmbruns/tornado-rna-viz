@@ -58,7 +58,9 @@ public class Line3D {
         return new Vector3DClass( origin.plus(direction.times(direction.dot(v))) );
     }
     
-	public static Line3D bestLine3D(Vector bagOfPoints)	{
+	public static Line3D bestLine3D(Vector bagOfPoints)	
+    throws InsufficientPointsException
+    {
         // 1) Compute the centroid or mean point
         Vector3D centroid = new Vector3DClass ( Vector3DClass.centroid(bagOfPoints) );
 		

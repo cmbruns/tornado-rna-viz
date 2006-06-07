@@ -26,9 +26,9 @@
  */
 package org.simtk.molecularstructure;
 
-import java.util.Iterator;
+import java.util.*;
 import org.simtk.geometry3d.*;
-import org.simtk.molecularstructure.atom.PDBAtom;
+import org.simtk.molecularstructure.atom.*;
 
 /**
  *  
@@ -43,9 +43,10 @@ public interface LocatedMolecule extends Molecule, MassBody {
      * Change the position of the molecule by the specified amount
      * @param t amount to translate
      */
+    public Collection<LocatedAtom> atoms();
     public Iterator getAtomIterator();
-    public Plane3D bestPlane3D();
-    public boolean containsAtom(PDBAtom atom);
+    public Plane3D bestPlane3D() throws InsufficientPointsException;
+    public boolean containsAtom(LocatedAtom atom);
     public int getAtomCount();
     public Vector3D[] getCoordinates();
 }

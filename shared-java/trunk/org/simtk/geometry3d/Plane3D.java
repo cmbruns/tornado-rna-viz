@@ -31,8 +31,7 @@
  */
 package org.simtk.geometry3d;
 
-import java.util.Vector;
-
+import java.util.*;
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
@@ -61,12 +60,19 @@ public class Plane3D {
      * @return
      */
     
-    public static Plane3D bestPlane3D(Vector bagOfPoints)   {
+    public static Plane3D bestPlane3D(Collection<Vector3D> bagOfPoints)
+    throws InsufficientPointsException
+    {
         Vector3DClass[] coordinates = new Vector3DClass[0];
         return bestPlane3D((Vector3D[])bagOfPoints.toArray(coordinates), null);
     }
 
-    public static Plane3D bestPlane3D(Vector3D[] coordinates, double[] weights)   {
+    public static Plane3D bestPlane3D(Vector3D[] coordinates, double[] weights)   
+    throws InsufficientPointsException
+    {
+        if (coordinates.length < 3) 
+            throw new InsufficientPointsException("At least three points needed for plane. ("+coordinates.length+" found)");
+        
         // 1) Compute the centroid or mean point
         Vector3DClass centroid = new Vector3DClass( Vector3DClass.centroid(coordinates, weights) );
         

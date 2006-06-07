@@ -96,15 +96,21 @@ public class NucleicAcid extends BiopolymerClass {
             LocatedResidue locatedResidue = (LocatedResidue) residue;
 
             // Only use residues with base coordinates
-            LocatedMolecule base = locatedResidue.get(Nucleotide.baseGroup);//see PBDResidueClass.java
-            if (base == null) continue RESIDUE;
+            LocatedMolecule base;
+            try {base = locatedResidue.get(Nucleotide.baseGroup);}//see PBDResidueClass.java
+            catch (InsufficientAtomsException exc) {continue RESIDUE;}
+            
+            // Only use residues with well defined base planes
+            try {
+                Plane3D plane = base.bestPlane3D();
+                residuePlanes.put(residue, plane);
+            }
+            catch (InsufficientPointsException exc) {continue RESIDUE;}
             
             Vector3D centroid = null;
-			centroid = base.getCenterOfMass();
-            
+			centroid = base.getCenterOfMass();            
             residueCentroids.put(residue, centroid);
-            residuePlanes.put(residue, base.bestPlane3D());
-            
+
             centroidHash.put(centroid, residue);
         }
         
@@ -208,7 +214,8 @@ public class NucleicAcid extends BiopolymerClass {
             if (!pairSumPairs.containsKey(hairpinPhase)) pairSumPairs.put(hairpinPhase, new HashSet<BasePair>());
             pairSumPairs.get(hairpinPhase).add(pair);
 
-            pairPlanes.put(pair, pair.getBasePlane());
+            try {pairPlanes.put(pair, pair.getBasePlane());}
+            catch (InsufficientAtomsException exc) {}; // Make sure to notice missing planes later in this method
         }
         
         // Identify pairs of BasePairs that can be in the same hairpin
@@ -228,27 +235,31 @@ public class NucleicAcid extends BiopolymerClass {
                  phase ++) {
                 if (!pairSumPairs.containsKey(phase)) continue;
                 
-                for (BasePair otherPair : pairSumPairs.get(phase)) {
+                BASEPAIR: for (BasePair otherPair : pairSumPairs.get(phase)) {
                     // Make sure that we have not made this comparison before
-                    if (otherPair == pair) continue;
-                    if (testedPairs.contains(otherPair)) continue;
+                    if (otherPair == pair) continue BASEPAIR;
+                    if (testedPairs.contains(otherPair)) continue BASEPAIR;
 
                     // Make sure that the two BasePairs are close in sequence
                     int otherNumber1 = otherPair.getResidue1().getResidueNumber();
                     int otherNumber2 = otherPair.getResidue2().getResidueNumber();
                     int diff1 = Math.abs(number1 - otherNumber1);
                     int diff2 = Math.abs(number2 - otherNumber2);
-                    if (diff1 > sequenceDistanceCutoff) continue;
-                    if (diff2 > sequenceDistanceCutoff) continue;
+                    if (diff1 > sequenceDistanceCutoff) continue BASEPAIR;
+                    if (diff2 > sequenceDistanceCutoff) continue BASEPAIR;
                     
                     // Make sure the two BasePair planes are parallel
-                    double planeAngle = Math.abs(((Plane3D)pairPlanes.get(pair)).getNormal().dot(((Plane3D)pairPlanes.get(otherPair)).getNormal()));
-                    if (planeAngle < Math.cos(interplaneAngleCutoff * Math.PI/180.0)) continue;
+                    Plane3D plane1 = pairPlanes.get(pair);
+                    Plane3D plane2 = pairPlanes.get(otherPair);
+                    if (plane1 == null) continue BASEPAIR;
+                    if (plane2 == null) continue BASEPAIR;
+                    double planeAngle = Math.abs(plane1.getNormal().dot(plane2.getNormal()));
+                    if (planeAngle < Math.cos(interplaneAngleCutoff * Math.PI/180.0)) continue BASEPAIR;
                     
                     // Passed! these two base pairs can be in the same hairpin
                     // Add relationship in both directions, since we will not be coming back this way
-                    if (!pairPairs.containsKey(pair)) pairPairs.put(pair, new Vector());
-                    if (!pairPairs.containsKey(otherPair)) pairPairs.put(otherPair, new Vector());
+                    if (!pairPairs.containsKey(pair)) pairPairs.put(pair, new LinkedHashSet<BasePair>());
+                    if (!pairPairs.containsKey(otherPair)) pairPairs.put(otherPair, new LinkedHashSet<BasePair>());
                     pairPairs.get(pair).add(otherPair);
                     pairPairs.get(otherPair).add(pair);                    
                 }

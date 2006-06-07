@@ -49,7 +49,7 @@ import org.simtk.mvc.*;
  * \brief A single molecule structure.
  */
 public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocatedMolecule, PDBMolecule {
-    private Collection atoms = new LinkedHashSet();
+    private Collection<LocatedAtom> atoms = new LinkedHashSet<LocatedAtom>();
     // protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();
 	// Vector bonds = new Vector();
@@ -192,6 +192,8 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
         }
     }
     
+    public Collection<LocatedAtom> atoms() {return atoms;}
+    
     public Iterator getAtomIterator() {return atoms.iterator();}
     // public Vector getAtoms() {return atoms;}
     
@@ -219,7 +221,9 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
         return coordinateArray;
     }
     
-    public Plane3D bestPlane3D() {
+    public Plane3D bestPlane3D() 
+    throws InsufficientPointsException
+    {
         Vector3D[] coordinates = new Vector3DClass[getAtomCount()];
         double[] masses = new double[getAtomCount()];
 
@@ -252,7 +256,7 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
         centerOfMass = new Vector3DClass( centerOfMass.scale(1.0 - massRatio).minus(atom.getCoordinates().times(massRatio)) );
     }
     
-    public boolean containsAtom(PDBAtom atom) {
+    public boolean containsAtom(LocatedAtom atom) {
         return atoms.contains(atom);
     }
     
@@ -260,7 +264,8 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
 	// public Atom getAtom(int i) {return (Atom) atoms.get(i);}
 	
 	//TODO remove this temp function
-	public Collection getAtoms() {return  atoms;}
+	public Collection<LocatedAtom> getAtoms() {return  atoms;}
+
     public static PDBMolecule createFactoryPDBMolecule(URL url) throws IOException {
         InputStream inStream = url.openStream();
         PDBMolecule molecule = createFactoryPDBMolecule(inStream);        

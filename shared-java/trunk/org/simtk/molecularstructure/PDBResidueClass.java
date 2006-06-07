@@ -94,8 +94,13 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
     /**
      * Return preferred location of backbone trace in molecular representations
      */
-    public Vector3D getBackbonePosition() {return null;}
-    public Vector3D getSideChainPosition() {return null;}
+    public Vector3D getBackbonePosition() 
+    throws InsufficientAtomsException
+    {throw new InsufficientAtomsException("Backbone not defined for this residue type");}
+
+    public Vector3D getSideChainPosition() 
+    throws InsufficientAtomsException
+    {throw new InsufficientAtomsException("Side chain not defined for this residue type");}
     
     /**
      * Create an empty Residue object with no atoms.
@@ -171,7 +176,9 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         ((HashSet)genericBonds.get(atom2)).add(atom1);
     }
     
-    public LocatedMolecule get(FunctionalGroup fg) {
+    public LocatedMolecule get(FunctionalGroup fg) 
+    throws InsufficientAtomsException
+    {
         String[] groupAtomNames = fg.getAtomNames();
         MutableLocatedMolecule mol = new PDBMoleculeClass();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
@@ -179,8 +186,10 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
             PDBAtom atom = getAtom(atomName);
             if (atom != null) mol.addAtom(atom);
         }
-        if (mol.getAtomCount() > 0) return mol;
-        else return null;
+        if (mol.getAtomCount() < 1)
+            throw new InsufficientAtomsException();
+
+        return mol;
     }
     
     /**
