@@ -96,9 +96,16 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
         for (Iterator<SecondaryStructure> ss = nucleicAcid.getSecondaryStructures(); ss.hasNext(); ) {
             SecondaryStructure structure =  ss.next();
             if (structure instanceof Duplex)  {
-                System.out.println("One duplex found");
-                try {addDuplex((Duplex) structure);}
-                catch (InsufficientPointsException exc) {}
+            	Duplex dup = (Duplex) structure;
+            	List<BasePair> dupBPs = dup.basePairs();
+            	BasePair firstBP = dupBPs.get(0);
+            	BasePair lastBP = dupBPs.get(dupBPs.size()-1);
+            	Nucleotide res5 = firstBP.getResidue1();
+            	if (res5.getChainID().equals(nucleicAcid.getChainID())){
+	                System.out.println("Duplex found: "+dup.helixString());
+	                try {addDuplex(dup);}
+	                catch (InsufficientPointsException exc) {}
+            	}
             }
         }
         
