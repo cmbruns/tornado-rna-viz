@@ -245,6 +245,9 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
         mass += atom.getMass();
         double massRatio = atom.getMass() / mass;
         centerOfMass = new Vector3DClass( centerOfMass.scale(1.0 - massRatio).plus(atom.getCoordinates().times(massRatio)) );
+        if (chainID.equals("")||chainID.equals(" ")){
+        	chainID = Character.toString(atom.getChainIdentifier());
+        }
     }
 
     public void removeAtom(PDBAtom atom) {

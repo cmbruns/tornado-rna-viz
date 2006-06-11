@@ -54,4 +54,12 @@ public class Duplex extends SecondaryStructureClass {
         this.addResidue(bp.getResidue1());
         this.addResidue(bp.getResidue2());
     }
+    
+    public String helixString() {
+    	Nucleotide res5 = ((BasePair) basePairs.get(0)).getResidue1();
+       	Nucleotide res3 = ((BasePair) basePairs.get(basePairs.size()-1)).getResidue2();
+       	String mol5 = res5.getChainID();
+       	String mol3 = res3.getChainID();
+       	return "(("+mol5+", "+res5+"), ("+mol3+", "+res3+"), "+basePairs.size()+")";
+    }
 }
