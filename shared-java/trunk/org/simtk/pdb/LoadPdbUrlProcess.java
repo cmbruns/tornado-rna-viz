@@ -146,7 +146,8 @@ public class LoadPdbUrlProcess extends LoadPDBProcess {
         String fileName = url.getFile();
 
         // strip off all but the file name (no path)
-        int pathEnd = fileName.lastIndexOf("/");
+        String fileSep = System.getProperty("file.separator");
+        int pathEnd = fileName.lastIndexOf(fileSep);
         if (pathEnd >= 0) fileName = fileName.substring(pathEnd + 1);
 
         molecules.setInputStructureFileName(url.getFile());
