@@ -43,11 +43,11 @@ import java.util.*;
 public class Duplex extends SecondaryStructureClass {
     static final long serialVersionUID = 1L;
     // private HashSet residues = new HashSet();
-    private Vector basePairs = new Vector();
+    private List<BasePair> basePairs = new Vector<BasePair>();
     
     // TODO these should be const
     // public Collection residues() {return residues;}
-    public List basePairs() {return basePairs;}
+    public Collection<BasePair> basePairs() {return basePairs;}
     
     public void addBasePair(BasePair bp) {
         basePairs.add(bp);

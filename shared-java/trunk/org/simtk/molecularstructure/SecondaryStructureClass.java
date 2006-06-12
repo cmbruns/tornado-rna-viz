@@ -36,6 +36,8 @@ public class SecondaryStructureClass implements SecondaryStructure {
     public Iterator getResidueIterator() {
         return this.residues.iterator();
     }
+    
+    public Collection<Residue> residues() {return residues;}
 
     public void addResidue(Residue residue) {
         this.residues.add(residue);

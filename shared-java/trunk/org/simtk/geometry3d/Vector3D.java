@@ -30,7 +30,7 @@ public interface Vector3D extends MathVector, Location {
     public double getX();
     public double getY();
     public double getZ();
-    
+
     public double x();
     public double y();
     public double z();

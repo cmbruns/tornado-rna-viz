@@ -45,10 +45,11 @@ public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopo
     Hashtable residueNumbers = new Hashtable();
     // maps atom names of bondable atoms that bond one residue to the next
     Hashtable genericResidueBonds = new Hashtable(); 
-    private Collection secondaryStructure = new Vector();
+    private Collection<SecondaryStructure> secondaryStructure = new LinkedHashSet<SecondaryStructure>();
 
 	// Distinguish between array index of residues and their sequence "number"
 	public Residue getResidue(int i) {return (PDBResidue) residues.get(i);} // array index
+
     // public Vector residues() {return residues;}
     public Iterator getResidueIterator() {return residues.iterator();}
 
@@ -126,7 +127,9 @@ public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopo
         this.secondaryStructure.add(ss);
     }
     
-    public Iterator getSecondaryStructures() {return this.secondaryStructure.iterator();}
+    public Iterator getSecondaryStructureIterator() {return this.secondaryStructure.iterator();}
+
+    public Collection<SecondaryStructure> secondaryStructures() {return this.secondaryStructure;}
     
     protected void addGenericResidueBond(String atom1, String atom2) {
         // Don't add bond in both directions; these bonds have a direction

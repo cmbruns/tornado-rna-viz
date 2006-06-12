@@ -97,7 +97,12 @@ public class Nucleotide extends PDBResidueClass {
     }
     
     public Vector3D getBackbonePosition() throws InsufficientAtomsException {
-        LocatedAtom atom = getAtom(" C5*");
+        LocatedAtom atom = null;
+
+        // Try different atoms in order of preference
+        if (atom == null) atom = getAtom(" C5*");
+        if (atom == null) atom = getAtom(" P  ");
+
         if (atom == null) return null;
         return atom.getCoordinates();
     }

@@ -34,7 +34,8 @@ public interface Biopolymer extends Molecule {
     public Residue getResidueByNumber(int i);
     public int getResidueCount();
     public void addSecondaryStructure(SecondaryStructure structure);
-    public Iterator getSecondaryStructures();
-    
+    public Iterator getSecondaryStructureIterator();
+
+    public Collection<SecondaryStructure> secondaryStructures();
     public Collection<Residue> residues();
 }
