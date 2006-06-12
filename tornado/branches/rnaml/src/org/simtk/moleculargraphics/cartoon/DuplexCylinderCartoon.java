@@ -57,7 +57,7 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
     static double defaultbarrelRadius = 8.0; // 11.5 to consume most atoms
     Color defaultCylinderColor = new Color(0, 255, 255);
     int defaultCylinderResolution = 10;
-    double defaultCylinderOpacity = 0.5;
+    double defaultCylinderOpacity = 1.0;
 
     vtkAssembly assembly = new vtkAssembly();
     
@@ -93,8 +93,7 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
 //        }
         
         // Add duplexes (perhaps should restrict to source = rnaml only?
-        for (Iterator<SecondaryStructure> ss = nucleicAcid.getSecondaryStructures(); ss.hasNext(); ) {
-            SecondaryStructure structure =  ss.next();
+        for (SecondaryStructure structure : nucleicAcid.secondaryStructures()) {
             if (structure instanceof Duplex)  {
             	Duplex dup = (Duplex) structure;
             	List<BasePair> dupBPs = dup.basePairs();

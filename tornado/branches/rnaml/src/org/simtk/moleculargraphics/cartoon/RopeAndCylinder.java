@@ -33,6 +33,8 @@ package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.util.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.nucleicacid.*;
+import java.util.*;
 import vtk.*;
 
 /** 
@@ -43,7 +45,7 @@ import vtk.*;
 public class RopeAndCylinder extends MolecularCartoonClass {
 
     DuplexCylinderCartoon duplexes = new DuplexCylinderCartoon();
-    BackboneStick ropes = new BackboneStick();
+    BackboneStick ropes = new BackboneStick(1.00);
     
     vtkAssembly assembly = new vtkAssembly();
     
@@ -90,9 +92,63 @@ public class RopeAndCylinder extends MolecularCartoonClass {
     }
     public void add(LocatedMolecule m) {
         super.add(m); // This is needed to avoid hosing display
-        duplexes.add(m);        
-        ropes.add(m);
+        
+        if (m instanceof NucleicAcid) add((NucleicAcid) m);        
     }
+    
+    protected void add(NucleicAcid molecule) {
+        // Distinguish duplex residues from rope residues
+
+        Set<LocatedResidue> allResidues = new LinkedHashSet<LocatedResidue>();
+        for (Residue residue : molecule.residues())
+            if (residue instanceof LocatedResidue) allResidues.add((LocatedResidue) residue);
+
+        Set<LocatedResidue> duplexResidues = new HashSet<LocatedResidue>();
+        for (SecondaryStructure structure : molecule.secondaryStructures()) {
+            if (structure instanceof Duplex) {
+                Duplex duplex = (Duplex) structure;
+                for (Residue residue : duplex.residues()) {
+                    if (residue instanceof LocatedResidue) duplexResidues.add((LocatedResidue) residue);                    
+                }
+            }
+        }
+        
+        // Duplex residues that attach to non-duplex residues should also get ropes
+        Set<LocatedResidue> ropeResidues = new LinkedHashSet<LocatedResidue>();
+        for (LocatedResidue residue : allResidues) {
+            boolean isRopeResidue = false;
+            if (duplexResidues.contains(residue)) { // In a duplex             
+                // Only put a rope if this attaches to a non-duplex residue
+
+                // Attaches to rope upstream?
+                Residue next = residue.getNextResidue();
+                if ( (next != null) && !(duplexResidues.contains(next)) )
+                        isRopeResidue = true;
+
+                // Attaches to rope downstream?
+                Residue previous = residue.getPreviousResidue();
+                if ( (previous != null) && !(duplexResidues.contains(previous)) )
+                        isRopeResidue = true;
+            }
+            else { // not in a duplex
+                isRopeResidue = true;
+            }
+            
+            if (isRopeResidue) ropeResidues.add(residue);
+        }
+        
+        // Rope cartoon needs to know what molecule it came from
+        List parentObjects = new Vector();
+        parentObjects.add(molecule);
+        
+        for (LocatedResidue residue : ropeResidues) {
+            ropes.addResidue(residue, parentObjects);
+        }
+
+        duplexes.add(molecule);        
+        // ropes.add(molecule);
+    }
+    
     public void clear() {
         super.clear();
         duplexes.clear();

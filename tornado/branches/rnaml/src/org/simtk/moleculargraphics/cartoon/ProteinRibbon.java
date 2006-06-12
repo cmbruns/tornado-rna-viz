@@ -155,8 +155,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
         HashSet renderedResidues = new HashSet();
         
         // Add alpha helices
-        for (Iterator ss = protein.getSecondaryStructures(); ss.hasNext(); ) {
-            SecondaryStructure structure = (SecondaryStructure) ss.next();
+        for (SecondaryStructure structure : protein.secondaryStructures()) {
             if (structure instanceof Helix)  {
                 // System.out.println("One helix found");
                 Vector helixResidues = new Vector();
@@ -173,8 +172,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
         }
         
         // Add beta strands
-        for (Iterator ss = protein.getSecondaryStructures(); ss.hasNext(); ) {
-            SecondaryStructure structure = (SecondaryStructure) ss.next();
+        for (SecondaryStructure structure : protein.secondaryStructures()) {
             if (structure instanceof BetaStrand) {
                 Vector strandResidues = new Vector();
                 for (Iterator res = structure.getResidueIterator(); res.hasNext(); ) {
@@ -696,6 +694,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
     }
     
     int getSplineIndex(AminoAcid aa) {
+        // TODO - can cause null pointer exception
         return ((Integer)residueSplineIndices.get(aa)).intValue();
     }
 
@@ -716,51 +715,53 @@ public class ProteinRibbon extends MolecularCartoonClass {
                 try {
                     position = getSplinePosition(residue);
                     normal = getSplineNormal(residue);
+                }
+                catch (InsufficientAtomsException exc) {
+                    continue RESIDUE;
+                } // could not get position or normal
     
-                    // Keep normals smooth, especially in beta strands
-                    // Flip normals that are too far from previous
-                    // Adjacent helix residues were being flipped using 90 degree
-                    // cutoff (dot product < 0), that is not right.
-                    // Only flip those with changes larger than 120 degrees
-                    // if ( (previousNormal != null) && (previousNormal.dot(normal) < -0.5) ) {
-                        // System.out.println("flipped");
-                        // System.out.println("  " + previousNormal);
-                        // System.out.println("  " + normal);
-                        // normal = normal.times(-1.0).v3();
-                        // System.out.println("  " + normal);
-                    // }
-    
-                    if (previousPosition != null) {
-                        // Minimize rotation along direction of chain path
-                        // For coil, flip anything greater than 90 degrees away
-                        Vector3D chainDirection = position.minus(previousPosition).unit().v3();
-                        Vector3D prevNormProj = chainDirection.cross(previousNormal).unit().v3();
-                        Vector3D currNormProj = chainDirection.cross(normal).unit().v3();
-                        if (prevNormProj.dot(currNormProj) < 0) // greater than 90 degree angle
-                            normal = normal.times(-1.0).v3();
-                    }
-    
-                    
-                    // If there is a break in the chain, pad the ends with extra points
-                    if ((previousResidue == null) || (residue.getPreviousResidue() != previousResidue)) {
-    
-                        if (previousResidue != null) {
-                            spline.addPoint(residueIndex, previousPosition);
-                            splineNormal.addPoint(residueIndex, previousNormal);
-                            residueIndex ++;
-                        }
-                        
-                        // This residue is at an N-terminus
-                        spline.addPoint(residueIndex, position);
-                        splineNormal.addPoint(residueIndex, normal);
+                // Keep normals smooth, especially in beta strands
+                // Flip normals that are too far from previous
+                // Adjacent helix residues were being flipped using 90 degree
+                // cutoff (dot product < 0), that is not right.
+                // Only flip those with changes larger than 120 degrees
+                // if ( (previousNormal != null) && (previousNormal.dot(normal) < -0.5) ) {
+                    // System.out.println("flipped");
+                    // System.out.println("  " + previousNormal);
+                    // System.out.println("  " + normal);
+                    // normal = normal.times(-1.0).v3();
+                    // System.out.println("  " + normal);
+                // }
+
+                if (previousPosition != null) {
+                    // Minimize rotation along direction of chain path
+                    // For coil, flip anything greater than 90 degrees away
+                    Vector3D chainDirection = position.minus(previousPosition).unit().v3();
+                    Vector3D prevNormProj = chainDirection.cross(previousNormal).unit().v3();
+                    Vector3D currNormProj = chainDirection.cross(normal).unit().v3();
+                    if (prevNormProj.dot(currNormProj) < 0) // greater than 90 degree angle
+                        normal = normal.times(-1.0).v3();
+                }
+
+                
+                // If there is a break in the chain, pad the ends with extra points
+                if ((previousResidue == null) || (residue.getPreviousResidue() != previousResidue)) {
+
+                    if (previousResidue != null) {
+                        spline.addPoint(residueIndex, previousPosition);
+                        splineNormal.addPoint(residueIndex, previousNormal);
                         residueIndex ++;
                     }
                     
+                    // This residue is at an N-terminus
                     spline.addPoint(residueIndex, position);
                     splineNormal.addPoint(residueIndex, normal);
-                    residueSplineIndices.put(residue, new Integer(residueIndex));
+                    residueIndex ++;
                 }
-                catch (InsufficientAtomsException exc) {} // could not get position or normal
+                
+                spline.addPoint(residueIndex, position);
+                splineNormal.addPoint(residueIndex, normal);
+                residueSplineIndices.put(residue, new Integer(residueIndex));
                 
                 previousResidue = residue;
                 previousPosition = position;
