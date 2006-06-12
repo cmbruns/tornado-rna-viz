@@ -47,7 +47,7 @@ public class Duplex extends SecondaryStructureClass {
     
     // TODO these should be const
     // public Collection residues() {return residues;}
-    public Collection<BasePair> basePairs() {return basePairs;}
+    public List<BasePair> basePairs() {return basePairs;}
     
     public void addBasePair(BasePair bp) {
         basePairs.add(bp);
