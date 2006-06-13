@@ -36,7 +36,7 @@ public class BasePairRibbon extends CompositeCartoon {
     protected static List<MutableMolecularCartoon> getNewToons() {
         List<MutableMolecularCartoon> toons = new Vector<MutableMolecularCartoon>();
         toons.add(new BasePairRod());
-        toons.add(new BackboneCurveCartoon2());
+        toons.add(new BackboneCurveCartoon());
         return toons;
     }
 }

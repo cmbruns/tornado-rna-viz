@@ -45,7 +45,7 @@ import org.simtk.util.Selectable;
  * 
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
-public class BackboneCurveCartoon2 extends MolecularCartoonClass {
+public class BackboneCurveCartoon extends MolecularCartoonClass {
     double ribbonThickness = 0.70;
     double ribbonWidth = 1.5;
     /**
@@ -67,11 +67,11 @@ public class BackboneCurveCartoon2 extends MolecularCartoonClass {
 
     vtkAssembly assembly = new vtkAssembly();
     
-    public BackboneCurveCartoon2() {
+    public BackboneCurveCartoon() {
         this(0.50);
     }
 
-    public BackboneCurveCartoon2(double radius) {
+    public BackboneCurveCartoon(double radius) {
         lut.SetNumberOfTableValues(256);
         lut.SetRange(1.0, 60.0);
         lut.SetAlphaRange(1.0, 1.0);
