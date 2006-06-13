@@ -43,10 +43,12 @@ import org.simtk.util.*;
  * Represents a base-pair interaction between two residues in a nucleic acid structure
  */
 public class BasePair 
-implements MyIterable
+implements Iterable<Residue>, SecondaryStructure
 {
     Nucleotide residue1;
     Nucleotide residue2;
+    protected String source;
+    protected Biopolymer parentMolecule;
     
     public BasePair(Nucleotide r1, Nucleotide r2) {
         if (r1 == null) throw new NullPointerException();
@@ -82,6 +84,23 @@ implements MyIterable
         }
     }
     
+    public String getSource() {return this.source;}
+    public void setSource(String source) {this.source = source;}
+    
+    public void addResidue(Residue r) {
+        throw new UnsupportedOperationException();
+    }
+    public Iterator<Residue> getResidueIterator() {
+        return iterator();
+    }
+    public Collection<Residue> residues() {
+        Vector<Residue> answer = new Vector<Residue>();
+        answer.add(residue1);
+        answer.add(residue2);
+        return answer;
+    }
+    
+    public void setMolecule(Biopolymer molecule) {this.parentMolecule = molecule;}
     
     public Nucleotide getResidue1() {return residue1;}
     public Nucleotide getResidue2() {return residue2;}
@@ -169,14 +188,14 @@ implements MyIterable
         return "BasePair " + residue1.getResidueNumber() + ":" + residue2.getResidueNumber();
     }
 
-    public Iterator iterator() {
-        return new Iterator() {
+    public Iterator<Residue> iterator() {
+        return new Iterator<Residue>() {
             int residueIndex = 1;
             public boolean hasNext() {
                 if (residueIndex <= 2) return true;
                 return false;
             }
-            public Object next() {
+            public Residue next() {
                 PDBResidue answer = null;
                 if (residueIndex == 1) answer = residue1;
                 else if (residueIndex == 2) answer = residue2;
