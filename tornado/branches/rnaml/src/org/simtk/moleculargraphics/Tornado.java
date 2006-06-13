@@ -492,6 +492,12 @@ implements ResidueActionListener
                 "Line Drawing",
                 null );
         
+        addCartoonSelection( MolecularCartoonClass.CartoonType.BASE_PAIR_CYLINDERS, 
+                "Base Pair Cylinders", null );
+        
+        addCartoonSelection( BasePairRibbon.class, 
+                "Base Pair Ribbon", null );
+        
         menu = new JMenu("Rotation");
         viewMenu.add(menu);
 
@@ -686,15 +692,30 @@ implements ResidueActionListener
 
     class CartoonAction implements ActionListener {
         MolecularCartoonClass.CartoonType type = null;
+        Class cartoonClass = null;
+
         CartoonAction(MolecularCartoonClass.CartoonType t) {
             type = t;
         }
         
+        CartoonAction(Class cartoonClass) {
+            this.cartoonClass = cartoonClass;
+        }
+
         public void actionPerformed(ActionEvent e) {
             setWait("Calculating geometry...");
             
             canvas.clear();
-            currentCartoon = type.newInstance();
+            
+            if (type != null)
+                currentCartoon = type.newInstance();
+            else if (cartoonClass != null) {
+                try {
+                    currentCartoon = (MutableMolecularCartoon) cartoonClass.newInstance();
+                } 
+                catch (InstantiationException exc) {exc.printStackTrace();}
+                catch (IllegalAccessException exc) {exc.printStackTrace();}
+            }
 
             for (Iterator iterMolecule = moleculeCollection.molecules().iterator(); iterMolecule.hasNext(); ) {
                 Object o = iterMolecule.next();
@@ -703,55 +724,6 @@ implements ResidueActionListener
             }
 
             canvas.add(currentCartoon);
-            
-//            canvas.currentCartoonType = type;
-//
-//            canvas.currentCartoon = type.newInstance();
-//            
-//            canvas.currentCartoon.show(moleculeCollection);
-//            vtkAssembly assembly = canvas.currentCartoon.getAssembly();
-//            
-//            if (assembly != null) {
-//                canvas.Lock();
-//                canvas.GetRenderer().RemoveAllProps();
-//                
-//                // AddProp deprecated in vtk 5.0
-//                // try{canvas.GetRenderer().AddViewProp(assembly);}
-//                // catch(NoSuchMethodError exc){canvas.GetRenderer().AddProp(assembly);}
-//                canvas.GetRenderer().AddProp(assembly);
-//
-//                canvas.UnLock();
-//            }
-            
-            // TODO loaded molecule does not paint
-            // assembly.Modified();
-            // canvas.repaint();
-
-            // Update residue highlights
-//            firstResidue = null;
-//            finalResidue = null;
-//            // for (Molecule molecule : moleculeCollection.molecules()) {
-//            for (Iterator i = moleculeCollection.molecules().iterator(); i.hasNext();) {
-//                Molecule molecule = (Molecule) i.next();
-//                if (molecule instanceof Biopolymer) {
-//                    Biopolymer bp = (Biopolymer) molecule;
-//                    canvas.Lock();
-//                    // canvas.clearResidueHighlights();
-//                    boolean isFirstResidue = true;
-//                    // for (Residue residue : bp.residues()) {
-//                    for (Iterator i2 = bp.residues().iterator(); i2.hasNext();) {
-//                        Residue residue = (Residue) i2.next();
-//                        if (isFirstResidue)
-//                            firstResidue = residue;
-//                        // vtkProp highlight = canvas.currentCartoon.highlight(residue, highlightColor);
-//                        // canvas.addResidueHighlight(residue, highlight);                                
-//                        isFirstResidue = false;
-//                        finalResidue = residue;
-//                    }
-//                    canvas.UnLock();
-//                    break; // only put the sequence of the first molecule with a sequence
-//                }
-//            }
             
             if (currentHighlightedResidue != null)
                 residueActionBroadcaster.fireHighlight(currentHighlightedResidue);
@@ -1332,6 +1304,34 @@ implements ResidueActionListener
      * Call this from createMenuBar()
      */
     private void addCartoonSelection(MolecularCartoonClass.CartoonType cartoonType, 
+                                     String description,
+                                     ImageIcon imageIcon) {
+        if (viewMenu == null)
+            throw new RuntimeException("No View menu in which to add a Cartoon style");
+        if ( (cartoonGroup == null) || (cartoonMenu == null) ) {
+            cartoonMenu = new JMenu("Molecule Style");
+            viewMenu.add(cartoonMenu);
+            cartoonGroup = new ButtonGroup();
+        }
+        
+        JCheckBoxMenuItem checkItem;
+        if (imageIcon != null)
+            checkItem = new JCheckBoxMenuItem(description, imageIcon);
+        else
+            checkItem = new JCheckBoxMenuItem(description);
+        
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new CartoonAction(cartoonType));
+        checkItem.setState(cartoonType == cartoonType);
+        cartoonGroup.add(checkItem);
+        cartoonMenu.add(checkItem);        
+    }
+
+    /**
+     * Put all hooks for adding a new molecule representation here
+     * Call this from createMenuBar()
+     */
+    private void addCartoonSelection(Class cartoonType, 
                                      String description,
                                      ImageIcon imageIcon) {
         if (viewMenu == null)

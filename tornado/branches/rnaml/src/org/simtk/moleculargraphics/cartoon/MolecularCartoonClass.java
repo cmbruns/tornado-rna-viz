@@ -56,9 +56,10 @@ abstract public class MolecularCartoonClass implements MutableMolecularCartoon {
         private CartoonType(Class c) {cartoonClass = c;}
         
         static public CartoonType BOND_STICK = new CartoonType(BondStickCartoon.class);
-        static public CartoonType BACKBONE_TRACE = new CartoonType(BackboneCurveCartoon.class);
+        static public CartoonType BACKBONE_TRACE = new CartoonType(OldBackboneCurveCartoon.class);
         static public CartoonType BACKBONE_STICK = new CartoonType(BackboneStick.class);
         static public CartoonType BALL_AND_STICK = new CartoonType(BallAndStickCartoon.class);
+        static public CartoonType BASE_PAIR_CYLINDERS = new CartoonType(BasePairRod.class);
 
         static public CartoonType DUPLEX_CYLINDER = new CartoonType(DuplexCylinderCartoon.class);
         static public CartoonType NUCLEOTIDE_WEDGE = new CartoonType(DuplexResidueWedge.class);
