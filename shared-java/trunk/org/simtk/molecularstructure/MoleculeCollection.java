@@ -33,19 +33,10 @@ package org.simtk.molecularstructure;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.net.*;
-
-import org.jdom.*;
-import org.jdom.filter.*;
-import org.jdom.input.SAXBuilder;
-
+import org.simtk.rnaml.RnamlDocument;
 import org.simtk.molecularstructure.atom.*;
-import org.simtk.molecularstructure.nucleicacid.BasePair;
-import org.simtk.molecularstructure.nucleicacid.Duplex;
-import org.simtk.molecularstructure.nucleicacid.NucleicAcid;
-import org.simtk.molecularstructure.nucleicacid.Nucleotide;
+import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.protein.*;
 
 import org.simtk.geometry3d.*;
@@ -56,10 +47,8 @@ import org.simtk.geometry3d.*;
  * A collection of one or more molecules, as might be found in a PDB file.
  */
 public class MoleculeCollection {
-    Vector atoms = new Vector();
-    Vector molecules = new Vector();
-    Vector<PDBMolecule> naChains = new Vector();
-    Vector<ArrayList> nTables = new Vector();
+    Collection<Atom> atoms = new Vector<Atom>();
+    List<Molecule> molecules = new Vector<Molecule>();
 
     Vector3DClass centerOfMass = new Vector3DClass();
     double mass = 0;
@@ -91,10 +80,10 @@ public class MoleculeCollection {
         }
     }
     
-    public Vector molecules() {return molecules;}
+    public Collection<Molecule> molecules() {return molecules;}
     
     public int getMoleculeCount() {return molecules.size();}
-    public LocatedMolecule getMolecule(int i) {return (LocatedMolecule) molecules.elementAt(i);}
+    public LocatedMolecule getMolecule(int i) {return (LocatedMolecule) molecules.get(i);}
     
     public int getAtomCount() {return atoms.size();}
     
@@ -123,18 +112,11 @@ public class MoleculeCollection {
         String PDBLine;
         String title = "";
         
-        Collection secondaryStructures = new Vector();
-        HashMap secondaryStructureStarts = new HashMap();
-        HashMap secondaryStructureEnds = new HashMap();
-        HashMap chainMolecules = new HashMap();
+        Collection<SecondaryStructure> secondaryStructures = new Vector<SecondaryStructure>();
+        Map<SecondaryStructure, String> secondaryStructureStarts = new HashMap<SecondaryStructure, String>();
+        Map<SecondaryStructure, String> secondaryStructureEnds = new HashMap<SecondaryStructure, String>();
+        Map<String, Collection<Molecule> > chainMolecules = new HashMap<String, Collection<Molecule> >();
         
-        Document rnamlDoc;
-        Element rnamlEl;
-        List rnamlMolecules;
-        Element interactionsEl;
-        List helices;
-
-
         reader.mark(200);
         FILE_LINE: while ((PDBLine = reader.readLine()) != null) {
 
@@ -244,17 +226,14 @@ public class MoleculeCollection {
             mol = PDBMoleculeClass.createFactoryPDBMolecule(reader);
 		    if (mol == null) break;
 
-            molecules.addElement(mol);
+            molecules.add(mol);
 
             // Hash molecule by chain ID for later resolution of secondary structure
             String chainID = mol.getChainID();
             if (! chainMolecules.containsKey(chainID))
-                chainMolecules.put(chainID, new Vector());
-            Collection m = (Collection) chainMolecules.get(chainID);
+                chainMolecules.put(chainID, new Vector<Molecule>());
+            Collection<Molecule> m = chainMolecules.get(chainID);
             m.add(mol);
-            if (mol instanceof NucleicAcid) {
-            	naChains.add(mol);
-            }
             
             // Update center of mass of entire molecule collection            
             double myMassProportion = getMass() / (getMass() + mol.getMass());
@@ -266,7 +245,7 @@ public class MoleculeCollection {
             // Populate the collection-wide atoms array
             for (Iterator i = mol.getAtomIterator(); i.hasNext(); ) {
                 LocatedAtom a = (LocatedAtom) i.next();
-                atoms.addElement(a);
+                atoms.add(a);
             }
             
         } while (mol.getAtomCount() > 0);
@@ -306,142 +285,38 @@ public class MoleculeCollection {
                 }
             }
         }
+        
+        
         // Check for RNAML secondary structures
         // needs to be made more robust & expansive
         // looks in local direrctory, doesn't know loc of PDB
-        if ((!naChains.isEmpty()) && (mPdbId != null))  {
+        boolean haveNucleic = false;
+        for (Molecule m : this.molecules()) 
+            if (m instanceof NucleicAcid) haveNucleic = true;
+        if ( haveNucleic && (mPdbId != null) )  {
+            String rnamlFileName = mPdbId+".pdb.xml";
+            
         	File curDir = new File(".");
         	List dirList = Arrays.asList(curDir.list());
-        	if (dirList.contains(mPdbId+".pdb.xml")){
+        	if (dirList.contains(rnamlFileName)){
         		System.out.println("processing xml file");
-        		SAXBuilder builder = new SAXBuilder();
-        		rnamlDoc = null;
-        		try {
-        			rnamlDoc = builder.build(mPdbId+".pdb.xml");
-        			}
-        		catch (Exception e){
-        			System.out.println("Caught " + e);
-        		}
 
-        		Iterator docIt = rnamlDoc.getDescendants(new ElementFilter("rnaml"));
-        		if (!docIt.hasNext()){
-        			System.out.println("xml file has no rnaml element!");
-        		}
-        		rnamlEl = (Element) docIt.next();
-        		for (Element rnamlMol: (List<Element>) rnamlEl.getChildren("molecule")){
-                    int molID = Integer.parseInt(rnamlMol.getAttributeValue("id"));
-                    /* The following line linking the rnaml molecule ID back to the 
-                     * PDB chains works (and is required) only becuase of traits of
-                     * rnamlview (and the rnaml generated by it) as of Spring 2006.
-                     */
-//                    PDBMolecule thisMol = (PDBMolecule) naChains.get(molID-1);
-        			//String chainID = thisMol.getChainID();
-                    List<Element> sequences = rnamlMol.getChildren("sequence");
-                    if (sequences.size()!=1) {
-                    	;//should add some kind of error reporting
-                    }
-                    /* nTable is retrieved via getDescendants even though rnaview appears to create the numbering table
-                     * as a direct child of the sequence, because the DTD appears to require that the numbering 
-                     * table be a child of a numbering-system which in turn is a child of the sequence. 
-                     */
-                    Element nTableEl = (Element) sequences.get(0).getDescendants( new ElementFilter("numbering-table")).next();
-                    String nTableString = nTableEl.getTextNormalize();
-                    ArrayList nTable = new ArrayList();
-                    Matcher toke = Pattern.compile("\\d+").matcher(nTableString);
-                    while (toke.find()) {
-                    	nTable.add(Integer.parseInt(toke.group(0)));
-                    }
-                    nTables.add(nTable);
-                    
-                    for (Element struc : (List<Element>) rnamlMol.getChildren("structure")){ // only one made by rnaview
-                        for (Element modl : (List<Element>) struc.getChildren("model")){
-                            for (Element annot : (List<Element>) modl.getChildren("str-annotation")){
-                                for (Element helix : (List<Element>) annot.getChildren("helix")){
-                                	Element base5 = helix.getChild("base-id-5p").getChild("base-id");
-                                	Element base3 = helix.getChild("base-id-3p").getChild("base-id");
-                                	int pos5  = Integer.parseInt(base5.getChildText("position"));
-                                	int pos3  = Integer.parseInt(base3.getChildText("position"));
-                                	int hLen  = Integer.parseInt(helix.getChildText("length"));
-                                	addHelix(molID, pos5, molID, pos3, hLen);
-                                }
-
-                            }
-                        	
-                        }
-                    	
-                    }
-        		}
-
-        		for (Element intrx: (List<Element>) rnamlEl.getChildren("interactions")){
-                    for (Element annot : (List<Element>) intrx.getChildren("str-annotation")){
-                        for (Element helix : (List<Element>) annot.getChildren("helix")){
-                        	Element base5 = helix.getChild("base-id-5p").getChild("base-id");
-                        	Element base3 = helix.getChild("base-id-3p").getChild("base-id");
-                            int mol5ID = Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
-                            int mol3ID = Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
-                        	int pos5  = Integer.parseInt(base5.getChildText("position"));
-                        	int pos3  = Integer.parseInt(base3.getChildText("position"));
-                        	int hLen  = Integer.parseInt(helix.getChildText("length"));
-                        	addHelix(mol5ID, pos5, mol3ID, pos3, hLen);
-                        }
-
-                    }
-                    
-        		}
-
+                try {
+                    RnamlDocument rnamlDoc = new RnamlDocument(rnamlFileName, this);
+                    rnamlDoc.importDuplexes();
+                } 
+                catch (org.jdom.JDOMException exc) {
+                    exc.printStackTrace();
+                }
+                catch (IOException exc) {
+                    exc.printStackTrace();
+                }
         	}
         	else {
-        		System.out.println("can't find xml file "+mPdbId+".pdb.xml");
-        		System.out.println("directory listing includes "+dirList);
-        		
+        		System.out.println("can't find xml file "+rnamlFileName);
+        		System.out.println("directory listing includes "+dirList);        		
         	}
         }
-	}
-    
-    private void addHelix(int mol5i, int pos5i, int mol3i, int pos3i, int hlen) {
-    	Biopolymer mol5 = (Biopolymer) naChains.get(mol5i - 1);
-    	Biopolymer mol3 = (Biopolymer) naChains.get(mol3i - 1);
-    	ArrayList nTable5 = nTables.get(mol5i-1);
-    	ArrayList nTable3 = nTables.get(mol3i-1);
-    	Duplex dup = null;
-    	for (int idx=0; idx<hlen; idx++){
-    		int PDBpos5 = ((Integer)nTable5.get(pos5i+idx-1));
-    		int PDBpos3 = ((Integer)nTable3.get(pos3i-idx-1));
-    		Residue r5 = mol5.getResidueByNumber(PDBpos5);
-    		Residue r3 = mol3.getResidueByNumber(PDBpos3);
-    		if ((r5!=null)&&(r3!=null)){
-    			if (dup == null) {
-    				dup = new Duplex();
-    				dup.setSource("rnaml");
-    			}
-    			if ((r5 instanceof Nucleotide)&& (r3 instanceof Nucleotide)){
-    				dup.addBasePair(new BasePair((Nucleotide)r5,(Nucleotide)r3));
-    			}
-    			else {
-    				if (!(r5 instanceof Nucleotide)){
-        				Collection<LocatedAtom> r5atoms = ((PDBMoleculeClass) r5).getAtoms();
-        				Object[] r5atomsArr = r5atoms.toArray();
-        				PDBAtom r5a0 = (PDBAtom) r5atomsArr[0];
-        				System.out.println("unrecognized residue reported in rnaml as basepaired:");
-        				System.out.println("mol5 id "+mol5i+", resno "+PDBpos5+", res name "+r5a0.getPDBResidueName()+", res "+r5);
-    				}
-    				if (!(r3 instanceof Nucleotide)){
-        				Collection<LocatedAtom> r3atoms = ((PDBMoleculeClass) r3).getAtoms();
-        				Object[] r3atomsArr = r3atoms.toArray();
-        				PDBAtom r3a0 = (PDBAtom) r3atomsArr[0];
-        				System.out.println("unrecognized residue reported in rnaml as basepaired:");
-        				System.out.println("mol3 id "+mol3i+", resno "+PDBpos3+", res name "+r3a0.getPDBResidueName()+", res "+r5);
-    				}
-    			}
-    		}
-    	}
-    	if (dup !=null){
-    		mol5.addSecondaryStructure(dup);
-    		if (mol5!=mol3){
-    			mol3.addSecondaryStructure(dup);
-    		}
-    	}
-    }
-    
+	}    
 }
 
