@@ -55,6 +55,7 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
     private ProgressManager progressManager = null;
     
     protected SimpleObservable fileLoadObservable = new SimpleObservable();
+    private String currentPath = ".";
     
     Cursor waitCursor = new Cursor(Cursor.WAIT_CURSOR);
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -72,10 +73,20 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
     public MoleculeAcquisitionMethodDialog(JFrame f, ProgressDialog p) {
         super(f);
         // System.out.println("MoleculeAcquisitionMethodDialog constructor");
-        parent = f;
+        setMAMD_Params(f, p);
+    }
+
+	private void setMAMD_Params(JFrame f, ProgressDialog p) {
+		parent = f;
         progressDialog = p;
         initializeDialog();
         fileLoadObservable.addObserver(this);
+	}
+    
+    public MoleculeAcquisitionMethodDialog(JFrame f, ProgressDialog p, String curPath) {
+        super(f);
+        currentPath = curPath;
+        setMAMD_Params(f, p);
     }
     
    /**
@@ -199,12 +210,14 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
             // Load molecule from file using file browser dialog
 
             String [] extensions = {"pdb", "pqr"};
-            if (moleculeFileChooser == null) moleculeFileChooser = new MoleculeFileChooser(parent, extensions);
+            if (moleculeFileChooser == null) moleculeFileChooser = new MoleculeFileChooser(parent, extensions, currentPath);
 
             // Hide first dialog while the file chooser is shown
             setVisible(false);
 
             File inputFile = moleculeFileChooser.getFile();
+    	    currentPath = moleculeFileChooser.getCurrentDirectory().getPath();
+	        currentPathUpdated();
 
             // Convert to URL and start the loading process
             
@@ -280,6 +293,10 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
         reactivate();
     }
 
+    protected void currentPathUpdated() {
+    	//empty stub, for example use see Tornado.LoadStructureDialog
+    }
+    
     protected void handleMoleculeUrl(URL moleculeURL) throws IOException {
         
         loadPDBProcess = 
@@ -342,6 +359,14 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
         setButtonsAreEnabled(false);
         setCursor(waitCursor);
     }
+
+	public String getCurrentPath() {
+		return currentPath;
+	}
+
+	public void setCurrentPath(String currentPath) {
+		this.currentPath = currentPath;
+	}
 }
 
 
@@ -350,11 +375,21 @@ class MoleculeFileChooser extends JFileChooser {
     Frame parentFrame;
     
     MoleculeFileChooser(Frame frame, String[] extensions) {
-        parentFrame = frame;
+        setMFC_Params(frame, extensions);
+    }
+
+	private void setMFC_Params(Frame frame, String[] extensions) {
+		parentFrame = frame;
         setDialogTitle("Choose molecule structure file");
         FileNameFilter filter = new FileNameFilter("molecule structure files", extensions);
         setFileFilter(filter);
+	}
+
+    MoleculeFileChooser(Frame frame, String[] extensions, String curPath) {
+    	super(curPath);
+        setMFC_Params(frame, extensions);
     }
+
     
     File getFile() {
         int returnVal = showOpenDialog(parentFrame);
