@@ -68,6 +68,8 @@ implements ResidueActionListener
     
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
     protected Tornado3DCanvas canvas;
+    private String currentPath = ".";
+    private String saveImagePath = ".";
     private LoadStructureDialog loadStructureDialog = new LoadStructureDialog(this);
     
     private MolecularCartoonClass.CartoonType cartoonType = 
@@ -853,13 +855,21 @@ implements ResidueActionListener
     }
 
     class LoadStructureDialog extends MoleculeAcquisitionMethodDialog {
-        LoadStructureDialog(JFrame f) {super(f, null);}
+        LoadStructureDialog(JFrame f) {super(f, null, Tornado.this.currentPath);}
 
         public void readStructureFromMoleculeCollection(MoleculeCollection molecules)
         {
             loadPDBFile(molecules);
         }
         static final long serialVersionUID = 01L;
+        
+        protected void currentPathUpdated(){
+            Tornado.this.currentPath = loadStructureDialog.getCurrentPath();
+            if (Tornado.this.saveImagePath.equals(".")){
+            	Tornado.this.saveImagePath = Tornado.this.currentPath; 
+            }
+
+        }
     }
     
     class LoadPDBAction implements ActionListener {
@@ -868,7 +878,7 @@ implements ResidueActionListener
         }
     }
     
-//    class OldLoadPDBAction implements ActionListener {
+/*//    class OldLoadPDBAction implements ActionListener {
 //        JDialog dialog = null;
 //        JButton loadFileButton = null;
 //        JButton webPDBButton = null;
@@ -1130,7 +1140,7 @@ implements ResidueActionListener
 //            return answer;
 //        }
 //    }
-    
+*/    
     MoleculeCollection loadPDBFile(InputStream inStream) throws IOException, InterruptedException {
         MoleculeCollection molecules = new MoleculeCollection();
         molecules.loadPDBFormat(inStream);
@@ -1183,11 +1193,21 @@ implements ResidueActionListener
 
     class SaveImageFileAction implements ActionListener {
         JFileChooser saveImageFileChooser;
+        String saveImagePath = ".";
 
         public void actionPerformed(ActionEvent e) {
-            if (saveImageFileChooser == null)
-                saveImageFileChooser = new JFileChooser();            
+            if ((saveImageFileChooser == null)||(!saveImagePath.equals(Tornado.this.saveImagePath))){
+            	saveImagePath = Tornado.this.saveImagePath;
+                saveImageFileChooser = new JFileChooser(Tornado.this.saveImagePath);            
+            }
             int returnVal = saveImageFileChooser.showSaveDialog(Tornado.this);
+
+    	    String savePath = saveImageFileChooser.getCurrentDirectory().getPath();
+            String FS = System.getProperty("file.separator");
+	        int index = savePath.lastIndexOf(FS);
+	        Tornado.this.saveImagePath = savePath.substring(0, index);
+        	saveImagePath = Tornado.this.saveImagePath;
+
             if(returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = saveImageFileChooser.getSelectedFile();
                 setWait("Saving image file...");
@@ -1418,5 +1438,13 @@ implements ResidueActionListener
     private Color selectionColor;
     
     private String titleBase = "toRNAdo";
+
+	public String getCurrentPath() {
+		return currentPath;
+	}
+
+	public void setCurrentPath(String currentPath) {
+		this.currentPath = currentPath;
+	}
 
 }
