@@ -49,6 +49,46 @@ implements Iterable<Residue>, SecondaryStructure
     Nucleotide residue2;
     protected String source;
     protected Biopolymer parentMolecule;
+    protected String edge_1;
+    protected String edge_2;
+    protected String bond_orient;
+    protected String strand_orient;
+
+    public static BasePair getBasePair(Residue r1, Residue r2, String source){
+    	if ((r1!=null)&&(r2!=null)){
+    		for (SecondaryStructure struc: r1.secondaryStructures()){
+    			if (struc instanceof BasePair){
+    				BasePair strucBP = (BasePair) struc;
+    				if ((source=="*" || source==strucBP.getSource()) && (strucBP.isBetween(r1, r2))){
+    					return strucBP;
+    				}
+    			}
+    		}
+    	}
+    	return null;
+    }
+    
+    public static BasePair makeBasePair(Residue r1, Residue r2, String source){
+        if ((r1!=null)&&(r2!=null)){
+            if ((r1 instanceof Nucleotide)&& (r2 instanceof Nucleotide)){
+            	BasePair thisBP = getBasePair(r1, r2, "rnaml");
+            	if (thisBP==null) {
+            		thisBP = new BasePair((Nucleotide)r1,(Nucleotide)r2);
+                	thisBP.setSource(source);
+            	}
+                return thisBP;
+            }
+            else {
+                if (!(r1 instanceof Nucleotide)){
+                    System.out.println("unrecognized residue reported by "+source+" as basepaired: "+ r1);
+                }
+                if (!(r2 instanceof Nucleotide)){
+                    System.out.println("unrecognized residue reported by "+source+" as basepaired: "+ r2 );
+                }
+            }
+        }
+        return null;
+    }
     
     public BasePair(Nucleotide r1, Nucleotide r2) {
         if (r1 == null) throw new NullPointerException();
@@ -64,30 +104,41 @@ implements Iterable<Residue>, SecondaryStructure
         if (r1Index > r2Index) {
             residue1 = r2;
             residue2 = r1;
-            return;
         }
         else if (r2Index > r1Index) {
             residue1 = r1;
             residue2 = r2;
-            return;
         }
         // If number is the same, sort on insertion code
         else if (r1Code > r2Code) {
             residue1 = r2;
             residue2 = r1;
-            return;            
         }
         else {
             residue1 = r1;
             residue2 = r2;
-            return;            
         }
+        r1.addSecondaryStructure(this);
+        r2.addSecondaryStructure(this);
+        return;            
     }
     
     public String getSource() {return this.source;}
     public void setSource(String source) {this.source = source;}
     
-    public void addResidue(Residue r) {
+    public String getBond_orient() { return bond_orient; }
+	public void setBond_orient(String bond_orient) { this.bond_orient = bond_orient; }
+
+	public String getEdge_1() { return edge_1; }
+	public void setEdge_1(String edge_1) { this.edge_1 = edge_1; }
+
+	public String getEdge_2() { return edge_2; }
+	public void setEdge_2(String edge_2) { this.edge_2 = edge_2; }
+
+	public String getStrand_orient() { return strand_orient; }
+	public void setStrand_orient(String strand_orient) { this.strand_orient = strand_orient; }
+
+	public void addResidue(Residue r) {
         throw new UnsupportedOperationException();
     }
     public Iterator<Residue> getResidueIterator() {
@@ -185,7 +236,7 @@ implements Iterable<Residue>, SecondaryStructure
     }
     
     public String toString() {
-        return "BasePair " + residue1.getResidueNumber() + ":" + residue2.getResidueNumber();
+        return "BasePair " + residue1 + " paired to " + residue2;
     }
 
     public Iterator<Residue> iterator() {
@@ -224,4 +275,10 @@ implements Iterable<Residue>, SecondaryStructure
     public int hashCode() {
         return residue1.hashCode() + residue2.hashCode();
     }
+
+    public Boolean isBetween(Residue r1, Residue r2){
+    	return ((r1==this.getResidue1()&& r2==this.getResidue2()) ||
+    			(r1==this.getResidue2()&& r2==this.getResidue1()));
+    }
+
 }

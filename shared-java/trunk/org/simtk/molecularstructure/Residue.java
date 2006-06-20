@@ -36,7 +36,8 @@ public interface Residue {
     public char getOneLetterCode();
     public String getResidueName();
     public int getResidueNumber();
-    public Iterator getSecondaryStructures();
+    public Iterator getSecondaryStructureIterator();
+    public Collection<SecondaryStructure> secondaryStructures();
     public void addSecondaryStructure(SecondaryStructure structure);
     public void setPreviousResidue(PDBResidueClass r);
     public void setNextResidue(PDBResidueClass r);

@@ -50,7 +50,7 @@ abstract public class AminoAcid extends PDBResidueClass {
     abstract public String getResidueName();
 
     public boolean isStrand() {
-        for (Iterator i = getSecondaryStructures(); i.hasNext();) {
+        for (Iterator i = getSecondaryStructureIterator(); i.hasNext();) {
             SecondaryStructure structure = (SecondaryStructure) i.next();
             if (structure instanceof BetaStrand)
                 return true;
@@ -58,7 +58,7 @@ abstract public class AminoAcid extends PDBResidueClass {
         return false;        
     }
     public boolean isHelix() {
-        for (Iterator i = getSecondaryStructures(); i.hasNext();) {
+        for (Iterator i = getSecondaryStructureIterator(); i.hasNext();) {
             SecondaryStructure structure = (SecondaryStructure) i.next();
             if (structure instanceof Helix)
                 return true;
@@ -66,7 +66,7 @@ abstract public class AminoAcid extends PDBResidueClass {
         return false;        
     }
     public boolean isAlphaHelix() {
-        for (Iterator i = getSecondaryStructures(); i.hasNext();) {
+        for (Iterator i = getSecondaryStructureIterator(); i.hasNext();) {
             SecondaryStructure structure = (SecondaryStructure) i.next();
             if ((structure instanceof Helix) && 
                     (((Helix)structure).getHelixType() == Helix.ALPHA) )

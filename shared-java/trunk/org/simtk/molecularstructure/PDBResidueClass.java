@@ -56,16 +56,6 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
     public static List modifiedThymidylates = Arrays.asList("+T"); 
     public static List modifiedUridylates   = Arrays.asList("+U","PSU","H2U","5MU","4SU"); 
     public static List knownHetatms   		= Arrays.asList("HOH","MG","NA","ZN"); 
-
-    
-/*    public static List ModifiedAdenylates   = Arrays.asList("+A","1MA"); 
-    public static List modifiedCytidylates  = Arrays.asList("+C","OMC","5MC"); 
-    public static List modifiedGuanylates   = Arrays.asList("+G","OMG","2MG","7MG","M2G","YG"); 
-    public static List modifiedInositates   = Arrays.asList("+I"); 
-    public static List modifiedThymidylates = Arrays.asList("+T"); 
-    public static List modifiedUridylates   = Arrays.asList("+U","4SU","5MU","H2U","PSU"); 
-*/
-    
     
     Hashtable genericBonds = new Hashtable(); // maps atom names of bondable atoms
     char insertionCode = ' ';
@@ -77,7 +67,8 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
     PDBResidueClass nextResidue;
     PDBResidueClass previousResidue;
 
-    public Iterator getSecondaryStructures() {return secondaryStructures.iterator();}
+    public Iterator getSecondaryStructureIterator() {return secondaryStructures.iterator();}
+    public Collection<SecondaryStructure> secondaryStructures() {return secondaryStructures;}
     public void addSecondaryStructure(SecondaryStructure structure) {
         secondaryStructures.add(structure);
     }
@@ -284,8 +275,14 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         }
     }
     
-    public String toString() {return "" + getOneLetterCode() + " " + getResidueNumber();}
-    
+    public String toString() {
+    	if (getOneLetterCode()!='?'){
+    		return "Chain: "+getChainID()+", res: "+getOneLetterCode() + " " + getResidueNumber();
+    	}
+    	else {
+    		return "Chain: "+getChainID()+", res: "+getResidueName() + " " + getResidueNumber();
+    	}
+    }
     public static boolean isSolvent(String residueName) {
         String trimmedName = residueName.trim().toUpperCase(); // remove spaces
 

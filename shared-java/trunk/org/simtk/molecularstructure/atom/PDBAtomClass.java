@@ -317,7 +317,9 @@ public class PDBAtomClass implements MutablePDBAtom {
         setTemperatureFactor( (new Double(PDBLine.substring(60,66).trim())).doubleValue());
         setSegmentIdentifier( PDBLine.substring(73,77));
         setPDBElementName( PDBLine.substring(76,78));
-        setPDBCharge( PDBLine.substring(78,80));
+        if (PDBLine.length()>=80) {
+        	setPDBCharge( PDBLine.substring(78,80));
+        }
         
         // Rectify the two possible element containing fields
         String elementName = getPDBElementName().toUpperCase().replaceAll("[^A-Z]", "").trim();

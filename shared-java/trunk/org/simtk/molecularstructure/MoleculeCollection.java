@@ -303,7 +303,7 @@ public class MoleculeCollection {
 
                 try {
                     RnamlDocument rnamlDoc = new RnamlDocument(rnamlFileName, this);
-                    rnamlDoc.importDuplexes();
+                    rnamlDoc.importSecondaryStructures();
                 } 
                 catch (org.jdom.JDOMException exc) {
                     exc.printStackTrace();
