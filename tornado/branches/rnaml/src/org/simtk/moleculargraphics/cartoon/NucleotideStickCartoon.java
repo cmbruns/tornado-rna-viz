@@ -190,8 +190,8 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         Vector3D rodStart = backboneAtom.getCoordinates();
         Vector3D rodDirection = sideChainAtom.getCoordinates().minus(rodStart);
         double rodLength = rodDirection.length() + 1.0;
-        rodDirection = rodDirection.unit().v3();
-        Vector3D rodEnd = rodStart.plus(rodDirection.times(rodLength)).v3();
+        rodDirection = rodDirection.unit();
+        Vector3D rodEnd = rodStart.plus(rodDirection.times(rodLength));
         
         Vector3D c = rodStart;
 
@@ -200,8 +200,8 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         // Use sticks to tile path from atom center, c, to bond rodEnd
         int numberOfSticks = (int) Math.ceil(rodLength / stickLength);
 
-        Vector3D startStickCenter = c.plus(n.times(stickLength * 0.5)).v3();
-        Vector3D endStickCenter = rodEnd.minus(n.times(stickLength * 0.5)).v3();
+        Vector3D startStickCenter = c.plus(n.times(stickLength * 0.5));
+        Vector3D endStickCenter = rodEnd.minus(n.times(stickLength * 0.5));
 
         Color color = nucleotide.getDefaultColor();
         if (! (colorIndices.containsKey(color))) {

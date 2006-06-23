@@ -198,15 +198,15 @@ public class WireFrameCartoon extends GlyphCartoon {
     
     private Vector3DClass getBondNormal(LocatedAtom a1, LocatedAtom a2) {
         Vector3D c = a1.getCoordinates();        
-        Vector3D midpoint = c.plus(a2.getCoordinates()).times(0.5).v3(); // middle of bond
-        Vector3D b = c.plus(midpoint).times(0.5).v3(); // middle of half-bond
+        Vector3D midpoint = c.plus(a2.getCoordinates()).times(0.5); // middle of bond
+        Vector3D b = c.plus(midpoint).times(0.5); // middle of half-bond
         Vector3D n = midpoint.minus(c); // direction/length vector
         return new Vector3DClass(n);
     }
     private Vector3DClass getBondMiddle(LocatedAtom a1, LocatedAtom a2) {
         Vector3D c = a1.getCoordinates();        
-        Vector3D midpoint = c.plus(a2.getCoordinates()).times(0.5).v3(); // middle of bond
-        Vector3D b = c.plus(midpoint).times(0.5).v3(); // middle of half-bond
+        Vector3D midpoint = c.plus(a2.getCoordinates()).times(0.5); // middle of bond
+        Vector3D b = c.plus(midpoint).times(0.5); // middle of half-bond
         return new Vector3DClass(b);
     }
     private void createBondGlyph(LocatedAtom atom, LocatedAtom atom2, Vector currentObjects, int colorScalar) {

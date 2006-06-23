@@ -240,17 +240,17 @@ public class BackboneStick extends GlyphCartoon {
         int numberOfSticks = (int) Math.ceil(segmentDirection.length() / stickLength);
 
         // Scale to unit length.  NOTE - effect of this on calculations above and below
-        segmentDirection = segmentDirection.unit().v3();
+        segmentDirection = segmentDirection.unit();
         
         Vector3D startStickCenter = new Vector3DClass( segmentStart.plus(segmentDirection.times(stickLength * 0.5)) );
         Vector3D endStickCenter = new Vector3DClass( segmentEnd.minus(segmentDirection.times(stickLength * 0.5)) );
 
-        Vector3DClass stickCenterVector = new Vector3DClass( endStickCenter.minus(startStickCenter) );
+        Vector3D stickCenterVector = new Vector3DClass( endStickCenter.minus(startStickCenter) );
         for (int s = 0; s < numberOfSticks; s++) {
             double alpha = 0.0;
             if (numberOfSticks > 1)
                 alpha = s / (numberOfSticks - 1.0);
-            Vector3DClass stickCenter = new Vector3DClass( startStickCenter.plus(stickCenterVector.scale(alpha)) );
+            Vector3DClass stickCenter = new Vector3DClass( startStickCenter.plus(stickCenterVector.times(alpha)) );
         
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(segmentDirection.getX(), segmentDirection.getY(), segmentDirection.getZ());

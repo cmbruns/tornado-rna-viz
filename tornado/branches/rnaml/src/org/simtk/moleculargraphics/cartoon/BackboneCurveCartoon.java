@@ -38,7 +38,6 @@ import vtk.*;
 
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
-import org.simtk.util.Selectable;
 
 /** 
  * @author Christopher Bruns
@@ -46,8 +45,8 @@ import org.simtk.util.Selectable;
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
 public class BackboneCurveCartoon extends MolecularCartoonClass {
-    double ribbonThickness = 0.70;
-    double ribbonWidth = 1.5;
+    double ribbonThickness = 1.50;
+    double ribbonWidth = 2.20;
     /**
      * How many spline segments per residue
      */
@@ -63,15 +62,13 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
     static final Color selectionColor = new Color(80, 80, 255);
     static final Color highlightColor = new Color(250, 250, 50);
     private int baseColorIndex = 150;
-    private Hashtable colorIndices = new Hashtable();
+    private Map<Color, Integer> colorIndices = new HashMap<Color, Integer>();
 
     vtkAssembly assembly = new vtkAssembly();
     
     public BackboneCurveCartoon() {
-        this(0.50);
-    }
-
-    public BackboneCurveCartoon(double radius) {
+        
+        // TODO move color table stuff to a baser class
         lut.SetNumberOfTableValues(256);
         lut.SetRange(1.0, 60.0);
         lut.SetAlphaRange(1.0, 1.0);
@@ -88,15 +85,7 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
     public void updateCoordinates() {
         // TODO
     }
-    
-    public void select(Selectable s) {
-    }
-    public void unSelect(Selectable s) {
-    }
-    public void unSelect() {
-    }
-    public void highlight(LocatedMolecule m) {
-    }
+
     public void hide(LocatedMolecule m) {
     }
     public void hide() {
@@ -105,10 +94,9 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
     }
     public void show() {
     }
-    public void clear() {
-    }
     public vtkAssembly getAssembly() {return assembly;}
     
+    @Override
     public void add(LocatedMolecule m) {
         addMolecule(m);
         super.add(m);
@@ -119,8 +107,10 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         BiopolymerClass biopolymer = (BiopolymerClass) molecule;
         
         vtkPoints linePoints = new vtkPoints();
-        vtkPoints lineNormals = new vtkPoints();
+        vtkFloatArray lineNormals = new vtkFloatArray();
+        lineNormals.SetNumberOfComponents(3);
         vtkFloatArray lineScalars = new vtkFloatArray();
+        lineScalars.SetNumberOfComponents(1);
         
         RESIDUE: for (Iterator i = biopolymer.getResidueIterator(); i.hasNext();) {
             PDBResidue residue = (PDBResidue) i.next();
@@ -136,24 +126,19 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
             
             Color color = residue.getDefaultColor();
             if (! (colorIndices.containsKey(color))) {
-                colorIndices.put(color, new Integer(baseColorIndex));
+                colorIndices.put(color, baseColorIndex);
                 lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
                 baseColorIndex ++;
             }
-            int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
+            int colorScalar = colorIndices.get(color);        
             
             if ( (backbonePosition != null) && (sideChainPosition != null) ) {
                 linePoints.InsertNextPoint(backbonePosition.getX(), backbonePosition.getY(), backbonePosition.getZ());
                 Vector3DClass normal = new Vector3DClass( sideChainPosition.minus(backbonePosition).unit() );
-                lineNormals.InsertNextPoint(normal.getX(), normal.getY(), normal.getZ());
+                lineNormals.InsertNextTuple3(normal.getX(), normal.getY(), normal.getZ());
                 lineScalars.InsertNextValue(colorScalar);
             }
         }
-        
-        if (linePoints.GetNumberOfPoints() < 1) return;
-        
-        vtkPoints backbonePoints = linePoints;
-        vtkPoints backboneNormals = lineNormals;
         
         int numberOfInputPoints = linePoints.GetNumberOfPoints();
         if (numberOfInputPoints < 2) return;
@@ -183,50 +168,50 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
                 splineY.AddPoint(i, linePoints.GetPoint(i)[1]);
                 splineZ.AddPoint(i, linePoints.GetPoint(i)[2]);
                 
-                normalSplineX.AddPoint(i, lineNormals.GetPoint(i)[0]);
-                normalSplineY.AddPoint(i, lineNormals.GetPoint(i)[1]);
-                normalSplineZ.AddPoint(i, lineNormals.GetPoint(i)[2]);                
+                normalSplineX.AddPoint(i, lineNormals.GetTuple3(i)[0]);
+                normalSplineY.AddPoint(i, lineNormals.GetTuple3(i)[1]);
+                normalSplineZ.AddPoint(i, lineNormals.GetTuple3(i)[2]);                
             }
             
             vtkPoints splinePoints = new vtkPoints();
-            vtkPoints splineNormals = new vtkPoints();
+            vtkFloatArray splineNormals = new vtkFloatArray();
+            splineNormals.SetNumberOfComponents(3);
+            vtkFloatArray splineScalars = new vtkFloatArray();
+            splineScalars.SetNumberOfComponents(1);
+
             for (int i = 0; i < numberOfOutputPoints; i++) {
                 double t = (numberOfInputPoints - 1.0)/(numberOfOutputPoints - 1.0) * i;
-                splinePoints.InsertPoint(i, 
+
+                // Points
+                splinePoints.InsertNextPoint(
                         splineX.Evaluate(t),
                         splineY.Evaluate(t),
                         splineZ.Evaluate(t)
                 );
                 
+                // Normals
                 Vector3DClass normal = new Vector3DClass( (new Vector3DClass(
                         normalSplineX.Evaluate(t),
                         normalSplineY.Evaluate(t),
                         normalSplineZ.Evaluate(t))).unit() );
-                splineNormals.InsertPoint(i, 
+                splineNormals.InsertNextTuple3(
                         normal.getX(),
                         normal.getY(),
                         normal.getZ()
-                );
+                    );
+                
+                // Scalars
+                int closestInputIndex = (int) Math.round(t);
+                splineScalars.InsertNextValue(lineScalars.GetValue(closestInputIndex));
+
+                System.out.println("" + i + " " + closestInputIndex);
             }
             
             linePoints = splinePoints;
             lineNormals = splineNormals;
+            lineScalars = splineScalars;
         }
         
-        vtkActor lineActor = new vtkActor(); // tube
-        
-        vtkCellArray lineCells = new vtkCellArray();
-        lineCells.InsertNextCell(numberOfOutputPoints);
-        for (int i = 0; i < numberOfOutputPoints; i ++)
-            lineCells.InsertCellPoint(i);
-        
-        vtkPolyData tubeData = new vtkPolyData();
-        tubeData.SetPoints(linePoints);
-        tubeData.SetLines(lineCells);
-
-        // Incorporate the lineNormals
-        tubeData.GetPointData().SetNormals(lineNormals.GetData());
-
         // TODO - expand scalars for spline representation
         // TODO - how to make this color the items?
         // tubeData.GetPointData().SetScalars(lineScalars); // causes crash
@@ -237,7 +222,7 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         for (int i = 0; i < linePoints.GetNumberOfPoints(); i++) {
             double[] point, normal;
             point = linePoints.GetPoint(i);
-            normal = lineNormals.GetPoint(i);
+            normal = lineNormals.GetTuple3(i);
             double[] shiftedPoint = {
                     point[0] - normal[0] * 0.5 * ribbonThickness,
                     point[1] - normal[1] * 0.5 * ribbonThickness,
@@ -245,7 +230,25 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
             };
             shiftedLinePoints.InsertNextPoint(shiftedPoint);
         }
+
+        vtkCellArray lineCells = new vtkCellArray();
+        lineCells.InsertNextCell(numberOfOutputPoints);
+        for (int i = 0; i < numberOfOutputPoints; i ++)
+            lineCells.InsertCellPoint(i);
+        
+        vtkPolyData tubeData = new vtkPolyData();
+
         tubeData.SetPoints(shiftedLinePoints);
+        tubeData.SetLines(lineCells);
+
+        // Incorporate the lineNormals
+        tubeData.GetPointData().SetNormals(lineNormals);
+        
+        // causes crash
+        // with extruded smoothed ribbon
+        // and extruded ribbon (vtkLinearExtrusionFilter)
+        // but not with thin ribbon
+        // tubeData.GetPointData().SetScalars(lineScalars);
 
         vtkRibbonFilter lineRibbon = new vtkRibbonFilter();
         lineRibbon.SetWidth(ribbonWidth);
@@ -275,9 +278,17 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         dataNormals.SetInput(ribbonThicknessFilter.GetOutput());
         
         vtkPolyDataMapper tubeMapper = new vtkPolyDataMapper();        
+
+        // tubeMapper.SetInput(tubeData); // line
+        // tubeMapper.SetInput(lineRibbon.GetOutput()); // ribbon
         // tubeMapper.SetInput(ribbonThicknessFilter.GetOutput()); // ribbon
         tubeMapper.SetInput(dataNormals.GetOutput()); // ribbon
-        
+
+        // tubeMapper.SetColorModeToMapScalars();
+        tubeMapper.SetLookupTable(lut);
+        tubeMapper.SetScalarRange(0.0, lut.GetNumberOfTableValues());
+
+        vtkActor lineActor = new vtkActor(); // tube        
         lineActor.SetMapper(tubeMapper);
 
         lineActor.AddPosition(0.0, 0.0, 0.0);

@@ -147,7 +147,7 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
             // Accumulate normals
             try {
                 Plane3D basePlane = bp.getBasePlane();
-                Vector3DClass normal = bp.getBasePlane().getNormal();
+                MutableVector3D normal = new Vector3DClass(bp.getBasePlane().getNormal());
                 if (normal.dot(helixDirection) < 0) normal.timesEquals(-1.0);
                 helixDirection = helixDirection.plus(normal);
             
@@ -162,9 +162,9 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
 
             // cylinderPoints.addElement(helixCenter);
         }
-        helixDirection = helixDirection.unit().v3();
-        helixCentroid = helixCentroid.times(1.0/h.basePairs().size()).v3();
-        Vector3D helixOffset = helixCentroid.minus(helixDirection.times(helixDirection.dot(helixCentroid))).v3();
+        helixDirection = helixDirection.unit();
+        helixCentroid = helixCentroid.times(1.0/h.basePairs().size());
+        Vector3D helixOffset = helixCentroid.minus(helixDirection.times(helixDirection.dot(helixCentroid)));
         
         Line3D helixAxis = new Line3D( new Vector3DClass(helixDirection), new Vector3DClass(helixOffset) );
                 
@@ -188,8 +188,8 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
         // Extend helix to enclose end base pairs
         minAlpha -= 1.6;
         maxAlpha += 1.6;
-        Vector3D cylinderHead = helixAxis.getDirection().times(maxAlpha).plus(helixAxis.getOrigin()).v3();
-        Vector3D cylinderTail = helixAxis.getDirection().times(minAlpha).plus(helixAxis.getOrigin()).v3();
+        Vector3D cylinderHead = helixAxis.getDirection().times(maxAlpha).plus(helixAxis.getOrigin());
+        Vector3D cylinderTail = helixAxis.getDirection().times(minAlpha).plus(helixAxis.getOrigin());
         
         double cylinderRadius = defaultbarrelRadius;
         Cylinder cylinder = new Cylinder( new Vector3DClass(cylinderHead), new Vector3DClass(cylinderTail), cylinderRadius);
@@ -217,9 +217,9 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
             // Create cylinder slicing plane using vector between residue atoms
             PDBAtom atom1 = basePair.getResidue1().getAtom(" C1*");
             PDBAtom atom2 = basePair.getResidue2().getAtom(" C1*");
-            Vector3D direction = atom2.getCoordinates().minus(atom1.getCoordinates()).unit().v3();
+            Vector3D direction = atom2.getCoordinates().minus(atom1.getCoordinates()).unit();
             // Make sure direction is perpendicular to the helix axis
-            direction = direction.minus(helixDirection.times(helixDirection.dot(direction))).unit().v3();
+            direction = direction.minus(helixDirection.times(helixDirection.dot(direction))).unit();
             residueNormals.put(basePair.getResidue1(), direction);
             residueNormals.put(basePair.getResidue2(), direction.times(-1));
             

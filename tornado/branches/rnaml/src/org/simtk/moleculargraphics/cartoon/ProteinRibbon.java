@@ -289,7 +289,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
             Vector3D normal = normals[i];
 
             // Adjust path point to be on inner face of strand
-            Vector3D innerPoint = path[i].minus(normal.unit().times(strandThickness/2.0)).v3();
+            Vector3D innerPoint = path[i].minus(normal.unit().times(strandThickness/2.0));
             
             float width = (float) strandWidth;
 
@@ -313,8 +313,8 @@ public class ProteinRibbon extends MolecularCartoonClass {
 
                     double neckAlpha2 = neckAlpha1 + smidgen;
 
-                    Vector3D neck1 = innerPoint.times(neckAlpha1).plus(previousPath.times(1.0 - neckAlpha1)).v3();
-                    Vector3D neck2 = innerPoint.times(neckAlpha2).plus(previousPath.times(1.0 - neckAlpha2)).v3();
+                    Vector3D neck1 = innerPoint.times(neckAlpha1).plus(previousPath.times(1.0 - neckAlpha1));
+                    Vector3D neck2 = innerPoint.times(neckAlpha2).plus(previousPath.times(1.0 - neckAlpha2));
 
                     strandPoints.InsertNextPoint(
                             neck1.getX(),
@@ -453,7 +453,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
         
         for (int i = 0; i < path.length; i++) {
             // Adjust path point to be on inner face of helix
-            Vector3D innerPoint = path[i].minus(normals[i].unit().times(helixThickness/2.0)).v3();
+            Vector3D innerPoint = path[i].minus(normals[i].unit().times(helixThickness/2.0));
             
             // System.out.println(path[i]);
             helixPoints.InsertPoint(i, 
@@ -617,7 +617,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
         int residueIndex = getSplineIndex(startResidue);
         for (int i = 0; i < splineFactor; i++) {
             double t = residueIndex - 0.5 + i / (double)(splineFactor - 1.0);
-            answer[i] = splineNormal.evaluate(t).unit().v3();
+            answer[i] = splineNormal.evaluate(t).unit();
         }
         return answer;
     }
@@ -640,7 +640,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
                 Vector3D next = ((LocatedResidue)residue.getNextResidue()).getBackbonePosition();
                 Vector3D current = residue.getBackbonePosition();
                 // Average of midpoints to previous and next backbone positions
-                answer = current.plus(current).plus(previous).plus(next).times(0.25).v3();
+                answer = current.plus(current).plus(previous).plus(next).times(0.25);
             } 
             catch (NullPointerException exc) {} // no previous/next? -> drop to default
         }
@@ -679,7 +679,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
         }
         
         if ( (p != null) && (f != null) ) {
-            Vector3D normal = v.minus(p).unit().plus(v.minus(f).unit()).unit().v3();
+            Vector3D normal = v.minus(p).unit().plus(v.minus(f).unit()).unit();
             answer = normal;
         }
         
@@ -687,7 +687,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
         if (residue.isStrand()) try {
             Vector3D nc = residue.getAtom(" C  ").getCoordinates().minus(residue.getAtom(" N  ").getCoordinates());
             Vector3D co = residue.getAtom(" O  ").getCoordinates().minus(residue.getAtom(" C  ").getCoordinates());
-            answer = nc.cross(co).unit().v3();
+            answer = nc.cross(co).unit();
         } catch (NullPointerException exc) {} // drop to default if atoms not found
                 
         return answer;
@@ -736,11 +736,11 @@ public class ProteinRibbon extends MolecularCartoonClass {
                 if (previousPosition != null) {
                     // Minimize rotation along direction of chain path
                     // For coil, flip anything greater than 90 degrees away
-                    Vector3D chainDirection = position.minus(previousPosition).unit().v3();
-                    Vector3D prevNormProj = chainDirection.cross(previousNormal).unit().v3();
-                    Vector3D currNormProj = chainDirection.cross(normal).unit().v3();
+                    Vector3D chainDirection = position.minus(previousPosition).unit();
+                    Vector3D prevNormProj = chainDirection.cross(previousNormal).unit();
+                    Vector3D currNormProj = chainDirection.cross(normal).unit();
                     if (prevNormProj.dot(currNormProj) < 0) // greater than 90 degree angle
-                        normal = normal.times(-1.0).v3();
+                        normal = normal.times(-1.0);
                 }
 
                 

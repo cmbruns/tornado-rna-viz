@@ -72,7 +72,7 @@ public abstract class CylinderCartoon extends GlyphCartoon {
     
     protected void addCylinder(Vector3D begin, Vector3D end, Color color, Object modelObject) {
         // Vector3D midPoint = begin.plus(end.minus(begin).times(0.5)).v3();
-        Vector3D normal = end.minus(begin).unit().v3();
+        Vector3D normal = end.minus(begin).unit();
         
         // Use sticks to tile path from begin to end
         int numberOfSticks = (int) Math.ceil(begin.distance(end) / minLength);

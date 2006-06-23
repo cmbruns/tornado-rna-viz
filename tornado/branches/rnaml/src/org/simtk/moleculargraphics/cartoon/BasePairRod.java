@@ -73,7 +73,7 @@ public class BasePairRod extends CylinderCartoon {
         if (start == null) throw new InsufficientAtomsException();
         if (end == null) throw new InsufficientAtomsException();
         
-        Vector3D midpoint = start.plus(end.minus(start).times(0.5)).v3();
+        Vector3D midpoint = start.plus(end.minus(start).times(0.5));
         Color color1 = base1.getDefaultColor();
         Color color2 = base2.getDefaultColor();
 

@@ -441,14 +441,6 @@ implements ResidueActionListener
         menuItem.setEnabled(false);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Relax molecule");
-        menuItem.addActionListener(new RelaxCoordinatesAction());
-        menu.add(menuItem);
-
-//         menuItem = new JMenuItem("Move selection");
-//         menuItem.addActionListener(new MoveSelectionAction());
-//         menu.add(menuItem);
-        
         viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
 
@@ -484,10 +476,6 @@ implements ResidueActionListener
                 "Protein Ribbon",
                 null );
 
-        addCartoonSelection( MolecularCartoonClass.CartoonType.PROTEIN_RIBBON_TEST,
-                "Protein Ribbon Test",
-                null );
-
         addCartoonSelection( MolecularCartoonClass.CartoonType.WIRE_FRAME,
                 "Line Drawing",
                 null );
@@ -497,6 +485,9 @@ implements ResidueActionListener
         
         addCartoonSelection( BasePairRibbon.class, 
                 "Base Pair Ribbon", null );
+        
+        addCartoonSelection( BasePairOval.class, 
+                "Base Pair Ovals", null );
         
         menu = new JMenu("Rotation");
         viewMenu.add(menu);
@@ -680,15 +671,6 @@ implements ResidueActionListener
 //            System.out.println("Hey, this isn't moving a residue!?!?!");
 //        }
 //    }
-
-    class RelaxCoordinatesAction implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            moleculeCollection.relaxCoordinates();
-            currentCartoon.updateCoordinates();
-            
-            // System.out.println("Hey, this isn't relaxing the coordinates!?!?!");
-        }
-    }
 
     class CartoonAction implements ActionListener {
         MolecularCartoonClass.CartoonType type = null;
