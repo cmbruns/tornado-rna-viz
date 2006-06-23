@@ -40,5 +40,5 @@ public interface MathMatrix {
     public MathVector getDiagonal();
     public MathVector getRow(int i);
     public MathVector getColumn(int j);
-    public Matrix3D m3(); // Convert to Matrix3D
+    // public Matrix3D m3(); // Convert to Matrix3D
 }

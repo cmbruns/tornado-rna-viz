@@ -38,6 +38,8 @@ public interface Vector3D extends MathVector, Location {
     public Vector3D cross(Vector3D v2);
     public Vector3D rotate(Vector3D axis, double angle);
 
-    public Vector3D plus(Vector3D v2);
-    public Vector3D minus(Vector3D v2);
+    public Vector3D plus(MathVector v2);
+    public Vector3D minus(MathVector v2);
+    public Vector3D unit();
+    public Vector3D times(double s);
 }

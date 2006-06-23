@@ -87,7 +87,7 @@ public class LocatedMoleculeBondClass implements LocatedMoleculeBond {
         LocatedAtom atom2 = (LocatedAtom) getAtom2();
         double covalentRatio = atom1.getCovalentRadius()/(atom2.getCovalentRadius() + atom1.getCovalentRadius());
         Vector3D fullBondVector = atom2.getCoordinates().minus(atom1.getCoordinates());
-        Vector3D midBond = atom1.getCoordinates().plus(fullBondVector.times(covalentRatio)).v3();
+        Vector3D midBond = atom1.getCoordinates().plus(fullBondVector.times(covalentRatio));
         return new Vector3DClass(midBond);
     }    
 }

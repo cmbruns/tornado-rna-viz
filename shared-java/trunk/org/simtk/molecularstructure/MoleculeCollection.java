@@ -50,7 +50,7 @@ public class MoleculeCollection {
     Collection<Atom> atoms = new Vector<Atom>();
     List<Molecule> molecules = new Vector<Molecule>();
 
-    Vector3DClass centerOfMass = new Vector3DClass();
+    Vector3D centerOfMass = new Vector3DClass();
     double mass = 0;
     
     private String mTitle = "";
@@ -68,16 +68,9 @@ public class MoleculeCollection {
     public double getMass() {
         return mass;
     }
-    public Vector3DClass getCenterOfMass() {
+    public Vector3D getCenterOfMass() {
         if (mass <= 0) return null;
         return centerOfMass;
-    }
-    
-    public void relaxCoordinates() {
-        for (Iterator i = molecules.iterator(); i.hasNext(); ) {
-            PDBMoleculeClass m = (PDBMoleculeClass) i.next();
-            m.relaxCoordinates();
-        }
     }
     
     public Collection<Molecule> molecules() {return molecules;}
@@ -237,7 +230,7 @@ public class MoleculeCollection {
             
             // Update center of mass of entire molecule collection            
             double myMassProportion = getMass() / (getMass() + mol.getMass());
-            centerOfMass = new Vector3DClass( centerOfMass.scale(myMassProportion).plus(
+            centerOfMass = new Vector3DClass( centerOfMass.times(myMassProportion).plus(
                     mol.getCenterOfMass().times(1.0 - myMassProportion) ) );
             
             mass += mol.getMass();

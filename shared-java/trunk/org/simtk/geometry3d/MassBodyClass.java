@@ -45,7 +45,7 @@ public class MassBodyClass implements MassBody {
     
     public void add (MassBody m) {
         double massFraction = m.getMass() / (m.getMass() + this.getMass());
-        this.centerOfMass = m.getCenterOfMass().times(massFraction).plus(this.getCenterOfMass().times(1.0 - massFraction)).v3();
+        this.centerOfMass = m.getCenterOfMass().times(massFraction).plus(this.getCenterOfMass().times(1.0 - massFraction));
         this.mass += m.getMass();
     }
 }

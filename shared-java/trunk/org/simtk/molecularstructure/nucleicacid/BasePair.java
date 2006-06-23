@@ -220,18 +220,18 @@ implements Iterable<Residue>, SecondaryStructure
         }
         Vector3D c11 = residue1.getAtom(" C1*").getCoordinates();
         Vector3D c12 = residue2.getAtom(" C1*").getCoordinates();
-        Vector3D centerC1 = c11.plus(c12).times(0.5).v3();
-        Vector3D approximateMinorMajorDirection = basePairCentroid.minus(centerC1).unit().v3();
+        Vector3D centerC1 = c11.plus(c12).times(0.5);
+        Vector3D approximateMinorMajorDirection = basePairCentroid.minus(centerC1).unit();
 
         Vector3DClass basePairDirection = new Vector3DClass( c12.minus(c11).unit() );
-        Vector3D minorMajorDirection = basePairDirection.cross(basePairPlane.getNormal()).unit().v3();
+        Vector3D minorMajorDirection = basePairDirection.cross(basePairPlane.getNormal()).unit();
         // Cross product might point in the exact opposite direction, depending upon base order
         if (minorMajorDirection.dot(approximateMinorMajorDirection) < 0)
-            minorMajorDirection = minorMajorDirection.times(-1.0).v3();
+            minorMajorDirection = minorMajorDirection.times(-1.0);
         
         // 3) extend minor-major axis to estimate helix center
         // TODO - adjust this distance according to something
-        Vector3D helixCenter = centerC1.plus(minorMajorDirection.times(5.90)).v3();
+        Vector3D helixCenter = centerC1.plus(minorMajorDirection.times(5.90));
         return new Vector3DClass (helixCenter);
     }
     

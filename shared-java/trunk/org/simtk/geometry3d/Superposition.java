@@ -92,11 +92,17 @@ public class Superposition {
                 R.set(i, j, Rij);
             }
         
+        // System.out.println("R = "+R);
+        
         // 4) compute eigenvectors of Rtranspose * R
         JamaMatrix RtR = new JamaMatrix(R.transpose().times(R));
         EigenvalueDecomposition eigens = RtR.getEigenvalueDecomposition();
-        Vector3D eigenValues = new JamaMatrix(eigens.getD()).getDiagonal().v3();
-        Matrix3D eigenVectors = new JamaMatrix(eigens.getV()).m3();
+        Vector3D eigenValues = new Vector3DClass(new JamaMatrix(eigens.getD()).getDiagonal());
+        Matrix3D eigenVectors = new Matrix3DClass(new JamaMatrix(eigens.getV()));
+        
+        // System.out.println("RtR = "+RtR);
+        // System.out.println("eigenvalues = "+eigenValues);
+        // System.out.println("eigenvectors = "+eigenVectors);
         
         // Note order of eigenvalues from largest to smallest
         Integer[] eigenOrder = {new Integer(0),new Integer(1),new Integer(2)};
@@ -108,13 +114,13 @@ public class Superposition {
         for (int i = 0; i < 2; i++)
             a.setRow(i, eigenVectors.getColumn(eigenOrder[i].intValue()));
         // Compute the third eigenvector to form a right-handed system with the other two
-        a.setRow(2, a.getRow(0).v3().cross(a.getRow(1).v3()));
+        a.setRow(2, a.getRow(0).cross(a.getRow(1)));
         
         MutableMatrix3D b = new Matrix3DClass();
         for (int i = 0; i < 2; i++)
             b.setRow( i, R.times(a.getRow(i)).times(1.0/Math.sqrt(eigenValues.get(eigenOrder[i].intValue()))) );
         // Compute the third eigenvector to form a right-handed system with the other two
-        b.setRow(2, b.getRow(0).v3().cross(b.getRow(1).v3()));
+        b.setRow(2, b.getRow(0).cross(b.getRow(1)));
         
         // if b3 * R * a3 < 0, this is a reflection, not a rotation
         // make it a rotation
@@ -137,7 +143,7 @@ public class Superposition {
         
         // 6) combine rotation and translation into homogeneous 4x4 transform
         MutableHomogeneousTransform translate1ToOrigin = new HomogeneousTransformClass();
-        translate1ToOrigin.setTranslation(centroid1.times(-1).v3());
+        translate1ToOrigin.setTranslation(centroid1.times(-1));
         
         MutableHomogeneousTransform rotate = new HomogeneousTransformClass();
         rotate.setRotation(rotation);

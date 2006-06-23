@@ -31,42 +31,50 @@ public class Matrix3DClass extends MathMatrixClass implements MutableMatrix3D {
     Matrix3DClass() {super(3,3);}
     Matrix3DClass(MathMatrix m) {
         super(3,3);
-        if ( (m.getRowCount() != 3) || (m.getColumnCount() != 3) )
-            throw new MatrixSizeMismatchException("Cannot construct Matrix3D from non 3x3 matrix");
+        checkShape(m);
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
                 set(i, j, m.get(i, j));
     }
 
-    public void plusEquals(Matrix3D m2) {
+    public void plusEquals(MathMatrix m2) {
+        checkShape(m2);
         for (int m = 0; m < 3; m++)
             for (int n = 0; n < 3; n++)
                 set(m, n, get(m, n) +  m2.get(m, n));
     }
 
-    public void minusEquals(Matrix3D m2) {
+    public void minusEquals(MathMatrix m2) {
+        checkShape(m2);
         for (int m = 0; m < 3; m++)
             for (int n = 0; n < 3; n++)
                 set(m, n, get(m, n) -  m2.get(m, n));
     }
 
-    public Matrix3D plus(Matrix3D m2) {
-        MutableMatrix3D answer = new Matrix3DClass();
-        for (int m = 0; m < 3; m++)
-            for (int n = 0; n < 3; n++)
-                answer.set(m, n, get(m, n) + m2.get(m, n));
+    public Matrix3D plus(MathMatrix m2) {
+        checkShape(m2);
+        MutableMatrix3D answer = new Matrix3DClass(this);
+        answer.plusEquals(m2);
         return answer;
     }
 
-    public Matrix3D minus(Matrix3D m2) {
-        MutableMatrix3D answer = new Matrix3DClass();
-        for (int m = 0; m < 3; m++)
-            for (int n = 0; n < 3; n++)
-                answer.set(m, n, get(m, n) - m2.get(m, n));
+    public Matrix3D minus(MathMatrix m2) {
+        checkShape(m2);
+        MutableMatrix3D answer = new Matrix3DClass(this);
+        answer.minusEquals(m2);
         return answer;
     }
 
-    public Vector3D times(Vector3D v) {
+    public Matrix3D transpose() {
+        MutableMatrix3D answer = new Matrix3DClass();
+        for (int m = 0; m < getColumnCount(); m++)
+            for (int n = 0; n < getRowCount(); n++)
+                answer.set(m, n, get(n, m));
+        return answer;
+    }
+
+    public Vector3D times(MathVector v) {
+        checkShape(v);
         MutableVector3D answer = new Vector3DClass();
         for (int i = 0; i < 3; i++) {
             double d = 0.0;
@@ -77,7 +85,8 @@ public class Matrix3DClass extends MathMatrixClass implements MutableMatrix3D {
         return answer;
     }
 
-    public Matrix3D times(Matrix3D m2) {
+    public Matrix3D times(MathMatrix m2) {
+        checkShape(m2);
         MutableMatrix3D answer = new Matrix3DClass();
         for (int i = 0; i < 3; i ++)
             for (int j = 0; j < 3; j++) {
@@ -87,5 +96,43 @@ public class Matrix3DClass extends MathMatrixClass implements MutableMatrix3D {
                 answer.set(i, j, d);
             }
         return answer;
+    }
+    
+    public Matrix3D times(double d) {
+        MutableMatrix3D answer = new Matrix3DClass(this);
+        for (int i = 0; i < getRowCount(); i++)
+            for (int j = 0; j < getColumnCount(); j++)
+                answer.set(i, j, get(i, j) * d);
+        return answer;
+    }
+
+    public Vector3D getColumn(int j) {
+        MutableVector3D answer = new Vector3DClass();
+        for (int i = 0; i < getRowCount(); i++)
+            answer.set(i, get(i,j));
+        return answer;
+    }
+    
+    public Vector3D getRow(int i) {
+        MutableVector3D answer = new Vector3DClass();
+        for (int j = 0; j < getColumnCount(); j++)
+            answer.set(j, get(i,j));
+        return answer;
+    }
+    
+    public Vector3D getDiagonal() {
+        MutableVector3D answer = new Vector3DClass();
+        for (int i = 0; i < 3; i ++)
+            answer.set(i, get(i, i));
+        return answer;
+    }
+
+    private static void checkShape(MathMatrix m) {
+        if ( (m.getRowCount() != 3) || (m.getColumnCount() != 3) )
+            throw new MatrixSizeMismatchException("Cannot construct Matrix3D from non 3x3 matrix");        
+    }
+    private static void checkShape(MathVector v) {
+        if (v.getDimension() != 3)
+            throw new MatrixSizeMismatchException("Cannot construct Vector3D from non 3-vector");        
     }
 }

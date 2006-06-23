@@ -208,12 +208,12 @@ public class MathMatrixClass implements MutableMathMatrix {
         return answer;
     }
 
-    public Matrix3D m3() {
-        if (this instanceof Matrix3D) return (Matrix3D) this;
-        if ( getRowCount() != 3 ) throw new MatrixSizeMismatchException("Matrix3D must have exactly three rows");
-        if ( getColumnCount() != 3 ) throw new MatrixSizeMismatchException("Matrix3D must have exactly three columns");
-        return new Matrix3DClass(this);
-    }
+//    public Matrix3D m3() {
+//        if (this instanceof Matrix3D) return (Matrix3D) this;
+//        if ( getRowCount() != 3 ) throw new MatrixSizeMismatchException("Matrix3D must have exactly three rows");
+//        if ( getColumnCount() != 3 ) throw new MatrixSizeMismatchException("Matrix3D must have exactly three columns");
+//        return new Matrix3DClass(this);
+//    }
     
     public String toString() {
         String answer = new String("");

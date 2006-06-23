@@ -27,8 +27,14 @@
 package org.simtk.geometry3d;
 
 public interface Matrix3D extends MathMatrix {
-    public Matrix3D plus(Matrix3D m2);
-    public Matrix3D minus(Matrix3D m2);
-    public Vector3D times(Vector3D v);
-    public Matrix3D times(Matrix3D m2);
+    public Matrix3D transpose();
+    public Matrix3D plus(MathMatrix m2);
+    public Matrix3D minus(MathMatrix m2);
+    public Matrix3D times(double d);
+    public Vector3D times(MathVector v);
+    public Matrix3D times(MathMatrix m2);
+    public double trace();
+    public Vector3D getDiagonal();
+    public Vector3D getRow(int i);
+    public Vector3D getColumn(int j);
 }

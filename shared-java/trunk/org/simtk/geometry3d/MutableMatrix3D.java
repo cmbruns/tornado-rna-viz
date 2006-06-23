@@ -27,6 +27,4 @@
 package org.simtk.geometry3d;
 
 public interface MutableMatrix3D extends Matrix3D, MutableMathMatrix {
-    public void plusEquals(Matrix3D m2);
-    public void minusEquals(Matrix3D m2);
 }

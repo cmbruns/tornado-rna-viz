@@ -83,39 +83,27 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
     public double z() {return get(2);}
 
     // Try to return Vector3D objects for methods that return vectors
-    public MathVector unit() {
+    public Vector3D unit() {
         MutableVector3D answer = new Vector3DClass(this);
         answer.selfUnit();
         return answer;
     }
     
-    public MathVector scale(double scale) {
-        MutableVector3D answer = new Vector3DClass(this);
-        answer.timesEquals(scale);
-        return answer;
-    }
-
-    public Vector3D minus(Vector3D v2) {
-        MutableVector3D answer = new Vector3DClass(this);
-        answer.minusEquals(v2);
-        return answer;
-    }
-    
-    public MathVector minus(MathVector v2) {
+    public Vector3D minus(MathVector v2) {
         MutableVector3D answer = new Vector3DClass(this);
         answer.minusEquals(v2);
         return answer;
     }
 
-    public Vector3D plus(Vector3D v2) {
+    public Vector3D plus(MathVector v2) {
         MutableVector3D answer = new Vector3DClass(this);
         answer.plusEquals(v2);
         return answer;
     }
     
-    public MathVector plus(MathVector v2) {
+    public Vector3D times(double s) {
         MutableVector3D answer = new Vector3DClass(this);
-        answer.plusEquals(v2);
+        answer.timesEquals(s);
         return answer;
     }
     
@@ -177,8 +165,8 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
     public int hashCode() {
         return 
         (new Double(getX())).hashCode() +
-        (new Double(getY())).hashCode() +
-        (new Double(getZ())).hashCode();          
+        2 * (new Double(getY())).hashCode() +
+        3 * (new Double(getZ())).hashCode();          
     }
     
     public Vector3D rotate(Vector3D axis, double angle) {

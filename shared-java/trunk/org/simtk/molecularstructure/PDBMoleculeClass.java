@@ -244,7 +244,7 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
         atoms.add(atom);
         mass += atom.getMass();
         double massRatio = atom.getMass() / mass;
-        centerOfMass = new Vector3DClass( centerOfMass.scale(1.0 - massRatio).plus(atom.getCoordinates().times(massRatio)) );
+        centerOfMass = new Vector3DClass( centerOfMass.times(1.0 - massRatio).plus(atom.getCoordinates().times(massRatio)) );
         if (chainID.equals("")||chainID.equals(" ")){
         	chainID = Character.toString(atom.getChainIdentifier());
         }
@@ -256,7 +256,7 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
         atoms.remove(atom);
         double massRatio = atom.getMass() / mass;
         mass -= atom.getMass();
-        centerOfMass = new Vector3DClass( centerOfMass.scale(1.0 - massRatio).minus(atom.getCoordinates().times(massRatio)) );
+        centerOfMass = new Vector3DClass( centerOfMass.times(1.0 - massRatio).minus(atom.getCoordinates().times(massRatio)) );
     }
     
     public boolean containsAtom(LocatedAtom atom) {

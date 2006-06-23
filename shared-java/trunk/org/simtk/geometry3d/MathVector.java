@@ -41,5 +41,5 @@ public interface MathVector extends MyIterable {
     public double distanceSquared(MathVector v2);
     public MathVector unit();
     public MathVector times(double s);
-    public Vector3D v3(); // Convert to Vector3D
+    // public Vector3D v3(); // Convert to Vector3D
 }

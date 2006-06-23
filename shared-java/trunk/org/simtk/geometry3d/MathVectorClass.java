@@ -144,9 +144,7 @@ public class MathVectorClass implements MutableMathVector {
     
     public MathVector times(double s) {
         MutableMathVector answer = new MathVectorClass(getDimension());
-        for (int i = 0; i < getDimension(); i++) {
-            answer.set(i, get(i) * s);
-        }
+        answer.timesEquals(s);
         return answer;
     }
     
@@ -164,11 +162,11 @@ public class MathVectorClass implements MutableMathVector {
         return new VectorIterator(this);
     }
     
-    public Vector3D v3() {
-        if (this instanceof Vector3D) return (Vector3D) this;
-        if ( getDimension() != 3 ) throw new VectorSizeException("Vector3D must have exactly three coordinates");
-        return new Vector3DClass(this);
-    }
+//    public Vector3D v3() {
+//        if (this instanceof Vector3D) return (Vector3D) this;
+//        if ( getDimension() != 3 ) throw new VectorSizeException("Vector3D must have exactly three coordinates");
+//        return new Vector3DClass(this);
+//    }
     
     class VectorIterator implements Iterator {
 
