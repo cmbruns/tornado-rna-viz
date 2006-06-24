@@ -27,6 +27,7 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
@@ -64,8 +65,15 @@ public class TestOvalToon extends CompositeCartoon {
         }
         else {
             // Skip solvent
-            if (! m.isSolvent()) stickToon.add(m);
+        	Iterator<LocatedAtom> atomIt = m.getAtomIterator();
+        	if (atomIt.hasNext()) {
+        		LocatedAtom atom = atomIt.next();
+        		if ((atom instanceof PDBAtom)&& PDBResidueClass.isSolvent(((PDBAtom)atom).getPDBResidueName())){
+        			return;
+        		}
+        	}
         }
+        stickToon.add(m);
     }
     
 }
