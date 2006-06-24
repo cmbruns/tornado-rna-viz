@@ -49,10 +49,46 @@ implements Iterable<Residue>, SecondaryStructure
     Nucleotide residue2;
     protected String source;
     protected Biopolymer parentMolecule;
-    protected String edge_1;
-    protected String edge_2;
-    protected String bond_orient;
+    protected EdgeType edge_1;
+    protected EdgeType edge_2;
+    protected BondOrientation bond_orient;
     protected String strand_orient;
+    
+    public enum EdgeType {
+    	WATSONCRICK(Arrays.asList("w","+","-")), 
+    	HOOGSTEEN(Arrays.asList("h")),
+    	SUGAR(Arrays.asList("s"));
+    	
+    	public final List<String> designations;
+    	EdgeType(List<String> des){ this.designations = des; }
+
+        public static EdgeType getEdgeType(String str){
+        	for (EdgeType et: EdgeType.values()){
+        		if (et.designations.contains(str.toLowerCase())){
+        			return et;
+        		}
+        	}
+        	throw new IllegalArgumentException();
+        }
+    };
+
+    public enum BondOrientation {
+    	CIS(Arrays.asList("cis","c")), 
+    	TRAN(Arrays.asList("tran","t"));
+    	
+    	public final List<String> designations;
+    	BondOrientation(List<String> des){ this.designations = des; }
+
+        public static BondOrientation getBondOrienation(String str){
+        	for (BondOrientation bo: BondOrientation.values()){
+        		if (bo.designations.contains(str.toLowerCase())){
+        			return bo;
+        		}
+        	}
+        	throw new IllegalArgumentException();
+        }
+    };
+
 
     public static BasePair getBasePair(Residue r1, Residue r2, String source){
     	if ((r1!=null)&&(r2!=null)){
@@ -71,7 +107,7 @@ implements Iterable<Residue>, SecondaryStructure
     public static BasePair makeBasePair(Residue r1, Residue r2, String source){
         if ((r1!=null)&&(r2!=null)){
             if ((r1 instanceof Nucleotide)&& (r2 instanceof Nucleotide)){
-            	BasePair thisBP = getBasePair(r1, r2, "rnaml");
+            	BasePair thisBP = getBasePair(r1, r2, source);
             	if (thisBP==null) {
             		thisBP = new BasePair((Nucleotide)r1,(Nucleotide)r2);
                 	thisBP.setSource(source);
@@ -126,14 +162,28 @@ implements Iterable<Residue>, SecondaryStructure
     public String getSource() {return this.source;}
     public void setSource(String source) {this.source = source;}
     
-    public String getBond_orient() { return bond_orient; }
-	public void setBond_orient(String bond_orient) { this.bond_orient = bond_orient; }
+    public BondOrientation getBond_orient() { return bond_orient; }
+	public void setBond_orient(BondOrientation bond_orient) { this.bond_orient = bond_orient; }
+	public void setBond_orient(String bond) { this.bond_orient = BondOrientation.getBondOrienation(bond); }
 
-	public String getEdge_1() { return edge_1; }
-	public void setEdge_1(String edge_1) { this.edge_1 = edge_1; }
+	public EdgeType getEdge_1() { return edge_1; }
+	public EdgeType getEdge_2() { return edge_2; }
+	public void setEdge(Residue res, EdgeType edgeT) { 
+		if (res.equals(this.residue1)) {
+			this.edge_1 = edgeT; 
+		}
+		else if (res.equals(this.residue2)) {
+			this.edge_2 = edgeT; 
+		}
+		else throw new IllegalArgumentException();
+	}
+	public void setEdge(Residue res, String edge) { setEdge(res, EdgeType.getEdgeType(edge)); }
+	
+//	public void setEdge_1(EdgeType edge_1) { this.edge_1 = edge_1; }
+//	public void setEdge_1(String edge) { this.edge_1 = EdgeType.getEdgeType(edge); }
 
-	public String getEdge_2() { return edge_2; }
-	public void setEdge_2(String edge_2) { this.edge_2 = edge_2; }
+//	public void setEdge_2(EdgeType edge_2) { this.edge_2 = edge_2; }
+//	public void setEdge_2(String edge) { this.edge_2 = EdgeType.getEdgeType(edge); }
 
 	public String getStrand_orient() { return strand_orient; }
 	public void setStrand_orient(String strand_orient) { this.strand_orient = strand_orient; }
