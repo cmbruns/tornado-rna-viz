@@ -189,13 +189,54 @@ public class RnamlDocument {
 		Residue r5 = mol5.getResidueByNumber(PDBpos5);
 		Residue r3 = mol3.getResidueByNumber(PDBpos3);
 		BasePair thisBP = BasePair.makeBasePair(r5, r3, "rnaml");
+
+    	Element e5p = basepair.getChild("edge-5p"); //should be zero or one of these
+    	if (e5p!=null){
+    		try {
+    			thisBP.setEdge(r5, e5p.getTextTrim());
+    		}
+    		catch (IllegalArgumentException e) {
+                System.out.println("problem adding "+e5p.getTextTrim()+" edge to res "+r5+" in BP "+thisBP);
+    		}
+    		
+    	}
+
+    	Element e3p = basepair.getChild("edge-3p"); //should be zero or one of these
+    	if (e3p!=null){ 
+    		try {
+        		thisBP.setEdge(r3, e3p.getTextTrim());
+    		}
+    		catch (IllegalArgumentException e) {
+                System.out.println("problem adding "+e3p.getTextTrim()+" edge to res "+r3+" in BP "+thisBP);
+    		}
+    	}
+
+    	Element bond = basepair.getChild("bond_orientation"); //should be zero or one of these
+    	if (bond!=null){ 
+    		try {
+        		thisBP.setBond_orient(bond.getTextTrim());
+    		}
+    		catch (IllegalArgumentException e) {
+                System.out.println("problem adding "+bond.getTextTrim()+" bond orientation to BP "+thisBP);
+    		}
+    	}
+    	
+    	Element strandO = basepair.getChild("strand_orientation"); //should be zero or one of these
+    	if (strandO!=null){ 
+    		try {
+        		thisBP.setStrand_orient(strandO.getTextTrim());
+    		}
+    		catch (IllegalArgumentException e) {
+                System.out.println("problem adding "+strandO.getTextTrim()+" strand orienation to BP "+thisBP);
+    		}
+    	}
+    	
 		mol5.addSecondaryStructure(thisBP);
 		if (mol5i!=mol3i){
 			mol3.addSecondaryStructure(thisBP);
 		}
 		
 	}
-
 
 	private void addHelix(Element helix, int molID ) {
 
