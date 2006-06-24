@@ -41,7 +41,7 @@ import vtk.*;
  */
 abstract public class TensorGlyphCartoon extends GlyphCartoon {
 
-    private vtkTensorGlyph tensorGlyph = new vtkTensorGlyph();
+    protected vtkTensorGlyph tensorGlyph = new vtkTensorGlyph();
     vtkFloatArray tensors = new vtkFloatArray();
 
     TensorGlyphCartoon() {

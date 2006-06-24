@@ -35,7 +35,7 @@ import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.LocatedMolecule;
 
 abstract public class MolecularCartoonClass implements MutableMolecularCartoon {
-    private MassBodyClass massBody = new MassBodyClass();
+    protected MassBodyClass massBody = new MassBodyClass();
     
     public double getMass() {return massBody.getMass();}
     public Vector3D getCenterOfMass() {return massBody.getCenterOfMass();}

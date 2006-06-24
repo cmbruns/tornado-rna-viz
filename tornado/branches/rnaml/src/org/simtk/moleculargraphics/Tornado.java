@@ -489,6 +489,9 @@ implements ResidueActionListener
         addCartoonSelection( BasePairOval.class, 
                 "Base Pair Ovals", null );
         
+        addCartoonSelection( TestOvalToon.class, 
+                "Test Oval Toon", null );
+        
         menu = new JMenu("Rotation");
         viewMenu.add(menu);
 

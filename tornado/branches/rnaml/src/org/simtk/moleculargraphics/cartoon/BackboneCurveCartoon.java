@@ -45,8 +45,11 @@ import org.simtk.molecularstructure.*;
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
 public class BackboneCurveCartoon extends MolecularCartoonClass {
-    double ribbonThickness = 1.50;
-    double ribbonWidth = 2.20;
+    double ribbonThickness = 1.00;
+    double ribbonWidth = 1.50;
+    
+    Map<Molecule, vtkPolyData> moleculeData = new HashMap<Molecule, vtkPolyData>();
+    
     /**
      * How many spline segments per residue
      */
@@ -294,5 +297,108 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         lineActor.AddPosition(0.0, 0.0, 0.0);
 
         assembly.AddPart(lineActor);
-    }    
+    }
+    
+    public void experimentalAddMolecule(LocatedMolecule molecule) {
+        if (! (molecule instanceof BiopolymerClass)) return;
+        BiopolymerClass biopolymer = (BiopolymerClass) molecule;
+        
+        RESIDUE: for (Iterator i = biopolymer.getResidueIterator(); i.hasNext();) {
+            PDBResidue residue = (PDBResidue) i.next();
+            
+            Vector3D backbonePosition;
+            Vector3D sideChainPosition;
+            try {
+                backbonePosition = residue.getBackbonePosition();
+                sideChainPosition = residue.getSideChainPosition();
+            } catch (InsufficientAtomsException exc) {
+                continue RESIDUE;
+            }
+            
+            if ( (backbonePosition != null) && (sideChainPosition != null) ) {
+                Vector3D point = backbonePosition;
+                Vector3D normal = new Vector3DClass( sideChainPosition.minus(backbonePosition).unit() );
+                addPoint(point, normal, residue, biopolymer);
+            }
+        }
+    }
+    
+    public void addPoint(Vector3D point, Vector3D normal, Residue residue, Biopolymer molecule) {
+        Color color = residue.getDefaultColor();
+        if (! (colorIndices.containsKey(color))) {
+            colorIndices.put(color, baseColorIndex);
+            lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
+            baseColorIndex ++;
+        }
+        int colorScalar = colorIndices.get(color);        
+
+        if (! moleculeData.containsKey(molecule)) {
+            createMoleculePipeline(molecule);
+        }
+        vtkPolyData polyData = moleculeData.get(molecule);
+        
+        if ( (point != null) && (normal != null) ) {
+            polyData.GetPoints().InsertNextPoint(point.getX(), point.getY(), point.getZ());
+            polyData.GetPointData().GetNormals().InsertNextTuple3(normal.getX(), normal.getY(), normal.getZ());
+            polyData.GetPointData().GetScalars().InsertNextTuple1(colorScalar);
+            
+            int numberOfPoints = polyData.GetPoints().GetNumberOfPoints();
+            polyData.GetLines().GetData().SetValue(0, numberOfPoints);
+            polyData.GetLines().GetData().InsertNextTuple1(numberOfPoints - 1);
+        }
+    }
+    
+    protected void createMoleculePipeline(Biopolymer molecule) {
+        vtkPoints linePoints = new vtkPoints();
+        vtkFloatArray lineNormals = new vtkFloatArray();
+        lineNormals.SetNumberOfComponents(3);
+        vtkFloatArray lineScalars = new vtkFloatArray();
+        lineScalars.SetNumberOfComponents(1);
+        
+        vtkCellArray lineCells = new vtkCellArray();
+        lineCells.InsertNextCell(0);
+        
+        vtkPolyData tubeData = new vtkPolyData();
+        moleculeData.put(molecule, tubeData);        
+
+        tubeData.SetPoints(linePoints);
+        tubeData.SetLines(lineCells);
+
+        // Incorporate the lineNormals
+        tubeData.GetPointData().SetNormals(lineNormals);
+        tubeData.GetPointData().SetScalars(lineScalars);
+        
+        vtkRibbonFilter lineRibbon = new vtkRibbonFilter();
+        lineRibbon.SetWidth(ribbonWidth);
+        lineRibbon.SetAngle(0);        
+        
+        vtkLinearExtrusionFilter ribbonThicknessFilter = new vtkLinearExtrusionFilter();
+        ribbonThicknessFilter.SetCapping(1);
+        ribbonThicknessFilter.SetExtrusionTypeToNormalExtrusion();
+        ribbonThicknessFilter.SetScaleFactor(ribbonThickness);
+        ribbonThicknessFilter.SetInput(lineRibbon.GetOutput());
+        
+        // The polygons on the newly extruded edges are not smoothly shaded
+        vtkPolyDataNormals dataNormals = new vtkPolyDataNormals();
+        dataNormals.SetFeatureAngle(80.0); // Angles smaller than this are smoothed
+        dataNormals.SetInput(lineRibbon.GetOutput());
+        
+        vtkPolyDataMapper tubeMapper = new vtkPolyDataMapper();        
+
+        // tubeMapper.SetInput(tubeData); // line
+        // tubeMapper.SetInput(lineRibbon.GetOutput()); // ribbon
+        // tubeMapper.SetInput(ribbonThicknessFilter.GetOutput()); // ribbon
+        tubeMapper.SetInput(dataNormals.GetOutput()); // ribbon
+
+        // tubeMapper.SetColorModeToMapScalars();
+        tubeMapper.SetLookupTable(lut);
+        tubeMapper.SetScalarRange(0.0, lut.GetNumberOfTableValues());
+
+        vtkActor lineActor = new vtkActor(); // tube        
+        lineActor.SetMapper(tubeMapper);
+
+        lineActor.AddPosition(0.0, 0.0, 0.0);
+
+        assembly.AddPart(lineActor);
+    }
 }

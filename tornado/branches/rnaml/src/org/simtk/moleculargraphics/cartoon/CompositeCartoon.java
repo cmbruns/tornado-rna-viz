@@ -27,8 +27,6 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.molecularstructure.LocatedMolecule;
-import org.simtk.util.Selectable;
-
 import java.util.*;
 import vtk.vtkAssembly;
 
@@ -36,11 +34,17 @@ public abstract class CompositeCartoon extends MolecularCartoonClass {
     protected List<MutableMolecularCartoon> subToons = new Vector<MutableMolecularCartoon>();
     protected vtkAssembly assembly = new vtkAssembly();
 
+    public CompositeCartoon() {}
+    
     public CompositeCartoon(Collection<MutableMolecularCartoon> toons) {
         for (MutableMolecularCartoon toon : toons) {
-            subToons.add(toon);
-            assembly.AddPart(toon.getAssembly());
+            addSubToon(toon);
         }
+    }
+    
+    public void addSubToon(MutableMolecularCartoon toon) {
+        subToons.add(toon);
+        assembly.AddPart(toon.getAssembly());
     }
     
     public void show(LocatedMolecule m) {
