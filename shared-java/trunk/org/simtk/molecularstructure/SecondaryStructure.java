@@ -39,7 +39,7 @@ import java.util.*;
   * 
  */
 public interface SecondaryStructure {
-    public Iterator getResidueIterator();
+    public Iterator<Residue> getResidueIterator();
     public void addResidue(Residue residue);
     public void setMolecule(Biopolymer biopolymer);
     public void setSource(String string);

@@ -66,7 +66,8 @@ public class RnamlDocument {
     /**
      * 
      */
-    public void importSecondaryStructures() {
+    @SuppressWarnings("unchecked")
+	public void importSecondaryStructures() {
     	// Parse the xml file
         Element rnamlEl;
         Iterator docIt = rnamlDoc.getDescendants(new ElementFilter("rnaml"));
@@ -211,7 +212,7 @@ public class RnamlDocument {
     		}
     	}
 
-    	Element bond = basepair.getChild("bond_orientation"); //should be zero or one of these
+    	Element bond = basepair.getChild("bond-orientation"); //should be zero or one of these
     	if (bond!=null){ 
     		try {
         		thisBP.setBond_orient(bond.getTextTrim());
@@ -221,7 +222,7 @@ public class RnamlDocument {
     		}
     	}
     	
-    	Element strandO = basepair.getChild("strand_orientation"); //should be zero or one of these
+    	Element strandO = basepair.getChild("strand-orientation"); //should be zero or one of these
     	if (strandO!=null){ 
     		try {
         		thisBP.setStrand_orient(strandO.getTextTrim());
