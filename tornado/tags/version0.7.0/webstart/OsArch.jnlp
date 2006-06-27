@@ -1,0 +1,17 @@
+<jnlp spec="1.0+"
+  codebase="http://simtk.org/cmbruns/java"
+  href="OsArch.jnlp"
+>
+  <information>
+    <title>Operating system/architechure sniffer</title>
+    <vendor>Stanford National Center for Biomedical Computation</vendor>
+    <homepage href="http://simtk.org/" />
+    <description>Detect os and arch</description>
+  </information>
+  <offline-allowed/>
+  <resources>
+    <j2se version="1.3+" />
+    <jar href="OsArch.jar"/>
+  </resources>
+<application-desc main-class="OsArch" />
+</jnlp>
