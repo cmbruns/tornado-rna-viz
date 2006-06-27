@@ -116,7 +116,13 @@ public class MoleculeCollection {
             // Stop parsing after the END record
             if (PDBLine.substring(0,3).equals("END")) {
                 reader.reset(); // Leave the END tag for the next guy
-                return;
+                break FILE_LINE;
+            }
+
+            // Stop parsing after the END record
+            else if (PDBLine.substring(0,6).equals("ENDMDL")) {
+                reader.reset(); // Leave the END tag for the next guy
+                break FILE_LINE;
             }
 
             // If we get to ATOM records, we need to stop and send the stream to the Molecule parser
@@ -124,7 +130,7 @@ public class MoleculeCollection {
                 // Oops, we passed the header, and are now in the coordinates
                 // Pass this off to the Molecule parser
                 reader.reset();
-                break;
+                break FILE_LINE;
             }
 
             else if (PDBLine.substring(0,6).equals("TITLE ")) {
@@ -194,6 +200,7 @@ public class MoleculeCollection {
                 secondaryStructures.add(helix);
             }
             else if (PDBLine.substring(0,6).equals("SHEET ")) {
+                System.out.println("Parsing strand...");
                 BetaStrand strand = new BetaStrand();
 
                 // Make beta strand residue descriptions look like alpha helix residue descriptions
@@ -244,10 +251,8 @@ public class MoleculeCollection {
         } while (mol.getAtomCount() > 0);
 
         // Apply PDB secondary structures
-        for (Iterator i = secondaryStructures.iterator(); i.hasNext(); ) {
+        SS: for (SecondaryStructure structure : secondaryStructures) {
             
-            SecondaryStructure structure = (SecondaryStructure) i.next();
-
             String startResidueString = (String) secondaryStructureStarts.get(structure);
             String chainID = startResidueString.substring(4, 5);
             // String startInsertionCode = startResidueString.substring(10, 11);
@@ -257,25 +262,23 @@ public class MoleculeCollection {
             // String endInsertionCode = endResidueString.substring(10, 11);
             int endResidueNumber = (new Integer(endResidueString.substring(6, 10).trim())).intValue();
 
-            Collection m = (Collection) chainMolecules.get(chainID);
+            Collection<Molecule> m = chainMolecules.get(chainID);
             
-            if (m != null) {
-                for (Iterator molIter = m.iterator(); molIter.hasNext();) {
-                    PDBMolecule molecule = (PDBMolecule) molIter.next();
+            if (m == null) continue SS;
 
-                    if (molecule instanceof Biopolymer) {
-                        Biopolymer biopolymer = (Biopolymer) molecule;
-                        for (int res = startResidueNumber; res <= endResidueNumber; res++) {
-                            Residue residue = biopolymer.getResidueByNumber(res);
-    
-                            // Set relationship among residue/biopolymer/structure
-                            structure.addResidue(residue);
-                            structure.setMolecule(biopolymer);
-                            biopolymer.addSecondaryStructure(structure);
-                            residue.addSecondaryStructure(structure);
-                        }
-                    }
-                }
+            // MOL: for (Molecule molecule : m) {
+            Molecule molecule = m.iterator().next(); // Use first molecule of chain only
+
+            if (! (molecule instanceof Biopolymer)) continue SS;
+            Biopolymer biopolymer = (Biopolymer) molecule;
+            for (int res = startResidueNumber; res <= endResidueNumber; res++) {
+                Residue residue = biopolymer.getResidueByNumber(res);
+
+                // Set relationship among residue/biopolymer/structure
+                structure.addResidue(residue);
+                structure.setMolecule(biopolymer);
+                biopolymer.addSecondaryStructure(structure);
+                residue.addSecondaryStructure(structure);
             }
         }
         

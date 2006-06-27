@@ -100,8 +100,8 @@ public class Nucleotide extends PDBResidueClass {
         LocatedAtom atom = null;
 
         // Try different atoms in order of preference
-        if (atom == null) atom = getAtom(" C5*");
         if (atom == null) atom = getAtom(" P  ");
+        if (atom == null) atom = getAtom(" C5*");
 
         if (atom == null) return null;
         return atom.getCoordinates();

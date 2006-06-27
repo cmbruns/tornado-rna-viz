@@ -68,6 +68,13 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
         return answer;
     }
     
+    public boolean isSolvent() {
+        // Assume that a single oxygen atom is water
+        if ( (atoms().size() == 1) && (atoms().iterator().next().getElementSymbol().equals("O")))
+                return true;
+        return false;
+    }
+    
     public void setChainID(String chainID) {this.chainID = chainID;}
     public String getChainID() {return this.chainID;}
     
@@ -295,6 +302,7 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
      * @throws IOException
      */
     public static PDBMolecule createFactoryPDBMolecule(LineNumberReader reader) throws IOException {
+        PDBMolecule answer = null;
         PDBAtomSet currentMoleculeAtoms = new PDBAtomSet();
         
         char chainIdentifier = '\0';
@@ -313,9 +321,14 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
             // Stop parsing after the END record
 			if (PDBLine.substring(0,3).equals("END")) {
 			    reader.reset(); // Leave the END tag for the next guy
-                PDBMolecule molecule = PDBMoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms); // empty molecule
-				return molecule;
+				break FILE_LINE;
 			}
+
+            // Stop parsing after the END record
+            else if (PDBLine.substring(0,6).equals("ENDMDL")) {
+                reader.reset(); // Leave the END tag for the next guy
+                break FILE_LINE;
+            }
 
 			// Lines with atomic coordinates are used to create new atoms
 			else if ((PDBLine.substring(0,6).equals("ATOM  ")) || (PDBLine.substring(0,6).equals("HETATM"))) {
@@ -352,8 +365,7 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
 				    }
 				    else { // Not the same molecule - return
 				        reader.reset(); // Put latest atom back into the stream
-                        PDBMolecule molecule = PDBMoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
-                        return molecule;
+                        break FILE_LINE;
 				    }
 				}
 			} // ATOM or HETATM record
@@ -362,7 +374,8 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
 			reader.mark(200); // Commit to reading this far into the file
 		}
 
-        PDBMolecule answer =  PDBMoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
+        if (answer == null)
+            answer =  PDBMoleculeClass.createFactoryPDBMolecule(currentMoleculeAtoms);
         
         if (answer != null) answer.setChainID(new String("" + chainIdentifier));
         

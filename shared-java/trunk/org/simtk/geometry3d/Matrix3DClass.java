@@ -27,14 +27,36 @@
 package org.simtk.geometry3d;
 
 public class Matrix3DClass extends MathMatrixClass implements MutableMatrix3D {
+    static public Matrix3D identity = new Matrix3DClass(1,0,0, 0,1,0, 0,0,1);
 
-    Matrix3DClass() {super(3,3);}
-    Matrix3DClass(MathMatrix m) {
+    public Matrix3DClass() {super(3,3);}
+
+    public Matrix3DClass(MathMatrix m) {
         super(3,3);
         checkShape(m);
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
                 set(i, j, m.get(i, j));
+    }
+    
+    public Matrix3DClass(
+            double e00, double e01, double e02, 
+            double e10, double e11, double e12, 
+            double e20, double e21, double e22) {
+        super(3,3);
+
+        set(0,0,e00);
+        set(0,1,e01);
+        set(0,2,e02);
+
+        set(1,0,e10);
+        set(1,1,e11);
+        set(1,2,e12);
+
+        set(2,0,e20);
+        set(2,1,e21);
+        set(2,2,e22);
+
     }
 
     public void plusEquals(MathMatrix m2) {

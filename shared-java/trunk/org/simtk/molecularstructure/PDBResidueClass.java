@@ -396,4 +396,8 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
                  
         return false;
     }
+
+    public boolean isSolvent() {
+        return PDBResidueClass.isSolvent(getResidueName());
+    }
 }

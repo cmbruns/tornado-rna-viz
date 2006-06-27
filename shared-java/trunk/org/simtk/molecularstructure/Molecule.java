@@ -27,4 +27,5 @@
 package org.simtk.molecularstructure;
 
 public interface Molecule {
+    boolean isSolvent();
 }
