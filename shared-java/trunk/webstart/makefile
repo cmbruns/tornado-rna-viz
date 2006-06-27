@@ -1,8 +1,11 @@
+JAVA_HOME = /cygdrive/c/ProgramFiles/Java/jdk1.5.0_04/bin
+JAVAC = $(JAVA_HOME)/javac
 SRC_DIR = ..
 SRCS = $(SRC_DIR)/org/simtk/*/*.java $(SRC_DIR)/org/simtk/*/*/*.java $(SRC_DIR)/Jama/*.java $(SRC_DIR)/Jama/*/*.java
 BUILD_DIR = build
 MANIFEST_FILE = simtkjava_manifest.tmp
 JAR_FILE = SimtkSharedJava.jar
+CLASSPATH = ".;s_jdom.jar"
 
 PROD_KEYSTORE = D:\simtkjava_signing\simtkjava.store
 
@@ -24,9 +27,9 @@ test: s_$(JAR_FILE)
 	svn commit -m "automated commit during build testing"
 	javaws SimtkSharedJava_test.jnlp
 
-all_classes: $(SRCS)
+all_classes: $(SRCS) s_jdom.jar
 	mkdir -p $(BUILD_DIR)
-	javac -deprecation -d $(BUILD_DIR) -classpath "." -sourcepath "$(ISIM_SRC_DIR)" $(SRCS)
+	$(JAVAC) -deprecation -d $(BUILD_DIR) -classpath $(CLASSPATH) -sourcepath "$(SRC_DIR)" $(SRCS)
 
 ### In this case, no special content is need in the manifest file
 $(MANIFEST_FILE):
