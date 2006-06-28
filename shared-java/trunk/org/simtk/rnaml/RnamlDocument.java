@@ -38,12 +38,14 @@ import org.simtk.molecularstructure.atom.LocatedAtom;
 import org.simtk.molecularstructure.atom.PDBAtom;
 import org.simtk.molecularstructure.nucleicacid.*;
 
+import java.io.File;
+
 public class RnamlDocument {
     Map<Integer, NucleicAcid> rnamlIndexMolecules = new HashMap<Integer, NucleicAcid>();
     org.jdom.Document rnamlDoc;
     Map<Integer, List<Integer> > resNumTables = new HashMap<Integer, List<Integer> >();
     
-    public RnamlDocument(String rnamlFileName, MoleculeCollection molecules) 
+    public RnamlDocument(File rnamlFile, MoleculeCollection molecules) 
     throws JDOMException, java.io.IOException
     {
 
@@ -59,7 +61,7 @@ public class RnamlDocument {
         
         // Read xml file
         SAXBuilder builder = new SAXBuilder();
-        rnamlDoc = builder.build(rnamlFileName);        
+        rnamlDoc = builder.build(rnamlFile);        
     }
     
     
@@ -189,7 +191,13 @@ public class RnamlDocument {
 		int PDBpos3 = ((Integer)nTable3.get(pos3i-1));
 		Residue r5 = mol5.getResidueByNumber(PDBpos5);
 		Residue r3 = mol3.getResidueByNumber(PDBpos3);
-		BasePair thisBP = BasePair.makeBasePair(r5, r3, "rnaml");
+        
+		// TODO throw errors here
+        if (r5 == null) return;
+        if (r3 == null) return;
+
+        BasePair thisBP = BasePair.makeBasePair(r5, r3, "rnaml");
+        if (thisBP == null) return;
 
     	Element e5p = basepair.getChild("edge-5p"); //should be zero or one of these
     	if (e5p!=null){

@@ -200,7 +200,7 @@ public class MoleculeCollection {
                 secondaryStructures.add(helix);
             }
             else if (PDBLine.substring(0,6).equals("SHEET ")) {
-                System.out.println("Parsing strand...");
+                // System.out.println("Parsing strand...");
                 BetaStrand strand = new BetaStrand();
 
                 // Make beta strand residue descriptions look like alpha helix residue descriptions
@@ -280,38 +280,6 @@ public class MoleculeCollection {
                 biopolymer.addSecondaryStructure(structure);
                 residue.addSecondaryStructure(structure);
             }
-        }
-        
-        
-        // Check for RNAML secondary structures
-        // needs to be made more robust & expansive
-        // looks in local direrctory, doesn't know loc of PDB
-        boolean haveNucleic = false;
-        for (Molecule m : this.molecules()) 
-            if (m instanceof NucleicAcid) haveNucleic = true;
-        if ( haveNucleic && (mPdbId != null) )  {
-            String rnamlFileName = mPdbId+".pdb.xml";
-            
-        	File curDir = new File(".");
-        	List dirList = Arrays.asList(curDir.list());
-        	if (dirList.contains(rnamlFileName)){
-        		System.out.println("processing xml file");
-
-                try {
-                    RnamlDocument rnamlDoc = new RnamlDocument(rnamlFileName, this);
-                    rnamlDoc.importSecondaryStructures();
-                } 
-                catch (org.jdom.JDOMException exc) {
-                    exc.printStackTrace();
-                }
-                catch (IOException exc) {
-                    exc.printStackTrace();
-                }
-        	}
-        	else {
-        		System.out.println("can't find xml file "+rnamlFileName);
-        		System.out.println("directory listing includes "+dirList);        		
-        	}
         }
 	}    
 }
