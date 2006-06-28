@@ -26,14 +26,10 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.util.Hashtable;
 import java.util.Iterator;
-
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.atom.*;
-import java.util.*;
-import java.awt.*;
 
 public class TestOvalToon extends CompositeCartoon {
     private BasePairOval ovalToon = new BasePairOval();
@@ -72,8 +68,8 @@ public class TestOvalToon extends CompositeCartoon {
         			return;
         		}
         	}
+            stickToon.add(m);
         }
-        stickToon.add(m);
     }
     
 }

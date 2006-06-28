@@ -42,7 +42,7 @@ import org.simtk.molecularstructure.*;
 /** 
  * @author Christopher Bruns
  * 
- * Draw a space-filling van der Waals sphere around each atom in the structure
+ * Draw a ribbon with rectangular cross section along the backbone of a biopolymer
  */
 public class BackboneCurveCartoon extends MolecularCartoonClass {
     double ribbonThickness = 1.00;
