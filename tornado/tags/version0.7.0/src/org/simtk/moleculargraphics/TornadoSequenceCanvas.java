@@ -64,7 +64,7 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
     boolean insertionResidueRightSide;
     // HashSet selectedResidues = new HashSet();
     HashSet temporarilySelectedResidues = new HashSet(); // During mouse drag, don't commit yet
-    private Color selectionColor;
+    private Color selectionColor = new Color(255, 255, 100);
     Color highlightColor = new Color(255, 255, 100);
 
     AutoScrollThread autoScrollThread = new AutoScrollThread();
