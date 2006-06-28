@@ -41,6 +41,8 @@ public class BasePairOval extends TensorGlyphCartoon {
     // int colorScalar = 1;
     private int baseColorIndex = 1;
     private Map<Color, Integer> colorIndices = new HashMap<Color, Integer>();
+    protected ColorScheme colorScheme = 
+        SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME;
     
     public BasePairOval() {
         super();
@@ -175,7 +177,11 @@ public class BasePairOval extends TensorGlyphCartoon {
         Collection<Object> currentObjects = new HashSet<Object>(parentObjects);
         currentObjects.add(res1);
         
-        Color color = res1.getDefaultColor();
+        // Color color = res1.getDefaultColor();
+        Color color;
+        try {color = colorScheme.colorOf(res1);}
+        catch (UnknownObjectColorException exc) {color = Color.white;}
+        
         if (! (colorIndices.containsKey(color))) {
             colorIndices.put(color, new Integer(baseColorIndex));
             lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);

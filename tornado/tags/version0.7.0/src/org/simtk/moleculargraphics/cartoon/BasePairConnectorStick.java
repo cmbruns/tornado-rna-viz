@@ -38,6 +38,8 @@ import vtk.*;
 public class BasePairConnectorStick extends TensorGlyphCartoon {
     private int baseColorIndex = 1;
     private Map<Color, Integer> colorIndices = new HashMap<Color, Integer>();
+    protected ColorScheme colorScheme = 
+        SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME;
     
     public BasePairConnectorStick() {
         super();
@@ -117,7 +119,11 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
         Collection<Object> currentObjects = new HashSet<Object>(parentObjects);
         currentObjects.add(res);
         
-        Color color = res.getDefaultColor();
+        // Color color = res.getDefaultColor();
+        Color color;
+        try {color = colorScheme.colorOf(res);}
+        catch (UnknownObjectColorException exc) {color = Color.white;}
+
         if (! (colorIndices.containsKey(color))) {
             colorIndices.put(color, new Integer(baseColorIndex));
             lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);

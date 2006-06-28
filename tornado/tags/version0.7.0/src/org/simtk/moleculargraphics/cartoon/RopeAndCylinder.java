@@ -42,61 +42,40 @@ import vtk.*;
  * 
  * Rope and cylinder RNA structure, using modular components
  */
-public class RopeAndCylinder extends MolecularCartoonClass {
+public class RopeAndCylinder extends CompositeCartoon {
 
     DuplexCylinderCartoon duplexes = new DuplexCylinderCartoon();
-    BackboneStick ropes = new BackboneStick(1.00);
+    BackboneStick nucRopes = new BackboneStick(1.00);
+    BackboneStick proteinRopes = new BackboneStick(0.5);
+    BallAndStickCartoon cpks = new BallAndStickCartoon();
     
     vtkAssembly assembly = new vtkAssembly();
     
     public RopeAndCylinder() {
-        assembly.AddPart(duplexes.getAssembly());
-        assembly.AddPart(ropes.getActor());
+        addSubToon(duplexes);
+        addSubToon(nucRopes);
+        addSubToon(proteinRopes);
+        addSubToon(cpks);
     }
     
-    public void select(Selectable s) {
-        duplexes.select(s);
-        ropes.select(s);
-    }
-    public void unSelect(Selectable s) {
-        duplexes.unSelect(s);
-        ropes.unSelect(s);
-    }
-    public void unSelect() {
-        duplexes.unSelect();
-        ropes.unSelect();
-    }
-    public void highlight(LocatedMolecule m) {
-        duplexes.highlight(m);
-        ropes.highlight(m);
-    }
-    public void hide(LocatedMolecule m) {
-        duplexes.hide(m);
-        ropes.hide(m);
-    }
-    public void show(LocatedMolecule m) {
-        duplexes.show(m);
-        ropes.show(m);
-    }
-    public void hide() {
-        duplexes.hide();
-        ropes.hide();
-    }
-    public void show() {
-        duplexes.show();
-        ropes.show();
-    }
-    public void updateCoordinates() {
-        duplexes.updateCoordinates();
-        ropes.updateCoordinates();
-    }
+
     public void add(LocatedMolecule m) {
-        super.add(m); // This is needed to avoid hosing display
-        
-        if (m instanceof NucleicAcid) add((NucleicAcid) m);        
+        // super.add(m); // This is needed to avoid hosing display
+        if (m instanceof NucleicAcid) {
+            addNucleicAcid((NucleicAcid) m); 
+        }
+        else if (m instanceof Biopolymer) {
+            proteinRopes.add(m);
+        }
+        else if (m.isSolvent()) {
+            return; // No solvent please
+        }
+        else {
+            cpks.add(m);
+        }
     }
     
-    protected void add(NucleicAcid molecule) {
+    protected void addNucleicAcid(NucleicAcid molecule) {
         // Distinguish duplex residues from rope residues
 
         Set<LocatedResidue> allResidues = new LinkedHashSet<LocatedResidue>();
@@ -138,22 +117,14 @@ public class RopeAndCylinder extends MolecularCartoonClass {
         }
         
         // Rope cartoon needs to know what molecule it came from
-        List parentObjects = new Vector();
+        List<Object> parentObjects = new Vector<Object>();
         parentObjects.add(molecule);
         
         for (LocatedResidue residue : ropeResidues) {
-            ropes.addResidue(residue, parentObjects);
+            nucRopes.addResidue(residue, parentObjects);
         }
 
         duplexes.add(molecule);        
         // ropes.add(molecule);
-    }
-    
-    public void clear() {
-        super.clear();
-        duplexes.clear();
-        ropes.clear();
-    }
-    
-    public vtkAssembly getAssembly() {return assembly;}
+    }   
 }

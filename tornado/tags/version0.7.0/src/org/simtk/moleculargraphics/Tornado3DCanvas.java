@@ -51,6 +51,7 @@ public class Tornado3DCanvas extends StructureCanvas
     
     HashSet currentlyDepressedKeyboardKeys = new HashSet();
     
+    boolean showLogo = false;
     boolean doFog = true;
     boolean fogLinear = true;
     GL gl;
@@ -62,8 +63,6 @@ public class Tornado3DCanvas extends StructureCanvas
 //    vtkProp currentHighlight;
 //    PDBResidue currentHighlightedResidue;
 //    MutableLocatedMolecule selectedAtoms = new MoleculeClass();
-    
-    boolean useLogoOverlay = true;
     
     vtkRenderer overlayRenderer;
     vtkImageData logoImageData = null;
@@ -90,7 +89,7 @@ public class Tornado3DCanvas extends StructureCanvas
         classLoader = getClass().getClassLoader();
         
         // Display logo
-        if (useLogoOverlay)
+        if (showLogo)
             loadSimtkLogo();
         
         // setUpLights();
@@ -130,10 +129,9 @@ public class Tornado3DCanvas extends StructureCanvas
         }
 
         // Create logo image for lower right hand corner
-
         // Create vtk image pixel by pixel
         
-        Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("resources/images/simtk3.png"));
+        Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("images/simtk3.png"));
         MediaTracker tracker = new MediaTracker(this);
         tracker.addImage(logoImage, 0);
         try {tracker.waitForAll();}
@@ -188,7 +186,7 @@ public class Tornado3DCanvas extends StructureCanvas
         else
             throw new RuntimeException("Logo load failed");
 
-        overlayRenderer.AddActor(logoActor);        
+        overlayRenderer.AddActor(logoActor);  
     }
     
     public void setBackgroundColor(Color c) {
@@ -270,24 +268,37 @@ public class Tornado3DCanvas extends StructureCanvas
     {
         // System.err.println("resize");
         
-        if ((overlayRenderer != null) && (overlayRenderer.GetActiveCamera() != null)) {
-            Lock();
-
-            // Keep the logo small
-            overlayRenderer.GetActiveCamera().SetParallelScale(getHeight()/2);
+        if (showLogo) {
             
-            if (logoImageData != null)
-                logoImageData.SetOrigin(getWidth()/2 - logoWidth, -getHeight()/2, 0);
-            else if (logoReader != null)
-                // Keep the logo in the lower right corner
-                logoReader.SetDataOrigin(getWidth()/2 - logoWidth, -getHeight()/2, 0);
-
-            UnLock();
-            
-            // Cause update
-            resetCameraClippingRange(); // somehow this is needed for screen update
-            
-            // repaint();
+            if ((overlayRenderer != null) && (overlayRenderer.GetActiveCamera() != null)) {
+                Lock();
+    
+                // Keep the logo small
+                overlayRenderer.GetActiveCamera().SetParallelScale(getHeight()/2);
+    
+                System.out.println("Window size = "+getWidth()+", "+getHeight());
+    
+                int logoX = getWidth()/2 - logoWidth;
+                int logoY = -getHeight()/2;
+                
+                if (logoImageData != null) {
+                    logoImageData.SetOrigin(logoX, logoY, 0);
+                    logoImageData.Modified();
+                    System.out.println("Logo data recentered at "+logoX+", "+logoY);
+                }
+                else if (logoReader != null) {
+                    // Keep the logo in the lower right corner
+                    logoReader.SetDataOrigin(logoX, logoY, 0);
+                    System.out.println("Logo reader recentered at "+logoX+", "+logoY);
+                }
+    
+                UnLock();
+                
+                // Cause update
+                resetCameraClippingRange(); // somehow this is needed for screen update
+                
+                // repaint();
+            }
         }
     }
     public void componentMoved(ComponentEvent e) {}
@@ -422,143 +433,6 @@ public class Tornado3DCanvas extends StructureCanvas
         }
     }
     
-//    Residue mouseResidue(MouseEvent e) {        
-//        double x = e.getX();
-//        double y = getSize().height - e.getY();
-//        
-//        Residue pickedResidue = null;
-//        Vector3D pickedPosition = null;
-//        
-//        Lock();
-//        
-//        if (false) { // vtkWorldPointPicker
-//            // This method is fast, but often picks positions
-//            // that are behind the atom I am trying to pick
-//            // Takes 0-20 ms for single duplex atom fill
-//            
-//            // pickResult is always 0 with vtkWorldPointPicker
-//            vtkWorldPointPicker picker = new vtkWorldPointPicker(); // Unrelated to models
-//            int pickResult = picker.Pick(x, y, -100, ren);
-//            double[] pickedPoint = picker.GetPickPosition();
-//            pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
-//        }
-//
-//        else if (false) { // vtkPropPicker
-//            // This method is fast, but often picks positions
-//            // that are behind the atom I am trying to pick
-//            // About 200 ms for single duplex, atom fill
-//            
-//            // pickResult is always 0 with vtkWorldPointPicker
-//            vtkPropPicker picker = new vtkPropPicker(); // Unrelated to models
-//            int pickResult = picker.Pick(x, y, -100, ren);
-//            // System.out.println("Picked something");
-//            double[] pickedPoint = picker.GetPickPosition();
-//            // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-//            pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
-//        }
-//        
-//        else if (true) { // vtkCellPicker
-//            // With vtk 4.4 this seems to pick either the right thing
-//            // or nothing at all
-//            // About 200 ms for single duplex, atom fill
-//            
-//            vtkCellPicker picker = new vtkCellPicker(); // Unrelated to models
-//            // picker.SetTolerance(0.001);
-//            int pickResult = picker.Pick(x, y, -100, ren);
-//            if (pickResult != 0) {
-//                // System.out.println("Picked something");
-//                double[] pickedPoint = picker.GetPickPosition();
-//                // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-//                pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
-//            }
-//        }
-//        
-//        else if (false) { // vtkPicker            
-//            vtkPicker picker = new vtkPicker(); // Unrelated to models
-//            picker.SetTolerance(0.0);
-//            int pickResult = picker.Pick(x, y, -100, ren);
-//            if (pickResult != 0) {
-//                // System.out.println("Picked something");
-//                double[] pickedPoint = picker.GetPickPosition();
-//                
-//                pickedPoint = picker.GetProp3D().GetPosition();
-//                
-//                // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-//                pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
-//
-//                vtkProp3DCollection props3D = picker.GetProp3Ds();
-//                // System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
-//                
-//                vtkActorCollection actors = picker.GetActors();
-//                // System.out.println("Number of Actors = " + actors.GetNumberOfItems());
-//                
-//            }
-//        }
-//        
-//        else if (false) { // default picker
-//            int pickResult = picker.Pick(x, y, -100, ren);
-//            if (pickResult != 0) {
-//                // System.out.println("Picked something");
-//                double[] pickedPoint = picker.GetPickPosition();
-//                System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-//                pickedPosition = new Vector3DClass(pickedPoint[0], pickedPoint[1], pickedPoint[2]);
-//                
-//                vtkProp3DCollection props3D = picker.GetProp3Ds();
-//                // System.out.println("Number of Prop3Ds = " + props3D.GetNumberOfItems());
-//                
-//                vtkActorCollection actors = picker.GetActors();
-//                // System.out.println("Number of Actors = " + actors.GetNumberOfItems());                
-//            }
-//        }
-//
-//        else {
-//            vtkPropPicker picker = new vtkPropPicker(); // takes about 2 seconds
-//            int pickResult = picker.PickProp(x, y, ren);
-//    
-//            // vtkPicker picker = new vtkPicker(); // I don't understand positions
-//    
-//    
-//            // vtkPointPicker picker = new vtkPointPicker(); // Exact points only?
-//            // vtkCellPicker picker = new vtkCellPicker();
-//    
-//            // picker.SetTolerance(0.1f);
-//            // int pickResult = picker.Pick(x, y, 0, ren);
-//            
-//            // if (pickResult != 0) {
-//            if (true) {
-//                // System.out.println("Picked something");
-//    
-//                // vtkActor actor = picker.GetActor();
-//                // System.out.println("Actor = " + actor); // null for glyph3d?
-//                
-//    //            vtkAssembly assembly = picker.GetAssembly();
-//    //            if (assembly != null) {
-//    //                vtkAssemblyPath path = assembly.GetNextPath();
-//    //                if (path != null) {
-//    //                    vtkAssemblyNode node = path.GetFirstNode();
-//    //                    int nodeCount = 1;
-//    //                    while ((node = path.GetNextNode()) != null) {
-//    //                        nodeCount ++;
-//    //                    }
-//    //                    // I have never reached this statement...
-//    //                    System.out.println("Assembly node count = " + nodeCount);
-//    //                }
-//    //            }
-//    
-//                double[] pickedPoint = picker.GetPickPosition();
-//                // System.out.println(""+pickedPoint[0]+", "+pickedPoint[1]+", "+pickedPoint[2]);
-//            }
-//            else {
-//                // System.out.println("Picked nothing");
-//            }
-//        }
-//        
-//        UnLock();
-//
-//        // TODO
-//        
-//        return pickedResidue;
-//    }
     
     public void Azimuth (double a) {
         if (cam == null) return;
@@ -575,73 +449,8 @@ public class Tornado3DCanvas extends StructureCanvas
         // super.mouseEntered(event);
     }
     public void mouseExited(MouseEvent event) {
-   }
-    
-//    public void clearResidueHighlights() {
-//        vtkProp highlight;
-//        for (Iterator i = residueHighlights.values().iterator();
-//             i.hasNext();
-//        ) {
-//            highlight = (vtkProp) (i.next());
-//        // for (vtkProp highlight : residueHighlights.values()) {
-//
-//            // try {ren.RemoveViewProp(highlight);}
-//            // catch (NoSuchMethodError exc) {
-//            //     ren.RemoveProp(highlight);
-//            // }
-//            ren.RemoveProp(highlight);
-//        }
-//        residueHighlights.clear();
-//    }
-//    
-//    public void addResidueHighlight(Residue r, vtkProp h) {
-//        if (h == null) return;
-//        h.SetVisibility(0);
-//        residueHighlights.put(r, h);
-//
-//        // try{ren.AddViewProp(h);}
-//        // catch(NoSuchMethodError exc){ren.AddProp(h);}
-//        ren.AddProp(h);
-//    }
-    
-//     public void add(Residue r) {}    
-//     public void clearResidues() {}
-
-//    public void centerOn(Residue residue) {
-//        if (! (residue instanceof LocatedResidue)) return;
-//        
-//        LocatedResidue r = (LocatedResidue) residue;
-//        
-//        double  FPoint[] = cam.GetFocalPoint() ;
-//        double  PPoint[] = cam.GetPosition();
-//
-//        Vector3D oldFocalPoint = new Vector3DClass(FPoint[0], FPoint[1], FPoint[2]);
-//        Vector3D newFocalPoint = r.getCenterOfMass();
-//        Vector3D focalShift = new Vector3DClass( newFocalPoint.minus(oldFocalPoint) );
-//
-//        Vector3D oldPosition = new Vector3DClass(PPoint[0], PPoint[1], PPoint[2]);
-//        Vector3D newPosition = new Vector3DClass( oldPosition.plus(focalShift) );
-//        
-//        Lock();
-//        cam.SetFocalPoint(newFocalPoint.getX(),newFocalPoint.getY(),newFocalPoint.getZ());
-//        cam.SetPosition(newPosition.getX(),newPosition.getY(),newPosition.getZ());
-//        UnLock();
-//    }
-    
-    
-    public void mousePressed(MouseEvent event) {
-        // residueActionBroadcaster.lubricateUserInteraction();
-        super.mousePressed(event);
-    }
-
-    public void mouseDragged(MouseEvent event) {
-        // residueActionBroadcaster.lubricateUserInteraction();
-        super.mouseDragged(event);
     }
     
-    public void keyTyped(KeyEvent e) {
-        super.keyTyped(e);
-    }
     public void keyPressed(KeyEvent e) {        
         currentlyDepressedKeyboardKeys.add(KeyEvent.getKeyText(e.getKeyCode()));
         super.keyPressed(e);

@@ -36,7 +36,7 @@ import org.simtk.moleculargraphics.cartoon.*;
 import vtk.*;
 
 public class StructureCanvas extends vtkPanel 
-implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, MassBody
+implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, MassBody
 {
     static {
         // Keep vtk canvas from obscuring swing widgets
@@ -60,19 +60,19 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
     
     // private double totalMass = 0.0;
     // private Vector3D centerOfMass = new Vector3DClass(0, 0, 0);
-    MassBodyClass massBody = new MassBodyClass();
+    // MassBodyClass massBody = new MassBodyClass();
 
     public StructureCanvas() {
         addMouseWheelListener(this);
         setUpLights();
     }
     
-    public double getMass() {return massBody.getMass();}
-    public Vector3D getCenterOfMass() {return massBody.getCenterOfMass();}
+    // public double getMass() {return massBody.getMass();}
+    // public Vector3D getCenterOfMass() {return massBody.getCenterOfMass();}
     
     protected void setUpLights() {
         // Remove or dim that darn initial headlight.
-        lgt.SetIntensity(0.0);
+        lgt.SetIntensity(0.1);
 
         vtkLightKit lightKit = new vtkLightKit();
         lightKit.MaintainLuminanceOn();
@@ -86,21 +86,23 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
         
         lightKit.SetBackLightWarmth(0.32);
         lightKit.SetFillLightWarmth(0.32);
-        // lightKit.SetHeadLightWarmth(0.45); // vtk 5.0
-        lightKit.SetHeadlightWarmth(0.45); // vtk 4.4
+        lightKit.SetHeadLightWarmth(0.45); // vtk 5.0
+        // lightKit.SetHeadlightWarmth(0.45); // vtk 4.4
         
-        lightKit.AddLightsToRenderer(ren);        
+        lightKit.AddLightsToRenderer(ren);
     }
     
     public void setBackgroundColor(Color c) {
         backgroundColor = c;
 
+        double r = backgroundColor.getRed()/255.0;
+        double g = backgroundColor.getGreen()/255.0;
+        double b = backgroundColor.getBlue()/255.0;
+        
         if (ren != null) {
-            ren.SetBackground(
-                    backgroundColor.getRed()/255.0,
-                    backgroundColor.getGreen()/255.0,
-                    backgroundColor.getBlue()/255.0);
+            ren.SetBackground(r,g,b);
         }
+        
     }
 
     // public void setMolecules(MoleculeCollection molecules, MolecularCartoonClass.CartoonType cartoonType) {
@@ -112,7 +114,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
         if (assembly != null) {
 
             // Update mass distribution in display
-            massBody.add(cartoon);
+            // massBody.add(cartoon);
 
             Lock();
             
@@ -122,14 +124,15 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
 
             // System.out.println("Number of assembly paths = " + assembly.GetNumberOfPaths());
             
-            GetRenderer().AddProp(assembly); // vtk 4.4
-            // GetRenderer().AddViewProp(assembly); // vtk 5.0
+            // GetRenderer().AddProp(assembly); // vtk 4.4
+            GetRenderer().AddViewProp(assembly); // vtk 5.0
             
-            System.out.println("Assembly added");
+            // System.out.println("Assembly added");
             
             // TODO This centering should be optional
             // TODO The view should also be scaled
-            centerByMass();
+            // centerByMass();
+            // centerByBoundingBox();
     
             UnLock();
             repaint();
@@ -363,15 +366,38 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer, Mas
     }
 
     public void clear() {
-        GetRenderer().RemoveAllProps(); // vtk 4.4
-        // GetRenderer().RemoveAllViewProps(); // vtk 5.0
-        massBody.clear();
+        // GetRenderer().RemoveAllProps(); // vtk 4.4
+        GetRenderer().RemoveAllViewProps(); // vtk 5.0
+        // massBody.clear();
     }
     
-    public void centerByMass() {
-        Vector3D centerOfMass = massBody.getCenterOfMass();
-        GetRenderer().GetActiveCamera().SetFocalPoint(centerOfMass.getX(), centerOfMass.getY(), centerOfMass.getZ());        
+    public void centerByBoundingBox() {
+        BoundingBox box = null;
+        
+        vtkPropCollection props = GetRenderer().GetViewProps();
+        props.InitTraversal();
+        vtkProp prop = props.GetNextProp();
+        while ( prop != null ) {
+            if (prop instanceof vtkProp3D) {
+                vtkProp3D prop3D = (vtkProp3D) prop;
+                BoundingBox propBox = new BoundingBox(prop3D.GetBounds());
+
+                if (box == null) box = propBox;
+                else box.add(propBox);
+            }
+            
+            prop = props.GetNextProp();
+        }
+        
+        if (box == null) return;
+        
+        Vector3D com = box.center();
+        GetRenderer().GetActiveCamera().SetFocalPoint(com.x(), com.y(), com.z());
     }
+//    public void centerByMass() {
+//        // Vector3D centerOfMass = massBody.getCenterOfMass();
+//        GetRenderer().GetActiveCamera().SetFocalPoint(centerOfMass.getX(), centerOfMass.getY(), centerOfMass.getZ());        
+//    }
     
     static final long serialVersionUID = 01L;
 }

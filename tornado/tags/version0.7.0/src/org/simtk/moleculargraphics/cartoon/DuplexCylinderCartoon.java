@@ -70,10 +70,6 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
     
     public vtkAssembly getAssembly() {return assembly;}
     
-    public void select(Selectable s) {} // TODO
-    public void unSelect(Selectable s) {} // TODO
-    public void unSelect() {} // TODO
-    public void highlight(LocatedMolecule molecule) {} // TODO
     public void add(LocatedMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         addNucleicAcid((NucleicAcid) molecule);

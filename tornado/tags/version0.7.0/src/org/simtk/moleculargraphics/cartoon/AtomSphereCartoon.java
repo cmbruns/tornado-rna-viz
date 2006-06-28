@@ -130,6 +130,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
         Vector3D c = atom.getCoordinates();
 
         int colorScalar = (int) (atom.getMass());
+
         Color col = atom.getDefaultAtomColor();
         lut.SetTableValue(colorScalar, col.getRed()/255.0, col.getGreen()/255.0, col.getBlue()/255.0, 1.0);
 

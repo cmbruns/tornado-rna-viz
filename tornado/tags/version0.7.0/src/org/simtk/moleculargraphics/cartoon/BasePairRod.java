@@ -39,8 +39,11 @@ import java.awt.Color;
   * of two nucleotides, colored by the nucleotide colors.
  */
 public class BasePairRod extends CylinderCartoon {
+    protected ColorScheme colorScheme = 
+        SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME;
+
     BasePairRod() {
-        super(1.50, 5.0); // radius, min length of half rod
+        super(1.00, 5.0); // radius, min length of half rod
         cylinderSource.SetCapping(1);
     }
     
@@ -74,8 +77,15 @@ public class BasePairRod extends CylinderCartoon {
         if (end == null) throw new InsufficientAtomsException();
         
         Vector3D midpoint = start.plus(end.minus(start).times(0.5));
-        Color color1 = base1.getDefaultColor();
-        Color color2 = base2.getDefaultColor();
+
+        Color color1, color2;
+        try {color1 = colorScheme.colorOf(base1);}
+        catch (UnknownObjectColorException exc) {color1 = Color.white;}
+        try {color2 = colorScheme.colorOf(base2);}
+        catch (UnknownObjectColorException exc) {color2 = Color.white;}
+        
+        // Color color1 = base1.getDefaultColor();
+        // Color color2 = base2.getDefaultColor();
 
         // Construct rod in two segments, one for each nucleotide
         addCylinder(start, midpoint, color1, base1);

@@ -29,6 +29,9 @@ package org.simtk.moleculargraphics.cartoon;
 import java.util.*;
 
 public class BasePairRibbon extends CompositeCartoon {
+    protected ColorScheme colorScheme = 
+        SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME;
+
     public BasePairRibbon() {
         super(getNewToons());
     }
