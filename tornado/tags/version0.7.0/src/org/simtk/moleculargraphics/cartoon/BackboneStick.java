@@ -46,6 +46,7 @@ public class BackboneStick extends GlyphCartoon {
     double stickRadius = 0.50;
     private int baseColorIndex = 150;
     private Hashtable colorIndices = new Hashtable();
+    protected ColorScheme colorScheme = new ConstantColor(Color.blue);
 
     public BackboneStick() {
         this(0.50);
@@ -200,7 +201,11 @@ public class BackboneStick extends GlyphCartoon {
             for (Object o : parentObjects) currentObjects.add(o);
         currentObjects.add(residue);
 
-        Color color = residue.getDefaultColor();
+        // Color color = residue.getDefaultColor();
+        Color color;
+        try {color = colorScheme.colorOf(residue);}
+        catch (UnknownObjectColorException exc) {color = Color.white;}
+        
         if (! (colorIndices.containsKey(color))) {
             colorIndices.put(color, new Integer(baseColorIndex));
             lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
