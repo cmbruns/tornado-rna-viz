@@ -1,17 +1,14 @@
+# Location of private key - I insert a CD into my laptop for signing
+PROD_KEYSTORE = D:/simtkjava_signing/simtkjava.store
+
 test: s_Tornado.jar
 	svn commit -m "Latest web start files"
-	javaws Tornado.jnlp
+	javaws tornado_test.jnlp
 
-Tornado.jar: ../bin/org/simtk/*/*.class ../bin/resources/*/* ../bin/Jama/*.class
-	jar cf Tornado.jar -C ../bin resources -C ../bin org/simtk -C ../bin Jama
+Tornado.jar: ../bin/images/* ../bin/org/simtk/moleculargraphics/*.class
+	jar cf Tornado.jar -C ../bin images -C ../bin org/simtk
 
-s_Tornado.jar: Tornado.jar
-	jarsigner -keystore /cygwin/home/cmbruns/private/myKeystore -signedJar s_Tornado.jar Tornado.jar myself
-
-never_up_to_date:
-	
-HelloVtk.jar: never_up_to_date
-	cp ../bin/HelloVtk*.class .
-	jar cf HelloVtk.jar HelloVtk*.class
-	jarsigner -keystore myKeystore HelloVtk.jar myself
+# Implicit rule to sign jar files for production
+s_%.jar: %.jar
+	jarsigner -keystore $(PROD_KEYSTORE) -signedJar $@ $? simtkjava
 
