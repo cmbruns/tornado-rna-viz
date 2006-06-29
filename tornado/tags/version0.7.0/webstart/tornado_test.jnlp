@@ -1,0 +1,26 @@
+<jnlp spec="1.0+"
+  codebase="http://public.simtk.org/svn/rna-viz-proto/tornado/tags/version0.7.0/webstart/"
+  href="tornado_test.jnlp"
+>
+  <information>
+    <title>SimTK Tornado RNA visualization prototype</title>
+    <vendor>Stanford National Center for Biomedical Computation</vendor>
+    <homepage href="http://simtk.org/" />
+    <description>View RNA structures</description>
+  </information>
+  <offline-allowed/>
+  <resources>
+    <j2se version="1.5+" />
+    <property name="apple.laf.useScreenMenuBar" value="true"/>
+    <jar href="s_Tornado.jar"/>
+    <extension href="TornadoLib.jnlp" name="toRNAdo"/>
+    <extension href="http://public.simtk.org/~cmbruns/simtk_shared_java/webstart/SimtkSharedJava.jnlp" name="SimTK shared java classes"/>
+    <jar href="Jama.jar"/>
+    <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
+    <extension href="http://public.simtk.org/~cmbruns/vtk_binaries/vtk500ribbonpatch/vtk500ribbonpatch.jnlp" name="vtk5.0.0 with patch to ribbonFilter.cxx"/>
+  </resources>
+  <security>
+    <all-permissions/>
+  </security>
+<application-desc main-class="org.simtk.moleculargraphics.Tornado" />
+</jnlp>
