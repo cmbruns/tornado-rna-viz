@@ -1,7 +1,7 @@
 # Location of private key - I insert a CD into my laptop for signing
 PROD_KEYSTORE = D:/simtkjava_signing/simtkjava.store
 
-test: s_Tornado.jar
+test: s_Tornado.jar s_Jama.jar
 	svn commit -m "Latest web start files"
 	javaws tornado_test.jnlp
 

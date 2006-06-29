@@ -13,9 +13,8 @@
     <j2se version="1.5+" />
     <property name="apple.laf.useScreenMenuBar" value="true"/>
     <jar href="s_Tornado.jar"/>
-    <extension href="TornadoLib.jnlp" name="toRNAdo"/>
     <extension href="http://public.simtk.org/~cmbruns/simtk_shared_java/webstart/SimtkSharedJava.jnlp" name="SimTK shared java classes"/>
-    <jar href="Jama.jar"/>
+    <jar href="s_Jama.jar"/>
     <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
     <extension href="http://public.simtk.org/~cmbruns/vtk_binaries/vtk500ribbonpatch/vtk500ribbonpatch.jnlp" name="vtk5.0.0 with patch to ribbonFilter.cxx"/>
   </resources>
