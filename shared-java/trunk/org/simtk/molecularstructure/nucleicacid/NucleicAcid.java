@@ -70,9 +70,9 @@ public class NucleicAcid extends BiopolymerClass {
         // Adjustable parameters
         int minSequenceDistance = 3;
         double centroidDistanceCutoff = 8.70;
-        double interplaneAngleCutoff = 46.0;
-        double planeHeightCutoff = 3.20;
-        double atomicDistance = 3.20;
+        double interplaneAngleCutoff = 30.0;
+        double planeHeightCutoff = 2.00;
+        double atomicDistance = 3.10;
         
         Collection<BasePair> basePairs = new Vector<BasePair>();
         Map<Residue, Vector3D> residueCentroids = new HashMap<Residue, Vector3D>();
@@ -120,7 +120,7 @@ public class NucleicAcid extends BiopolymerClass {
             PDBResidueClass residue = (PDBResidueClass) centroidHash.get(centroid);
             residuesAlreadyTested.add(residue);
             for (Iterator iterOtherResidue = centroidHash.neighborValues(centroid, centroidDistanceCutoff).iterator(); iterOtherResidue.hasNext(); ) {
-                PDBResidueClass otherResidue = (PDBResidueClass) iterOtherResidue.next();
+                LocatedResidue otherResidue = (PDBResidueClass) iterOtherResidue.next();
                 if (residue == otherResidue) continue; // no self hits
                 if (residuesAlreadyTested.contains(otherResidue)) continue;
                 // If we got here there are two residues within 8 Angstroms of one another
@@ -297,8 +297,7 @@ public class NucleicAcid extends BiopolymerClass {
                 // System.out.println("" + freshPair);
                 
                 // Examine neighbors
-                for (Iterator iterTestPair = ((Vector)pairPairs.get(freshPair)).iterator(); iterTestPair.hasNext(); ) {
-                    BasePair testPair = (BasePair) iterTestPair.next();
+                for (BasePair testPair : pairPairs.get(freshPair)) {
                     if (stalePairs.contains(testPair)) continue;
                     else freshPairs.add(testPair);
                 }                

@@ -209,7 +209,7 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
         if ( e.getSource() == loadFileButton ) {
             // Load molecule from file using file browser dialog
 
-            String [] extensions = {"pdb", "pqr"};
+            String [] extensions = {"pdb", "pdb1", "pdb2", "pdb3", "pqr"};
             if (moleculeFileChooser == null) moleculeFileChooser = new MoleculeFileChooser(parent, extensions, currentPath);
 
             // Hide first dialog while the file chooser is shown

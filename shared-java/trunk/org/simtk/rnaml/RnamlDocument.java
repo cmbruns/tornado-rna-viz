@@ -29,13 +29,10 @@ package org.simtk.rnaml;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jdom.*;
 import org.jdom.filter.*;
 import org.jdom.input.SAXBuilder;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.LocatedAtom;
-import org.simtk.molecularstructure.atom.PDBAtom;
 import org.simtk.molecularstructure.nucleicacid.*;
 
 import java.io.File;
@@ -47,23 +44,71 @@ public class RnamlDocument {
     
     public RnamlDocument(File rnamlFile, MoleculeCollection molecules) 
     throws JDOMException, java.io.IOException
-    {
+    {        
+        // Read xml file
+        SAXBuilder builder = new SAXBuilder();
+        rnamlDoc = builder.build(rnamlFile);
 
-        // Find nucleic acid molecules
+        Map<Integer, Integer> rnamlMolSizes = getRnamlResidueCounts();
+        
+        // Find nucleic acid molecules from Tornado
         // and index them by the expected rnaml index
         int nucleicAcidIndex = 1;
         for (Molecule mol : molecules.molecules()) {
-            if (mol instanceof NucleicAcid) {
-                rnamlIndexMolecules.put(nucleicAcidIndex, (NucleicAcid) mol);
-                nucleicAcidIndex ++;
+            if ( !(mol instanceof NucleicAcid)) continue;
+            NucleicAcid rna = (NucleicAcid) mol;
+            
+            // Sometimes RNAView skips a molecule that Tornado does not skip
+            // e.g. 1GIX.pdb
+            int rnamlSize = rnamlMolSizes.get(nucleicAcidIndex);
+            int tornadoSize = rna.residues().size();
+            int difference = Math.abs(tornadoSize - rnamlSize);
+            if (difference > 5) {
+                System.err.println("RNA Molecule size mismatch, "+
+                        rnamlSize+" (rnaml) vs. "+tornadoSize+" (tornado)");
+                continue; // Skip this tornado molecule
             }
+
+            rnamlIndexMolecules.put(nucleicAcidIndex, rna);
+
+            nucleicAcidIndex ++;
         }
-        
-        // Read xml file
-        SAXBuilder builder = new SAXBuilder();
-        rnamlDoc = builder.build(rnamlFile);        
     }
     
+    /**
+     * Count the number of residues in each RNAML molecule,
+     * for use in reconciling molecules with Tornado
+     */
+    protected Map<Integer, Integer> getRnamlResidueCounts() {
+        Map<Integer, Integer> molSizes = new HashMap<Integer, Integer>();
+
+        // Parse the xml file
+        Element rnamlEl;
+        Iterator docIt = rnamlDoc.getDescendants(new ElementFilter("rnaml"));
+        if (!docIt.hasNext()){
+            System.out.println("xml file has no rnaml element!");
+        }
+        rnamlEl = (Element) docIt.next();
+        for (Element rnamlMol: (List<Element>) rnamlEl.getChildren("molecule")){
+
+            int molID = Integer.parseInt(rnamlMol.getAttributeValue("id"));
+
+            List<Element> sequences = rnamlMol.getChildren("sequence");
+            if (sequences.size()!=1) {
+                ;//should add some kind of error reporting
+            }
+            /* nTable is retrieved via getDescendants because the standard DTD requires that the numbering 
+             * table be a child of a numbering-system which in turn is a child of the sequence, although 
+             * rnaview for some reason creates the numbering table as a direct child of the sequence. 
+             */
+            Element nTableEl = (Element) sequences.get(0).getDescendants( new ElementFilter("numbering-table")).next();
+            int nResidues = Integer.parseInt(nTableEl.getAttributeValue("length"));
+            
+            molSizes.put(molID, nResidues);
+        }
+        
+        return molSizes;
+    }
     
     /**
      * 
