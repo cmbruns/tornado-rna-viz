@@ -92,9 +92,9 @@ implements ResidueActionListener, MouseMotionListener, AdjustmentListener, Mouse
         autoScrollThread.start();
     }
 
-    public void setSelectionColor(Color c) {
-        selectionColor = c;
-    }
+//     public void setSelectionColor(Color c) {
+//        selectionColor = c;
+//    }
 
     public void highlightPosition(Graphics graphics, int position, Color color) {
         int leftX = (int) (characterSpacing / 2.0 + position * symbolWidth);

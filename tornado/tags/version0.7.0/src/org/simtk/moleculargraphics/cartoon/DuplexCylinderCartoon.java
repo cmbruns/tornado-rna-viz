@@ -97,7 +97,7 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
             	BasePair lastBP = dupBPs.get(dupBPs.size()-1);
             	Nucleotide res5 = firstBP.getResidue1();
             	if (res5.getChainID().equals(nucleicAcid.getChainID())){
-	                System.out.println("Duplex found: "+dup.helixString());
+	                // System.out.println("Duplex found: "+dup.helixString());
 	                try {addDuplex(dup);}
 	                catch (InsufficientPointsException exc) {}
             	}

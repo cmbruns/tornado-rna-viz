@@ -114,10 +114,10 @@ implements ResidueActionListener
         getActionMap().put("previousResidue", new PreviousResidueAction());
        }
 
-    public void setSelectionColor(Color c) {
-        selectionColor = c;
-        sequenceCanvas.setSelectionColor(c);
-    }
+//    public void setSelectionColor(Color c) {
+//        selectionColor = c;
+//        sequenceCanvas.setSelectionColor(c);
+//    }
     
     public void paint(Graphics g) {
         checkSize();

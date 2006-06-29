@@ -42,7 +42,7 @@ import javax.jnlp.*;
 
 import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.nucleicacid.NucleicAcid;
+import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.pdb.*;
 import org.simtk.rnaml.RnamlDocument;
 import org.simtk.util.*;
@@ -387,6 +387,18 @@ implements ResidueActionListener
         stereoscopicOptionsGroup.add(checkItem);
         menu.add(checkItem);
 
+//        menu = new JMenu("Secondary Structure");
+//        menuBar.add(menu);
+//        
+//        menuItem = new JMenuItem("Use RNAML File...");
+//        menuItem.setEnabled(true);
+//        menuItem.addActionListener(new ApplyRnamlAction());
+//        menu.add(menuItem);
+//        
+//        menuItem = new JMenuItem("Compute from structure");
+//        menuItem.setEnabled(true);
+//        menuItem.addActionListener(new ComputeSecondaryStructureAction());
+//        menu.add(menuItem);
         
         menu = new JMenu("Help");
         menuBar.add(menu);
@@ -414,12 +426,48 @@ implements ResidueActionListener
         setJMenuBar(menuBar);
     }
     
+    // For me the programmer to use when creating new actions
+    class TemplateAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    // For me the programmer to use when creating new actions
+    class ApplyRnamlAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            // TODO
+        }
+    }
+
+    class ComputeSecondaryStructureAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            for (Molecule molecule : Tornado.this.moleculeCollection.molecules()) {
+                if (!(molecule instanceof NucleicAcid)) continue;
+                NucleicAcid nucleicAcid = (NucleicAcid) molecule;
+                
+                // Remove preexisting secondary structures
+                Collection<SecondaryStructure> structs = nucleicAcid.secondaryStructures();
+                for (SecondaryStructure structure : structs) {
+                    if (structure instanceof BasePair)
+                        structs.remove(structure);
+                    if (structure instanceof Duplex)
+                        structs.remove(structure);
+                }
+                
+                for (BasePair basePair : nucleicAcid.identifyBasePairs())
+                    structs.add(basePair);
+                
+                for (Duplex duplex : nucleicAcid.identifyHairpins())
+                    structs.add(duplex);
+            }
+        }
+    }
+
     class QuitAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.exit(0);  // terminate this program
         }
     }
-
 
     class TestFullScreenAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
@@ -587,6 +635,8 @@ implements ResidueActionListener
             boolean haveNucleic = false;
             for (Molecule m : molecules.molecules()) 
                 if (m instanceof NucleicAcid) haveNucleic = true;
+
+            boolean foundRnaml = false;
             if ( haveNucleic && (molecules.getPdbId() != null) )  {
                 String rnamlFileName = molecules.getPdbId()+".pdb.xml";
                 
@@ -594,12 +644,13 @@ implements ResidueActionListener
                 File curDir = new File(Tornado.this.currentPath);
                 java.util.List dirList = Arrays.asList(curDir.list());
                 if (dirList.contains(rnamlFileName)){
-                    System.out.println("processing xml file");
+                    // System.out.println("processing xml file");
 
                     try {
                         File rnamlFile = new File(curDir, rnamlFileName);
                         RnamlDocument rnamlDoc = new RnamlDocument(rnamlFile, molecules);
                         rnamlDoc.importSecondaryStructures();
+                        foundRnaml = true;
                     } 
                     catch (org.jdom.JDOMException exc) {
                         exc.printStackTrace();
@@ -609,8 +660,23 @@ implements ResidueActionListener
                     }
                 }
                 else {
-                    System.out.println("can't find xml file "+rnamlFileName);
-                    System.out.println("directory listing includes "+dirList);              
+                    // System.out.println("can't find xml file "+rnamlFileName);
+                    // System.out.println("directory listing includes "+dirList);
+                }
+            }
+            
+            if (haveNucleic && !foundRnaml) {                    
+                // Compute secondary structure using Tornado methods
+                for (Molecule molecule : molecules.molecules()) {
+                    if (!(molecule instanceof NucleicAcid)) continue;
+                    NucleicAcid nucleicAcid = (NucleicAcid) molecule;
+                    Collection<SecondaryStructure> structs = nucleicAcid.secondaryStructures();
+                    
+                    for (BasePair basePair : nucleicAcid.identifyBasePairs())
+                        structs.add(basePair);
+                    
+                    for (Duplex duplex : nucleicAcid.identifyHairpins())
+                        structs.add(duplex);
                 }
             }
 
@@ -618,7 +684,7 @@ implements ResidueActionListener
         
         protected void currentPathUpdated(){
             Tornado.this.currentPath = loadStructureDialog.getCurrentPath();
-            System.out.println("current path now equals " + Tornado.this.currentPath);
+            // System.out.println("current path now equals " + Tornado.this.currentPath);
             if (Tornado.this.saveImagePath.equals(".")){
             	Tornado.this.saveImagePath = Tornado.this.currentPath; 
             }
@@ -804,10 +870,14 @@ implements ResidueActionListener
     public void updateTitleBar() {
         // Set title
         if ( (moleculeCollection != null) && (moleculeCollection.molecules().size() > 0) ) {
+            String pdbId = moleculeCollection.getPdbId();
+            if ( (pdbId == null) || (pdbId.equals("")) || pdbId.equals("XXXX") ) pdbId = "";
+            else pdbId = "("+pdbId+") ";
+            
             if (moleculeCollection.getTitle().length() > 0)
-                Tornado.this.setTitle(titleBase + ": "+ moleculeCollection.getTitle());
+                Tornado.this.setTitle(titleBase + ": " + pdbId + moleculeCollection.getTitle());
             else
-                Tornado.this.setTitle(titleBase + ": (unknown molecule)");
+                Tornado.this.setTitle(titleBase + ": " + pdbId + "(unknown molecule)");
         }
         else 
             Tornado.this.setTitle(titleBase + ": (no molecules currently loaded)");

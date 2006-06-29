@@ -207,7 +207,7 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
                 int closestInputIndex = (int) Math.round(t);
                 splineScalars.InsertNextValue(lineScalars.GetValue(closestInputIndex));
 
-                System.out.println("" + i + " " + closestInputIndex);
+                // System.out.println("" + i + " " + closestInputIndex);
             }
             
             linePoints = splinePoints;
