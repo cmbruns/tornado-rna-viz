@@ -623,6 +623,7 @@ implements ResidueActionListener
         LoadStructureDialog(JFrame f) {
             super(f, null, Tornado.this.currentPath);
             setLocationRelativeTo(Tornado.this);
+            setDefaultPdbId("1GRZ");
         }
 
         public void readStructureFromMoleculeCollection(MoleculeCollection molecules)

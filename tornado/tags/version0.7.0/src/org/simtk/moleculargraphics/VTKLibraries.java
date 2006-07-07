@@ -53,6 +53,7 @@ public class VTKLibraries {
         loadOneNativeLibrary("vtktiff"); 
         loadOneNativeLibrary("vtkpng"); 
         loadOneNativeLibrary("vtkftgl"); 
+        loadOneNativeLibrary("vtksys"); // needed for linux? 
         loadOneNativeLibrary("vtkCommon"); 
         loadOneNativeLibrary("vtkFiltering"); 
         loadOneNativeLibrary("vtkDICOMParser"); 
