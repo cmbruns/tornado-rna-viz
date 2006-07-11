@@ -8,10 +8,9 @@
   <property name="build.dir" value="out"/>
   <property name="classes.build.dir" value="${build.dir}/classes"/>
   <property name="jar.build.dir" value="${build.dir}/jar"/>
-  <property name="webstart.dir" value="webstart"/>
   <property name="jar.name" value="tornado.jar"/>
 
-  <property name="lib" value="${jar.build.dir}/${jar.name}:${vtk.bin.dir}/vtk.jar:${jogl.bin.dir}/jogl.jar:${webstart.dir}/Jama.jar:jnlp.jar"/>
+  <property name="lib" value="${jar.build.dir}/${jar.name}:${vtk.bin.dir}/vtk.jar:${jogl.bin.dir}/jogl.jar:Jama.jar:jnlp.jar"/>
 
   <target name="run" depends="jar">
     <java fork="yes" classpath="${lib}" classname="org.simtk.moleculargraphics.Tornado">
@@ -61,7 +60,7 @@
               aboutmenuname="${mac.bundle.name}"
               icon="mac/Tornado.icns"
               mainclass="org.simtk.moleculargraphics.Tornado" 
-              jars="${jar.build.dir}/${jar.name} ${vtk.bin.dir}/vtk.jar ${webstart.dir}/jogl.jar ${webstart.dir}/Jama.jar jnlp.jar"
+              jars="${jar.build.dir}/${jar.name} ${vtk.bin.dir}/vtk.jar ${jogl.bin.dir}/jogl.jar Jama.jar jnlp.jar"
               antialiasedgraphics="true"
               antialiasedtext="true" 
               jvmversion="1.4+"
