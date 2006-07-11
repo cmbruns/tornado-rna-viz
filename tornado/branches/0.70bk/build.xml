@@ -4,7 +4,7 @@
 
   <!-- use these defaults if there is no property file -->
   <property name="vtk.bin.dir" value="/usr/local/lib/vtk"/>
-  <property name="jogl.bin.dir" value="/Users/bkeller/src/jogl"/>
+  <property name="jogl.bin.dir" value="/usr/local/lib/jogl"/>
   <property name="build.dir" value="out"/>
   <property name="classes.build.dir" value="${build.dir}/classes"/>
   <property name="jar.build.dir" value="${build.dir}/jar"/>
