@@ -54,6 +54,13 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
         setZ(z);
     }
 
+    public Vector3DClass(double[] vec) {
+        super(3);
+        setX(vec[0]);
+        setY(vec[1]);
+        setZ(vec[2]);
+    }
+
     public Vector3DClass(MathVector template) {
         super(3);
         copy(template);
@@ -175,6 +182,11 @@ public class Vector3DClass extends MathVectorClass implements MutableVector3D {
         answer.timesEquals(cosAngle);
         answer.plusEquals( (axis.times(axis.dot(this) * (1.0 - cosAngle))).plus
         (this.cross(axis).times(Math.sin(angle))) );
+        return answer;
+    }
+
+    public double[] toArray() {
+        double[] answer = {x(),y(),z()};
         return answer;
     }
 }

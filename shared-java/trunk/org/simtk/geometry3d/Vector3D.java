@@ -42,4 +42,6 @@ public interface Vector3D extends MathVector, Location {
     public Vector3D minus(MathVector v2);
     public Vector3D unit();
     public Vector3D times(double s);
+    
+    public double[] toArray();
 }

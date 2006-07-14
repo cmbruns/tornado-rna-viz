@@ -60,7 +60,7 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
     Hashtable genericBonds = new Hashtable(); // maps atom names of bondable atoms
     char insertionCode = ' ';
     public int residueNumber = 0; // TODO create accessors
-    Hashtable atomNames = new Hashtable();
+    Map<String, Set<Atom> > atomNames = new HashMap<String, Set<Atom> >();
     private Collection secondaryStructures = new HashSet();
 
     // Even if there is a break in the sequence, the next residue train should probably jump over the gap
@@ -146,11 +146,13 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
             String fullAtomName = atomName + ":";
             if (insertionCode != ' ') {fullAtomName = fullAtomName + insertionCode;}
             
-            if (! atomNames.containsKey(atomName)) atomNames.put(atomName, new Vector());
-            ((Vector)atomNames.get(atomName)).add(atom);
-
-            if (! atomNames.containsKey(fullAtomName)) atomNames.put(fullAtomName, new Vector());
-            ((Vector)atomNames.get(fullAtomName)).add(atom);
+            String shortAtomName = atomName.trim();
+            
+            String[] names = {atomName, fullAtomName, shortAtomName};
+            for (String name : names) {
+                if (! atomNames.containsKey(name)) atomNames.put(name, new LinkedHashSet<Atom>());
+                atomNames.get(name).add(atom);                
+            }
         }
     }
     
@@ -225,8 +227,9 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
                 BOND: for (Iterator b2 = ((HashSet)genericBonds.get(atom1.getPDBAtomName())).iterator(); b2.hasNext(); ) {
                     String a2Name = (String) b2.next();
                     if (! atomNames.containsKey(a2Name)) continue BOND;
-                    ATOM2: for (Iterator a2 = ((Vector)atomNames.get(a2Name)).iterator(); a2.hasNext(); ) {
-                        MutablePDBAtom atom2 = (MutablePDBAtom) a2.next();
+                    ATOM2: for (Atom a2 : atomNames.get(a2Name)) {
+                    // ATOM2: for (Iterator a2 = ((Vector)atomNames.get(a2Name)).iterator(); a2.hasNext(); ) {
+                        MutablePDBAtom atom2 = (MutablePDBAtom) a2;
                         if (! (atom2 instanceof PDBAtom)) continue ATOM2;
     
                         PDBAtom pdbAtom2 = (PDBAtom) atom2;
@@ -253,7 +256,7 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
      */
     public PDBAtom getAtom(String atomName) {
         if (!atomNames.containsKey(atomName)) return null;
-        return (PDBAtom) ((Vector)atomNames.get(atomName)).firstElement();
+        return (PDBAtom) atomNames.get(atomName).iterator().next();
     }
     
     
