@@ -74,11 +74,10 @@ public class ProteinRibbon extends MolecularCartoonClass {
         // TODO
     }
     
-    public vtkAssembly getAssembly() {return assembly;}
+    public vtkProp3D getVtkProp3D() {return assembly;}
     
     public void add(LocatedMolecule m) {
         if (m instanceof LocatedProtein) {
-            super.add(m); // Put here, to get the mass right
             insertOneProtein((LocatedProtein) m);
         }
     }

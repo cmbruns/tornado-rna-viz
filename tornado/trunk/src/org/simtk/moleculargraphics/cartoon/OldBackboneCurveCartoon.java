@@ -150,7 +150,7 @@ public class OldBackboneCurveCartoon extends MolecularCartoonClass {
         // baseCaps.clear();
         studs.clear();
     }
-    public vtkAssembly getAssembly() {return assembly;}
+    public vtkProp3D getVtkProp3D() {return assembly;}
     
 
     
@@ -159,7 +159,6 @@ public class OldBackboneCurveCartoon extends MolecularCartoonClass {
         // baseCaps.show(m);
         studs.add(m);        
         addMolecule(m);
-        super.add(m);
     }
 
     public void addMolecule(LocatedMolecule molecule) {

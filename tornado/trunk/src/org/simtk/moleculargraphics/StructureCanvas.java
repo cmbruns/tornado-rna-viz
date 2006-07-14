@@ -109,9 +109,10 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
     // }
     public void add(MolecularCartoon cartoon) {
         
-        vtkAssembly assembly = cartoon.getAssembly();
+        vtkProp3D prop3D = cartoon.getVtkProp3D();
+        // vtkAssembly assembly = cartoon.getAssembly();
         
-        if (assembly != null) {
+        if (prop3D != null) {
 
             // Update mass distribution in display
             // massBody.add(cartoon);
@@ -125,7 +126,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
             // System.out.println("Number of assembly paths = " + assembly.GetNumberOfPaths());
             
             // GetRenderer().AddProp(assembly); // vtk 4.4
-            GetRenderer().AddViewProp(assembly); // vtk 5.0
+            GetRenderer().AddViewProp(prop3D); // vtk 5.0
             
             // System.out.println("Assembly added");
             

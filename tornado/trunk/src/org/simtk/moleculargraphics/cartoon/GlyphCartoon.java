@@ -105,7 +105,6 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
 
     public void add(LocatedMolecule m) {
         // glyphColors.show(m);
-        super.add(m);
     }
     
     public void show() {
@@ -144,7 +143,6 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
     public vtkActor getActor() {return glyphActor;}
     
     public void clear() {
-        super.clear();
         lineNormals.Reset();
         lineNormals.Squeeze();
         lineScalars.Reset();
@@ -154,7 +152,7 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
         glyphColors.clear();
     }
     
-    public vtkAssembly getAssembly() {
+    public vtkProp3D getVtkProp3D() {
         return assembly;
     }
 

@@ -312,7 +312,7 @@ public class Tornado3DCanvas extends StructureCanvas
         
         Lock();
         
-        rw.SetStereoTypeToRedBlue();
+        rw.SetStereoTypeToAnaglyph();
 
         rw.StereoRenderOn();
         

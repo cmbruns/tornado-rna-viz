@@ -31,52 +31,5 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.geometry3d.*;
-import org.simtk.molecularstructure.LocatedMolecule;
-
 abstract public class MolecularCartoonClass implements MutableMolecularCartoon {
-    protected MassBodyClass massBody = new MassBodyClass();
-    
-    public double getMass() {return massBody.getMass();}
-    public Vector3D getCenterOfMass() {return massBody.getCenterOfMass();}
-
-    // Derived classes should override this, so that something happens
-    public void add(LocatedMolecule m) {
-        massBody.add(m);
-        // System.out.println("Center of mass = " + massBody.getCenterOfMass());
-    }
-    
-    public void clear() {
-        massBody.clear();
-    }
-    
-    // replaced Java 1.5 enum with Java 1.4 compliant
-    public static class CartoonType {
-        private Class cartoonClass;
-        private CartoonType(Class c) {cartoonClass = c;}
-        
-        static public CartoonType BOND_STICK = new CartoonType(BondStickCartoon.class);
-        static public CartoonType BACKBONE_TRACE = new CartoonType(OldBackboneCurveCartoon.class);
-        static public CartoonType BACKBONE_STICK = new CartoonType(BackboneStick.class);
-        static public CartoonType BALL_AND_STICK = new CartoonType(BallAndStickCartoon.class);
-        static public CartoonType BASE_PAIR_CYLINDERS = new CartoonType(BasePairRod.class);
-
-        static public CartoonType DUPLEX_CYLINDER = new CartoonType(DuplexCylinderCartoon.class);
-        static public CartoonType NUCLEOTIDE_WEDGE = new CartoonType(DuplexResidueWedge.class);
-        static public CartoonType NUCLEOTIDE_STICK = new CartoonType(NucleotideStickCartoon.class);
-        static public CartoonType PROTEIN_RIBBON = new CartoonType(ProteinRibbon.class);
-        static public CartoonType PROTEIN_RIBBON_TEST = new CartoonType(ProteinRibbonSphereTest.class);
-        static public CartoonType RESIDUE_SPHERE = new CartoonType(ResidueSphereCartoon.class);
-        static public CartoonType ROPE_AND_CYLINDER2 = new CartoonType(RopeAndCylinder.class);
-        static public CartoonType SPACE_FILLING = new CartoonType(AtomSphereCartoon.class);
-        static public CartoonType TUBE_AND_STICK = new CartoonType(TubeAndStickTrace.class);
-        static public CartoonType WIRE_FRAME = new CartoonType(WireFrameCartoon.class);
-
-        public MolecularCartoonClass newInstance() {
-            try {return (MolecularCartoonClass) cartoonClass.newInstance();}
-            catch (Exception e) {} // TODO
-            return null;
-        }
-    };
-    
 }

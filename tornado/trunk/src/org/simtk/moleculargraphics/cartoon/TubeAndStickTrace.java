@@ -63,7 +63,7 @@ public class TubeAndStickTrace extends MolecularCartoonClass {
         tubes = new BackboneStick(backboneRadius);
         rods = new NucleotideStickCartoon(rodRadius);
         
-        assembly.AddPart(tubes.getAssembly());
+        assembly.AddPart(tubes.getVtkProp3D());
         assembly.AddPart(rods.getActor());
     }
     
@@ -111,5 +111,5 @@ public class TubeAndStickTrace extends MolecularCartoonClass {
         tubes.clear();
         rods.clear();
     }
-    public vtkAssembly getAssembly() {return assembly;}
+    public vtkProp3D getVtkProp3D() {return assembly;}
 }

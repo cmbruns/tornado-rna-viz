@@ -85,27 +85,9 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         lut.SetTableValue(invisibleColorIndex, 0.0, 0.0, 0.0, 0.0);
     }
     
-    public void updateCoordinates() {
-        // TODO
-    }
-
-    public void hide(LocatedMolecule m) {
-    }
-    public void hide() {
-    }
-    public void show(LocatedMolecule m) {
-    }
-    public void show() {
-    }
-    public vtkAssembly getAssembly() {return assembly;}
+    public vtkProp3D getVtkProp3D() {return assembly;}
     
-    @Override
-    public void add(LocatedMolecule m) {
-        addMolecule(m);
-        super.add(m);
-    }
-
-    public void addMolecule(LocatedMolecule molecule) {
+    public void add(LocatedMolecule molecule) {
         if (! (molecule instanceof BiopolymerClass)) return;
         BiopolymerClass biopolymer = (BiopolymerClass) molecule;
         

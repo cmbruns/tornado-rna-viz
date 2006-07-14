@@ -68,12 +68,11 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
         // TODO
     }
     
-    public vtkAssembly getAssembly() {return assembly;}
+    public vtkProp3D getVtkProp3D() {return assembly;}
     
     public void add(LocatedMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         addNucleicAcid((NucleicAcid) molecule);
-        super.add(molecule);
     }
     public void hide(LocatedMolecule molecule) {} // TODO
     public void hide() {} // TODO

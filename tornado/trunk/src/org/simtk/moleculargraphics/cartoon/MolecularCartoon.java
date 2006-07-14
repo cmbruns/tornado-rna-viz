@@ -27,15 +27,12 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import vtk.*;
-import org.simtk.molecularstructure.*;
-import org.simtk.geometry3d.*;
 
-public interface MolecularCartoon extends Hidable, MassBody {
+public interface MolecularCartoon {
     /**
      * Make visible a molecule that is already part of this cartoon
      * @param m
      */
-    public void show(LocatedMolecule m);
-    public void hide(LocatedMolecule m);
-    public vtkAssembly getAssembly();
+    // public vtkAssembly getAssembly();
+    public vtkProp3D getVtkProp3D();
 }

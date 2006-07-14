@@ -39,17 +39,13 @@ import java.awt.event.*;
 import java.util.*;
 import java.net.*;
 import javax.jnlp.*;
-
 import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.pdb.*;
 import org.simtk.rnaml.RnamlDocument;
 import org.simtk.util.*;
-
 import edu.stanford.ejalbert.BrowserLauncher;
-import org.simtk.rnaml.RnamlDocument;
-
 import vtk.*;
 
 /** 
@@ -72,13 +68,23 @@ implements ResidueActionListener
     private String saveImagePath = ".";
     private LoadStructureDialog loadStructureDialog = new LoadStructureDialog(this);
     
-    private MolecularCartoonClass.CartoonType cartoonType = 
-        MolecularCartoonClass.CartoonType.WIRE_FRAME;
-    private MutableMolecularCartoon currentCartoon = cartoonType.newInstance();
+    protected ColorScheme yellowColorScheme = new ConstantColor(Color.yellow);
+    protected ColorScheme cyanColorScheme = new ConstantColor(Color.cyan);
+
+    // private MolecularCartoonClass.CartoonType cartoonType = 
+    //     MolecularCartoonClass.CartoonType.WIRE_FRAME;
+    Class cartoonType = WireFrameCartoon.class;
+    private MutableMolecularCartoon currentCartoon;
+    // try {
+    // } catch ()
 
     Tornado() {
         super("toRNAdo: (no structures currently loaded)");
         
+        try {currentCartoon = (MutableMolecularCartoon) cartoonType.newInstance();} 
+        catch (InstantiationException exc) {System.err.println(exc);}
+        catch (IllegalAccessException exc) {System.err.println(exc);}
+
         // Avoid upper left sucky Java window location
         setLocationRelativeTo(null);
         
@@ -220,31 +226,12 @@ implements ResidueActionListener
         JMenuItem menuItem;
         JCheckBoxMenuItem checkItem;
 
-//        menu = new JMenu("Tornado");
-//        menuBar.add(menu);
-//
-//        menuItem = new JMenuItem("About Tornado");
-//        menuItem.setEnabled(true);
-//        menuItem.addActionListener(new AboutTornadoAction());
-//        menu.add(menuItem);
-//
-//        menu.add(new JSeparator());
-//
-//        menuItem = new JMenuItem("Exit Tornado");
-//        menuItem.addActionListener(new QuitAction());
-//        menu.add(menuItem);
-
-
         menu = new JMenu("File");
         menuBar.add(menu);
 
         menuItem = new JMenuItem("Load PDB Molecule...");
         menuItem.addActionListener(new LoadPDBAction());
         menu.add(menuItem);
-
-//        menuItem = new JMenuItem("Run script file...");
-//        menuItem.addActionListener(new RunScriptAction());
-//        menu.add(menuItem);
 
         menu.add(new JSeparator());
 
@@ -276,32 +263,34 @@ implements ResidueActionListener
         viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
 
-        addCartoonSelection( MolecularCartoonClass.CartoonType.WIRE_FRAME,
-                "Line Drawing",
-                null );
-        
-        addCartoonSelection( MolecularCartoonClass.CartoonType.BALL_AND_STICK,
-                "Ball and Stick",
-                new ImageIcon(classLoader.getResource("images/po4_stick_icon.png")) );
-
-        addCartoonSelection( MolecularCartoonClass.CartoonType.SPACE_FILLING,
-                "Space-filling Atoms",
-                new ImageIcon(classLoader.getResource("images/nuc_fill_icon.png")) );
-
-        addCartoonSelection( MolecularCartoonClass.CartoonType.RESIDUE_SPHERE,
-                "Residue Spheres",
-                null );
-
-        addCartoonSelection( MolecularCartoonClass.CartoonType.ROPE_AND_CYLINDER2,
-                "Rope and Cylinder",
+        addCartoonSelection( RopeAndCylinder.class,
+                "Duplex Rods",
                 new ImageIcon(classLoader.getResource("images/cylinder_icon.png")) );
 
-        addCartoonSelection( BasePairRibbon.class, 
-                "Base Pair Rods", null );
+        addCartoonSelection( ResidueSphereCartoon.class,
+                "Residue Balls",
+                null );
+
+        addCartoonSelection( BasePairRibbon.class, "Base Pair Rods", null );
         
-        addCartoonSelection( OvalBasePairPlus.class, 
-                "Base Pairs Ovals", null );
+        addCartoonSelection( OvalBasePairPlus.class, "Base Pair Ovals", null );
         
+        addCartoonSelection( AtomSphereCartoon.class,
+                "Atom Balls",
+                new ImageIcon(classLoader.getResource("images/nuc_fill_icon.png")) );
+
+        addCartoonSelection( WireFrameCartoon.class,
+                "Bond Lines",
+                null );
+        
+        addCartoonSelection( RichardsonProteinRibbon.class,
+                "Beta Strands",
+                null );
+        
+        addCartoonSelection( BallAndStickCartoon.class,
+                "Bond Sticks",
+                new ImageIcon(classLoader.getResource("images/po4_stick_icon.png")) );
+
         menu = new JMenu("Rotation");
         viewMenu.add(menu);
 
@@ -484,13 +473,8 @@ implements ResidueActionListener
     }
 
     class CartoonAction implements ActionListener {
-        MolecularCartoonClass.CartoonType type = null;
         Class cartoonClass = null;
 
-        CartoonAction(MolecularCartoonClass.CartoonType t) {
-            type = t;
-        }
-        
         CartoonAction(Class cartoonClass) {
             this.cartoonClass = cartoonClass;
         }
@@ -500,9 +484,7 @@ implements ResidueActionListener
             
             canvas.clear();
             
-            if (type != null)
-                currentCartoon = type.newInstance();
-            else if (cartoonClass != null) {
+            if (cartoonClass != null) {
                 try {
                     currentCartoon = (MutableMolecularCartoon) cartoonClass.newInstance();
                 } 
@@ -843,9 +825,20 @@ implements ResidueActionListener
     
     public void highlight(Residue residue) {
         if (residue == null) setMessage(" ");
-        else setMessage("Residue " + residue.getResidueName() + 
+        else {
+            // TODO this is a test
+            if (currentCartoon instanceof RichardsonProteinRibbon) {
+                RichardsonProteinRibbon r = (RichardsonProteinRibbon) currentCartoon;
+                r.color(currentHighlightedResidue, cyanColorScheme);
+                r.color(residue, yellowColorScheme);
+                canvas.repaint();
+            }
+
+            setMessage("Residue " + residue.getResidueName() + 
                 " (" + residue.getOneLetterCode() + ") " + residue.getResidueNumber());
-        currentHighlightedResidue = residue;
+            currentHighlightedResidue = residue;
+            
+        }
     }
     public void unHighlightResidue() {
         setMessage(" "); // Use a space, otherwise message panel collapses
@@ -886,38 +879,6 @@ implements ResidueActionListener
     }
 
     public static final long serialVersionUID = 1L;
-
-    //
-    // Private
-    // 
-
-    /**
-     * Put all hooks for adding a new molecule representation here
-     * Call this from createMenuBar()
-     */
-    private void addCartoonSelection(MolecularCartoonClass.CartoonType cartoonType, 
-                                     String description,
-                                     ImageIcon imageIcon) {
-        if (viewMenu == null)
-            throw new RuntimeException("No View menu in which to add a Cartoon style");
-        if ( (cartoonGroup == null) || (cartoonMenu == null) ) {
-            cartoonMenu = new JMenu("Molecule Style");
-            viewMenu.add(cartoonMenu);
-            cartoonGroup = new ButtonGroup();
-        }
-        
-        JCheckBoxMenuItem checkItem;
-        if (imageIcon != null)
-            checkItem = new JCheckBoxMenuItem(description, imageIcon);
-        else
-            checkItem = new JCheckBoxMenuItem(description);
-        
-        checkItem.setEnabled(true);
-        checkItem.addActionListener(new CartoonAction(cartoonType));
-        checkItem.setState(cartoonType == cartoonType);
-        cartoonGroup.add(checkItem);
-        cartoonMenu.add(checkItem);        
-    }
 
     /**
      * Put all hooks for adding a new molecule representation here

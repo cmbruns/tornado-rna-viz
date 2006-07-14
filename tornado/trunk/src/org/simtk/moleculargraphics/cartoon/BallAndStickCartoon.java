@@ -92,14 +92,12 @@ public class BallAndStickCartoon extends MolecularCartoonClass {
     public void add(LocatedMolecule m) {
         sticks.add(m);
         balls.add(m);
-        super.add(m);
     }
     public void clear() {
-        super.clear();
         sticks.clear();
         balls.clear();
     }
-    public vtkAssembly getAssembly() {return assembly;}
+    public vtkProp3D getVtkProp3D() {return assembly;}
 
     public void updateCoordinates() {
         sticks.updateCoordinates();

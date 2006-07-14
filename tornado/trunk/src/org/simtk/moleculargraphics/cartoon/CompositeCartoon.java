@@ -29,6 +29,7 @@ package org.simtk.moleculargraphics.cartoon;
 import org.simtk.molecularstructure.LocatedMolecule;
 import java.util.*;
 import vtk.vtkAssembly;
+import vtk.vtkProp3D;
 
 public abstract class CompositeCartoon extends MolecularCartoonClass {
     protected List<MutableMolecularCartoon> subToons = new Vector<MutableMolecularCartoon>();
@@ -44,42 +45,15 @@ public abstract class CompositeCartoon extends MolecularCartoonClass {
     
     public void addSubToon(MutableMolecularCartoon toon) {
         subToons.add(toon);
-        assembly.AddPart(toon.getAssembly());
+        assembly.AddPart(toon.getVtkProp3D());
     }
     
-    public void show(LocatedMolecule m) {
-        for (MolecularCartoon toon : subToons) toon.show(m);
-    }
-
-    public void hide(LocatedMolecule m) {
-        for (MolecularCartoon toon : subToons) toon.hide(m);
-    }
-
-    public void show() {
-        for (MolecularCartoon toon : subToons) toon.show();
-    }
-
-    public void hide() {
-        for (MolecularCartoon toon : subToons) toon.hide();
-    }
-
-    public void updateCoordinates() {
-        for (MutableMolecularCartoon toon : subToons) toon.updateCoordinates();
-    }
-
     public void add(LocatedMolecule m) {
-        super.add(m);
         for (MutableMolecularCartoon toon : subToons) 
             toon.add(m);
     }
     
-    public void clear() {
-        super.clear();
-        for (MutableMolecularCartoon toon : subToons) 
-            toon.clear();
-    }
-
-    public vtkAssembly getAssembly() {
+    public vtkProp3D getVtkProp3D() {
         return assembly;
     }
 

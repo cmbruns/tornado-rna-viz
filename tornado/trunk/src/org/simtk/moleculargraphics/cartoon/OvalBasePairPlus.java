@@ -48,7 +48,6 @@ public class OvalBasePairPlus extends CompositeCartoon {
     }
 
     public void add(LocatedMolecule m) {
-        massBody.add(m);
         // wireToon.add(m);
         if (m instanceof NucleicAcid) {
             ovalToon.add(m);
