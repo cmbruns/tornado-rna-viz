@@ -44,7 +44,7 @@ public class ProteinRibbonSphereTest extends AtomSphereCartoon {
         if (molecule == null) return;
 
         // Don't add things that have already been added
-        if (glyphColors.containsKey(molecule)) return;
+        // if (glyphColors.containsKey(molecule)) return;
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -59,8 +59,7 @@ public class ProteinRibbonSphereTest extends AtomSphereCartoon {
             AminoAcid residue = (AminoAcid) molecule;
             System.out.println("Amino acid found");
 
-            int colorScalar = (int) 1;
-            lut.SetTableValue(colorScalar, 1.0, 1.0, 1.0, 1.0);
+            double colorScalar = toonColors.getColorIndex(molecule);
 
             // Vector3D c = residue.getBackbonePosition();
             
@@ -76,8 +75,8 @@ public class ProteinRibbonSphereTest extends AtomSphereCartoon {
                 
                     lineNormals.InsertNextTuple3(radius, 0.0, 0.0);
     
-                    glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-                    lineScalars.InsertNextValue(colorScalar);
+                    // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+                    colorScalars.InsertNextValue(colorScalar);
                 }
             } catch (InsufficientAtomsException exc) {} // skip this residue
             

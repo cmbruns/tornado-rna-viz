@@ -31,5 +31,109 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-abstract public class MolecularCartoonClass implements MutableMolecularCartoon {
+import java.awt.Color;
+import java.util.*;
+
+import vtk.*;
+
+public class MolecularCartoonClass implements MolecularCartoon {
+    protected Set<vtkActor> actorSet = new HashSet<vtkActor>(); 
+    protected ToonColors toonColors = new ToonColors();
+    protected Set<MolecularCartoon> subToons = new HashSet<MolecularCartoon>();
+    protected vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+    
+    public void colorToon(Object object, ColorScheme colorScheme) {
+        for (MolecularCartoon subToon : subToons) {
+            subToon.colorToon(object, colorScheme);
+        }
+        toonColors.setColor(object, colorScheme);
+    }
+    
+    public void colorToon(ColorScheme colorScheme) {
+        for (MolecularCartoon subToon : subToons) {
+            subToon.colorToon(colorScheme);
+        }
+        toonColors.setColor(colorScheme);
+    }
+    
+    public Set<vtkActor> vtkActors() {
+        return actorSet;
+    }
+    
+    public void finalizeCartoon(ColorScheme colorScheme) {
+        for (MolecularCartoon subToon : subToons) {
+            subToon.finalizeCartoon(colorScheme);
+        }
+        toonColors.commitTableSize();
+        toonColors.applyMapper(mapper);
+        colorToon(colorScheme);
+    }
+    
+    protected class ToonColors {
+        protected vtkLookupTable lut = new vtkLookupTable();
+        protected Map<Object, Integer> colorIndices = new HashMap<Object, Integer>();
+        protected int nextColorIndex = 0;
+        boolean isFinalized = false;
+        
+        void commitTableSize() {
+            lut.SetNumberOfTableValues(nextColorIndex);
+            lut.Build();
+            isFinalized = true;
+        }
+        
+        void setColor(Object colorable, ColorScheme colorScheme) {
+            if (! (colorIndices.containsKey(colorable))) return;
+            
+            int index = colorIndices.get(colorable);
+            try {
+                Color color = colorScheme.colorOf(colorable);
+                double[] c = {
+                        color.getRed()/255.0, 
+                        color.getGreen()/255.0, 
+                        color.getBlue()/255.0, 
+                        1.0};
+                lut.SetTableValue(index, c);
+            } catch (UnknownObjectColorException exc) {}            
+        }
+        
+        void setColor(ColorScheme colorScheme) {
+            // Color all objects
+            for (Object object : colorIndices.keySet()) {
+                int index = colorIndices.get(object);
+                try {
+                    Color color = colorScheme.colorOf(object);
+                    double[] c = {
+                            color.getRed()/255.0, 
+                            color.getGreen()/255.0, 
+                            color.getBlue()/255.0, 
+                            1.0};
+                    lut.SetTableValue(index, c);
+                } catch (UnknownObjectColorException exc) {}
+            }
+        }
+        
+        double getColorIndex(Object colorable) {
+            if (! (colorIndices.containsKey(colorable)) ) {
+                if (isFinalized) 
+                    throw new ToonColorsFinalizedException();
+                colorIndices.put(colorable, nextColorIndex);
+                nextColorIndex ++;
+            }
+            
+            // Add 0.5 because the mapper seems to use floor() to convert 
+            // interpolated values to integers
+            return colorIndices.get(colorable) + 0.5;
+        }
+        
+        void applyMapper(vtkPolyDataMapper mapper) {
+            if (!isFinalized) throw new ToonColorsNotFinalizedException();
+            mapper.ScalarVisibilityOn();
+            mapper.SetColorModeToMapScalars();
+            mapper.SetLookupTable(lut);
+            mapper.SetScalarRange(0.0, nextColorIndex);
+        }
+    }
+    
+    class ToonColorsNotFinalizedException extends RuntimeException {}
+    class ToonColorsFinalizedException extends RuntimeException {}
 }

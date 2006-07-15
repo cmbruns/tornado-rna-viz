@@ -51,7 +51,7 @@ import org.simtk.util.*;
   * 
   * A transparent blue cylinder around each duplex
  */
-public class DuplexCylinderCartoon extends MolecularCartoonClass 
+public class DuplexCylinderCartoon extends MoleculeCartoonClass 
 {
     // Size of the cylinders surrounding the double helices
     static double defaultbarrelRadius = 8.0; // 11.5 to consume most atoms
@@ -59,7 +59,7 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
     int defaultCylinderResolution = 10;
     double defaultCylinderOpacity = 1.0;
 
-    vtkAssembly assembly = new vtkAssembly();
+    // vtkAssembly assembly = new vtkAssembly();
     
     public DuplexCylinderCartoon() {
     }
@@ -67,8 +67,6 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
     public void updateCoordinates() {
         // TODO
     }
-    
-    public vtkProp3D getVtkProp3D() {return assembly;}
     
     public void add(LocatedMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
@@ -111,7 +109,7 @@ public class DuplexCylinderCartoon extends MolecularCartoonClass
         Cylinder helixCylinder = doubleHelixCylinder(duplex);
         vtkActor cylinderActor =  GraphicsCylinder.getVtkCylinder(helixCylinder, defaultCylinderColor, defaultCylinderResolution);
         cylinderActor.GetProperty().SetOpacity(defaultCylinderOpacity);
-        assembly.AddPart(cylinderActor);
+        actorSet.add(cylinderActor);
     }
 
     /**

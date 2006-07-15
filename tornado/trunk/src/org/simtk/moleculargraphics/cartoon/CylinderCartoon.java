@@ -36,11 +36,6 @@ public abstract class CylinderCartoon extends GlyphCartoon {
     protected double minLength;
     protected vtkCylinderSource cylinderSource;
     
-    // Manage color table - one residue gets one color
-    protected Map<Object, Integer> modelColors = new HashMap<Object, Integer>();
-    int nextUnusedColorIndex = 0;
-    int maxColorIndex = lut.GetNumberOfColors() - 4;
-    
     protected CylinderCartoon(double radius, double minLength) {
         this.cylinderRadius = radius;
         this.minLength = minLength;
@@ -97,27 +92,13 @@ public abstract class CylinderCartoon extends GlyphCartoon {
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(normal.getX(), normal.getY(), normal.getZ());
 
-            // TODO - put this color logic into a baser class
-            // If necessary insert a new color into the color table
-            if (! (modelColors.containsKey(modelObject)) ) {
-                int colorScalar = nextUnusedColorIndex;
-                lut.SetTableValue(colorScalar, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-                modelColors.put(modelObject, colorScalar);
-
-                if (nextUnusedColorIndex < maxColorIndex)
-                        nextUnusedColorIndex ++;
-                else {
-                    // TODO - color table overflow
-                }
-            }
+            double colorScalar = toonColors.getColorIndex(modelObject);
             
-            int colorScalar = modelColors.get(modelObject);
-
             Collection<Object> modelObjects = new Vector<Object>();
             modelObjects.add(modelObject);
 
-            glyphColors.add(modelObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-            lineScalars.InsertNextValue(colorScalar);
+            // glyphColors.add(modelObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+            colorScalars.InsertNextValue(colorScalar);
             
         }
 

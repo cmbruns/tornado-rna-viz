@@ -26,37 +26,23 @@
  */
 
 /*
- * Created on Apr 28, 2005
+ * Created on Jul 6, 2005
  *
  */
 package org.simtk.moleculargraphics.cartoon;
 
-/** 
- * @author Christopher Bruns
- * 
- * Tubes connecting backbone, plus rods for nucleotides
- */
-public class TubeAndStickTrace extends CompositeCartoon {
-    double backboneRadius = 1.50;
-    double rodRadius = 0.50;
+import org.simtk.molecularstructure.*;
 
-    int stickResolution = 5;
-
-    BackboneStick tubes;
-    NucleotideStickCartoon rods;
+public abstract class MoleculeCartoonClass 
+extends MolecularCartoonClass 
+implements MoleculeCartoon 
+{
+    public abstract void add(LocatedMolecule molecule);
     
-    public TubeAndStickTrace() {
-        this(1.50, 0.5);
+    public void add(MoleculeCollection moleculeCollection) {
+        for (Molecule molecule : moleculeCollection.molecules()) {
+            if (! (molecule instanceof LocatedMolecule)) continue;
+            add((LocatedMolecule)molecule);
+        }
     }
-
-    public TubeAndStickTrace(double r1, double r2) {
-        backboneRadius = r1;
-        rodRadius = r2;
-
-        tubes = new BackboneStick(backboneRadius);
-        rods = new NucleotideStickCartoon(rodRadius);
-        
-        addSubToon(tubes);
-        addSubToon(rods);
-    }    
 }

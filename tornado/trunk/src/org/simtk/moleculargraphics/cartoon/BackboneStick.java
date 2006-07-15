@@ -44,8 +44,6 @@ public class BackboneStick extends GlyphCartoon {
     int stickResolution = 7;
     double stickLength = 2.0;
     double stickRadius = 0.50;
-    private int baseColorIndex = 150;
-    private Hashtable colorIndices = new Hashtable();
     protected ColorScheme colorScheme = new ConstantColor(Color.blue);
 
     public BackboneStick() {
@@ -133,14 +131,13 @@ public class BackboneStick extends GlyphCartoon {
 
     public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        super.add(molecule);
     }
     
     void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
-        if (glyphColors.containsKey(molecule)) return;
+        // if (glyphColors.containsKey(molecule)) return;
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -172,7 +169,7 @@ public class BackboneStick extends GlyphCartoon {
         if (residue == null) return;
         
         // Don't add things that have already been added
-        if (glyphColors.containsKey(residue)) return;
+        // if (glyphColors.containsKey(residue)) return;
 
         Vector3D backbonePosition;        
         try {backbonePosition = residue.getBackbonePosition();}
@@ -206,12 +203,7 @@ public class BackboneStick extends GlyphCartoon {
         try {color = colorScheme.colorOf(residue);}
         catch (UnknownObjectColorException exc) {color = Color.white;}
         
-        if (! (colorIndices.containsKey(color))) {
-            colorIndices.put(color, new Integer(baseColorIndex));
-            lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-            baseColorIndex ++;
-        }
-        int colorScalar = ((Integer) colorIndices.get(color)).intValue();
+        double colorScalar = toonColors.getColorIndex(residue);
 
         if (previousPosition != null) {
             // Point midway between two residues
@@ -238,7 +230,7 @@ public class BackboneStick extends GlyphCartoon {
         }
     }
     
-    private void tileSticks(Vector3D segmentStart, Vector3D segmentEnd, Set<Object> currentObjects, int colorScalar) {
+    private void tileSticks(Vector3D segmentStart, Vector3D segmentEnd, Set<Object> currentObjects, double colorScalar) {
         Vector3D segmentDirection = segmentEnd.minus(segmentStart);
 
         // Use sticks to tile path from atom center, c, to bond midpoint
@@ -260,8 +252,8 @@ public class BackboneStick extends GlyphCartoon {
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(segmentDirection.getX(), segmentDirection.getY(), segmentDirection.getZ());
 
-            glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-            lineScalars.InsertNextValue(colorScalar);                
+            // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+            colorScalars.InsertNextValue(colorScalar);                
         }        
     }
 }

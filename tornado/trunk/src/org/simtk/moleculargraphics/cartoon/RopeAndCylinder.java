@@ -126,5 +126,7 @@ public class RopeAndCylinder extends CompositeCartoon {
 
         duplexes.add(molecule);        
         // ropes.add(molecule);
+        
+        actorSet.addAll(duplexes.vtkActors());
     }   
 }

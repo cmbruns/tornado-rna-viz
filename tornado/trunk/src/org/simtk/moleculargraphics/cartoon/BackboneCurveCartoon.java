@@ -44,7 +44,7 @@ import org.simtk.molecularstructure.*;
  * 
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
-public class BackboneCurveCartoon extends MolecularCartoonClass {
+public class BackboneCurveCartoon extends MoleculeCartoonClass {
     double ribbonThickness = 1.00;
     double ribbonWidth = 1.50;
     
@@ -57,35 +57,11 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
     boolean drawSmoothSpline = true;
     boolean drawSmoothSpline2 = false;
 
-    // Coloring
-    vtkLookupTable lut = new vtkLookupTable();
-    static final int selectionColorIndex = 255;
-    static final int highlightColorIndex = 254;
-    static final int invisibleColorIndex = 253;
-    static final Color selectionColor = new Color(80, 80, 255);
-    static final Color highlightColor = new Color(250, 250, 50);
-    private int baseColorIndex = 150;
-    private Map<Color, Integer> colorIndices = new HashMap<Color, Integer>();
-
-    vtkAssembly assembly = new vtkAssembly();
+    protected vtkActor actor = new vtkActor();
     
     public BackboneCurveCartoon() {
-        
-        // TODO move color table stuff to a baser class
-        lut.SetNumberOfTableValues(256);
-        lut.SetRange(1.0, 60.0);
-        lut.SetAlphaRange(1.0, 1.0);
-        lut.SetValueRange(1.0, 1.0);
-        lut.SetHueRange(0.0, 1.0);
-        lut.SetSaturationRange(0.5, 0.5);
-        lut.Build();
-        
-        lut.SetTableValue(selectionColorIndex, selectionColor.getRed()/255.0, selectionColor.getGreen()/255.0, selectionColor.getBlue()/255.0, 1.0);        
-        lut.SetTableValue(highlightColorIndex, highlightColor.getRed()/255.0, highlightColor.getGreen()/255.0, highlightColor.getBlue()/255.0, 1.0);        
-        lut.SetTableValue(invisibleColorIndex, 0.0, 0.0, 0.0, 0.0);
+        actorSet.add(actor);        
     }
-    
-    public vtkProp3D getVtkProp3D() {return assembly;}
     
     public void add(LocatedMolecule molecule) {
         if (! (molecule instanceof BiopolymerClass)) return;
@@ -109,13 +85,7 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
                 continue RESIDUE;
             }
             
-            Color color = residue.getDefaultColor();
-            if (! (colorIndices.containsKey(color))) {
-                colorIndices.put(color, baseColorIndex);
-                lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-                baseColorIndex ++;
-            }
-            int colorScalar = colorIndices.get(color);        
+            double colorScalar = toonColors.getColorIndex(residue);
             
             if ( (backbonePosition != null) && (sideChainPosition != null) ) {
                 linePoints.InsertNextPoint(backbonePosition.getX(), backbonePosition.getY(), backbonePosition.getZ());
@@ -262,23 +232,17 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         dataNormals.SetFeatureAngle(80.0); // Angles smaller than this are smoothed
         dataNormals.SetInput(ribbonThicknessFilter.GetOutput());
         
-        vtkPolyDataMapper tubeMapper = new vtkPolyDataMapper();        
+        vtkPolyDataMapper tubeMapper = mapper;        
 
         // tubeMapper.SetInput(tubeData); // line
         // tubeMapper.SetInput(lineRibbon.GetOutput()); // ribbon
         // tubeMapper.SetInput(ribbonThicknessFilter.GetOutput()); // ribbon
         tubeMapper.SetInput(dataNormals.GetOutput()); // ribbon
 
-        // tubeMapper.SetColorModeToMapScalars();
-        tubeMapper.SetLookupTable(lut);
-        tubeMapper.SetScalarRange(0.0, lut.GetNumberOfTableValues());
-
-        vtkActor lineActor = new vtkActor(); // tube        
+        vtkActor lineActor = actor; // tube        
         lineActor.SetMapper(tubeMapper);
 
         lineActor.AddPosition(0.0, 0.0, 0.0);
-
-        assembly.AddPart(lineActor);
     }
     
     public void experimentalAddMolecule(LocatedMolecule molecule) {
@@ -306,13 +270,7 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
     }
     
     public void addPoint(Vector3D point, Vector3D normal, Residue residue, Biopolymer molecule) {
-        Color color = residue.getDefaultColor();
-        if (! (colorIndices.containsKey(color))) {
-            colorIndices.put(color, baseColorIndex);
-            lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-            baseColorIndex ++;
-        }
-        int colorScalar = colorIndices.get(color);        
+        double colorScalar = toonColors.getColorIndex(residue);
 
         if (! moleculeData.containsKey(molecule)) {
             createMoleculePipeline(molecule);
@@ -365,22 +323,16 @@ public class BackboneCurveCartoon extends MolecularCartoonClass {
         dataNormals.SetFeatureAngle(80.0); // Angles smaller than this are smoothed
         dataNormals.SetInput(lineRibbon.GetOutput());
         
-        vtkPolyDataMapper tubeMapper = new vtkPolyDataMapper();        
+        vtkPolyDataMapper tubeMapper = mapper;        
 
         // tubeMapper.SetInput(tubeData); // line
         // tubeMapper.SetInput(lineRibbon.GetOutput()); // ribbon
         // tubeMapper.SetInput(ribbonThicknessFilter.GetOutput()); // ribbon
         tubeMapper.SetInput(dataNormals.GetOutput()); // ribbon
 
-        // tubeMapper.SetColorModeToMapScalars();
-        tubeMapper.SetLookupTable(lut);
-        tubeMapper.SetScalarRange(0.0, lut.GetNumberOfTableValues());
-
-        vtkActor lineActor = new vtkActor(); // tube        
+        vtkActor lineActor = actor; // tube        
         lineActor.SetMapper(tubeMapper);
 
         lineActor.AddPosition(0.0, 0.0, 0.0);
-
-        assembly.AddPart(lineActor);
     }
 }

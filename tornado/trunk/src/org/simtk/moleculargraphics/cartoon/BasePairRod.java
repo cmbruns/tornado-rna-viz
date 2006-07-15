@@ -48,7 +48,6 @@ public class BasePairRod extends CylinderCartoon {
     }
     
     public void add(LocatedMolecule molecule) {
-        super.add(molecule);
         if (molecule instanceof NucleicAcid) {
             NucleicAcid rna = (NucleicAcid) molecule;
             

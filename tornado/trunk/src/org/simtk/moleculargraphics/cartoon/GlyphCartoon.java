@@ -31,11 +31,8 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.awt.Color;
 import java.util.*;
 
-import org.simtk.molecularstructure.*;
-import org.simtk.util.*;
 import org.simtk.geometry3d.*;
 
 import vtk.*;
@@ -46,27 +43,21 @@ import vtk.*;
   * @author Christopher Bruns
   * 
  */
-public abstract class GlyphCartoon extends MolecularCartoonClass {
-    vtkLookupTable lut = new vtkLookupTable();
-    static final int selectionColorIndex = 255;
-    static final int highlightColorIndex = 254;
-    static final int invisibleColorIndex = 253;
-    // static final Color selectionColor = new Color(80, 80, 255);
-    static final Color selectionColor = new Color(255,255,150);
-    static final Color highlightColor = new Color(250, 250, 50);
-
-    GlyphIndex glyphColors = new GlyphIndex();
+public abstract class GlyphCartoon extends MoleculeCartoonClass {
+    // GlyphIndex glyphColors = new GlyphIndex();
 
     // Glyph positions
     vtkPolyData lineData = new vtkPolyData();
     vtkPoints linePoints = new vtkPoints(); // bond centers
     vtkFloatArray lineNormals = new vtkFloatArray(); // bond directions/lengths
-    vtkFloatArray lineScalars = new vtkFloatArray();
 
+    // vtkFloatArray lineScalars = new vtkFloatArray();
+
+    vtkFloatArray colorScalars = new vtkFloatArray();
+   
     private vtkGlyph3D lineGlyph = new vtkGlyph3D();
-    vtkPolyDataMapper glyphMapper = new vtkPolyDataMapper();
+    vtkPolyDataMapper glyphMapper = mapper;
 
-    vtkAssembly assembly = new vtkAssembly();
     vtkActor glyphActor = new vtkActor();
 
     // private MassBodyClass massBody = new MassBodyClass();
@@ -74,51 +65,23 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
     GlyphCartoon() {
         super();
         
-        lut.SetNumberOfTableValues(256);
-        lut.SetRange(1.0, 60.0);
-        lut.SetAlphaRange(1.0, 1.0);
-        lut.SetValueRange(1.0, 1.0);
-        lut.SetHueRange(0.0, 1.0);
-        lut.SetSaturationRange(0.5, 0.5);
-        lut.Build();
-        
-        lut.SetTableValue(selectionColorIndex, selectionColor.getRed()/255.0, selectionColor.getGreen()/255.0, selectionColor.getBlue()/255.0, 1.0);        
-        lut.SetTableValue(highlightColorIndex, highlightColor.getRed()/255.0, highlightColor.getGreen()/255.0, highlightColor.getBlue()/255.0, 1.0);        
-        lut.SetTableValue(invisibleColorIndex, 0.0, 0.0, 0.0, 0.0);        
+        colorScalars.SetNumberOfComponents(1);
+        colorScalars.SetName("colors");
 
-        glyphColors.setData(lineData);        
+        // glyphColors.setData(lineData);        
         lineNormals.SetNumberOfComponents(3);
         lineData.SetPoints(linePoints);
         lineData.GetPointData().SetNormals(lineNormals);
-        lineData.GetPointData().SetScalars(lineScalars);        
+
+        lineData.GetPointData().SetScalars(colorScalars);        
         
         lineGlyph.SetInput(lineData);
 
-        glyphMapper.SetLookupTable(lut);
-        glyphMapper.SetScalarRange(0, 255);
         glyphMapper.SetInput(lineGlyph.GetOutput());
         
         glyphActor.SetMapper(glyphMapper);
         
-        assembly.AddPart(glyphActor);
-    }
-
-    public void add(LocatedMolecule m) {
-        // glyphColors.show(m);
-    }
-    
-    public void show() {
-        assembly.SetVisibility(1);
-        glyphColors.show();
-    }
-
-    public void show(LocatedMolecule m) {
-        glyphColors.show(m);
-    }
-
-    // Derived classes should update this too
-    public void updateCoordinates() {
-        // TODO
+        actorSet.add(glyphActor);
     }
 
     // Override these functions to use TensorGlyph rather than vtkGlyph3D
@@ -139,51 +102,7 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
         lineGlyph.SetColorModeToColorByScalar(); // Take color from scalar        
     }
 
-
-    public vtkActor getActor() {return glyphActor;}
-    
-    public void clear() {
-        lineNormals.Reset();
-        lineNormals.Squeeze();
-        lineScalars.Reset();
-        lineScalars.Squeeze();
-        linePoints.Reset();
-        linePoints.Squeeze();
-        glyphColors.clear();
-    }
-    
-    public vtkProp3D getVtkProp3D() {
-        return assembly;
-    }
-
-    public void unSelect() {
-        glyphColors.unSelect();
-    }
-
-    public void unSelect(Selectable s) {
-        glyphColors.unSelect(s);
-    }
-
-    public void select(Selectable s) {
-        glyphColors.select(s);
-    }
-
-    public void highlight(LocatedMolecule molecule) {
-        glyphColors.highlight(molecule);
-        return;
-    }
-    
-    public void hide(LocatedMolecule molecule) {
-        glyphColors.hide(molecule);
-        return;
-    }
-    
-    public void hide() {
-        glyphColors.hide();
-        return;
-    }
-    
-    class GlyphPosition implements Hidable {
+    class GlyphPosition {
         private vtkPolyData glyphData;
         vtkDataArray colorIndexArray;
         int arrayIndex;
@@ -195,30 +114,7 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
             // colorIndexArray = a;
             arrayIndex = i;
             unselectedColorIndex = c;
-        }
-        
-        public void show() {
-            if (colorIndexArray.GetTuple1(arrayIndex) == invisibleColorIndex)
-                colorIndexArray.SetTuple1(arrayIndex, unselectedColorIndex);
-        }
-        public void hide() {
-            colorIndexArray.SetTuple1(arrayIndex, invisibleColorIndex);
-        }
-        public void highlight() {
-            if (colorIndexArray.GetTuple1(arrayIndex) != invisibleColorIndex)
-                colorIndexArray.SetTuple1(arrayIndex, highlightColorIndex);
-        }
-        public void setColor(int colorIndex) {
-            colorIndexArray.SetTuple1(arrayIndex, colorIndex);
-        }
-        public void unSelect() {
-            if (colorIndexArray.GetTuple1(arrayIndex) == selectionColorIndex)
-                setColor(unselectedColorIndex);
-        }
-        public void select() {
-            if (colorIndexArray.GetTuple1(arrayIndex) != invisibleColorIndex)
-                setColor(selectionColorIndex);
-        }
+        }        
         public void setPosition(Vector3D v) {
             glyphData.GetPoints().SetPoint(arrayIndex, v.getX(), v.getY(), v.getZ());
         }
@@ -228,8 +124,7 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
     }
     
     
-    class GlyphIndex implements SelectionListener, Hidable {
-        static final long serialVersionUID = 0L;
+    class GlyphIndex {
 
         // Hashtable residueGlyphs = new Hashtable();
         // Hashtable atomGlyphs = new Hashtable();
@@ -262,100 +157,6 @@ public abstract class GlyphCartoon extends MolecularCartoonClass {
             }
         }
 
-        public void unSelect() {
-            for (Iterator i = allGlyphs.iterator(); i.hasNext(); ) {
-                GlyphPosition g = (GlyphPosition) i.next();
-                g.unSelect();
-            }
-            vtkData.GetPointData().GetScalars().Modified();
-        }
-        
-        public void unSelect(Selectable s) {
-            if (! (objectGlyphs.containsKey(s))) return;
-            Vector glyphVector = (Vector) objectGlyphs.get(s);
-            for (int i = 0; i < glyphVector.size(); i++) {
-                GlyphPosition g = (GlyphPosition) glyphVector.get(i);
-                g.unSelect();
-            }
-            vtkData.GetPointData().GetScalars().Modified();
-        }        
-        public void select(Selectable s) {
-            // System.out.println("select1");
-            if (! (objectGlyphs.containsKey(s))) return;
-            Vector glyphVector = (Vector) objectGlyphs.get(s);
-            for (int i = 0; i < glyphVector.size(); i++) {
-                GlyphPosition g = (GlyphPosition) glyphVector.get(i);
-                g.select();
-            }
-            vtkData.GetPointData().GetScalars().Modified();
-            // System.out.println("select2");
-        }
-        public void hide(Object o) {
-            if (! (objectGlyphs.containsKey(o))) return;
-            Vector glyphVector = (Vector) objectGlyphs.get(o);
-            for (Iterator i = glyphVector.iterator(); i.hasNext(); ) {
-                GlyphPosition g = (GlyphPosition) i.next();
-                g.hide();
-            }
-            vtkData.GetPointData().GetScalars().Modified();
-        }
-        public void hide() {
-            Collection glyphVector = allGlyphs;
-            for (Iterator i = glyphVector.iterator(); i.hasNext(); ) {
-                GlyphPosition g = (GlyphPosition) i.next();
-                g.hide();
-            }
-            vtkData.GetPointData().GetScalars().Modified();
-        }
-
-        public void show(Object o) {
-            if (! (objectGlyphs.containsKey(o))) return;
-            Vector glyphVector = (Vector) objectGlyphs.get(o);
-            for (Iterator i = glyphVector.iterator(); i.hasNext(); ) {
-                GlyphPosition g = (GlyphPosition) i.next();
-                g.show();
-            }
-            vtkData.GetPointData().GetScalars().Modified();
-        }
-        public void show() {
-            Collection glyphVector = allGlyphs;
-            for (Iterator i = glyphVector.iterator(); i.hasNext(); ) {
-                GlyphPosition g = (GlyphPosition) i.next();
-                g.show();
-            }
-            vtkData.GetPointData().GetScalars().Modified();
-        }
-
-        
-        public void highlight(Object o) {
-            if (! (objectGlyphs.containsKey(o))) return;
-            Vector glyphVector = (Vector) objectGlyphs.get(o);
-            for (int i = 0; i < glyphVector.size(); i++) {
-                GlyphPosition g = (GlyphPosition) glyphVector.get(i);
-                g.highlight();
-            }
-            vtkData.GetPointData().GetScalars().Modified();
-        }
-        
-        void setDefaultColor(Object residue) {
-            if (! objectGlyphs.containsKey(residue)) return;
-            Vector glyphs = (Vector) objectGlyphs.get(residue);
-            for (int g = 0; g < glyphs.size(); g++) {
-                GlyphPosition glyph = (GlyphPosition) glyphs.get(g);
-                glyph.show();
-            }
-        }
-        void setColor(Object residue, int colorIndex) {
-            if (! objectGlyphs.containsKey(residue)) return;
-            Vector glyphs = (Vector) objectGlyphs.get(residue);
-            for (int g = 0; g < glyphs.size(); g++) {
-                GlyphPosition glyph = (GlyphPosition) glyphs.get(g);
-                glyph.setColor(colorIndex);
-            }
-        }
-        void clear() {
-            objectGlyphs.clear();
-        }
     }
     
 }

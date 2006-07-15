@@ -380,7 +380,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
         // Removing this line prevents application crash during render
         strandData.GetPointData().SetScalars(widthScalars);
 
-        vtkPolyDataMapper strandMapper = new vtkPolyDataMapper();        
+        vtkPolyDataMapper strandMapper = mapper;        
 
         // Remove duplicate points - tubefilter is fussy about this
         vtkCleanPolyData dataCleaner = new vtkCleanPolyData();

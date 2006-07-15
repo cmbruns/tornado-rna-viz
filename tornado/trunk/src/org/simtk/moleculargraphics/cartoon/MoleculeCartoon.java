@@ -28,12 +28,7 @@ package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.molecularstructure.*;
 
-public interface MutableMolecularCartoon extends MolecularCartoon {
-    // public void clear();
-    
-    /**
-     * Add a new molecule to this cartoon
-     * @param m
-     */
-    public void add(LocatedMolecule m);
+public interface MoleculeCartoon extends MolecularCartoon {
+    public void add(LocatedMolecule molecule);
+    public void add(MoleculeCollection moleculeCollection);
 }

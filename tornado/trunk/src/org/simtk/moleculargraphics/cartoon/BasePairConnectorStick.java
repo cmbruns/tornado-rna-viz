@@ -56,7 +56,6 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
     }
 
     public void add(LocatedMolecule molecule) {
-        super.add(molecule); // TODO make sure all cartoon classes do this
         if (molecule instanceof NucleicAcid)
             addNucleicAcid((NucleicAcid)molecule);
     }
@@ -114,26 +113,16 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
                 direction2.x(), direction2.y(), direction2.z()
                 );
 
-        int glyphIndex = lineScalars.GetNumberOfTuples();
+        int glyphIndex = colorScalars.GetNumberOfTuples();
         
         Collection<Object> currentObjects = new HashSet<Object>(parentObjects);
         currentObjects.add(res);
         
-        // Color color = res.getDefaultColor();
-        Color color;
-        try {color = colorScheme.colorOf(res);}
-        catch (UnknownObjectColorException exc) {color = Color.white;}
+        double colorScalar = toonColors.getColorIndex(res);
 
-        if (! (colorIndices.containsKey(color))) {
-            colorIndices.put(color, new Integer(baseColorIndex));
-            lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-            baseColorIndex ++;
-        }
-        int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
-
-        glyphColors.add(currentObjects, lineData, glyphIndex, colorScalar);
+        // glyphColors.add(currentObjects, lineData, glyphIndex, colorScalar);
         
-        lineScalars.InsertNextValue(colorScalar);
+        colorScalars.InsertNextValue(colorScalar);
     }
 
 }

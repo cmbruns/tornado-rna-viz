@@ -42,8 +42,6 @@ import vtk.*;
 public class BackboneSpheres extends GlyphCartoon {
     int stickResolution = 5;
     double stickRadius = 1.00;
-    private int baseColorIndex = 150;
-    private Hashtable colorIndices = new Hashtable();
 
     public BackboneSpheres(double r) {
         super();
@@ -79,14 +77,13 @@ public class BackboneSpheres extends GlyphCartoon {
 
     public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        super.add(molecule);
     }
 
     void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
-        if (glyphColors.containsKey(molecule)) return;
+        // if (glyphColors.containsKey(molecule)) return;
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -114,7 +111,7 @@ public class BackboneSpheres extends GlyphCartoon {
         if (residue == null) return;
         
         // Don't add things that have already been added
-        if (glyphColors.containsKey(residue)) return;
+        // if (glyphColors.containsKey(residue)) return;
 
         Vector3D backbonePosition;
         try {backbonePosition = residue.getBackbonePosition();}
@@ -132,16 +129,10 @@ public class BackboneSpheres extends GlyphCartoon {
         }
         currentObjects.add(residue);
 
-        Color color = residue.getDefaultColor();
-        if (! (colorIndices.containsKey(color))) {
-            colorIndices.put(color, new Integer(baseColorIndex));
-            lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-            baseColorIndex ++;
-        }
-        int colorScalar = ((Integer) colorIndices.get(color)).intValue();
+        double colorScalar = toonColors.getColorIndex(residue);
         
         linePoints.InsertNextPoint(backbonePosition.getX(), backbonePosition.getY(), backbonePosition.getZ());
-        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-        lineScalars.InsertNextValue(colorScalar);        
+        // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+        colorScalars.InsertNextValue(colorScalar);        
     }    
 }

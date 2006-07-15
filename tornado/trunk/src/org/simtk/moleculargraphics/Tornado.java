@@ -70,18 +70,19 @@ implements ResidueActionListener
     
     protected ColorScheme yellowColorScheme = new ConstantColor(Color.yellow);
     protected ColorScheme cyanColorScheme = new ConstantColor(Color.cyan);
+    protected ColorScheme colorScheme = DefaultColorScheme.DEFAULT_COLOR_SCHEME;
 
     // private MolecularCartoonClass.CartoonType cartoonType = 
     //     MolecularCartoonClass.CartoonType.WIRE_FRAME;
-    Class cartoonType = WireFrameCartoon.class;
-    private MutableMolecularCartoon currentCartoon;
+    Class cartoonType = ResidueSphereCartoon.class;
+    private MoleculeCartoon currentCartoon;
     // try {
     // } catch ()
 
     Tornado() {
         super("toRNAdo: (no structures currently loaded)");
         
-        try {currentCartoon = (MutableMolecularCartoon) cartoonType.newInstance();} 
+        try {currentCartoon = (MoleculeCartoon) cartoonType.newInstance();} 
         catch (InstantiationException exc) {System.err.println(exc);}
         catch (IllegalAccessException exc) {System.err.println(exc);}
 
@@ -486,7 +487,7 @@ implements ResidueActionListener
             
             if (cartoonClass != null) {
                 try {
-                    currentCartoon = (MutableMolecularCartoon) cartoonClass.newInstance();
+                    currentCartoon = (MoleculeCartoon) cartoonClass.newInstance();
                 } 
                 catch (InstantiationException exc) {exc.printStackTrace();}
                 catch (IllegalAccessException exc) {exc.printStackTrace();}
@@ -497,6 +498,8 @@ implements ResidueActionListener
                 if (o instanceof LocatedMolecule)
                     currentCartoon.add((LocatedMolecule)o);
             }
+            
+            currentCartoon.finalizeCartoon(colorScheme);
 
             canvas.add(currentCartoon);
             
@@ -826,13 +829,9 @@ implements ResidueActionListener
     public void highlight(Residue residue) {
         if (residue == null) setMessage(" ");
         else {
-            // TODO this is a test
-            if (currentCartoon instanceof RichardsonProteinRibbon) {
-                RichardsonProteinRibbon r = (RichardsonProteinRibbon) currentCartoon;
-                r.color(currentHighlightedResidue, cyanColorScheme);
-                r.color(residue, yellowColorScheme);
-                canvas.repaint();
-            }
+            currentCartoon.colorToon(currentHighlightedResidue, colorScheme);
+            currentCartoon.colorToon(residue, yellowColorScheme);
+            canvas.repaint();
 
             setMessage("Residue " + residue.getResidueName() + 
                 " (" + residue.getOneLetterCode() + ") " + residue.getResidueNumber());
@@ -840,6 +839,7 @@ implements ResidueActionListener
             
         }
     }
+    
     public void unHighlightResidue() {
         setMessage(" "); // Use a space, otherwise message panel collapses
         currentHighlightedResidue = null;

@@ -27,6 +27,7 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import vtk.*;
+import java.util.Set;
 
 public interface MolecularCartoon {
     /**
@@ -34,5 +35,10 @@ public interface MolecularCartoon {
      * @param m
      */
     // public vtkAssembly getAssembly();
-    public vtkProp3D getVtkProp3D();
+    // public vtkProp3D getVtkProp3D();
+    public Set<vtkActor> vtkActors();
+    
+    public void colorToon(Object chemical, ColorScheme colorScheme);
+    public void colorToon(ColorScheme colorScheme);
+    public void finalizeCartoon(ColorScheme colorScheme);
 }

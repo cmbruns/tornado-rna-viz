@@ -31,7 +31,6 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.awt.Color;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
@@ -128,14 +127,13 @@ public class NucleotideStickCartoon extends GlyphCartoon {
 
     public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        super.add(molecule);
     }
 
     void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
-        if (glyphColors.containsKey(molecule)) return;
+        // if (glyphColors.containsKey(molecule)) return;
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -165,7 +163,7 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         if (nucleotide == null) return;
         
         // Don't add things that have already been added
-        if (glyphColors.containsKey(nucleotide)) return;
+        // if (glyphColors.containsKey(nucleotide)) return;
 
         // Put end of rod in the middle of the Watson-Crick face
         LocatedAtom sideChainAtom;
@@ -203,13 +201,7 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         Vector3D startStickCenter = c.plus(n.times(stickLength * 0.5));
         Vector3D endStickCenter = rodEnd.minus(n.times(stickLength * 0.5));
 
-        Color color = nucleotide.getDefaultColor();
-        if (! (colorIndices.containsKey(color))) {
-            colorIndices.put(color, new Integer(baseColorIndex));
-            lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-            baseColorIndex ++;
-        }
-        int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
+        double colorScalar = toonColors.getColorIndex(nucleotide);
 
         Vector3D stickCenterVector = endStickCenter.minus(startStickCenter);
         for (int s = 0; s < numberOfSticks; s++) {
@@ -221,8 +213,8 @@ public class NucleotideStickCartoon extends GlyphCartoon {
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());
 
-            glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-            lineScalars.InsertNextValue(colorScalar);
+            // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+            colorScalars.InsertNextValue(colorScalar);
         }
                 
     }

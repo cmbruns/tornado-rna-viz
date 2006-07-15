@@ -83,14 +83,13 @@ public class BondStickCartoon extends GlyphCartoon {
 
     public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        super.add(molecule);
     }
 
     void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
-        if (glyphColors.containsKey(molecule)) return;
+        // if (glyphColors.containsKey(molecule)) return;
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -124,7 +123,7 @@ public class BondStickCartoon extends GlyphCartoon {
         if (atom == null) return;
         
         // Don't add things that have already been added
-        if (glyphColors.containsKey(atom)) return;
+        // if (glyphColors.containsKey(atom)) return;
 
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -136,11 +135,8 @@ public class BondStickCartoon extends GlyphCartoon {
 
         Vector3D c = atom.getCoordinates();
 
-        int colorScalar = (int) (atom.getMass());
+        double colorScalar = toonColors.getColorIndex(atom);
 
-        Color col = atom.getDefaultAtomColor();
-        lut.SetTableValue(colorScalar, col.getRed()/255.0, col.getGreen()/255.0, col.getBlue()/255.0, 1.0);
-        
         // For bonded atoms, draw a line for each bond
         for (Iterator i2 = atom.getBonds().iterator(); i2.hasNext(); ) {
             PDBAtom atom2 = (PDBAtom) i2.next();
@@ -170,8 +166,8 @@ public class BondStickCartoon extends GlyphCartoon {
                 linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
                 lineNormals.InsertNextTuple3(n.getX(), n.getY(), n.getZ());
     
-                glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-                lineScalars.InsertNextValue(colorScalar);
+                // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+                colorScalars.InsertNextValue(colorScalar);
                 
             }
         }

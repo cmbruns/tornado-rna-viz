@@ -31,30 +31,26 @@ import java.util.*;
 import vtk.vtkAssembly;
 import vtk.vtkProp3D;
 
-public abstract class CompositeCartoon extends MolecularCartoonClass {
-    protected List<MutableMolecularCartoon> subToons = new Vector<MutableMolecularCartoon>();
-    protected vtkAssembly assembly = new vtkAssembly();
+public abstract class CompositeCartoon extends MoleculeCartoonClass {
+    // protected Set<MoleculeCartoon> subToons = new LinkedHashSet<MoleculeCartoon>();
 
     public CompositeCartoon() {}
     
-    public CompositeCartoon(Collection<MutableMolecularCartoon> toons) {
-        for (MutableMolecularCartoon toon : toons) {
+    public CompositeCartoon(Collection<MolecularCartoon> toons) {
+        for (MolecularCartoon toon : toons) {
             addSubToon(toon);
         }
     }
     
-    public void addSubToon(MutableMolecularCartoon toon) {
+    public void addSubToon(MolecularCartoon toon) {
         subToons.add(toon);
-        assembly.AddPart(toon.getVtkProp3D());
+        actorSet.addAll(toon.vtkActors());
     }
     
     public void add(LocatedMolecule m) {
-        for (MutableMolecularCartoon toon : subToons) 
-            toon.add(m);
+        for (MolecularCartoon toon : subToons) {
+            if (toon instanceof MoleculeCartoon) ((MoleculeCartoon)toon).add(m);
+        }
     }
     
-    public vtkProp3D getVtkProp3D() {
-        return assembly;
-    }
-
 }

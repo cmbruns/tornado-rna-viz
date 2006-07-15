@@ -108,39 +108,15 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
     // public void setMolecules(MoleculeCollection molecules, MolecularCartoonClass.CartoonType cartoonType) {
     // }
     public void add(MolecularCartoon cartoon) {
+        if (cartoon.vtkActors().size() < 1) return;
         
-        vtkProp3D prop3D = cartoon.getVtkProp3D();
-        // vtkAssembly assembly = cartoon.getAssembly();
-        
-        if (prop3D != null) {
-
-            // Update mass distribution in display
-            // massBody.add(cartoon);
-
-            Lock();
-            
-            // AddProp deprecated in vtk 5.0
-            // try{canvas.GetRenderer().AddViewProp(assembly);}
-            // catch(NoSuchMethodError exc){canvas.GetRenderer().AddProp(assembly);}
-
-            // System.out.println("Number of assembly paths = " + assembly.GetNumberOfPaths());
-            
+        Lock();
+        for (vtkActor actor : cartoon.vtkActors()) {
             // GetRenderer().AddProp(assembly); // vtk 4.4
-            GetRenderer().AddViewProp(prop3D); // vtk 5.0
-            
-            // System.out.println("Assembly added");
-            
-            // TODO This centering should be optional
-            // TODO The view should also be scaled
-            // centerByMass();
-            // centerByBoundingBox();
-    
-            UnLock();
-            repaint();
+            GetRenderer().AddViewProp(actor); // vtk 5.0
         }
-        else {
-            System.out.println("No assembly in cartoon");
-        }
+        UnLock();
+        repaint();
     }
     
     public void update(Observable observable, Object object) {

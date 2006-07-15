@@ -132,7 +132,6 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
 
     public void add(LocatedMolecule molecule) {
         addMolecule(molecule);
-        super.add(molecule);
     }
 
     void addMolecule(LocatedMolecule molecule) {
@@ -196,13 +195,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                     currentObjects.add(duplex);
                     currentObjects.add(residue);
                     
-                    Color color = residue.getDefaultColor();
-                    if (! (colorIndices.containsKey(color))) {
-                        colorIndices.put(color, new Integer(baseColorIndex));
-                        lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-                        baseColorIndex ++;
-                    }
-                    int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
+                    double colorScalar = toonColors.getColorIndex(residue);
     
                     linePoints.InsertNextPoint(helixCenter.getX(), helixCenter.getY(), helixCenter.getZ());
                     lineNormals.InsertNextTuple3(residueDirection.getX(), residueDirection.getY(), residueDirection.getZ());
@@ -213,8 +206,8 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                             residueDirection.getX(),residueDirection.getY(),residueDirection.getZ(),
                             thirdDirection.getX(),thirdDirection.getY(),thirdDirection.getZ()); // TODO
         
-                    glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-                    lineScalars.InsertNextValue(colorScalar);
+                    // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+                    colorScalars.InsertNextValue(colorScalar);
                     
                     // Reverse the orientation for the other residue
                     residueDirection.timesEquals(-1.0);

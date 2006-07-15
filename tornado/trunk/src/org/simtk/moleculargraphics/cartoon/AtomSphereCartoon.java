@@ -76,14 +76,13 @@ public class AtomSphereCartoon extends GlyphCartoon {
     
     public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        super.add(molecule); // TODO make sure all cartoon classes do this
     }
     
     void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
-        if (glyphColors.containsKey(molecule)) return;
+        // if (glyphColors.containsKey(molecule)) return;
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -107,17 +106,18 @@ public class AtomSphereCartoon extends GlyphCartoon {
                 addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
             }
         }
-        else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            PDBAtom atom = (PDBAtom) i1.next();
+        else for (LocatedAtom atom : molecule.atoms()) {
+        // else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
+            // PDBAtom atom = (PDBAtom) i1.next();
             addAtom(atom, currentObjects);
         }        
     }
     
-    void addAtom(PDBAtom atom, Vector parentObjects) {
+    void addAtom(LocatedAtom atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added
-        if (glyphColors.containsKey(atom)) return;
+        // if (glyphColors.containsKey(atom)) return;
 
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -129,10 +129,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
 
         Vector3D c = atom.getCoordinates();
 
-        int colorScalar = (int) (atom.getMass());
-
-        Color col = atom.getDefaultAtomColor();
-        lut.SetTableValue(colorScalar, col.getRed()/255.0, col.getGreen()/255.0, col.getBlue()/255.0, 1.0);
+        double colorScalar = toonColors.getColorIndex(atom);
 
         // Draw a sphere for each atom
         linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
@@ -141,7 +138,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
         if (scaleByAtom) radius *= atom.getVanDerWaalsRadius();
         lineNormals.InsertNextTuple3(radius, 0.0, 0.0);
 
-        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-        lineScalars.InsertNextValue(colorScalar);
+        // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+        colorScalars.InsertNextValue(colorScalar);
     }
 }

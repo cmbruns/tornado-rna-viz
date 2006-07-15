@@ -46,9 +46,6 @@ public class ResidueSphereCartoon extends GlyphCartoon {
     double aminoAcidSphereRadius = 3.00;
     double nucleotideSphereRadius = 5.0;
 
-    private int baseColorIndex = 150;
-    private Hashtable colorIndices = new Hashtable();
-    
     vtkSphereSource sphereSource = new vtkSphereSource();
 
     public ResidueSphereCartoon() {
@@ -71,20 +68,18 @@ public class ResidueSphereCartoon extends GlyphCartoon {
     
     public void add(LocatedMolecule molecule) {
         addMolecule(molecule, null);
-        super.add(molecule);
     }
 
-    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
+    void addMolecule(LocatedMolecule molecule, Set<Object> parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
-        if (glyphColors.containsKey(molecule)) return;
+        // if (glyphColors.containsKey(molecule)) return;
         
         // Collect molecular objects on which to index the glyphs
-        Vector currentObjects = new Vector();
+        Set<Object> currentObjects = new HashSet<Object>();
         if (parentObjects != null) {
-            for (int i = 0; i < parentObjects.size(); i++)
-                currentObjects.add(parentObjects.get(i));
+            currentObjects.addAll(parentObjects);
         }
         currentObjects.add(molecule);
         
@@ -99,32 +94,25 @@ public class ResidueSphereCartoon extends GlyphCartoon {
             for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
                 addResidue((PDBResidueClass) iterResidue.next(), currentObjects);
             }
-        }
+        }        
     }
     
-    void addResidue(PDBResidueClass residue, Vector parentObjects) {
+    void addResidue(PDBResidueClass residue, Set<Object> parentObjects) {
         if (residue == null) return;
         
         // Don't add things that have already been added
-        if (glyphColors.containsKey(residue)) return;
+        // if (glyphColors.containsKey(residue)) return;
 
         // Collect molecular objects on which to index the glyphs
-        Vector currentObjects = new Vector();
+        Set<Object> currentObjects = new HashSet<Object>();
         if (parentObjects != null) {
-            for (int i = 0; i < parentObjects.size(); i++)
-                currentObjects.add(parentObjects.get(i));
+            currentObjects.addAll(parentObjects);
         }
         currentObjects.add(residue);
 
         Vector3D c = residue.getCenterOfMass();
 
-        Color color = residue.getDefaultColor();
-        if (! (colorIndices.containsKey(color))) {
-            colorIndices.put(color, new Integer(baseColorIndex));
-            lut.SetTableValue(baseColorIndex, color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0, 1.0);
-            baseColorIndex ++;
-        }
-        int colorScalar = ((Integer) colorIndices.get(color)).intValue();        
+        double colorScalar = toonColors.getColorIndex(residue);
 
         // Draw a sphere for each atom
         linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
@@ -135,125 +123,7 @@ public class ResidueSphereCartoon extends GlyphCartoon {
         
         lineNormals.InsertNextTuple3(sphereRadius, 0.0, 0.0);
 
-        glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-        lineScalars.InsertNextValue(colorScalar);
+        // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+        colorScalars.InsertNextValue(colorScalar);
     }
-
-    // Hashtable sphereSources = new Hashtable();
-    
-    // Color defaultColor = new Color(100, 100, 255); // Blue
-
-//    /**
-//     * Update graphical primitives to reflect a change in atomic positions
-//     *
-//     */
-//    public void updateCoordinates() {
-//        // TODO
-//    }
-//    
-//    public vtkProp highlight(Residue residue, Color color) {
-//        return represent(residue, 1.05, color);
-//    }
-//
-//    // One sphere per residue
-//    public vtkAssembly represent(Molecule molecule) {
-//        return represent(molecule, 1.00, null);
-//    }
-//    public vtkAssembly represent(Molecule molecule, double scaleFactor, Color clr) {
-//        boolean hasContents = false;
-//        vtkAssembly assembly = new vtkAssembly();
-//        
-//        if (molecule instanceof Residue) {
-//            Residue residue = (Residue) molecule;
-//            
-//            if (Residue.isSolvent(residue.getResidueName())) return null;
-//
-//            // Make just one sphere
-//            Vector3D centerOfMass = residue.getCenterOfMass();
-//            vtkPoints vPoints = new vtkPoints();
-//            vPoints.InsertNextPoint(centerOfMass.getX(), centerOfMass.getY(), centerOfMass.getZ());
-//
-//            double radius = defaultSphereRadius * scaleFactor;
-//            if (residue instanceof AminoAcid) radius = aminoAcidSphereRadius * scaleFactor;
-//            if (residue instanceof Nucleotide) radius = nucleotideSphereRadius * scaleFactor;
-//            
-//            if (! sphereSources.containsKey(new Double(radius)))
-//                sphereSources.put(new Double(radius), newSphereSource(radius));
-//            vtkSphereSource sphereSource = (vtkSphereSource) sphereSources.get(new Double(radius));
-//            assembly.AddPart(getGlyphs(vPoints, sphereSource, clr));
-//            hasContents = true;
-//            return assembly;
-//        }
-//        
-//        // Figure out if its a Biopolymer
-//        // if so, do residues
-//        else if (molecule instanceof Biopolymer) {
-//            Biopolymer biopolymer = (Biopolymer) molecule;
-//            Hashtable spherePoints = new Hashtable();
-//
-//            for (Iterator i = biopolymer.residues().iterator(); i.hasNext();) {
-//                Residue residue = (Residue) i.next();
-//                
-//                if (Residue.isSolvent(residue.getResidueName())) continue;
-//
-//                Vector3D centerOfMass = residue.getCenterOfMass();
-//
-//                double radius = defaultSphereRadius * scaleFactor;
-//                if (residue instanceof AminoAcid) radius = aminoAcidSphereRadius * scaleFactor;
-//                if (residue instanceof Nucleotide) radius = nucleotideSphereRadius * scaleFactor;
-//                Double radiusObject = new Double(radius);
-//
-//                if (! spherePoints.containsKey(radiusObject))
-//                    spherePoints.put(radiusObject, new vtkPoints());
-//                vtkPoints vPoints = (vtkPoints) spherePoints.get(radiusObject);
-//                vPoints.InsertNextPoint(centerOfMass.getX(), centerOfMass.getY(), centerOfMass.getZ());
-//
-//                hasContents = true;
-//            }
-//
-//            for (Iterator i = spherePoints.keySet().iterator(); i.hasNext(); ) {
-//                Double radiusObject = (Double) i.next();
-//                vtkPoints vPoints = (vtkPoints) spherePoints.get(radiusObject);
-//                if (! sphereSources.containsKey(radiusObject))
-//                    sphereSources.put(radiusObject, newSphereSource(radiusObject.doubleValue()));
-//                vtkSphereSource source = (vtkSphereSource) sphereSources.get(radiusObject);
-//                assembly.AddPart(getGlyphs(vPoints, source, clr));
-//            }
-//        }
-//
-//        if (hasContents)
-//            return assembly;
-//
-//        else return null;
-//    }
-//        
-//    private vtkSphereSource newSphereSource(double radius) {
-//        vtkSphereSource answer = new vtkSphereSource();
-//        answer.SetRadius(radius);
-//        answer.SetThetaResolution(12);
-//        answer.SetPhiResolution(12);
-//        return answer;
-//    }
-//
-//    private vtkActor getGlyphs(vtkPoints vPoints, vtkSphereSource source, Color clr) {
-//        vtkPolyData points = new vtkPolyData();
-//        points.SetPoints(vPoints);
-//        
-//        vtkGlyph3D spheres = new vtkGlyph3D();
-//        spheres.SetInput(points);
-//        spheres.SetSource(source.GetOutput());
-//
-//        vtkPolyDataMapper spheresMapper = new vtkPolyDataMapper();
-//        spheresMapper.SetInput(spheres.GetOutput());
-//        
-//        vtkActor spheresActor = new vtkActor();
-//        spheresActor.SetMapper(spheresMapper);
-//        Color color = clr;
-//        if (color == null) color = defaultColor;
-//        spheresActor.GetProperty().SetColor(color.getRed()/255.0, color.getGreen()/255.0, color.getBlue()/255.0);
-//        spheresActor.GetProperty().BackfaceCullingOn();
-//        
-//        return spheresActor;        
-//    }
-//        
 }
