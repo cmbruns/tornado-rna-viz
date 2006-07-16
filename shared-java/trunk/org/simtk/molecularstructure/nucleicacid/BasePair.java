@@ -57,7 +57,8 @@ implements Iterable<Residue>, SecondaryStructure
     public enum EdgeType {
     	WATSONCRICK(Arrays.asList("w","+","-")), 
     	HOOGSTEEN(Arrays.asList("h")),
-    	SUGAR(Arrays.asList("s"));
+    	SUGAR(Arrays.asList("s")),
+    	UNKNOWN(Arrays.asList("!"));
     	
     	public final List<String> designations;
     	EdgeType(List<String> des){ this.designations = des; }
@@ -74,7 +75,8 @@ implements Iterable<Residue>, SecondaryStructure
 
     public enum BondOrientation {
     	CIS(Arrays.asList("cis","c")), 
-    	TRAN(Arrays.asList("tran","t"));
+    	TRAN(Arrays.asList("tran","t")),
+    	UNKNOWN(Arrays.asList("!"));
     	
     	public final List<String> designations;
     	BondOrientation(List<String> des){ this.designations = des; }
