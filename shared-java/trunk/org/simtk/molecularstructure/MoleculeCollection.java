@@ -144,7 +144,19 @@ public class MoleculeCollection {
             else if (PDBLine.substring(0,6).equals("HEADER")) {
                 if (PDBLine.length() >= 66) {
                     String id = PDBLine.substring(62,66).trim();
-                    if (id.length() == 4) setPdbId(id);
+                    if (id.length() == 4) {
+                    	setPdbId(id);
+                    	//title = "PDB ID "+id+"-- "+title;
+                    }
+                }
+            }
+
+            else if (PDBLine.substring(0,6).equals("HETNAM")) {
+                String newHet = PDBLine.substring(11,14).trim();
+                if (newHet.length() > 0) {
+                    if (!PDBResidueClass.knownHetatms.contains(newHet)) {
+                    	PDBResidueClass.knownHetatms.add(newHet);
+                    }
                 }
             }
 

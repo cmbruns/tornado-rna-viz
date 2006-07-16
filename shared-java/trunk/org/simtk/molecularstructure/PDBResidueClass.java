@@ -49,13 +49,13 @@ import org.simtk.util.*;
 public abstract class PDBResidueClass extends PDBMoleculeClass implements Selectable, MutablePDBResidue {
     private static Color defaultColor = new Color(255, 255, 255);
     
-    public static List modifiedAdenylates   = Arrays.asList("+A","1MA"); 
-    public static List modifiedCytidylates  = Arrays.asList("+C","5MC","OMC","DOC"); 
-    public static List modifiedGuanylates   = Arrays.asList("+G","2MG","7MG","M2G","YG","OMG"); 
-    public static List modifiedInositates   = Arrays.asList("+I"); 
-    public static List modifiedThymidylates = Arrays.asList("+T"); 
-    public static List modifiedUridylates   = Arrays.asList("+U","PSU","H2U","5MU","4SU"); 
-    public static List knownHetatms   		= Arrays.asList("HOH","MG","NA","ZN"); 
+    public static List<String> modifiedAdenylates   = Arrays.asList("+A","1MA"); 
+    public static List<String> modifiedCytidylates  = Arrays.asList("+C","5MC","OMC","DOC"); 
+    public static List<String> modifiedGuanylates   = Arrays.asList("+G","2MG","7MG","M2G","YG","OMG"); 
+    public static List<String> modifiedInositates   = Arrays.asList("+I"); 
+    public static List<String> modifiedThymidylates = Arrays.asList("+T"); 
+    public static List<String> modifiedUridylates   = Arrays.asList("+U","PSU","H2U","5MU","4SU"); 
+    public static List<String> knownHetatms   		= new ArrayList(Arrays.asList("BRO", "HOH","MG","MO3","NA","ZN")); 
     
     Hashtable genericBonds = new Hashtable(); // maps atom names of bondable atoms
     char insertionCode = ' ';
@@ -273,7 +273,7 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         else if (isKnownHetatm(atom.getPDBResidueName())) return new UnknownResidue(bagOfAtoms);
         
         else {
-			System.out.println("unknown residue: name"+atom.getPDBResidueName()+", record name: "+atom.getPDBRecordName());
+			System.out.println("unknown residue: name "+atom.getPDBResidueName()+", record name: "+atom.getPDBRecordName());
         	return new UnknownResidue(bagOfAtoms); // default to base class
         }
     }
