@@ -33,6 +33,7 @@ import org.jdom.*;
 import org.jdom.filter.*;
 import org.jdom.input.SAXBuilder;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.PDBAtom;
 import org.simtk.molecularstructure.nucleicacid.*;
 
 import java.io.File;
@@ -40,7 +41,9 @@ import java.io.File;
 public class RnamlDocument {
     Map<Integer, NucleicAcid> rnamlIndexMolecules = new HashMap<Integer, NucleicAcid>();
     org.jdom.Document rnamlDoc;
+    Element rnamlEl = null;
     Map<Integer, List<Integer> > resNumTables = new HashMap<Integer, List<Integer> >();
+
     
     public RnamlDocument(File rnamlFile, MoleculeCollection molecules) 
     throws JDOMException, java.io.IOException
@@ -48,8 +51,15 @@ public class RnamlDocument {
         // Read xml file
         SAXBuilder builder = new SAXBuilder();
         rnamlDoc = builder.build(rnamlFile);
-
-        Map<Integer, Integer> rnamlMolSizes = getRnamlResidueCounts();
+        
+        Iterator docIt = rnamlDoc.getDescendants(new ElementFilter("rnaml"));
+        if (!docIt.hasNext()){
+            System.err.println("xml file has no rnaml element!");
+            return;
+        }
+        else {
+        	rnamlEl = (Element) docIt.next();
+        }
         
         // Find nucleic acid molecules from Tornado
         // and index them by the expected rnaml index
@@ -57,73 +67,40 @@ public class RnamlDocument {
         for (Molecule mol : molecules.molecules()) {
             if ( !(mol instanceof NucleicAcid)) continue;
             NucleicAcid rna = (NucleicAcid) mol;
-            
-            // Sometimes RNAView skips a molecule that Tornado does not skip
-            // e.g. 1GIX.pdb
-            int rnamlSize = rnamlMolSizes.get(nucleicAcidIndex);
-            int tornadoSize = rna.residues().size();
-            int difference = Math.abs(tornadoSize - rnamlSize);
-            if (difference > 5) {
-                System.err.println("RNA Molecule size mismatch, "+
-                        rnamlSize+" (rnaml) vs. "+tornadoSize+" (tornado)");
-                continue; // Skip this tornado molecule
-            }
-
             rnamlIndexMolecules.put(nucleicAcidIndex, rna);
-
             nucleicAcidIndex ++;
         }
-    }
-    
-    /**
-     * Count the number of residues in each RNAML molecule,
-     * for use in reconciling molecules with Tornado
-     */
-    protected Map<Integer, Integer> getRnamlResidueCounts() {
-        Map<Integer, Integer> molSizes = new HashMap<Integer, Integer>();
-
-        // Parse the xml file
-        Element rnamlEl;
-        Iterator docIt = rnamlDoc.getDescendants(new ElementFilter("rnaml"));
-        if (!docIt.hasNext()){
-            System.out.println("xml file has no rnaml element!");
-        }
-        rnamlEl = (Element) docIt.next();
-        for (Element rnamlMol: (List<Element>) rnamlEl.getChildren("molecule")){
-
-            int molID = Integer.parseInt(rnamlMol.getAttributeValue("id"));
-
-            List<Element> sequences = rnamlMol.getChildren("sequence");
-            if (sequences.size()!=1) {
-                ;//should add some kind of error reporting
-            }
-            /* nTable is retrieved via getDescendants because the standard DTD requires that the numbering 
-             * table be a child of a numbering-system which in turn is a child of the sequence, although 
-             * rnaview for some reason creates the numbering table as a direct child of the sequence. 
-             */
-            Element nTableEl = (Element) sequences.get(0).getDescendants( new ElementFilter("numbering-table")).next();
-            int nResidues = Integer.parseInt(nTableEl.getAttributeValue("length"));
-            
-            molSizes.put(molID, nResidues);
-        }
         
-        return molSizes;
+        int nRNAViewRNAs = rnamlEl.getChildren("molecule").size();
+        if (nRNAViewRNAs < rnamlIndexMolecules.keySet().size()){
+            Map<Integer, NucleicAcid> newIndexMolecules = new HashMap<Integer, NucleicAcid>();
+            nucleicAcidIndex = 1;
+        	for (int index = 1; index <= rnamlIndexMolecules.keySet().size(); index++) {
+        		NucleicAcid rna = rnamlIndexMolecules.get(index);
+                if ( !isRNAMLMolecule(rna)) continue;
+                newIndexMolecules.put(nucleicAcidIndex, rna);
+                nucleicAcidIndex ++;
+        	}
+            if (nRNAViewRNAs != newIndexMolecules.keySet().size()){
+    			System.err.println("cannot reconcile with rnaml reporting of rna chains.");
+            }
+            else {
+            	rnamlIndexMolecules = newIndexMolecules;
+            }
+        }
+        else if (nRNAViewRNAs < rnamlIndexMolecules.keySet().size()){
+			System.err.println("rnaml reports too many rna chains.");
+		}
     }
-    
+        
     /**
      * 
      */
     @SuppressWarnings("unchecked")
 	public void importSecondaryStructures() {
     	// Parse the xml file
-        Element rnamlEl;
-        Iterator docIt = rnamlDoc.getDescendants(new ElementFilter("rnaml"));
-        if (!docIt.hasNext()){
-            System.out.println("xml file has no rnaml element!");
-        }
-        rnamlEl = (Element) docIt.next();
         for (Element rnamlMol: (List<Element>) rnamlEl.getChildren("molecule")){
-            int molID = Integer.parseInt(rnamlMol.getAttributeValue("id"));
+            int molID = Integer.parseInt(rnamlMol.getAttributeValue("id"));//assumes rnaview source
             List<Element> sequences = rnamlMol.getChildren("sequence");
             if (sequences.size()!=1) {
                 ;//should add some kind of error reporting
@@ -336,4 +313,121 @@ public class RnamlDocument {
     	}
     }
     
+	protected boolean isRnaviewRNAML(){
+		return true;
+	}
+	
+	protected boolean isMfoldRNAML(){
+		return false;
+	}
+	
+
+	public boolean isRNAMLMolecule(Biopolymer mol){
+		if (isMfoldRNAML()) {
+			System.err.println("mfold rnaml document designations of nucleotide molecules are unreconcilable");
+			return false;
+		}
+		else if (!isRnaviewRNAML()){
+			System.err.println("rnaml document designations of nucleotide molecules are unreconcilable, and");
+			System.err.println("rnaml document does not appear to have a supported source method (rnaview [,mfold])");
+		}
+		int nNucBases = 0;
+		for (Residue res: (mol.residues())){
+			if (!(res instanceof PDBResidue)) return false;
+			if (isDeemedNucleotide((PDBResidue) res, "rnaview")) {
+				nNucBases++;
+			}
+		}
+		if (nNucBases > 1){
+			return true;
+		}
+		else {
+			return false;
+		}
+			}
+
+	public boolean isDeemedNucleotide(PDBResidue res, String source){
+		
+		if (!source.equalsIgnoreCase("rnaview")){
+			return true;
+		}
+		/*	This routine is written to be consistent with the RNAVIEW resdue_ident function, found in 
+		 *  RNAVIEW file "fpair_sub.c".  For temporary reference, the text of that routine follows below in this comment
+		 * 		long residue_ident(char **AtomName, double **xyz, long ib, long ie)
+				/*  identifying a residue as follows:
+				 *  R-base  Y-base  amino-acid, others [default]
+				 *   +1        0        -1        -2 [default]
+				 
+				{
+				    double d1, d2, d3, dcrt = 2.0, dcrt2 = 3.0, temp[4];
+				    long i, id = -2;
+				    long CA, C, N1, C2, C6, N9;
+
+				    N9 = find_1st_atom(" N9 ", AtomName, ib, ie, "");
+				    N1 = find_1st_atom(" N1 ", AtomName, ib, ie, "");
+				    C2 = find_1st_atom(" C2 ", AtomName, ib, ie, "");
+				    C6 = find_1st_atom(" C6 ", AtomName, ib, ie, "");
+				    if (N1 && C2 && C6) {
+				        for (i = 1; i <= 3; i++)
+				            temp[i] = xyz[N1][i] - xyz[C2][i];
+				        d1 = veclen(temp);
+				        for (i = 1; i <= 3; i++)
+				            temp[i] = xyz[N1][i] - xyz[C6][i];
+				        d2 = veclen(temp);
+				        for (i = 1; i <= 3; i++)
+				            temp[i] = xyz[C2][i] - xyz[C6][i];
+				        d3 = veclen(temp);
+				        if (d1 <= dcrt && d2 <= dcrt && d3 <= dcrt2) {
+				            id = 0;
+				            if (N9) {
+				                for (i = 1; i <= 3; i++)
+				                    temp[i] = xyz[N1][i] - xyz[N9][i];
+				                d3 = veclen(temp);
+				                if (d3 >= 3.5 && d3 <= 4.5)         ~4.0 
+				                    id = 1;
+				            }
+				        }
+				        return id;
+				    }
+				    CA = find_1st_atom(" CA ", AtomName, ib, ie, "");
+				    C = find_1st_atom(" C  ", AtomName, ib, ie, "");
+				    if (!C)                         if C does not exist, use N 
+				        C = find_1st_atom(" N  ", AtomName, ib, ie, "");
+				    if (CA && C) {
+				        for (i = 1; i <= 3; i++)
+				            temp[i] = xyz[CA][i] - xyz[C][i];
+				        if (veclen(temp) <= dcrt)
+				            id = -1;
+				        return id;
+				    }
+				    return id;                         #other cases 
+				}
+		*/		
+		PDBAtom N1, C2, C6;
+		double distN1C2, distN1C6, distC2C6;
+
+		N1 = getNamedAtom(res, "N1");
+		C2 = getNamedAtom(res, "C2");
+		C6 = getNamedAtom(res, "C6");
+		if ((N1 == null) || (C2 == null) || (C6 == null)) {
+			return false;
+		}
+		distN1C2 = N1.distance(C2);
+		distN1C6 = N1.distance(C6);
+		distC2C6 = C2.distance(C6);
+
+		if ((distN1C2 <= 2.0) && (distN1C6 <= 2.0) && (distC2C6 <= 3.0)) {
+			return true;
+		}
+		return false;
+	}
+	
+	private PDBAtom getNamedAtom(PDBResidue res, String name){
+		PDBAtom result = null;
+		for (String tryName: (Arrays.asList(name, " "+name, " "+name+" "))){
+			result = res.getAtom(tryName);
+			if (result!=null) break;
+		}
+		return result;
+	}
 }
