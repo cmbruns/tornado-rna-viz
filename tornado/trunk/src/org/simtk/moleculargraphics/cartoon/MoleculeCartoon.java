@@ -26,9 +26,16 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import java.util.Set;
+
 import org.simtk.molecularstructure.*;
 
-public interface MoleculeCartoon extends MolecularCartoon {
-    public void add(LocatedMolecule molecule);
+import vtk.vtkActor;
+
+public interface MoleculeCartoon extends BaseCartoon {
+    public Set<vtkActor> vtkActors();    
     public void add(MoleculeCollection moleculeCollection);
+    public void addMolecule(LocatedMolecule molecule);
+    
+    public void updateActors(); // Synchronize actors with component cartoons
 }

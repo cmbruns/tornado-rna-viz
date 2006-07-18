@@ -26,37 +26,78 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import java.util.*;
+import java.util.HashSet;
 import java.util.Iterator;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
+import org.simtk.molecularstructure.protein.*;
 import org.simtk.molecularstructure.atom.*;
 
-public class OvalBasePairPlus extends CompositeCartoon {
+public class FineRibbonCartoon extends CompositeCartoon {
     private BasePairOval ovalToon = new BasePairOval();
+    private NucleotideStickCartoon nucStick = new NucleotideStickCartoon();
     private BallAndStickCartoon stickToon = new BallAndStickCartoon();
-    private BackboneCurveCartoon backboneRibbon = new BackboneCurveCartoon();
+    private BackboneCurve backboneRibbon = new BackboneCurve();
     private BackboneStick backboneStick = new BackboneStick();
     private BasePairConnectorStick pairStick = new BasePairConnectorStick();
+    private RichardsonProteinRibbon proteinRibbon = new RichardsonProteinRibbon();
     
-    public OvalBasePairPlus() {
-        addSubToon(ovalToon);
-        // addSubToon(wireToon);
-        addSubToon(stickToon);
-        addSubToon(backboneRibbon);
+    public FineRibbonCartoon() {
+
         addSubToon(backboneStick);
+
+        addSubToon(proteinRibbon);
+
+        addSubToon(stickToon);
+
+        addSubToon(backboneRibbon);
+        addSubToon(nucStick);
+
         addSubToon(pairStick);
+        addSubToon(ovalToon);
     }
 
-    public void add(LocatedMolecule m) {
+    public void addMolecule(LocatedMolecule m) {
         // wireToon.add(m);
+        
         if (m instanceof NucleicAcid) {
-            ovalToon.add(m);
-            backboneRibbon.add(m);
-            pairStick.add(m);
+            NucleicAcid nucleicAcid = (NucleicAcid)m;
+
+            backboneRibbon.addMolecule(nucleicAcid);
+            actorSet.addAll(backboneRibbon.vtkActors());
+
+            Set<Nucleotide> basePairResidues = new HashSet<Nucleotide>();
+            for (SecondaryStructure structure : nucleicAcid.secondaryStructures())
+                if (structure instanceof BasePair) {
+                    BasePair basePair = (BasePair) structure;
+                    ovalToon.addBasePair(basePair);
+
+                    basePairResidues.add(basePair.getResidue1());
+                    basePairResidues.add(basePair.getResidue2());
+                }
+                    
+            
+            for (Residue residue : ((NucleicAcid)m).residues()) {
+                if (! (residue instanceof Nucleotide)) continue;
+                Nucleotide nucleotide = (Nucleotide) residue;
+                
+                if (basePairResidues.contains(nucleotide))
+                    pairStick.addNucleotide(nucleotide);
+                else
+                    nucStick.addNucleotide(nucleotide);
+            }
         }
+        
+        else if (m instanceof Protein) {
+            proteinRibbon.addMolecule(m);
+            actorSet.addAll(proteinRibbon.vtkActors());
+        }
+        
         else if (m instanceof Biopolymer) {
-            backboneStick.add(m);
+            backboneStick.addMolecule(m);
         }
+        
         else {
             // Skip solvent
         	Iterator<LocatedAtom> atomIt = m.getAtomIterator();
@@ -66,7 +107,7 @@ public class OvalBasePairPlus extends CompositeCartoon {
         			return;
         		}
         	}
-            stickToon.add(m);
+            stickToon.addMolecule(m);
         }
     }
     

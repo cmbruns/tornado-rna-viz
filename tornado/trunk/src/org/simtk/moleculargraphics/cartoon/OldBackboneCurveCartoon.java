@@ -79,14 +79,9 @@ public class OldBackboneCurveCartoon extends CompositeCartoon {
     }
     
     
-    public void add(LocatedMolecule m) {
-        baseRods.add(m);
-        // baseCaps.show(m);
-        studs.add(m);        
-        addMolecule(m);
-    }
-
     public void addMolecule(LocatedMolecule molecule) {
+        super.addMolecule(molecule);
+        
         if (! (molecule instanceof BiopolymerClass)) return;
         BiopolymerClass biopolymer = (BiopolymerClass) molecule;
         

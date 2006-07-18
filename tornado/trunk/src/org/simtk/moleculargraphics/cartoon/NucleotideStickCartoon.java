@@ -48,9 +48,6 @@ public class NucleotideStickCartoon extends GlyphCartoon {
     double sphereFudge = 1.05; // spheres aren't quit flush with cylinder for some reason
     int cylinderResolution = 8;
 
-    private int baseColorIndex = 150;
-    private Hashtable colorIndices = new Hashtable();
-
     public NucleotideStickCartoon() {
         this(0.50);
     }
@@ -125,41 +122,25 @@ public class NucleotideStickCartoon extends GlyphCartoon {
 
     }
 
-    public void add(LocatedMolecule molecule) {
-        addMolecule(molecule, null);
-    }
-
-    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule == null) return;
 
-        // Don't add things that have already been added
-        // if (glyphColors.containsKey(molecule)) return;
-        
-        // Collect molecular objects on which to index the glyphs
-        Vector currentObjects = new Vector();
-        if (parentObjects != null) {
-            for (int i = 0; i < parentObjects.size(); i++)
-                currentObjects.add(parentObjects.get(i));
-        }
-        currentObjects.add(molecule);
-        
         // If it's a biopolymer, index the glyphs by residue
         if (molecule instanceof Nucleotide) {
             Nucleotide nucleotide = (Nucleotide) molecule;
-            currentObjects.remove(currentObjects.size() - 1); 
-            addNucleotide(nucleotide, currentObjects);
+            addNucleotide(nucleotide);
         }
         else if (molecule instanceof NucleicAcid) {
             NucleicAcid nucleicAcid = (NucleicAcid) molecule;
             for (Iterator iterResidue = nucleicAcid.getResidueIterator(); iterResidue.hasNext(); ) {
                 Residue residue = (Residue) iterResidue.next();
                 if (residue instanceof Nucleotide)
-                    addMolecule((Nucleotide) residue, currentObjects);
+                    addMolecule((Nucleotide) residue);
             }
         }
     }
     
-    void addNucleotide(Nucleotide nucleotide, Vector parentObjects) {
+    void addNucleotide(Nucleotide nucleotide) {
         if (nucleotide == null) return;
         
         // Don't add things that have already been added
@@ -171,23 +152,16 @@ public class NucleotideStickCartoon extends GlyphCartoon {
             sideChainAtom = nucleotide.getAtom(" N1 ");
         else sideChainAtom = nucleotide.getAtom(" N3 ");
 
-        LocatedAtom backboneAtom = nucleotide.getAtom(" C5*");
-        
-        if ( (sideChainAtom == null) || (backboneAtom == null) ) return;
+        Vector3D rodStart;
+        try {rodStart = nucleotide.getBackbonePosition();}
+        catch (InsufficientAtomsException exc) {return;}
 
+        if ( (sideChainAtom == null) || (rodStart == null) ) return;
         
-        // Collect molecular objects on which to index the glyphs
-        Vector currentObjects = new Vector();
-        if (parentObjects != null) {
-            for (int i = 0; i < parentObjects.size(); i++)
-                currentObjects.add(parentObjects.get(i));
-        }
-        currentObjects.add(nucleotide);
+        // Extend rod to near Watson-Crick face atom
 
-        // Extend rod one Angstrom past the Watson-Crick face atom
-        Vector3D rodStart = backboneAtom.getCoordinates();
         Vector3D rodDirection = sideChainAtom.getCoordinates().minus(rodStart);
-        double rodLength = rodDirection.length() + 1.0;
+        double rodLength = rodDirection.length() - 2.0;
         rodDirection = rodDirection.unit();
         Vector3D rodEnd = rodStart.plus(rodDirection.times(rodLength));
         
@@ -201,7 +175,7 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         Vector3D startStickCenter = c.plus(n.times(stickLength * 0.5));
         Vector3D endStickCenter = rodEnd.minus(n.times(stickLength * 0.5));
 
-        double colorScalar = toonColors.getColorIndex(nucleotide);
+        int colorScalar = toonColors.getColorIndex(nucleotide);
 
         Vector3D stickCenterVector = endStickCenter.minus(startStickCenter);
         for (int s = 0; s < numberOfSticks; s++) {

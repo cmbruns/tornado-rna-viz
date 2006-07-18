@@ -71,18 +71,20 @@ public class WireFrameCartoon extends GlyphCartoon {
         glyphActor.GetProperty().SetLineWidth(2.0);
     }
     
-    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
         // if (glyphColors.containsKey(molecule)) return;
         
+        Set<Object> parentObjects = null;
+        
         // Collect molecular objects on which to index the glyphs
-        Vector currentObjects = new Vector();
-        if (parentObjects != null) {
-            for (int i = 0; i < parentObjects.size(); i++)
-                currentObjects.add(parentObjects.get(i));
-        }
+        Vector currentObjects = new Vector<Object>();
+        if (parentObjects != null)
+            for (Object o : parentObjects) 
+                currentObjects.add(o);
+
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
@@ -96,7 +98,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         else if (molecule instanceof BiopolymerClass) {
             BiopolymerClass biopolymer = (BiopolymerClass) molecule;
             for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
-                addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
+                addMolecule((PDBResidueClass) iterResidue.next());
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
@@ -133,10 +135,6 @@ public class WireFrameCartoon extends GlyphCartoon {
             
             createBondGlyph(atom, atom2, currentObjects, colorScalar);
         }
-    }
-
-    public void add(LocatedMolecule molecule) {
-        addMolecule(molecule, null);
     }
 
     /** Change graphics primitives only for those objects that have moved

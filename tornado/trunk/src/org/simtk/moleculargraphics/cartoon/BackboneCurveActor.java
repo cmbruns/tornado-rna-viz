@@ -31,11 +31,8 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.awt.*;
 import java.util.*;
-
 import vtk.*;
-
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 
@@ -44,7 +41,7 @@ import org.simtk.molecularstructure.*;
  * 
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
-public class BackboneCurveCartoon extends MoleculeCartoonClass {
+public class BackboneCurveActor extends ActorCartoonClass {
     double ribbonThickness = 1.00;
     double ribbonWidth = 1.50;
     
@@ -57,19 +54,20 @@ public class BackboneCurveCartoon extends MoleculeCartoonClass {
     boolean drawSmoothSpline = true;
     boolean drawSmoothSpline2 = false;
 
-    protected vtkActor actor = new vtkActor();
+    // protected vtkActor actor = new vtkActor();
     
-    public BackboneCurveCartoon() {
-        actorSet.add(actor);        
+    public BackboneCurveActor() {
+        // actorSet.add(actor);        
     }
-    
-    public void add(LocatedMolecule molecule) {
-        if (! (molecule instanceof BiopolymerClass)) return;
-        BiopolymerClass biopolymer = (BiopolymerClass) molecule;
+
+    public void addMolecule(LocatedMolecule molecule) {
+        if (! (molecule instanceof Biopolymer)) return;
+        Biopolymer biopolymer = (Biopolymer) molecule;
         
         vtkPoints linePoints = new vtkPoints();
         vtkFloatArray lineNormals = new vtkFloatArray();
         lineNormals.SetNumberOfComponents(3);
+
         vtkFloatArray lineScalars = new vtkFloatArray();
         lineScalars.SetNumberOfComponents(1);
         
@@ -195,6 +193,7 @@ public class BackboneCurveCartoon extends MoleculeCartoonClass {
 
         tubeData.SetPoints(shiftedLinePoints);
         tubeData.SetLines(lineCells);
+        tubeData.GetPointData().SetScalars(lineScalars);
 
         // Incorporate the lineNormals
         tubeData.GetPointData().SetNormals(lineNormals);
@@ -242,7 +241,8 @@ public class BackboneCurveCartoon extends MoleculeCartoonClass {
         vtkActor lineActor = actor; // tube        
         lineActor.SetMapper(tubeMapper);
 
-        lineActor.AddPosition(0.0, 0.0, 0.0);
+        isPopulated = true;
+        // lineActor.AddPosition(0.0, 0.0, 0.0);
     }
     
     public void experimentalAddMolecule(LocatedMolecule molecule) {

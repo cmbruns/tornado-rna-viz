@@ -58,20 +58,18 @@ public class RopeAndCylinder extends CompositeCartoon {
         addSubToon(cpks);
     }
     
-
-    public void add(LocatedMolecule m) {
-        // super.add(m); // This is needed to avoid hosing display
+    public void addMolecule(LocatedMolecule m) {
         if (m instanceof NucleicAcid) {
             addNucleicAcid((NucleicAcid) m); 
         }
         else if (m instanceof Biopolymer) {
-            proteinRopes.add(m);
+            proteinRopes.addMolecule(m);
         }
         else if (m.isSolvent()) {
             return; // No solvent please
         }
         else {
-            cpks.add(m);
+            cpks.addMolecule(m);
         }
     }
     
@@ -124,7 +122,7 @@ public class RopeAndCylinder extends CompositeCartoon {
             nucRopes.addResidue(residue, parentObjects);
         }
 
-        duplexes.add(molecule);        
+        duplexes.addMolecule(molecule);        
         // ropes.add(molecule);
         
         actorSet.addAll(duplexes.vtkActors());

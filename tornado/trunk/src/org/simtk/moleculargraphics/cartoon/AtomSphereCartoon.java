@@ -74,13 +74,11 @@ public class AtomSphereCartoon extends GlyphCartoon {
     
     public void setScale(double s) {sizeScale = s;}
     
-    public void add(LocatedMolecule molecule) {
-        addMolecule(molecule, null);
-    }
-    
-    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule == null) return;
 
+        Vector parentObjects = null;
+        
         // Don't add things that have already been added
         // if (glyphColors.containsKey(molecule)) return;
         
@@ -103,7 +101,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
         else if (molecule instanceof Biopolymer) {
             Biopolymer biopolymer = (Biopolymer) molecule;
             for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
-                addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
+                addMolecule((PDBResidueClass) iterResidue.next());
             }
         }
         else for (LocatedAtom atom : molecule.atoms()) {

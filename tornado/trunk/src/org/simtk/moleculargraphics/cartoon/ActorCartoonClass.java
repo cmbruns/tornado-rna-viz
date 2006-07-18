@@ -31,56 +31,33 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.molecularstructure.*;
-import java.util.*;
 import vtk.*;
 
-public abstract class MoleculeCartoonClass 
-implements MoleculeCartoon 
-{
-    protected Set<vtkActor> actorSet = new HashSet<vtkActor>(); 
+public class ActorCartoonClass implements ActorCartoon {
+    protected vtkActor actor = new vtkActor();
     protected vtkPolyDataMapper mapper = new vtkPolyDataMapper();
     protected ToonColors toonColors = new ToonColors(mapper);
-    protected Set<BaseCartoon> subToons = new HashSet<BaseCartoon>();
+    protected boolean isPopulated = false;
+
+    ActorCartoonClass() {
+        actor.SetMapper(mapper);
+    }
     
     public void colorToon(Object object, ColorScheme colorScheme) {
-        for (BaseCartoon subToon : subToons) {
-            subToon.colorToon(object, colorScheme);
-        }
         toonColors.setColor(object, colorScheme);
     }
     
     public void colorToon(ColorScheme colorScheme) {
-        for (BaseCartoon subToon : subToons) {
-            subToon.colorToon(colorScheme);
-        }
         toonColors.setColor(colorScheme);
     }
     
-    public Set<vtkActor> vtkActors() {
-        return actorSet;
-    }    
-
-    public void add(MoleculeCollection m) {
-        for (Molecule molecule : m.molecules()) {
-            if (! (molecule instanceof LocatedMolecule)) continue;
-            addMolecule((LocatedMolecule)molecule);
-        }
-        updateActors();
+    public vtkActor getActor() {
+        return actor;
     }
     
-    public void updateActors() {
-        for (BaseCartoon subToon : subToons) {
-            if (subToon instanceof ActorCartoon) {
-                ActorCartoon toon = (ActorCartoon) subToon;
-                if (toon.isPopulated())
-                    actorSet.add(toon.getActor());
-                else
-                    actorSet.remove(toon.getActor());
-            }
-            else if (subToon instanceof MoleculeCartoon) {
-                actorSet.addAll(((MoleculeCartoon)subToon).vtkActors());                
-            }
-        }        
-    }
+    public vtkPolyDataMapper getMapper() {
+        return mapper;
+    }    
+
+    public boolean isPopulated() {return isPopulated;}
 }

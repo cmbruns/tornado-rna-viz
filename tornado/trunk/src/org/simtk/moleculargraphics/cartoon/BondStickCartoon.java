@@ -81,13 +81,11 @@ public class BondStickCartoon extends GlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOn();
     }
 
-    public void add(LocatedMolecule molecule) {
-        addMolecule(molecule, null);
-    }
-
-    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule == null) return;
 
+        Vector parentObjects = null;
+        
         // Don't add things that have already been added
         // if (glyphColors.containsKey(molecule)) return;
         
@@ -111,7 +109,7 @@ public class BondStickCartoon extends GlyphCartoon {
             for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
                 Residue residue = (Residue) iterResidue.next();
                 if (residue instanceof LocatedResidue)
-                    addMolecule((LocatedResidue) residue, currentObjects);
+                    addMolecule((LocatedResidue) residue);
             }
         }
         else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {

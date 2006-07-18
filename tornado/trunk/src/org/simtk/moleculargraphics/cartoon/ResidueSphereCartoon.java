@@ -66,15 +66,13 @@ public class ResidueSphereCartoon extends GlyphCartoon {
     }
     
     
-    public void add(LocatedMolecule molecule) {
-        addMolecule(molecule, null);
-    }
-
-    void addMolecule(LocatedMolecule molecule, Set<Object> parentObjects) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
         // if (glyphColors.containsKey(molecule)) return;
+        
+        Set<Object> parentObjects = null;
         
         // Collect molecular objects on which to index the glyphs
         Set<Object> currentObjects = new HashSet<Object>();

@@ -39,7 +39,7 @@ import java.util.*;
   * 
   * Base Class for protein Alpha Helix, Beta Strand, and Coil
  */
-public class ProteinRibbonSegment extends MolecularCartoonClass {
+public class ProteinRibbonSegment extends ActorCartoonClass {
     // protected ColorScheme initialColorScheme = new ConstantColor(Color.pink);
     protected double lengthResolution = 0.5; // Affects sharpness of color boundaries
     
@@ -204,21 +204,14 @@ public class ProteinRibbonSegment extends MolecularCartoonClass {
     }
     
     protected void finishVtkPipeline(vtkPolyData polyData) {
-        // Set up color lookup table with exact size
-        toonColors.commitTableSize();
-
         // vtkPolyDataMapper mapper = mapper;
         mapper.SetScalarModeToUsePointData();
-        toonColors.applyMapper(mapper);
         mapper.ColorByArrayComponent("colors", 0);
         // mapper.SetInput((vtkPolyData)setScalarsFilter.GetOutput());
         mapper.SetInput(polyData);
 
-        vtkActor actor = new vtkActor();
         actor.SetMapper(mapper);
-        actor.GetProperty().SetColor(1,1,1);
         
-        actorSet.clear();
-        actorSet.add(actor);
+        isPopulated = true;
     }
 }

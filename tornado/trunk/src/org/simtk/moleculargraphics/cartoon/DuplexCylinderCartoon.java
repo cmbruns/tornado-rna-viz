@@ -67,8 +67,8 @@ public class DuplexCylinderCartoon extends MoleculeCartoonClass
     public void updateCoordinates() {
         // TODO
     }
-    
-    public void add(LocatedMolecule molecule) {
+
+    public void addMolecule(LocatedMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         addNucleicAcid((NucleicAcid) molecule);
     }

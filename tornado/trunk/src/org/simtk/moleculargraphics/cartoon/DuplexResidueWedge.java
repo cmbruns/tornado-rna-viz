@@ -130,11 +130,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOff();
     }
 
-    public void add(LocatedMolecule molecule) {
-        addMolecule(molecule);
-    }
-
-    void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         NucleicAcid nucleicAcid = (NucleicAcid) molecule;
         Collection<Duplex> duplexen = nucleicAcid.identifyHairpins();

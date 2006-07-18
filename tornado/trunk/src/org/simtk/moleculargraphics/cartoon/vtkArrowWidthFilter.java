@@ -86,7 +86,7 @@ public class vtkArrowWidthFilter extends vtkProgrammableFilter {
         Vector3D previousPoint = null;
         Vector3D previousNormal = null;
         double previousDistanceToFinal = Double.NaN;
-        boolean isInHead = false;
+        boolean isInHead = true;
 
         // Copy all Arrays from input
         int numArrays = input.GetPointData().GetNumberOfArrays();
@@ -104,7 +104,25 @@ public class vtkArrowWidthFilter extends vtkProgrammableFilter {
 
         int numPts = input.GetNumberOfPoints();
         Vector3D finalPoint = new Vector3DClass(input.GetPoint(numPts - 1));
+        
+        // We cannot rely upon distance from the end to determine what is in 
+        // the head region, because sometimes an earlier part of the path might
+        // glance close to the end.
+        // So we preprocess final points to establish the beginning of the head region
+        int firstHeadIndex = 0;
+        for (int i = numPts - 1; i >= 0; --i) {
+            Vector3D currentPoint = new Vector3DClass(input.GetPoint(i));            
+            double distanceToFinal = finalPoint.minus(currentPoint).length();
+            if (distanceToFinal > headLength) {
+                firstHeadIndex = i + 1;
+                isInHead = false;
+                break;
+            }
+        }
+        
         for (int i = 0; i < numPts; ++i) {
+            
+            double currentWidth = width;
 
             Vector3D currentPoint = new Vector3DClass(input.GetPoint(i));
             Vector3D currentNormal = new Vector3DClass(input.GetPointData().GetNormals().GetTuple3(i));
@@ -112,7 +130,7 @@ public class vtkArrowWidthFilter extends vtkProgrammableFilter {
             double distanceToFinal = finalPoint.minus(currentPoint).length();
 
             // If necessary, insert neck region
-            if ((!isInHead) && (distanceToFinal < headLength)) {
+            if (i == firstHeadIndex) {
                 isInHead = true;
 
                 // Insert neck region
@@ -184,12 +202,12 @@ public class vtkArrowWidthFilter extends vtkProgrammableFilter {
             // Adjust width for points in head region
             if (isInHead) {
                 double alpha = distanceToFinal / headLength;
-                width = tipWidth + alpha * (headWidth - tipWidth);
+                currentWidth = tipWidth + alpha * (headWidth - tipWidth);
             }
             
             newPoints.InsertNextPoint(currentPoint.x(), currentPoint.y(), currentPoint.z());
             newNormals.InsertNextTuple3(currentNormal.x(), currentNormal.y(), currentNormal.z());
-            newScalars.InsertNextValue(0.5 * width);
+            newScalars.InsertNextValue(0.5 * currentWidth);
             
             // Copy all arrays, duplicating previous values for neck region
             for (int a = 0; a < outArrays.size(); ++a) {

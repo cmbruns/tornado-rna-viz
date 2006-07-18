@@ -129,15 +129,13 @@ public class BackboneStick extends GlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOn();
     }
 
-    public void add(LocatedMolecule molecule) {
-        addMolecule(molecule, null);
-    }
-    
-    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
         // if (glyphColors.containsKey(molecule)) return;
+        
+        Vector parentObjects = null;
         
         // Collect molecular objects on which to index the glyphs
         Vector currentObjects = new Vector();
@@ -157,11 +155,8 @@ public class BackboneStick extends GlyphCartoon {
             Biopolymer biopolymer = (Biopolymer) molecule;
             for (Residue residue : biopolymer.residues()) {
                 if (residue instanceof LocatedResidue)
-                    addMolecule((LocatedResidue) residue, currentObjects);
+                    addMolecule((LocatedResidue) residue);
             }
-//            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
-//                addMolecule((PDBResidue) iterResidue.next(), currentObjects);
-//            }
         }
     }
     

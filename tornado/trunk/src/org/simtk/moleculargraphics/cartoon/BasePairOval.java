@@ -97,31 +97,26 @@ public class BasePairOval extends TensorGlyphCartoon {
         
     }
 
-    public void add(LocatedMolecule molecule) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule instanceof NucleicAcid)
             addNucleicAcid((NucleicAcid)molecule);
     }
     
     public void addNucleicAcid(NucleicAcid molecule) {
-        Collection<Object> parentObjects = new HashSet<Object>();
-        parentObjects.add(molecule);
         for (SecondaryStructure structure : molecule.secondaryStructures())
             if (structure instanceof BasePair)
-                addBasePair((BasePair) structure, parentObjects);
+                addBasePair((BasePair) structure);
     }
     
-    public void addBasePair(BasePair basePair, Collection<Object> parentObjects) {
+    public void addBasePair(BasePair basePair) {
         Nucleotide res1 = basePair.getResidue1();
         Nucleotide res2 = basePair.getResidue2();
         
-        Collection<Object> newParentObjects = new HashSet<Object>(parentObjects);
-        newParentObjects.add(basePair);
-        
-        addNucleotide(res1, res2, parentObjects);
-        addNucleotide(res2, res1, parentObjects);
+        addNucleotide(res1, res2);
+        addNucleotide(res2, res1);
     }
     
-    public void addNucleotide(Nucleotide res1, Nucleotide res2, Collection<Object> parentObjects) {
+    public void addNucleotide(Nucleotide res1, Nucleotide res2) {
         
         Collection<Vector3D> base1Points = new HashSet<Vector3D>();
         try {
@@ -172,9 +167,6 @@ public class BasePairOval extends TensorGlyphCartoon {
                 );
 
         int glyphIndex = colorScalars.GetNumberOfTuples();
-        
-        Collection<Object> currentObjects = new HashSet<Object>(parentObjects);
-        currentObjects.add(res1);
         
         double colorScalar = toonColors.getColorIndex(res1);
 

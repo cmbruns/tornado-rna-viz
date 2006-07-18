@@ -107,7 +107,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
 
     // public void setMolecules(MoleculeCollection molecules, MolecularCartoonClass.CartoonType cartoonType) {
     // }
-    public void add(MolecularCartoon cartoon) {
+    public void add(MoleculeCartoon cartoon) {
         if (cartoon.vtkActors().size() < 1) return;
         
         Lock();
@@ -348,7 +348,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         // massBody.clear();
     }
     
-    public void centerByBoundingBox() {
+    public BoundingBox getBoundingBox() {
         BoundingBox box = null;
         
         vtkPropCollection props = GetRenderer().GetViewProps();
@@ -366,6 +366,32 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
             prop = props.GetNextProp();
         }
         
+        return box;
+    }
+    
+    public void scaleByBoundingBox() {
+        BoundingBox box = getBoundingBox();
+        if (box == null) return;
+        
+        Vector3D corner1 = new Vector3DClass(box.xMin, box.yMin, box.zMin);
+        Vector3D corner2 = new Vector3DClass(box.xMax, box.yMax, box.zMax);
+        double molSize = corner1.minus(corner2).length();
+        
+        vtkCamera cam = GetRenderer().GetActiveCamera();
+        
+        double viewAngle = cam.GetViewAngle() * Math.PI / 180.0;
+        double viewDistance = 0.5 * molSize / Math.tan(0.5 * viewAngle);
+        
+        Vector3D focalPoint = new Vector3DClass(cam.GetFocalPoint());
+        Vector3D viewDirection = new Vector3DClass(cam.GetDirectionOfProjection()).unit();
+        
+        Vector3D newPosition = focalPoint.minus(viewDirection.times(viewDistance));
+        
+        cam.SetPosition(newPosition.toArray());
+    }
+    
+    public void centerByBoundingBox() {
+        BoundingBox box = getBoundingBox();
         if (box == null) return;
         
         Vector3D com = box.center();

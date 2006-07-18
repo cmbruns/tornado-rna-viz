@@ -75,13 +75,11 @@ public class BackboneSpheres extends GlyphCartoon {
         glyphActor.GetProperty().BackfaceCullingOn();        
     }
 
-    public void add(LocatedMolecule molecule) {
-        addMolecule(molecule, null);
-    }
-
-    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule == null) return;
 
+        Vector parentObjects = null;
+        
         // Don't add things that have already been added
         // if (glyphColors.containsKey(molecule)) return;
         
@@ -102,7 +100,7 @@ public class BackboneSpheres extends GlyphCartoon {
         else if (molecule instanceof BiopolymerClass) {
             BiopolymerClass biopolymer = (BiopolymerClass) molecule;
             for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
-                addMolecule((PDBResidueClass) iterResidue.next(), currentObjects);
+                addMolecule((PDBResidueClass) iterResidue.next());
             }
         }
     }

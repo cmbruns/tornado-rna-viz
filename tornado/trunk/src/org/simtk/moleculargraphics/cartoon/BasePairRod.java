@@ -46,8 +46,8 @@ public class BasePairRod extends CylinderCartoon {
         super(1.00, 5.0); // radius, min length of half rod
         cylinderSource.SetCapping(1);
     }
-    
-    public void add(LocatedMolecule molecule) {
+
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule instanceof NucleicAcid) {
             NucleicAcid rna = (NucleicAcid) molecule;
             

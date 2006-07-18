@@ -40,7 +40,7 @@ import vtk.*;
   * Richardson style protein cartoon with arrows for strands, ribbons for helices,
   * and tubes for coil
  */
-public class ProteinRibbon extends MolecularCartoonClass {
+public class ProteinRibbon extends MoleculeCartoonClass {
     // Need ability to get a set of vtkActors or vtkGlyphs for each atom/residue/molecule
     private HashMap moleculeCartoons = new HashMap();
     
@@ -76,7 +76,7 @@ public class ProteinRibbon extends MolecularCartoonClass {
     
     public vtkProp3D getVtkProp3D() {return assembly;}
     
-    public void add(LocatedMolecule m) {
+    public void addMolecule(LocatedMolecule m) {
         if (m instanceof LocatedProtein) {
             insertOneProtein((LocatedProtein) m);
         }

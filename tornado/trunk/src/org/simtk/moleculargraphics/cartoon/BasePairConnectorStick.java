@@ -55,34 +55,29 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
         setGlyphSource(cylinderSource.GetOutput());        
     }
 
-    public void add(LocatedMolecule molecule) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (molecule instanceof NucleicAcid)
             addNucleicAcid((NucleicAcid)molecule);
     }
 
     public void addNucleicAcid(NucleicAcid molecule) {
-        Collection<Object> parentObjects = new HashSet<Object>();
-        parentObjects.add(molecule);
         for (SecondaryStructure structure : molecule.secondaryStructures())
             if (structure instanceof BasePair)
-                addBasePair((BasePair) structure, parentObjects);
+                addBasePair((BasePair) structure);
     }
 
-    public void addBasePair(BasePair basePair, Collection<Object> parentObjects) {
+    public void addBasePair(BasePair basePair) {
         Nucleotide res1 = basePair.getResidue1();
         Nucleotide res2 = basePair.getResidue2();
         
-        Collection<Object> newParentObjects = new HashSet<Object>(parentObjects);
-        newParentObjects.add(basePair);
-        
-        addNucleotide(res1, parentObjects);
-        addNucleotide(res2, parentObjects);
+        addNucleotide(res1);
+        addNucleotide(res2);
     }
     
-    public void addNucleotide(Nucleotide res, Collection<Object> parentObjects) {
+    public void addNucleotide(Nucleotide res) {
         Vector3D pos1;
         try {
-            pos1 = res.getAtom(" C3*").getCoordinates();
+            pos1 = res.getBackbonePosition();
         } catch (Exception exc) {return;}
         
         
@@ -114,9 +109,6 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
                 );
 
         int glyphIndex = colorScalars.GetNumberOfTuples();
-        
-        Collection<Object> currentObjects = new HashSet<Object>(parentObjects);
-        currentObjects.add(res);
         
         double colorScalar = toonColors.getColorIndex(res);
 

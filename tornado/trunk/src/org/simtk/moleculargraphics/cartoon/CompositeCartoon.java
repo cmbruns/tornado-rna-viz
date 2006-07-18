@@ -26,31 +26,28 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.molecularstructure.LocatedMolecule;
+import org.simtk.molecularstructure.*;
 import java.util.*;
-import vtk.vtkAssembly;
-import vtk.vtkProp3D;
 
 public abstract class CompositeCartoon extends MoleculeCartoonClass {
     // protected Set<MoleculeCartoon> subToons = new LinkedHashSet<MoleculeCartoon>();
 
     public CompositeCartoon() {}
     
-    public CompositeCartoon(Collection<MolecularCartoon> toons) {
-        for (MolecularCartoon toon : toons) {
+    public CompositeCartoon(Collection<MoleculeCartoon> toons) {
+        for (MoleculeCartoon toon : toons) {
             addSubToon(toon);
         }
     }
     
-    public void addSubToon(MolecularCartoon toon) {
+    public void addSubToon(MoleculeCartoon toon) {
         subToons.add(toon);
         actorSet.addAll(toon.vtkActors());
     }
     
-    public void add(LocatedMolecule m) {
-        for (MolecularCartoon toon : subToons) {
-            if (toon instanceof MoleculeCartoon) ((MoleculeCartoon)toon).add(m);
-        }
+    public void addMolecule(LocatedMolecule molecule) {
+        for (BaseCartoon toon : subToons) {
+            if (toon instanceof MoleculeCartoon) ((MoleculeCartoon)toon).addMolecule(molecule);
+        }        
     }
-    
 }

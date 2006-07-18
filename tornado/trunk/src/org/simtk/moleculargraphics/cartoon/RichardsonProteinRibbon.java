@@ -39,7 +39,7 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
     protected double helixWidth = 2.80;
     protected double strandWidth = 2.20;
     
-    public void add(LocatedMolecule molecule) {
+    public void addMolecule(LocatedMolecule molecule) {
         if (! (molecule instanceof Protein)) return;
         Protein protein = (Protein) molecule;
         
@@ -177,7 +177,7 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
                         positionSpline,
                         normalSpline
                         );
-                actorSet.addAll(strand.vtkActors());
+                actorSet.add(strand.getActor());
                 subToons.add(strand);
             } catch (NoCartoonCreatedException exc) {}            
         }
@@ -192,7 +192,7 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
                         positionSpline,
                         normalSpline
                         );
-                actorSet.addAll(helix.vtkActors());
+                actorSet.add(helix.getActor());
                 subToons.add(helix);
             } catch (NoCartoonCreatedException exc) {}            
         }
@@ -200,7 +200,7 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
         else {
             try {
                 ProteinCoil coil = new ProteinCoil(residues, ribbonThickness);
-                actorSet.addAll(coil.vtkActors());
+                actorSet.add(coil.getActor());
                 subToons.add(coil);
             } catch (NoCartoonCreatedException exc) {}                        
         }

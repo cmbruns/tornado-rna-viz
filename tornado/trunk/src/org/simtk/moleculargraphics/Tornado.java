@@ -57,7 +57,8 @@ import vtk.*;
 public class Tornado extends JFrame 
 implements ResidueActionListener 
 {
-    
+    protected Color initialBackgroundColor = Color.white;
+    protected java.util.List<Class> cartoonsByGranularity = new Vector<Class>();
     // 
     // Public
     //
@@ -74,7 +75,7 @@ implements ResidueActionListener
 
     // private MolecularCartoonClass.CartoonType cartoonType = 
     //     MolecularCartoonClass.CartoonType.WIRE_FRAME;
-    Class cartoonType = ResidueSphereCartoon.class;
+    Class initialCartoonType = ResidueSphereCartoon.class;
     private MoleculeCartoon currentCartoon;
     // try {
     // } catch ()
@@ -82,7 +83,12 @@ implements ResidueActionListener
     Tornado() {
         super("toRNAdo: (no structures currently loaded)");
         
-        try {currentCartoon = (MoleculeCartoon) cartoonType.newInstance();} 
+        cartoonsByGranularity.add(ResidueSphereCartoon.class);
+        cartoonsByGranularity.add(AtomSphereCartoon.class);
+        cartoonsByGranularity.add(WireFrameCartoon.class);
+        cartoonsByGranularity.add(BallAndStickCartoon.class);
+        
+        try {currentCartoon = (MoleculeCartoon) initialCartoonType.newInstance();} 
         catch (InstantiationException exc) {System.err.println(exc);}
         catch (IllegalAccessException exc) {System.err.println(exc);}
 
@@ -263,6 +269,21 @@ implements ResidueActionListener
 
         viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
+        
+        cartoonMenu = new JMenu("Molecule Style");
+        viewMenu.add(cartoonMenu);
+
+        menuItem = new JMenuItem("Coarser");
+        menuItem.setEnabled(true);
+        menuItem.addActionListener(new GranularityAction(1));
+        cartoonMenu.add(menuItem);
+        
+        menuItem = new JMenuItem("Finer");
+        menuItem.setEnabled(true);
+        menuItem.addActionListener(new GranularityAction(-1));
+        cartoonMenu.add(menuItem);
+        
+        cartoonMenu.add(new JSeparator());
 
         addCartoonSelection( RopeAndCylinder.class,
                 "Duplex Rods",
@@ -274,7 +295,7 @@ implements ResidueActionListener
 
         addCartoonSelection( BasePairRibbon.class, "Base Pair Rods", null );
         
-        addCartoonSelection( OvalBasePairPlus.class, "Base Pair Ovals", null );
+        addCartoonSelection( FineRibbonCartoon.class, "Base Pair Ovals", null );
         
         addCartoonSelection( AtomSphereCartoon.class,
                 "Atom Balls",
@@ -322,31 +343,20 @@ implements ResidueActionListener
         viewMenu.add(menu);
         ButtonGroup backgroundGroup = new ButtonGroup();
 
-        checkItem = new JCheckBoxMenuItem("White");
-        checkItem.setEnabled(true);
-        checkItem.addActionListener(new BackgroundColorAction(Color.white));
-        checkItem.setState(true);
-        backgroundGroup.add(checkItem);
-        menu.add(checkItem);
-        
-        checkItem = new JCheckBoxMenuItem("Sky");
-        checkItem.setEnabled(true);
-        checkItem.addActionListener(new BackgroundColorAction(new Color(0.92f, 0.96f, 1.0f)));
-        checkItem.setState(false);
-        backgroundGroup.add(checkItem);
-        menu.add(checkItem);
-        
-        checkItem = new JCheckBoxMenuItem("Black");
-        checkItem.setEnabled(true);
-        checkItem.addActionListener(new BackgroundColorAction(Color.black));
-        checkItem.setState(false);
-        backgroundGroup.add(checkItem);
-        menu.add(checkItem);
-        
-//        menuItem = new JMenuItem("Test Full Screen");
-//        viewMenu.add(menuItem);
-//        menuItem.setEnabled(true);
-//        checkItem.addActionListener(new TestFullScreenAction());
+        Map<Color, String> bgColorNames = new LinkedHashMap<Color, String>();
+        bgColorNames.put(Color.white, "White");
+        bgColorNames.put(new Color(0.85f, 0.93f, 1.0f), "Sky");
+        bgColorNames.put(Color.black, "Black");
+        for (Color color : bgColorNames.keySet()) {
+            String colorName = bgColorNames.get(color);
+
+            checkItem = new JCheckBoxMenuItem(colorName);
+            checkItem.setEnabled(true);
+            checkItem.addActionListener(new BackgroundColorAction(color));
+            checkItem.setState(color == initialBackgroundColor);
+            backgroundGroup.add(checkItem);
+            menu.add(checkItem);
+        }
 
         menu = new JMenu("Stereoscopic 3D");
         viewMenu.add(menu);
@@ -423,6 +433,14 @@ implements ResidueActionListener
     }
 
     // For me the programmer to use when creating new actions
+    class GranularityAction implements ActionListener {
+        protected int increment; // how much to change the Granularity
+        GranularityAction(int increment) {this.increment = increment;}
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    // For me the programmer to use when creating new actions
     class ApplyRnamlAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             // TODO
@@ -493,13 +511,8 @@ implements ResidueActionListener
                 catch (IllegalAccessException exc) {exc.printStackTrace();}
             }
 
-            for (Iterator iterMolecule = moleculeCollection.molecules().iterator(); iterMolecule.hasNext(); ) {
-                Object o = iterMolecule.next();
-                if (o instanceof LocatedMolecule)
-                    currentCartoon.add((LocatedMolecule)o);
-            }
-            
-            currentCartoon.finalizeCartoon(colorScheme);
+            currentCartoon.add(moleculeCollection);
+            currentCartoon.colorToon(colorScheme);
 
             canvas.add(currentCartoon);
             
@@ -701,12 +714,7 @@ implements ResidueActionListener
         updateTitleBar();
         
         // Create graphical representation of the molecule
-        (new CartoonAction(cartoonType)).actionPerformed(new ActionEvent(this, 0, ""));
-
-        // Center camera on new molecule
-        // Vector3D com = molecules.getCenterOfMass();
-        // canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
-        canvas.centerByBoundingBox();
+        (new CartoonAction(currentCartoon.getClass())).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Display sequence of first molecule that has a sequence
         residueActionBroadcaster.fireClearResidues();
@@ -730,10 +738,16 @@ implements ResidueActionListener
         // TODO - create one subroutine for updating the sequences
         // maybe in the ResidueSelector interface
         
-        canvas.repaint();
+        // Center camera on new molecule
+        // Vector3D com = molecules.getCenterOfMass();
+        // canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
+        canvas.centerByBoundingBox();
+        canvas.scaleByBoundingBox();
+
         sequencePane.repaint();
         sequenceCartoonCanvas.repaint();
         repaint();
+        canvas.repaint();
     }
 
     class SaveImageFileAction implements ActionListener {
@@ -884,15 +898,21 @@ implements ResidueActionListener
      * Put all hooks for adding a new molecule representation here
      * Call this from createMenuBar()
      */
-    private void addCartoonSelection(Class cartoonType, 
-                                     String description,
-                                     ImageIcon imageIcon) {
+    private void addCartoonSelection(
+            Class cartoonType,                                      
+            String description,                                     
+            ImageIcon imageIcon) 
+    {
         if (viewMenu == null)
             throw new RuntimeException("No View menu in which to add a Cartoon style");
-        if ( (cartoonGroup == null) || (cartoonMenu == null) ) {
+
+        if (cartoonGroup == null) {
+            cartoonGroup = new ButtonGroup();
+        }
+
+        if (cartoonMenu == null) {
             cartoonMenu = new JMenu("Molecule Style");
             viewMenu.add(cartoonMenu);
-            cartoonGroup = new ButtonGroup();
         }
         
         JCheckBoxMenuItem checkItem;
