@@ -101,6 +101,8 @@ public class Nucleotide extends PDBResidueClass {
 
         // Try different atoms in order of preference
         if (atom == null) atom = getAtom(" P  ");
+
+        // C5* is nice because it is in the plane of the ring
         if (atom == null) atom = getAtom(" C5*");
 
         if (atom == null) return null;
