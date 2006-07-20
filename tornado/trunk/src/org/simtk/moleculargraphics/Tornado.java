@@ -58,7 +58,6 @@ public class Tornado extends JFrame
 implements ResidueActionListener 
 {
     protected Color initialBackgroundColor = Color.white;
-    protected java.util.List<Class> cartoonsByGranularity = new Vector<Class>();
     // 
     // Public
     //
@@ -77,20 +76,15 @@ implements ResidueActionListener
     //     MolecularCartoonClass.CartoonType.WIRE_FRAME;
     Class initialCartoonType = ResidueSphereCartoon.class;
     private MoleculeCartoon currentCartoon;
-    // try {
-    // } catch ()
-
+    
+    protected ToonRange toonRange = new ToonRange();
+    
     Tornado() {
         super("toRNAdo: (no structures currently loaded)");
         
-        cartoonsByGranularity.add(ResidueSphereCartoon.class);
-        cartoonsByGranularity.add(AtomSphereCartoon.class);
-        cartoonsByGranularity.add(WireFrameCartoon.class);
-        cartoonsByGranularity.add(BallAndStickCartoon.class);
-        
-        try {currentCartoon = (MoleculeCartoon) initialCartoonType.newInstance();} 
-        catch (InstantiationException exc) {System.err.println(exc);}
-        catch (IllegalAccessException exc) {System.err.println(exc);}
+        // try {currentCartoon = (MoleculeCartoon) initialCartoonType.newInstance();} 
+        // catch (InstantiationException exc) {System.err.println(exc);}
+        // catch (IllegalAccessException exc) {System.err.println(exc);}
 
         // Avoid upper left sucky Java window location
         setLocationRelativeTo(null);
@@ -101,6 +95,7 @@ implements ResidueActionListener
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         canvas = new Tornado3DCanvas(); // must create before menus
+        initializeCartoonTypes();
         createMenuBar();
 
         JPanel panel = new JPanel();
@@ -169,7 +164,7 @@ implements ResidueActionListener
         if (useRotationThread) {
             rotationThread = new InertialRotationThread(this);
             rotationThread.setPriority(Thread.MIN_PRIORITY);
-            rotationThread.sitStill = true;
+            rotationThread.rotationStyle = RotationStyle.NONE;
             rotationThread.start();
         }
                 
@@ -223,6 +218,44 @@ implements ResidueActionListener
         messageArea.setText(msg);
     }
     
+    /** 
+     * This must be done before createMenuBar()
+     *
+     */
+    void initializeCartoonTypes() {
+        // Add these in order of Decreasing coarseness        
+        toonRange.add(new RangedToonType(
+                "Molecule Blobs (Coarsest)",
+                MoleculeTensorCartoon.class,
+                null));        
+        toonRange.add(new RangedToonType(
+                "Secondary Structures",
+                RopeAndCylinder.class,
+                new ImageIcon(classLoader.getResource("images/cylinder_icon.png")) ));
+        toonRange.add(new RangedToonType(
+                "Residue Balls",
+                ResidueSphereCartoon.class,
+                null ));        
+        toonRange.add(new RangedToonType(
+                "Ribbons",                
+                FineRibbonCartoon.class, 
+                null ));        
+        toonRange.add(new RangedToonType(
+                "Bond Lines",
+                WireFrameCartoon.class,
+                null ));        
+        toonRange.add(new RangedToonType(
+                "Atom Balls",
+                AtomSphereCartoon.class,
+                new ImageIcon(classLoader.getResource("images/nuc_fill_icon.png")) ));
+        toonRange.add(new RangedToonType(
+                "Bonds and Atoms (Finest)",
+                BallAndStickCartoon.class,
+                new ImageIcon(classLoader.getResource("images/po4_stick_icon.png")) ));
+        
+        toonRange.setCurrentType(ResidueSphereCartoon.class);
+    }
+    
     void createMenuBar() {
         
         // Prevent the vtkPanel from obscuring the JMenus
@@ -270,72 +303,41 @@ implements ResidueActionListener
         viewMenu = new JMenu("View");
         menuBar.add(viewMenu);
         
-        cartoonMenu = new JMenu("Molecule Style");
+        JMenu cartoonMenu = new JMenu("Molecule Style");
         viewMenu.add(cartoonMenu);
 
-        menuItem = new JMenuItem("Coarser");
-        menuItem.setEnabled(true);
-        menuItem.addActionListener(new GranularityAction(1));
-        cartoonMenu.add(menuItem);
+        toonRange.createCartoonMenu(cartoonMenu);
         
-        menuItem = new JMenuItem("Finer");
-        menuItem.setEnabled(true);
-        menuItem.addActionListener(new GranularityAction(-1));
-        cartoonMenu.add(menuItem);
-        
-        cartoonMenu.add(new JSeparator());
-
-        addCartoonSelection( RopeAndCylinder.class,
-                "Duplex Rods",
-                new ImageIcon(classLoader.getResource("images/cylinder_icon.png")) );
-
-        addCartoonSelection( ResidueSphereCartoon.class,
-                "Residue Balls",
-                null );
-
-        addCartoonSelection( BasePairRibbon.class, "Base Pair Rods", null );
-        
-        addCartoonSelection( FineRibbonCartoon.class, "Base Pair Ovals", null );
-        
-        addCartoonSelection( AtomSphereCartoon.class,
-                "Atom Balls",
-                new ImageIcon(classLoader.getResource("images/nuc_fill_icon.png")) );
-
-        addCartoonSelection( WireFrameCartoon.class,
-                "Bond Lines",
-                null );
-        
-        addCartoonSelection( RichardsonProteinRibbon.class,
-                "Beta Strands",
-                null );
-        
-        addCartoonSelection( BallAndStickCartoon.class,
-                "Bond Sticks",
-                new ImageIcon(classLoader.getResource("images/po4_stick_icon.png")) );
-
         menu = new JMenu("Rotation");
         viewMenu.add(menu);
 
         ButtonGroup rotationGroup = new ButtonGroup();
         
-        checkItem = new JCheckBoxMenuItem("None / Sit still");
+        checkItem = new JCheckBoxMenuItem("Sit still (Stop)");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateNoneAction());
-        checkItem.setState((rotationThread == null) || rotationThread.sitStill);
+        checkItem.setState((rotationThread == null) || (rotationThread.rotationStyle == RotationStyle.NONE));
         rotationGroup.add(checkItem);
         menu.add(checkItem);
 
-        checkItem = new JCheckBoxMenuItem("Rock");
+        checkItem = new JCheckBoxMenuItem("Gyrate (Wiggle)");
         checkItem.setEnabled(true);
-        checkItem.addActionListener(new RotateRockAction());
-        checkItem.setState((rotationThread != null) && rotationThread.doRock && (!rotationThread.sitStill));
+        checkItem.addActionListener(new RotateNutateAction());
+        checkItem.setState((rotationThread != null) && (rotationThread.rotationStyle == RotationStyle.NUTATE));
         rotationGroup.add(checkItem);
         menu.add(checkItem);
         
-        checkItem = new JCheckBoxMenuItem("Spin");
+        checkItem = new JCheckBoxMenuItem("Oscillate (Wag)");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new RotateRockAction());
+        checkItem.setState((rotationThread != null) && (rotationThread.rotationStyle == RotationStyle.ROCK));
+        rotationGroup.add(checkItem);
+        menu.add(checkItem);
+        
+        checkItem = new JCheckBoxMenuItem("Rotate (Spin)");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateSpinAction());
-        checkItem.setState((rotationThread != null) && (!rotationThread.doRock) && (!rotationThread.sitStill));
+        checkItem.setState((rotationThread != null) && (rotationThread.rotationStyle == RotationStyle.ROTATE));
         rotationGroup.add(checkItem);
         menu.add(checkItem);
         
@@ -437,6 +439,18 @@ implements ResidueActionListener
         protected int increment; // how much to change the Granularity
         GranularityAction(int increment) {this.increment = increment;}
         public void actionPerformed(ActionEvent e) {
+            if (increment > 0) {
+                if (toonRange.hasCoarser()) {
+                    toonRange.stepCoarser();
+                    (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+                }
+            }
+            else if (increment < 0) {
+                if (toonRange.hasFiner()) {
+                    toonRange.stepFiner();
+                    (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+                }
+            }
         }
     }
 
@@ -503,13 +517,8 @@ implements ResidueActionListener
             
             canvas.clear();
             
-            if (cartoonClass != null) {
-                try {
-                    currentCartoon = (MoleculeCartoon) cartoonClass.newInstance();
-                } 
-                catch (InstantiationException exc) {exc.printStackTrace();}
-                catch (IllegalAccessException exc) {exc.printStackTrace();}
-            }
+            toonRange.setCurrentType(cartoonClass);
+            currentCartoon = toonRange.createCartoon();
 
             currentCartoon.add(moleculeCollection);
             currentCartoon.colorToon(colorScheme);
@@ -525,26 +534,34 @@ implements ResidueActionListener
 
     class RotateNoneAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            rotationThread.sitStill = true;
+            rotationThread.rotationStyle = RotationStyle.NONE;
+            rotationThread.interrupt();
+        }
+    }
+
+    class RotateNutateAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            rotationThread.rotationStyle = RotationStyle.NUTATE;
+            rotationThread.pauseRotation = false;
+            rotationThread.initialize();
             rotationThread.interrupt();
         }
     }
 
     class RotateRockAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            rotationThread.sitStill = false;
+            rotationThread.rotationStyle = RotationStyle.ROCK;
             rotationThread.pauseRotation = false;
-            rotationThread.doRock = true;
-            rotationThread.currentAngle = 0.0;
+            rotationThread.initialize();
             rotationThread.interrupt();
         }
     }
 
     class RotateSpinAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            rotationThread.sitStill = false;
+            rotationThread.rotationStyle = RotationStyle.ROTATE;
             rotationThread.pauseRotation = false;
-            rotationThread.doRock = false;
+            rotationThread.initialize();
             rotationThread.interrupt();
         }
     }
@@ -714,7 +731,7 @@ implements ResidueActionListener
         updateTitleBar();
         
         // Create graphical representation of the molecule
-        (new CartoonAction(currentCartoon.getClass())).actionPerformed(new ActionEvent(this, 0, ""));
+        (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Display sequence of first molecule that has a sequence
         residueActionBroadcaster.fireClearResidues();
@@ -743,6 +760,10 @@ implements ResidueActionListener
         // canvas.GetRenderer().GetActiveCamera().SetFocalPoint(com.getX(), com.getY(), com.getZ());
         canvas.centerByBoundingBox();
         canvas.scaleByBoundingBox();
+
+        // Helps display of second and subsequent structure loads
+        // TODO (maybe repaint() needs to be called first?)
+        canvas.resetCameraClippingRange();
 
         sequencePane.repaint();
         sequenceCartoonCanvas.repaint();
@@ -894,40 +915,6 @@ implements ResidueActionListener
 
     public static final long serialVersionUID = 1L;
 
-    /**
-     * Put all hooks for adding a new molecule representation here
-     * Call this from createMenuBar()
-     */
-    private void addCartoonSelection(
-            Class cartoonType,                                      
-            String description,                                     
-            ImageIcon imageIcon) 
-    {
-        if (viewMenu == null)
-            throw new RuntimeException("No View menu in which to add a Cartoon style");
-
-        if (cartoonGroup == null) {
-            cartoonGroup = new ButtonGroup();
-        }
-
-        if (cartoonMenu == null) {
-            cartoonMenu = new JMenu("Molecule Style");
-            viewMenu.add(cartoonMenu);
-        }
-        
-        JCheckBoxMenuItem checkItem;
-        if (imageIcon != null)
-            checkItem = new JCheckBoxMenuItem(description, imageIcon);
-        else
-            checkItem = new JCheckBoxMenuItem(description);
-        
-        checkItem.setEnabled(true);
-        checkItem.addActionListener(new CartoonAction(cartoonType));
-        checkItem.setState(cartoonType == cartoonType);
-        cartoonGroup.add(checkItem);
-        cartoonMenu.add(checkItem);        
-    }
-        
     static {
         VTKLibraries.load();
         // loadNativeLibraries();
@@ -937,8 +924,7 @@ implements ResidueActionListener
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
     }
     
-    private ButtonGroup cartoonGroup = null;
-    private JMenu cartoonMenu = null;
+    // private JMenu cartoonMenu = null;
     private JMenu viewMenu = null;
 
     private static String tornadoVersion = "0.50";
@@ -976,4 +962,143 @@ implements ResidueActionListener
 		this.currentPath = currentPath;
 	}
 
+    class RangedToonType {
+        private String name;
+        private Class toonClass;
+        private ImageIcon icon;
+        private JCheckBoxMenuItem checkItem;
+        
+        RangedToonType(String name, Class toonClass, ImageIcon icon) {
+            this.name = name;
+            this.toonClass = toonClass;
+            this.icon = icon;
+        }
+        
+        void setCheckItem(JCheckBoxMenuItem item) {
+            checkItem = item;
+        }
+    }
+    
+    /**
+     *  
+      * @author Christopher Bruns
+      * 
+      * ToonRange manages an ordered list of molecule
+      * representations.  The order of representations must
+      * be from most coarse to most fine-grained.  ToonRange
+      * also manages the status of a pull down menu by which
+      * representations may be selected.
+     */
+    class ToonRange {
+        private java.util.List<RangedToonType> toons = new Vector<RangedToonType>();
+        private RangedToonType currentToonType = null;
+        private Map<Class, RangedToonType> classTypes = new HashMap<Class, RangedToonType>();
+        private Map<RangedToonType, Integer> typeIndices = new HashMap<RangedToonType, Integer>();
+        private JMenuItem coarserMenu = new JMenuItem("Coarser");
+        private JMenuItem finerMenu = new JMenuItem("Finer");
+
+        public MoleculeCartoon createCartoon() {
+            MoleculeCartoon answer = null;
+
+            try {
+                answer = (MoleculeCartoon) currentToonType.toonClass.newInstance();
+            } 
+            catch (InstantiationException exc) {exc.printStackTrace();}
+            catch (IllegalAccessException exc) {exc.printStackTrace();}
+
+            return answer;
+        }
+        
+        boolean hasCoarser() {
+            int index = typeIndices.get(currentToonType);
+            return (index > 0);
+        }
+        
+        boolean hasFiner() {
+            int index = typeIndices.get(currentToonType);
+            return (index < (toons.size() - 1));
+        }
+
+        public void updateMenus() {
+            if (hasCoarser()) coarserMenu.setEnabled(true);
+            else coarserMenu.setEnabled(false);
+            
+            if (hasFiner()) finerMenu.setEnabled(true);
+            else finerMenu.setEnabled(false);
+            
+            currentToonType.checkItem.setSelected(true);
+        }
+        
+        public void stepCoarser() {
+            if (hasCoarser()) {
+                int index = typeIndices.get(currentToonType);
+                currentToonType = toons.get(index - 1);
+            }
+            
+            updateMenus();
+        }
+        
+        public void stepFiner() {
+            if (hasFiner()) {
+                int index = typeIndices.get(currentToonType);
+                currentToonType = toons.get(index + 1);                
+            }
+
+            updateMenus();
+        }
+        
+        public void add(RangedToonType toon) {
+            toons.add(toon);
+
+            classTypes.put(toon.toonClass, toon);
+            typeIndices.put(toon, toons.size() - 1);
+
+            if (currentToonType == null) currentToonType = toon;
+        }
+        
+        public void setCurrentType(Class cartoonType) {
+            RangedToonType type = classTypes.get(cartoonType);
+            if (type != null)
+                currentToonType = type;
+        }
+        
+        public void createCartoonMenu(JMenu parent) {
+            coarserMenu.setEnabled(true);
+            coarserMenu.addActionListener(new GranularityAction(1));
+            parent.add(coarserMenu);
+            
+            finerMenu = new JMenuItem("Finer");
+            finerMenu.setEnabled(true);
+            finerMenu.addActionListener(new GranularityAction(-1));
+            parent.add(finerMenu);
+            
+            parent.add(new JSeparator());
+
+            ButtonGroup cartoonGroup = new ButtonGroup();
+            
+            for (RangedToonType toon : toons()) {                
+                String description = toon.name;
+                ImageIcon imageIcon = toon.icon;
+                Class cartoonType = toon.toonClass;
+
+                JCheckBoxMenuItem checkItem;
+
+                if (imageIcon != null)
+                    checkItem = new JCheckBoxMenuItem(description, imageIcon);
+                else
+                    checkItem = new JCheckBoxMenuItem(description);
+                
+                toon.setCheckItem(checkItem);
+                
+                checkItem.setEnabled(true);
+                checkItem.addActionListener(new CartoonAction(cartoonType));
+                checkItem.setState(toon == currentToonType);
+                cartoonGroup.add(checkItem);
+                parent.add(checkItem);
+            }
+        }
+        
+        public java.util.List<RangedToonType> toons() {return toons;}
+    }
+            
 }

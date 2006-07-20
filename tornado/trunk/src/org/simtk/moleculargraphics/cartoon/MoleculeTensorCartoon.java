@@ -29,16 +29,12 @@ package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.molecularstructure.LocatedMolecule;
 
-public class BackboneCurve extends MoleculeCartoonClass {
-    // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
-
-    BackboneCurve() {
-    }
+public class MoleculeTensorCartoon extends MoleculeCartoonClass {
     
     public void addMolecule(LocatedMolecule molecule) {
         try {
-            NewBackboneCurveActor actorToon = 
-                new NewBackboneCurveActor(4.0, 1.0, molecule);
+            MoleculeTensorActor actorToon = 
+                new MoleculeTensorActor(molecule);
             if (actorToon.isPopulated()) {
                 subToons.add(actorToon);
                 actorSet.add(actorToon.getActor());

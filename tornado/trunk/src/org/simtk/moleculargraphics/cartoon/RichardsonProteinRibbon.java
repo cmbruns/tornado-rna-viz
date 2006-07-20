@@ -39,8 +39,12 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
     protected double helixWidth = 2.80;
     protected double strandWidth = 2.20;
     
-    public void addMolecule(LocatedMolecule molecule) {
-        if (! (molecule instanceof Protein)) return;
+    public void addMolecule(LocatedMolecule molecule) 
+    throws NoCartoonCreatedException
+    {
+        if (! (molecule instanceof Protein)) {
+            throw new NoCartoonCreatedException("Not a protein");
+        }
         Protein protein = (Protein) molecule;
         
         // First pass, note the secondary structure of each residue
@@ -83,8 +87,13 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
             if (resIndex == 1) endFlag = -1; // Beginning of chain
             else if (resIndex == protein.residues().size()) endFlag = 1;
             Vector3D normal = ProteinRibbonSegment.hBondNormal(aminoAcid, endFlag);
-            if (normal == null) continue;
+            if (normal == null) {
+                // TODO - fudge normal for case where protein is CA only
+                continue;
+            }
             
+            // TODO - it should not be necessary to exclude helices, if this
+            // were working correctly
             if (previousNormal != null
                     && (!(alphaResidues.contains(aminoAcid)))
                     ) {

@@ -21,21 +21,34 @@
  */
 
 /*
- * Created on Dec 8, 2005
+ * Created on Apr 20, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.util.Set;
-
+import java.awt.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.protein.*;
+import org.simtk.molecularstructure.nucleicacid.*;
 
-import vtk.vtkActor;
-
-public interface MoleculeCartoon extends BaseCartoon {
-    public Set<vtkActor> vtkActors();    
-    public void add(MoleculeCollection moleculeCollection);
-    public void addMolecule(LocatedMolecule molecule) throws NoCartoonCreatedException;
+public class MoleculeColorScheme implements ColorScheme {
+    private static Color paleAqua = new Color(200,255,255);
+    private static Color paleBlue = new Color(200,230,255);
+    private static Color paleOrangeYellow = new Color(255,240,200);
+    private static Color palePink = new Color(255,225,240);
     
-    public void updateActors(); // Synchronize actors with component cartoons
+    static MoleculeColorScheme MOLECULE_COLORS = new MoleculeColorScheme();
+    
+    public Color colorOf(Object o) throws UnknownObjectColorException {
+        if (o instanceof Protein)
+            return paleAqua;
+        else if (o instanceof DNA)
+            return palePink;
+        else if (o instanceof NucleicAcid)
+            return palePink;
+        else if (o instanceof Molecule)
+            return Color.white;
+        else
+            throw new UnknownObjectColorException();
+    }    
 }

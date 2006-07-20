@@ -40,9 +40,11 @@ public class FineRibbonCartoon extends CompositeCartoon {
     private BallAndStickCartoon stickToon = new BallAndStickCartoon();
     private BackboneCurve backboneRibbon = new BackboneCurve();
     private BackboneStick backboneStick = new BackboneStick();
-    private BasePairConnectorStick pairStick = new BasePairConnectorStick();
     private RichardsonProteinRibbon proteinRibbon = new RichardsonProteinRibbon();
     
+    // private BasePairConnectorStick pairStick = new BasePairConnectorStick();
+    private BaseConnectorTube baseConnectors = new BaseConnectorTube();
+
     public FineRibbonCartoon() {
 
         addSubToon(backboneStick);
@@ -54,7 +56,8 @@ public class FineRibbonCartoon extends CompositeCartoon {
         addSubToon(backboneRibbon);
         addSubToon(nucStick);
 
-        addSubToon(pairStick);
+        // addSubToon(pairStick);
+        addSubToon(baseConnectors);
         addSubToon(ovalToon);
     }
 
@@ -83,15 +86,18 @@ public class FineRibbonCartoon extends CompositeCartoon {
                 Nucleotide nucleotide = (Nucleotide) residue;
                 
                 if (basePairResidues.contains(nucleotide))
-                    pairStick.addNucleotide(nucleotide);
+                    // pairStick.addNucleotide(nucleotide);
+                    baseConnectors.addNucleotide(nucleotide);
                 else
                     nucStick.addNucleotide(nucleotide);
             }
         }
         
         else if (m instanceof Protein) {
-            proteinRibbon.addMolecule(m);
-            actorSet.addAll(proteinRibbon.vtkActors());
+            try {proteinRibbon.addMolecule(m);}
+            catch (NoCartoonCreatedException e) {
+                // TODO - use another representation
+            }
         }
         
         else if (m instanceof Biopolymer) {
@@ -109,6 +115,8 @@ public class FineRibbonCartoon extends CompositeCartoon {
         	}
             stickToon.addMolecule(m);
         }
+        
+        updateActors();
     }
     
 }

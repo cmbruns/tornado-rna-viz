@@ -32,6 +32,10 @@
 package org.simtk.moleculargraphics;
 
 import javax.swing.SwingUtilities;
+import vtk.vtkCamera;
+import org.simtk.geometry3d.*;
+
+enum RotationStyle {NONE, NUTATE, ROCK, ROTATE};
 
 /** 
  * @author Christopher Bruns
@@ -39,25 +43,40 @@ import javax.swing.SwingUtilities;
  * Thread to periodically rotate the view so it spins without user intervention
  */
 public class InertialRotationThread extends Thread {
+    volatile RotationStyle rotationStyle = RotationStyle.NONE;
     volatile boolean pauseRotation = false;
-    volatile boolean doRock = true; // Spin instead of rock if false
-    volatile boolean sitStill = false;
-    volatile double currentAngle = 0.0;
 
-    double rotationPerFrame = 0.3;
-    double rockRadius = 3.0;
-    int direction = 1;
-    int millisecondsPerFrame = 100;
+    private double rockFactor = 1.0;
+    
+    private volatile double currentAngle = 0.0; // Degrees
+
+    private double rotationPerFrame = 0.6; // Degrees
+    
+    private double nutationStep = rotationPerFrame * 10; // Degrees
+    private volatile double nutationAngle = 0.0;
+    private double nutationConeAngle = 5.0; // Degrees
+    
+    private double rockRadius = 4.0; // Degrees
+    private int direction = 1;
+    private int millisecondsPerFrame = 100;
 
     // Don't let multiple rotations pile up
-    volatile boolean eventPending = false;
+    private volatile boolean eventPending = false;
     
-    Tornado3DCanvas canvas;
-    Tornado tornado;
+    private Tornado3DCanvas canvas;
+    private Tornado tornado;
+    private vtkCamera cam;
     
     public InertialRotationThread(Tornado t) {
         tornado = t;
         canvas = tornado.canvas;
+        cam = tornado.canvas.GetRenderer().GetActiveCamera();
+    }
+    
+    public void initialize() {
+        currentAngle = 0.0;
+        nutationAngle = 0.0;
+        rockFactor = 1.0;
     }
     
     public void animate() {
@@ -67,9 +86,43 @@ public class InertialRotationThread extends Thread {
         // up...
         Runnable updateAComponent = new Runnable() {
     	    public void run() { 
+    	        switch(rotationStyle) {
+                case NONE:
+                    break;
+                case NUTATE:                    
+                    // Up direction of camera
+                    Vector3D up = new Vector3DClass(cam.GetViewUp()).unit();
 
-                double rockFactor = 1.0;
-                if (doRock) {
+                    // Forward direction of camera
+                    Vector3D focus = new Vector3DClass(cam.GetFocalPoint());
+                    Vector3D camPos = new Vector3DClass(cam.GetPosition());
+                    Vector3D forward = focus.minus(camPos);
+                    double viewDist = forward.length();
+                    forward = forward.unit();
+
+                    // Left direction of camera
+                    Vector3D left = up.cross(forward).unit();
+                    
+                    double radius = Math.sin(nutationConeAngle * Math.PI / 180.0) * viewDist;
+                    double stepDistance = radius * 2.0 * Math.sin(0.5 * nutationStep * Math.PI / 180.0);
+                    
+                    double midAngle = nutationAngle + 0.5 * nutationStep;
+                    Vector3D step = 
+                        up.times(-Math.sin(midAngle * Math.PI / 180.0) * stepDistance).plus(
+                        left.times(Math.cos(midAngle * Math.PI / 180.0) * stepDistance));
+
+                    Vector3D newPos = camPos.plus(step);
+
+                    //  System.out.println("Position = " + camPos);
+                    //  System.out.println("   New position = " + newPos);
+                    
+                    cam.SetPosition(newPos.toArray());
+                    
+                    nutationAngle += nutationStep;
+                    // TODO
+                    
+                    break;
+                case ROCK:
                     if (currentAngle >= rockRadius) direction = -1;
                     if (currentAngle <= -rockRadius) direction = 1;
                     
@@ -78,14 +131,13 @@ public class InertialRotationThread extends Thread {
 
                     rockFactor = 0.50 * (1.0 + Math.cos(0.75 * Math.PI * currentAngle / rockRadius));
                     if (rockFactor < 0.30) rockFactor = 0.30; // Don't let it go too slowly
+                case ROTATE:
+                    double actualRotation = rockFactor * rotationPerFrame * direction;                    
+                    currentAngle += actualRotation;                    
+                    cam.Azimuth(actualRotation);
+                    break;
                 }
-
-                double actualRotation = rockFactor * rotationPerFrame * direction;
-                
-                currentAngle += actualRotation;
-                
-                canvas.Azimuth(actualRotation);
-                
+                                
                 canvas.resetCameraClippingRange();
                 canvas.repaint();
                 
@@ -107,7 +159,7 @@ public class InertialRotationThread extends Thread {
                 // So many ways to avoid doing rotations below...
                 
                 // The user has asked for there to be no rotation
-                if (sitStill) {
+                if (rotationStyle == RotationStyle.NONE) {
                     sleep(30000);
                     continue;
                 }

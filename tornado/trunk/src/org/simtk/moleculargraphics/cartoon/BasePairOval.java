@@ -38,12 +38,6 @@ import vtk.*;
 
 public class BasePairOval extends TensorGlyphCartoon {
     
-    // int colorScalar = 1;
-    private int baseColorIndex = 1;
-    private Map<Color, Integer> colorIndices = new HashMap<Color, Integer>();
-    protected ColorScheme colorScheme = 
-        SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME;
-    
     public BasePairOval() {
         super();
         
@@ -56,7 +50,7 @@ public class BasePairOval extends TensorGlyphCartoon {
         // Stretch the cylinder in one direction to make an oval
         vtkTransform transform = new vtkTransform();
         transform.Identity();
-        transform.Scale(2.0, 1.0, 1.0);
+        transform.Scale(2.2, 1.0, 1.0);
 
         vtkTransformPolyDataFilter transformFilter = new vtkTransformPolyDataFilter();
         transformFilter.SetTransform(transform);
@@ -134,11 +128,30 @@ public class BasePairOval extends TensorGlyphCartoon {
             }
         } catch (InsufficientAtomsException exc) {return;}
 
+
         Vector3D pos1, pos2;
-        try {
-            pos1 = Vector3DClass.centroid(base1Points);
-            pos2 = Vector3DClass.centroid(base2Points);
-        } catch (InsufficientPointsException exc) {return;}
+
+        // July 19, 2006: base position upon extension of glycosidic bond
+        LocatedAtom c11 = res1.getAtom("C1*");
+        LocatedAtom c12 = res2.getAtom("C1*");
+        LocatedAtom n1 = res1.getAtom("N9");
+        if (n1 == null) n1 = res1.getAtom("N1");
+        LocatedAtom n2 = res2.getAtom("N9");
+        if (n2 == null) n2 = res2.getAtom("N1");
+        // Glycosidic bond direction:
+        Vector3D glyc1 = n1.getCoordinates().minus(c11.getCoordinates()).unit();
+        Vector3D glyc2 = n2.getCoordinates().minus(c12.getCoordinates()).unit();
+        
+        double extensionDist = 0.85; // How many Angstroms to go past glycosidic bond
+        pos1 = n1.getCoordinates().plus(glyc1.times(extensionDist));
+        pos2 = n2.getCoordinates().plus(glyc2.times(extensionDist));
+        
+        // Old way
+//        try {
+//            pos1 = Vector3DClass.centroid(base1Points);
+//            pos2 = Vector3DClass.centroid(base2Points);
+//        } catch (InsufficientPointsException exc) {return;}
+
         
         Vector3D midpoint = pos1.plus(pos2).times(0.5);
         Vector3D basePairDirection = pos1.minus(pos2).unit();
@@ -166,12 +179,8 @@ public class BasePairOval extends TensorGlyphCartoon {
                 edgeDirection.x(), edgeDirection.y(), edgeDirection.z()
                 );
 
-        int glyphIndex = colorScalars.GetNumberOfTuples();
-        
         double colorScalar = toonColors.getColorIndex(res1);
 
-        // glyphColors.add(currentObjects, lineData, glyphIndex, colorScalar);
-        
         colorScalars.InsertNextValue(colorScalar);
     }
 }

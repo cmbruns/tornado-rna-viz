@@ -31,9 +31,7 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.util.*;
 import vtk.*;
-
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 
@@ -53,13 +51,18 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
      */
     static double splineFactor = 5.0;
     
-    public NewBackboneCurveActor(double width, double thickness) {
+    public NewBackboneCurveActor(
+            double width, 
+            double thickness,
+            LocatedMolecule molecule)
+    throws NoCartoonCreatedException
+    {
+
         this.ribbonWidth = width;
         this.ribbonThickness = thickness;
-    }
 
-    public void addMolecule(LocatedMolecule molecule) {
-        if (! (molecule instanceof Biopolymer)) return;
+        if (! (molecule instanceof Biopolymer)) 
+            throw new NoCartoonCreatedException("Not a biopolymer for backbone curve");
         Biopolymer biopolymer = (Biopolymer) molecule;
         
         vtkPoints linePoints = new vtkPoints();
@@ -71,32 +74,76 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
         colorScalars.SetNumberOfComponents(1);
         colorScalars.SetName("colors");
         
+        Vector3D previousNormal = null;
+        boolean isFirstResidue = true;
         RESIDUE: for (Residue res : biopolymer.residues()) {
             if (! (res instanceof LocatedResidue)) continue RESIDUE;
             LocatedResidue residue = (LocatedResidue) res;
             
             Vector3D backbonePosition;
-            Vector3D sideChainPosition;
             try {
                 backbonePosition = residue.getBackbonePosition();
-                sideChainPosition = residue.getSideChainPosition();
             } catch (InsufficientAtomsException exc) {
                 continue RESIDUE;
             }
             
+            Vector3D sideChainPosition = null;
+            try {
+                sideChainPosition = residue.getSideChainPosition();
+            } catch (InsufficientAtomsException exc) {}
+
             double colorScalar = toonColors.getColorIndex(residue);
             
-            if ( (backbonePosition != null) && (sideChainPosition != null) ) {
-                Vector3D normal = sideChainPosition.minus(backbonePosition).unit();
-
-                linePoints.InsertNextPoint(backbonePosition.toArray());
-                lineNormals.InsertNextTuple3(normal.x(), normal.y(), normal.z());
-                colorScalars.InsertNextValue(colorScalar);
+            if (backbonePosition == null) continue RESIDUE;
+            
+            Vector3D normal = null;
+            if (sideChainPosition != null) {
+                normal = sideChainPosition.minus(backbonePosition).unit();
             }
+            else {
+                // Compute normal another way - for case with phosphate positions only
+                if (previousNormal != null) normal = previousNormal;
+                if (normal == null) normal = new Vector3DClass(1,0,0);
+
+                // Adjust normal to be perpendicular to chain direction
+                Vector3D chainDirection = new Vector3DClass(0,0.01,0);
+                
+                try {
+                    Vector3D dir1 = ((LocatedResidue)residue.getNextResidue()).getBackbonePosition().minus(backbonePosition);
+                    chainDirection = chainDirection.plus(dir1);
+                } catch (Exception e) {}                
+                try {
+                    Vector3D dir2 = backbonePosition.minus(((LocatedResidue)residue.getPreviousResidue()).getBackbonePosition());
+                    chainDirection = chainDirection.plus(dir2);
+                } catch (Exception e) {}
+                
+                chainDirection = chainDirection.unit();
+                
+                Vector3D right = chainDirection.cross(normal).unit();
+                normal = right.cross(chainDirection).unit();                
+            }
+            
+            // Extend first residue to the 5' hydroxyl
+            if (isFirstResidue && (residue instanceof PDBResidue)) {
+                isFirstResidue = false;
+                try {
+                    Vector3D oh5 = ((PDBResidue)residue).getAtom("O5*").getCoordinates();
+                    linePoints.InsertNextPoint(oh5.toArray());
+                    lineNormals.InsertNextTuple3(normal.x(), normal.y(), normal.z());
+                    colorScalars.InsertNextValue(colorScalar);                    
+                } catch (Exception exc) {}
+            }
+            
+            linePoints.InsertNextPoint(backbonePosition.toArray());
+            lineNormals.InsertNextTuple3(normal.x(), normal.y(), normal.z());
+            colorScalars.InsertNextValue(colorScalar);
+            
+            previousNormal = normal;
         }
         
         int numberOfPoints = linePoints.GetNumberOfPoints();
-        if (numberOfPoints < 2) return;
+        if (numberOfPoints < 2) 
+            throw new NoCartoonCreatedException("Not enough points for backbone curve");
         
         vtkCellArray lineCells = new vtkCellArray();
         lineCells.InsertNextCell(numberOfPoints);
@@ -116,10 +163,14 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
         splineFilter.SetLength(lengthResolution);
         splineFilter.SetInput(lineData);
         
+        // Correct the interpolated scalars back to integer values
+        vtkRoundScalarsFilter roundingFilter = new vtkRoundScalarsFilter();
+        roundingFilter.SetInput(splineFilter.GetOutput());
+        
         // Shift positions so that extruded ribbon will be centered
         vtkPreExtrusionCenteringFilter centeringFilter = new vtkPreExtrusionCenteringFilter();
         centeringFilter.SetThickness(ribbonThickness);
-        centeringFilter.SetInput(splineFilter.GetOutput());
+        centeringFilter.SetInput(roundingFilter.GetOutput());
         
         // Widen the line into a ribbon
         vtkRibbonFilter ribbonFilter = new vtkRibbonFilter();

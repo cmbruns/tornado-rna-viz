@@ -31,7 +31,6 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.awt.*;
 import java.util.*;
 import vtk.*;
 import org.simtk.geometry3d.*;

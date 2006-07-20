@@ -228,39 +228,45 @@ public class Tornado3DCanvas extends StructureCanvas
             // System.err.println("Frames per second (rendering only) = " + 1000.0/fpsRing.mean());
         }
         
-        // The very first time we paint, turn on fog
-        if ( (ren != null) && (firstPaint) && (doFog) ) {
-            
-            // This needs to follow a Render command?
-            GLCapabilities capabilities = new GLCapabilities();
-            capabilities.setHardwareAccelerated(true);
-            GLCanvas glCanvas = GLDrawableFactory.getFactory().
-                                  createGLCanvas(capabilities);
-            gl = glCanvas.getGL();
-            // Render();
-
-            if (fogLinear) { // Linear Fog
-                gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
-                gl.glFogf(GL.GL_FOG_START, (float)0.0);
-                gl.glFogf(GL.GL_FOG_END, (float)100.0);
+        if (firstPaint) {
+            // The very first time we paint, turn on fog
+            if ( (ren != null) && (doFog) ) {
+                
+                // This needs to follow a Render command?
+                GLCapabilities capabilities = new GLCapabilities();
+                capabilities.setHardwareAccelerated(true);
+                GLCanvas glCanvas = GLDrawableFactory.getFactory().
+                                      createGLCanvas(capabilities);
+                gl = glCanvas.getGL();
+                // Render();
+        
+                if (fogLinear) { // Linear Fog
+                    gl.glFogi(GL.GL_FOG_MODE, GL.GL_LINEAR);
+                    gl.glFogf(GL.GL_FOG_START, (float)0.0);
+                    gl.glFogf(GL.GL_FOG_END, (float)100.0);
+                }
+                else { // Exponential Fog
+                    gl.glFogi(GL.GL_FOG_MODE, GL.GL_EXP2);
+                    gl.glFogf(GL.GL_FOG_DENSITY, 0.2f);
+                }
+        
+                float[] fogColor = new float[] {
+                        (float) (backgroundColor.getRed()/255.0),
+                        (float) (backgroundColor.getGreen()/255.0),
+                        (float) (backgroundColor.getBlue()/255.0)
+                };
+                
+                gl.glFogfv(GL.GL_FOG_COLOR, fogColor);
+                gl.glEnable(GL.GL_FOG);
+                gl.glFogf(GL.GL_FOG_DENSITY, (float)0.8);
             }
-            else { // Exponential Fog
-                gl.glFogi(GL.GL_FOG_MODE, GL.GL_EXP2);
-                gl.glFogf(GL.GL_FOG_DENSITY, 0.2f);
-            }
-
-            float[] fogColor = new float[] {
-                    (float) (backgroundColor.getRed()/255.0),
-                    (float) (backgroundColor.getGreen()/255.0),
-                    (float) (backgroundColor.getBlue()/255.0)
-            };
             
-            gl.glFogfv(GL.GL_FOG_COLOR, fogColor);
-            gl.glEnable(GL.GL_FOG);
-            gl.glFogf(GL.GL_FOG_DENSITY, (float)0.8);
-
+            // This solves problem with initially invisible molecule!
+            resetCameraClippingRange();
+            
             firstPaint = false;
         }
+        
         UnLock();
     }
     

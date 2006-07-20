@@ -22,27 +22,35 @@
  */
 
 /*
- * Created on Jul 18, 2006
+ * Created on Jul 12, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.molecularstructure.LocatedMolecule;
+import org.simtk.geometry3d.*;
+import vtk.*;
 
-public class BackboneCurve extends MoleculeCartoonClass {
-    // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
-
-    BackboneCurve() {
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * Set scalar values on a polyline to make an arrow with vtkRibbonFilter
+ */
+public class vtkRoundScalarsFilter extends vtkProgrammableFilter {
+    public vtkRoundScalarsFilter() {
+        SetExecuteMethod(this, "Execute");
     }
-    
-    public void addMolecule(LocatedMolecule molecule) {
-        try {
-            NewBackboneCurveActor actorToon = 
-                new NewBackboneCurveActor(4.0, 1.0, molecule);
-            if (actorToon.isPopulated()) {
-                subToons.add(actorToon);
-                actorSet.add(actorToon.getActor());
-            }
-        } catch (NoCartoonCreatedException exc) {}
+
+    public void Execute() {
+        vtkPolyData input = GetPolyDataInput();
+
+        vtkPolyData output = GetPolyDataOutput();
+        output.DeepCopy(input);
+        
+        vtkDataArray scalars = output.GetPointData().GetScalars();
+        for (int i = 0; i < scalars.GetNumberOfTuples(); ++i) {
+            double unroundedValue = scalars.GetTuple1(i);
+            scalars.SetTuple1(i, Math.round(unroundedValue));
+        }
     }
 }

@@ -64,7 +64,8 @@ implements MoleculeCartoon
     public void add(MoleculeCollection m) {
         for (Molecule molecule : m.molecules()) {
             if (! (molecule instanceof LocatedMolecule)) continue;
-            addMolecule((LocatedMolecule)molecule);
+            try {addMolecule((LocatedMolecule)molecule);}
+            catch (NoCartoonCreatedException exc) {}
         }
         updateActors();
     }

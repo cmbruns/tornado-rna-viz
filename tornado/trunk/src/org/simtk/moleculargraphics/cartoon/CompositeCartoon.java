@@ -47,7 +47,11 @@ public abstract class CompositeCartoon extends MoleculeCartoonClass {
     
     public void addMolecule(LocatedMolecule molecule) {
         for (BaseCartoon toon : subToons) {
-            if (toon instanceof MoleculeCartoon) ((MoleculeCartoon)toon).addMolecule(molecule);
+            if (toon instanceof MoleculeCartoon) {
+                try {
+                    ((MoleculeCartoon)toon).addMolecule(molecule);
+                } catch (NoCartoonCreatedException e) {}
+            }
         }        
     }
 }
