@@ -37,4 +37,6 @@ public interface Matrix3D extends MathMatrix {
     public Vector3D getDiagonal();
     public Vector3D getRow(int i);
     public Vector3D getColumn(int j);
+    
+    public double[][] toArray();
 }

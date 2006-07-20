@@ -149,6 +149,17 @@ public class Matrix3DClass extends MathMatrixClass implements MutableMatrix3D {
         return answer;
     }
 
+    public double[][] toArray() {
+        double[][] m = new double[3][];
+        for (int i = 0; i < 3; ++i) {
+            m[i] = new double[3];
+            for (int j = 0; j < 3; ++j) {
+                m[i][j] = this.get(i,j);
+            }
+        }
+        return m;
+    }
+    
     private static void checkShape(MathMatrix m) {
         if ( (m.getRowCount() != 3) || (m.getColumnCount() != 3) )
             throw new MatrixSizeMismatchException("Cannot construct Matrix3D from non 3x3 matrix");        
