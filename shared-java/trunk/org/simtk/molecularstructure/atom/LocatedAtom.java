@@ -40,4 +40,5 @@ public interface LocatedAtom extends Atom {
      * @param coordinates The coordinates to set.
      */
     public double distance(LocatedAtom atom2);
+    
 }

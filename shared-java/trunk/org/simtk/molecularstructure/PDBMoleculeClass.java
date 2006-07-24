@@ -69,10 +69,27 @@ public class PDBMoleculeClass extends MoleculeMVCModel implements MutableLocated
     }
     
     public boolean isSolvent() {
-        // Assume that a single oxygen atom is water
-        if ( (atoms().size() == 1) && (atoms().iterator().next().getElementSymbol().equals("O")))
-                return true;
-        return false;
+
+        if (this instanceof Biopolymer) return false;
+        else if (this instanceof AminoAcid) return false;
+        else if (this instanceof Nucleotide) return false;
+
+        // Assume that more than ten atoms is not solvent
+        if (atoms().size() > 10) return false;
+
+        // Assume that elements other than H,O,P,S are not solvent
+        // (by Rasmol definition)
+        Set<String> solventSymbols = new HashSet<String>();
+        solventSymbols.add("H");
+        solventSymbols.add("O");
+        // solventSymbols.add("S");
+        // solventSymbols.add("P");
+        for (Atom atom : atoms()) {
+            if (! solventSymbols.contains(atom.getElementSymbol()))
+                return false;
+        }
+
+        return true;
     }
     
     public void setChainID(String chainID) {this.chainID = chainID;}
