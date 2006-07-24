@@ -21,10 +21,24 @@
  */
 
 /*
- * Created on Jun 13, 2006
+ * Created on Jun 23, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.moleculargraphics.cartoon;
 
-public abstract class CompositeCartoon extends MoleculeCartoonClass {
+import org.simtk.molecularstructure.*;
+
+public class ResidueSpheres extends MoleculeCartoonClass {
+    private ResidueSphereActor spheres = new ResidueSphereActor();
+    
+    public ResidueSpheres() {
+        addSubToon(spheres);
+    }
+
+    public void addMolecule(LocatedMolecule m) {
+        if (m.isSolvent()) return;
+        spheres.addMolecule(m);
+        updateActors();
+    }
+    
 }

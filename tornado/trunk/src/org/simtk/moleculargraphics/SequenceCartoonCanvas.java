@@ -84,6 +84,25 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         sequenceCanvas.parent.getHorizontalScrollBar().addAdjustmentListener(this);
     }
 
+    private int preferredHeight() {return cartoonHeight;}
+    
+    Dimension maxSize = new Dimension(Integer.MAX_VALUE, preferredHeight());
+    Dimension minSize = new Dimension(0, preferredHeight());
+    Dimension prefSize = new Dimension(100, preferredHeight());
+    public Dimension getMaximumSize() {
+        return maxSize;
+    }
+    public Dimension getMinimumSize() {
+        return minSize;
+    }
+    public Dimension getPreferredSize() {
+        return prefSize;
+    }
+    public void setMaximumSize(Dimension d) {maxSize = d;}
+    public void setMinimumSize(Dimension d) {minSize = d;}
+    public void setPreferredSize(Dimension d) {prefSize = d;}
+    
+
     public void setSelectionColor(Color c) {
         selectionColor = c;
     }

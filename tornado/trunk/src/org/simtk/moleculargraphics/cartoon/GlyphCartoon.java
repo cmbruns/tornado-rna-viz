@@ -46,7 +46,7 @@ import vtk.*;
   * @author Christopher Bruns
   * 
  */
-public abstract class GlyphCartoon extends MoleculeCartoonClass {
+public abstract class GlyphCartoon extends ActorCartoonClass {
     // GlyphIndex glyphColors = new GlyphIndex();
 
     // Glyph positions
@@ -59,9 +59,9 @@ public abstract class GlyphCartoon extends MoleculeCartoonClass {
     vtkFloatArray colorScalars = new vtkFloatArray();
    
     private vtkGlyph3D lineGlyph = new vtkGlyph3D();
-    vtkPolyDataMapper glyphMapper = mapper;
+    // vtkPolyDataMapper glyphMapper = mapper;
 
-    vtkActor glyphActor = new vtkActor();
+    // vtkActor glyphActor = new vtkActor();
 
     // private MassBodyClass massBody = new MassBodyClass();
     
@@ -80,11 +80,9 @@ public abstract class GlyphCartoon extends MoleculeCartoonClass {
         
         lineGlyph.SetInput(lineData);
 
-        glyphMapper.SetInput(lineGlyph.GetOutput());
+        mapper.SetInput(lineGlyph.GetOutput());
         
-        glyphActor.SetMapper(glyphMapper);
-        
-        actorSet.add(glyphActor);
+        actor.SetMapper(mapper);
     }
 
     // Override these functions to use TensorGlyph rather than vtkGlyph3D

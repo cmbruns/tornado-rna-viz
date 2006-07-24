@@ -52,13 +52,17 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
             Spline3D normalSpline) 
     throws NoCartoonCreatedException 
     {
-            createBetaStrand(residues, 
-                    ribbonThickness, 
-                    strandWidth,
-                    startIndex,
-                    positionSpline,
-                    normalSpline
-                    );
+        // Something is screwy with back vs. front faces of ribbon
+        actor.GetProperty().BackfaceCullingOff();
+        actor.GetProperty().FrontfaceCullingOn();
+
+        createBetaStrand(residues, 
+                ribbonThickness, 
+                strandWidth,
+                startIndex,
+                positionSpline,
+                normalSpline
+                );
     }
 
     protected void createBetaStrand(

@@ -33,7 +33,7 @@ import org.simtk.geometry3d.*;
 
 import vtk.vtkCardinalSpline;
 
-public class ProteinRibbonSphereTest extends AtomSphereCartoon {
+public class ProteinRibbonSphereTest extends AtomSphereActor {
     private int splineFactor = 5;
     
     ProteinRibbonSphereTest() {

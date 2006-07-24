@@ -46,6 +46,10 @@ public class ProteinHelix extends ProteinRibbonSegment {
             Spline3D normalSpline)
     throws NoCartoonCreatedException
     {
+        // Something is screwy with back vs. front faces of ribbon
+        actor.GetProperty().BackfaceCullingOff();
+        actor.GetProperty().FrontfaceCullingOn();
+
         createAlphaHelix(
                 residues, 
                 ribbonThickness, 

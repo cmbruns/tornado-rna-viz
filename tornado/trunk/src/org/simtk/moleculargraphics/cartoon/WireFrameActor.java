@@ -46,7 +46,7 @@ import org.simtk.molecularstructure.atom.*;
  * Draw a simple colored line joining each pair of bonded atoms.
  * Plus a cross at each non-bonded atom
  */
-public class WireFrameCartoon extends GlyphCartoon {
+public class WireFrameActor extends GlyphCartoon {
     // Key: glyph index number value: atoms at the other end of a bond
     Hashtable otherAtomIndices = new Hashtable();
     
@@ -58,7 +58,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         lineSource.SetPoint2(0.5, 0.0, 0.0);
     }
         
-    public WireFrameCartoon() {
+    public WireFrameActor() {
         super();
 
         // Use lines as the glyph primitive
@@ -68,7 +68,7 @@ public class WireFrameCartoon extends GlyphCartoon {
         scaleByNormal();  // Do not adjust size
         colorByScalar(); // Take color from glyph scalar
         
-        glyphActor.GetProperty().SetLineWidth(2.0);
+        actor.GetProperty().SetLineWidth(2.0);
     }
     
     public void addMolecule(LocatedMolecule molecule) {
@@ -166,7 +166,9 @@ public class WireFrameCartoon extends GlyphCartoon {
         // glyphColors.add(currentObjects, lineData, glyphIndex, colorScalar);
         otherAtomIndices.put(new Integer(glyphIndex), atom2);
         
-        colorScalars.InsertNextValue(colorScalar);        
+        colorScalars.InsertNextValue(colorScalar);  
+        
+        isPopulated = true;
     }
     private void createSingleAtomGlyph(LocatedAtom atom, Vector currentObjects, double colorScalar) {
         Vector3D c = atom.getCoordinates();
@@ -191,5 +193,7 @@ public class WireFrameCartoon extends GlyphCartoon {
 
         // glyphColors.add(currentObjects, lineData, colorScalars.GetNumberOfTuples(), colorScalar);
         colorScalars.InsertNextValue(colorScalar);
+        
+        isPopulated = true;
     }
 }

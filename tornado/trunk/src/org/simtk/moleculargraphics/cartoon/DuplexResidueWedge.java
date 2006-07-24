@@ -126,8 +126,6 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         scaleNone();  // Do not adjust size
         colorByScalar(); // Take color from glyph scalar
         // orientByNormal(); // not supported for tensorGlyph
-
-        glyphActor.GetProperty().BackfaceCullingOff();
     }
 
     public void addMolecule(LocatedMolecule molecule) {

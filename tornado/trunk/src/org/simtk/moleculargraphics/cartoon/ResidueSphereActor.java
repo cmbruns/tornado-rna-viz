@@ -31,7 +31,6 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.awt.*;
 import java.util.*;
 
 import org.simtk.molecularstructure.*;
@@ -41,14 +40,14 @@ import org.simtk.geometry3d.*;
 
 import vtk.*;
 
-public class ResidueSphereCartoon extends GlyphCartoon {
+public class ResidueSphereActor extends GlyphCartoon {
     double defaultSphereRadius = 1.50;
     double aminoAcidSphereRadius = 3.00;
     double nucleotideSphereRadius = 5.0;
 
     vtkSphereSource sphereSource = new vtkSphereSource();
 
-    public ResidueSphereCartoon() {
+    public ResidueSphereActor() {
 
         super();
 
@@ -61,8 +60,6 @@ public class ResidueSphereCartoon extends GlyphCartoon {
 
         scaleByNormal();  // Do not adjust size
         colorByScalar(); // Take color from glyph scalar
-
-        glyphActor.GetProperty().BackfaceCullingOn();
     }
     
     
@@ -97,9 +94,6 @@ public class ResidueSphereCartoon extends GlyphCartoon {
     
     void addResidue(PDBResidueClass residue, Set<Object> parentObjects) {
         if (residue == null) return;
-        
-        // Don't add things that have already been added
-        // if (glyphColors.containsKey(residue)) return;
 
         // Collect molecular objects on which to index the glyphs
         Set<Object> currentObjects = new HashSet<Object>();
@@ -123,5 +117,7 @@ public class ResidueSphereCartoon extends GlyphCartoon {
 
         // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
         colorScalars.InsertNextValue(colorScalar);
+        
+        isPopulated = true;
     }
 }

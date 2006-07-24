@@ -117,9 +117,6 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         scaleNone();  // Do not adjust size
         orientByNormal();
         colorByScalar(); // Take color from glyph scalar
-
-        glyphActor.GetProperty().BackfaceCullingOn();
-
     }
 
     public void addMolecule(LocatedMolecule molecule) {
@@ -189,6 +186,8 @@ public class NucleotideStickCartoon extends GlyphCartoon {
 
             // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
             colorScalars.InsertNextValue(colorScalar);
+            
+            isPopulated = true;
         }
                 
     }

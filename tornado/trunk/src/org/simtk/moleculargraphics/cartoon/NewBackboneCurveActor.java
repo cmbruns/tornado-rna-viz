@@ -57,7 +57,10 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
             LocatedMolecule molecule)
     throws NoCartoonCreatedException
     {
-
+        // Something is screwy with back vs. front faces of ribbon
+        actor.GetProperty().BackfaceCullingOff();
+        actor.GetProperty().FrontfaceCullingOn();
+        
         this.ribbonWidth = width;
         this.ribbonThickness = thickness;
 

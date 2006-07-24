@@ -125,8 +125,6 @@ public class BackboneStick extends GlyphCartoon {
         scaleNone();  // Do not adjust size
         colorByScalar(); // Take color from glyph scalar
         orientByNormal();
-
-        glyphActor.GetProperty().BackfaceCullingOn();
     }
 
     public void addMolecule(LocatedMolecule molecule) {
@@ -248,7 +246,9 @@ public class BackboneStick extends GlyphCartoon {
             lineNormals.InsertNextTuple3(segmentDirection.getX(), segmentDirection.getY(), segmentDirection.getZ());
 
             // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-            colorScalars.InsertNextValue(colorScalar);                
+            colorScalars.InsertNextValue(colorScalar);   
+            
+            isPopulated = true;
         }        
     }
 }

@@ -31,6 +31,8 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import org.simtk.molecularstructure.*;
+
 /** 
  * @author Christopher Bruns
  * 
@@ -58,5 +60,10 @@ public class TubeAndStickTrace extends CompositeCartoon {
         
         addSubToon(tubes);
         addSubToon(rods);
-    }    
+    }
+    
+    public void addMolecule(LocatedMolecule m) {
+        tubes.addMolecule(m);
+        rods.addMolecule(m);
+    }
 }

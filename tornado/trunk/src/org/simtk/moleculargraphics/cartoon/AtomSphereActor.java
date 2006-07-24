@@ -42,17 +42,17 @@ import org.simtk.molecularstructure.atom.*;
  * 
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
-public class AtomSphereCartoon extends GlyphCartoon {
+public class AtomSphereActor extends GlyphCartoon {
 
     vtkSphereSource sphereSource = new vtkSphereSource();
     double sizeScale = 1.0;
     public boolean scaleByAtom = true;
 
-    public AtomSphereCartoon() {
+    public AtomSphereActor() {
         this(1.0);
     }
 
-    public AtomSphereCartoon(double scale) {
+    public AtomSphereActor(double scale) {
         super();
 
         sizeScale = scale;
@@ -67,8 +67,6 @@ public class AtomSphereCartoon extends GlyphCartoon {
 
         scaleByNormal(); // Take sphere size from glyph normal
         colorByScalar(); // Take color from glyph scalar
-
-        glyphActor.GetProperty().BackfaceCullingOn();
     }
     
     public void setScale(double s) {sizeScale = s;}
@@ -137,5 +135,7 @@ public class AtomSphereCartoon extends GlyphCartoon {
 
         // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
         colorScalars.InsertNextValue(colorScalar);
+        
+        isPopulated = true;
     }
 }

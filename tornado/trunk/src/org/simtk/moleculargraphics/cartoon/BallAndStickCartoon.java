@@ -31,6 +31,8 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import org.simtk.molecularstructure.*;
+
 /** 
  * @author Christopher Bruns
  * 
@@ -39,7 +41,7 @@ package org.simtk.moleculargraphics.cartoon;
 public class BallAndStickCartoon extends CompositeCartoon {
 
     BondStickCartoon sticks = new BondStickCartoon(0.15);
-    AtomSphereCartoon balls = new AtomSphereCartoon(0.25);
+    AtomSphereActor balls = new AtomSphereActor(0.25);
 
     public BallAndStickCartoon() {
         // Make spheres be caps for sticks
@@ -48,5 +50,10 @@ public class BallAndStickCartoon extends CompositeCartoon {
         
         addSubToon(sticks);
         addSubToon(balls);
-    }    
+    }
+    
+    public void addMolecule(LocatedMolecule m) {
+        sticks.addMolecule(m);
+        balls.addMolecule(m);
+    }
 }

@@ -21,10 +21,24 @@
  */
 
 /*
- * Created on Jun 13, 2006
+ * Created on Jun 23, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.moleculargraphics.cartoon;
 
-public abstract class CompositeCartoon extends MoleculeCartoonClass {
+import org.simtk.molecularstructure.*;
+
+public class WireFrame extends MoleculeCartoonClass {
+    private WireFrameActor wireFrame = new WireFrameActor();
+    
+    public WireFrame() {
+        addSubToon(wireFrame);
+    }
+
+    public void addMolecule(LocatedMolecule m) {
+        if (m.isSolvent()) return;
+        wireFrame.addMolecule(m);
+        updateActors();
+    }
+    
 }

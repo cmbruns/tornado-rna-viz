@@ -42,6 +42,11 @@ implements MoleculeCartoon
     protected vtkPolyDataMapper mapper = new vtkPolyDataMapper();
     protected ToonColors toonColors = new ToonColors(mapper);
     protected Set<BaseCartoon> subToons = new HashSet<BaseCartoon>();
+
+    public void addSubToon(BaseCartoon toon) {
+        subToons.add(toon);
+        updateActors();
+    }
     
     public void colorToon(Object object, ColorScheme colorScheme) {
         for (BaseCartoon subToon : subToons) {
@@ -80,7 +85,9 @@ implements MoleculeCartoon
                     actorSet.remove(toon.getActor());
             }
             else if (subToon instanceof MoleculeCartoon) {
-                actorSet.addAll(((MoleculeCartoon)subToon).vtkActors());                
+                MoleculeCartoon molToon = (MoleculeCartoon) subToon;
+                molToon.updateActors();
+                actorSet.addAll(molToon.vtkActors());                
             }
         }        
     }

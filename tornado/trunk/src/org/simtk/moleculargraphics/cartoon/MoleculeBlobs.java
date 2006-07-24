@@ -21,10 +21,26 @@
  */
 
 /*
- * Created on Jun 13, 2006
+ * Created on Jun 23, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.moleculargraphics.cartoon;
 
-public abstract class CompositeCartoon extends MoleculeCartoonClass {
+import org.simtk.molecularstructure.*;
+
+public class MoleculeBlobs extends MoleculeCartoonClass {
+    // private MoleculeBlobActor blobs = new MoleculeBlobActor(5.0);
+    
+    public MoleculeBlobs() {
+        // addSubToon(blobs);
+    }
+
+    public void addMolecule(LocatedMolecule m) {
+        if (m.isSolvent()) return;
+
+        // 5 Angstroms resolution
+        MoleculeBlobActor blobs = new MoleculeBlobActor(m, 5.0);
+        addSubToon(blobs);
+    }
+    
 }

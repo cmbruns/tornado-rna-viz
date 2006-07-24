@@ -182,5 +182,7 @@ public class BasePairOval extends TensorGlyphCartoon {
         double colorScalar = toonColors.getColorIndex(res1);
 
         colorScalars.InsertNextValue(colorScalar);
+        
+        isPopulated = true;
     }
 }

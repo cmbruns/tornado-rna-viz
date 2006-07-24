@@ -54,7 +54,7 @@ abstract public class TensorGlyphCartoon extends GlyphCartoon {
         
         // disconnect the vtkGlyph3D, which is replaced by TensorGlyph in this derived class
         tensorGlyph.SetInput(lineData);
-        glyphMapper.SetInput(tensorGlyph.GetOutput());
+        mapper.SetInput(tensorGlyph.GetOutput());
     }
 
     // Override these functions to use TensorGlyph rather than vtkGlyph3D

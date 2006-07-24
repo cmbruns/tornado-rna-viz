@@ -31,9 +31,7 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.awt.Color;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
@@ -77,8 +75,6 @@ public class BondStickCartoon extends GlyphCartoon {
         scaleNone();  // Do not adjust size
         colorByScalar(); // Take color from glyph scalar
         orientByNormal();
-
-        glyphActor.GetProperty().BackfaceCullingOn();
     }
 
     public void addMolecule(LocatedMolecule molecule) {
@@ -167,6 +163,7 @@ public class BondStickCartoon extends GlyphCartoon {
                 // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
                 colorScalars.InsertNextValue(colorScalar);
                 
+                isPopulated = true;
             }
         }
     }

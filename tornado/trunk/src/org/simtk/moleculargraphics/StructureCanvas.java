@@ -26,7 +26,7 @@
  */
 package org.simtk.moleculargraphics;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
@@ -44,6 +44,22 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
     }
 
+    Dimension maxSize = new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    Dimension minSize = new Dimension(10,10);
+    Dimension prefSize = new Dimension(640,480);
+    public Dimension getMaximumSize() {
+        return maxSize;
+    }
+    public Dimension getMinimumSize() {
+        return minSize;
+    }
+    public Dimension getPreferredSize() {
+        return prefSize;
+    }
+    public void setMaximumSize(Dimension d) {maxSize = d;}
+    public void setMinimumSize(Dimension d) {minSize = d;}
+    public void setPreferredSize(Dimension d) {prefSize = d;}
+    
     // was enum in Java 1.5, converted for Java 1.4 compatibility
     static class MouseDragAction {
         static MouseDragAction NONE = new MouseDragAction();

@@ -41,6 +41,7 @@ public class ActorCartoonClass implements ActorCartoon {
 
     ActorCartoonClass() {
         actor.SetMapper(mapper);
+        actor.GetProperty().BackfaceCullingOn();
     }
     
     public void colorToon(Object object, ColorScheme colorScheme) {

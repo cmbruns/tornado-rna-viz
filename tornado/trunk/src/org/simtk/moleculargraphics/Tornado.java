@@ -64,17 +64,20 @@ implements ResidueActionListener
     
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
     protected Tornado3DCanvas canvas;
+    protected JPanel initialLoadStructurePanel;
     private String currentPath = ".";
     private String saveImagePath = ".";
     private LoadStructureDialog loadStructureDialog = new LoadStructureDialog(this);
     
-    protected ColorScheme yellowColorScheme = new ConstantColor(Color.yellow);
-    protected ColorScheme cyanColorScheme = new ConstantColor(Color.cyan);
+    // protected ColorScheme yellowColorScheme = new ConstantColor(Color.yellow);
+    // protected ColorScheme cyanColorScheme = new ConstantColor(Color.cyan);
     protected ColorScheme colorScheme = DefaultColorScheme.DEFAULT_COLOR_SCHEME;
+    protected ColorScheme highlightColorScheme = 
+        new HighlightColorScheme(Color.yellow, colorScheme);
 
     // private MolecularCartoonClass.CartoonType cartoonType = 
     //     MolecularCartoonClass.CartoonType.WIRE_FRAME;
-    Class initialCartoonType = ResidueSphereCartoon.class;
+    // Class initialCartoonType = ResidueSpheres.class;
     private MoleculeCartoon currentCartoon;
     
     protected ToonRange toonRange = new ToonRange();
@@ -95,25 +98,17 @@ implements ResidueActionListener
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         canvas = new Tornado3DCanvas(); // must create before menus
+
         initializeCartoonTypes();
+
         createMenuBar();
 
         JPanel panel = new JPanel();
         this.setIconImage(new ImageIcon(classLoader.getResource("images/tornado_icon.gif")).getImage());
         
-        // With the addition of a separate sequence cartoon, it is probably time
-        // for a fancy layout
-        GridBagLayout gridbag = new GridBagLayout();
-        panel.setLayout(gridbag);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER; // each on its own row
-        gbc.weightx = 1.0; // Everybody stretches horizontally
-        gbc.fill = GridBagConstraints.HORIZONTAL; // stretch horizontally
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         
         // 3D molecule canvas - must be created before menus are
-        gbc.fill = GridBagConstraints.BOTH; // stretch horizontally and vertically
-        gbc.weighty = 1.0;
-        gridbag.setConstraints(canvas, gbc);
 
         // Secondary structure canvas
         SecondaryStructureCanvas canvas2D = null;
@@ -129,35 +124,48 @@ implements ResidueActionListener
             splitPane.setDividerSize(4);
             splitPane.setContinuousLayout(true);
  
-            panel.add(splitPane, gbc);
+            panel.add(splitPane);
         }
         else
-            panel.add(canvas, gbc);
+            panel.add(canvas);
+        
+        // For the initial start up, Prompt the user to Load a structure 
+        // from the main panel
+        initialLoadStructurePanel = new JPanel();
+        initialLoadStructurePanel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        initialLoadStructurePanel.setLayout(new BoxLayout(initialLoadStructurePanel, BoxLayout.Y_AXIS));
+        initialLoadStructurePanel.add(new JLabel("Click button below to choose a molecule structure:"));
+        JButton loadButton = new JButton("Choose Molecule...");
+        loadButton.addActionListener(new InitialLoadMoleculeAction());
+        initialLoadStructurePanel.add(loadButton);
+        initialLoadStructurePanel.setPreferredSize(new Dimension(500, 500));
+        initialLoadStructurePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+        canvas.setVisible(false);
+        initialLoadStructurePanel.setVisible(true);
+        panel.add(initialLoadStructurePanel);
         
         // Sequence area
         sequencePane = new SequencePane(residueActionBroadcaster);
         sequenceCartoonCanvas = new SequenceCartoonCanvas(residueActionBroadcaster, sequencePane.getSequenceCanvas());
 
-        gbc.fill = GridBagConstraints.HORIZONTAL; // stretch horizontally only
-        gbc.weighty = 0.0; // don't stretch vertically
-        gridbag.setConstraints(sequenceCartoonCanvas, gbc);
-        panel.add(sequenceCartoonCanvas, gbc);
+        panel.add(sequenceCartoonCanvas);
 
         // The sequence pane is being very tricky in the layout
         // So try putting another panel behind it
-        sequencePanel = new Panel();
-        sequencePanel.setLayout(new BorderLayout());
-        sequencePanel.add(sequencePane, BorderLayout.SOUTH);
-        gridbag.setConstraints(sequencePanel, gbc);
-        panel.add(sequencePanel, gbc);
+        // sequencePanel = new Panel();
+        // sequencePanel.setLayout(new BorderLayout());
+        // sequencePanel.add(sequencePane, BorderLayout.SOUTH);
+        // panel.add(sequencePanel);
+        panel.add(sequencePane);
         
 		messageArea = new JLabel();
-        gridbag.setConstraints(messageArea, gbc);
-        panel.add(messageArea, gbc);
+        panel.add(messageArea);
 		
         getContentPane().add(panel, BorderLayout.CENTER);
         
         pack();
+        setSize(new Dimension(300,300));
         
         setVisible(true);
         
@@ -225,16 +233,20 @@ implements ResidueActionListener
     void initializeCartoonTypes() {
         // Add these in order of Decreasing coarseness        
         toonRange.add(new RangedToonType(
-                "Molecule Blobs (Coarsest)",
+                "Molecule Ellipsoids (Coarsest)",
                 MoleculeTensorCartoon.class,
-                null));        
+                null));
+        toonRange.add(new RangedToonType(
+                "Molecule Blobs",
+                MoleculeBlobs.class,
+                null));
         toonRange.add(new RangedToonType(
                 "Secondary Structures",
                 RopeAndCylinder.class,
                 new ImageIcon(classLoader.getResource("images/cylinder_icon.png")) ));
         toonRange.add(new RangedToonType(
                 "Residue Balls",
-                ResidueSphereCartoon.class,
+                ResidueSpheres.class,
                 null ));        
         toonRange.add(new RangedToonType(
                 "Ribbons",                
@@ -242,18 +254,19 @@ implements ResidueActionListener
                 null ));        
         toonRange.add(new RangedToonType(
                 "Bond Lines",
-                WireFrameCartoon.class,
+                WireFrame.class,
                 null ));        
         toonRange.add(new RangedToonType(
                 "Atom Balls",
-                AtomSphereCartoon.class,
+                AtomSpheres.class,
                 new ImageIcon(classLoader.getResource("images/nuc_fill_icon.png")) ));
         toonRange.add(new RangedToonType(
                 "Bonds and Atoms (Finest)",
                 BallAndStickCartoon.class,
                 new ImageIcon(classLoader.getResource("images/po4_stick_icon.png")) ));
         
-        toonRange.setCurrentType(ResidueSphereCartoon.class);
+        // Set initial representation
+        toonRange.setCurrentType(ResidueSpheres.class);
     }
     
     void createMenuBar() {
@@ -434,6 +447,14 @@ implements ResidueActionListener
         }
     }
 
+    class InitialLoadMoleculeAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            initialLoadStructurePanel.setVisible(false);
+            canvas.setVisible(true);
+            (new LoadPDBAction()).actionPerformed(e);
+        }
+    }
+
     // For me the programmer to use when creating new actions
     class GranularityAction implements ActionListener {
         protected int increment; // how much to change the Granularity
@@ -515,7 +536,6 @@ implements ResidueActionListener
         public void actionPerformed(ActionEvent e) {
             setWait("Calculating geometry...");
             
-            canvas.clear();
             
             toonRange.setCurrentType(cartoonClass);
             currentCartoon = toonRange.createCartoon();
@@ -523,10 +543,16 @@ implements ResidueActionListener
             currentCartoon.add(moleculeCollection);
             currentCartoon.colorToon(colorScheme);
 
-            canvas.add(currentCartoon);
-            
-            if (currentHighlightedResidue != null)
-                residueActionBroadcaster.fireHighlight(currentHighlightedResidue);
+            if (currentCartoon.vtkActors().size() > 0) {
+                canvas.clear();
+                canvas.add(currentCartoon);
+                
+                if (currentHighlightedResidue != null)
+                    residueActionBroadcaster.fireHighlight(currentHighlightedResidue);
+            }
+            else {
+                // TODO - alert user that there was no geometry
+            }
 
             unSetWait("Geometry computed.");
         }
@@ -865,7 +891,7 @@ implements ResidueActionListener
         if (residue == null) setMessage(" ");
         else {
             currentCartoon.colorToon(currentHighlightedResidue, colorScheme);
-            currentCartoon.colorToon(residue, yellowColorScheme);
+            currentCartoon.colorToon(residue, highlightColorScheme);
             canvas.repaint();
 
             setMessage("Residue " + residue.getResidueName() + 
@@ -1002,7 +1028,7 @@ implements ResidueActionListener
 
             try {
                 answer = (MoleculeCartoon) currentToonType.toonClass.newInstance();
-            } 
+            }
             catch (InstantiationException exc) {exc.printStackTrace();}
             catch (IllegalAccessException exc) {exc.printStackTrace();}
 

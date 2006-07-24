@@ -27,12 +27,9 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.util.*;
-import java.util.HashSet;
-import java.util.Iterator;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.protein.*;
-import org.simtk.molecularstructure.atom.*;
 
 public class FineRibbonCartoon extends CompositeCartoon {
     private BasePairOval ovalToon = new BasePairOval();
@@ -68,7 +65,6 @@ public class FineRibbonCartoon extends CompositeCartoon {
             NucleicAcid nucleicAcid = (NucleicAcid)m;
 
             backboneRibbon.addMolecule(nucleicAcid);
-            actorSet.addAll(backboneRibbon.vtkActors());
 
             Set<Nucleotide> basePairResidues = new HashSet<Nucleotide>();
             for (SecondaryStructure structure : nucleicAcid.secondaryStructures())
@@ -104,16 +100,15 @@ public class FineRibbonCartoon extends CompositeCartoon {
             backboneStick.addMolecule(m);
         }
         
+        else if (m.isSolvent()) {
+            return; // No solvent please
+        }
+        
+        // Everything else ball and stick
         else {
-            // Skip solvent
-        	Iterator<LocatedAtom> atomIt = m.getAtomIterator();
-        	if (atomIt.hasNext()) {
-        		LocatedAtom atom = atomIt.next();
-        		if ((atom instanceof PDBAtom)&& PDBResidueClass.isSolvent(((PDBAtom)atom).getPDBResidueName())){
-        			return;
-        		}
-        	}
-            stickToon.addMolecule(m);
+            // try {
+                stickToon.addMolecule(m);                
+            // } catch (NoCartoonCreatedException exc) {}
         }
         
         updateActors();

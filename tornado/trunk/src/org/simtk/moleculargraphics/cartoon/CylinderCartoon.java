@@ -61,8 +61,6 @@ public abstract class CylinderCartoon extends GlyphCartoon {
         scaleNone();  // Do not adjust size
         colorByScalar(); // Take color from glyph scalar
         orientByNormal();
-
-        glyphActor.GetProperty().BackfaceCullingOn();
     }
     
     protected void addCylinder(Vector3D begin, Vector3D end, Color color, Object modelObject) {

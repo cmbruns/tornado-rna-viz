@@ -40,6 +40,7 @@ public class AtomColorScheme implements ColorScheme {
     private static Color deepPurple = new Color(180, 0, 255);
     private static Color warmYellow = new Color(255, 180, 20);
     private static Color pastelMagenta = new Color(255,180,230);
+    private static Color darkOrange = new Color(200,90,60);
     
     static AtomColorScheme PALE_CPK_COLORS = new AtomColorScheme();
     static AtomColorScheme CPK_COLORS = new AtomColorScheme();
@@ -80,6 +81,7 @@ public class AtomColorScheme implements ColorScheme {
         setColor("Mn", pastelMagenta); 
         setColor("Ca", warmWhite); // Like bone
         setColor("Cu", Color.orange); // Like a penny
+        setColor("Fe", darkOrange); // Like Rust
         setColor("Zn", Color.gray); // Like buff metal
 
         // Halogens - try to keep toward cool colors

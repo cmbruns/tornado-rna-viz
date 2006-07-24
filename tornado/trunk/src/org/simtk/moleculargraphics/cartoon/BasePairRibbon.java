@@ -26,20 +26,19 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.util.*;
+import org.simtk.molecularstructure.*;
 
 public class BasePairRibbon extends CompositeCartoon {
-    protected ColorScheme colorScheme = 
-        SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME;
-
-    public BasePairRibbon() {
-        super(getNewToons());
-    }
+    BasePairRod rods = new BasePairRod();
+    BackboneCurve backbone = new BackboneCurve();
     
-    protected static List<MoleculeCartoon> getNewToons() {
-        List<MoleculeCartoon> toons = new Vector<MoleculeCartoon>();
-        toons.add(new BasePairRod());
-        toons.add(new BackboneCurve());
-        return toons;
+    public BasePairRibbon() {
+        addSubToon(rods);
+        addSubToon(backbone);
+    }
+
+    public void addMolecule(LocatedMolecule m) {
+        rods.addMolecule(m);
+        backbone.addMolecule(m);
     }
 }

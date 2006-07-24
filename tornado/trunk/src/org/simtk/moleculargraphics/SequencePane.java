@@ -64,7 +64,6 @@ implements ResidueActionListener
     // Tornado tornado;
     ResidueActionBroadcaster residueActionBroadcaster;
     Panel contentPanel;
-    private Color selectionColor;
     
     SequencePane(ResidueActionBroadcaster b) {
         residueActionBroadcaster = b;
@@ -118,6 +117,17 @@ implements ResidueActionListener
 //        selectionColor = c;
 //        sequenceCanvas.setSelectionColor(c);
 //    }
+
+    Dimension maxSize = new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    Dimension minSize = new Dimension(10,10);
+    public Dimension getMaximumSize() {
+        return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+    }
+    public Dimension getMinimumSize() {
+        return new Dimension(0, getPreferredSize().height);
+    }
+    public void setMaximumSize(Dimension d) {maxSize = d;}
+    public void setMinimumSize(Dimension d) {minSize = d;}
     
     public void paint(Graphics g) {
         checkSize();
