@@ -21,23 +21,16 @@
  */
 
 /*
- * Created on Dec 9, 2005
+ * Created on Apr 24, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure.protein;
+package org.simtk.molecularstructure;
 
-import org.simtk.molecularstructure.*;
-
-public class PDBProteinClass 
-extends BiopolymerClass 
-implements Protein
-// implements PDBMolecule, LocatedProtein 
-{
-    public PDBProteinClass(char chainId) {super(chainId);}
-    
-    protected void addGenericResidueBonds() {
-        super.addGenericResidueBonds();
-        // TODO this is not working
-        addGenericResidueBond(" C  ", " N  ");
-    }
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * Base interface for atoms, molecules, residues, etc.
+ */
+public interface Chemical {
 }

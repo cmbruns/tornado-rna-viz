@@ -37,11 +37,11 @@ import org.simtk.molecularstructure.atom.*;
 
 public class LocatedMoleculeBondClass implements LocatedMoleculeBond {
 
-    private LocatedMoleculeAtom m_atom1;
-    private LocatedMoleculeAtom m_atom2;
+    private Atom m_atom1;
+    private Atom m_atom2;
     private Vector m_atomCollection = new Vector();
     
-    public LocatedMoleculeBondClass(LocatedMoleculeAtom a1, LocatedMoleculeAtom a2) {
+    public LocatedMoleculeBondClass(Atom a1, Atom a2) {
         m_atom1 = a1; 
         m_atom2 = a2;
         m_atomCollection.add(m_atom1);
@@ -55,9 +55,9 @@ public class LocatedMoleculeBondClass implements LocatedMoleculeBond {
     
     public Collection atoms() {return m_atomCollection;}
     
-    public MoleculeAtom getOtherAtom(MoleculeAtom firstAtom) {
-        if (firstAtom.equals(getAtom1())) return (MoleculeAtom) getAtom2();
-        if (firstAtom.equals(getAtom2())) return (MoleculeAtom) getAtom1();
+    public Atom getOtherAtom(Atom firstAtom) {
+        if (firstAtom.equals(getAtom1())) return  getAtom2();
+        if (firstAtom.equals(getAtom2())) return  getAtom1();
         return null;
     }
     
@@ -83,8 +83,8 @@ public class LocatedMoleculeBondClass implements LocatedMoleculeBond {
      * @return
      */
     public Vector3D getMidpoint() {
-        LocatedAtom atom1 = (LocatedAtom) getAtom1();
-        LocatedAtom atom2 = (LocatedAtom) getAtom2();
+        Atom atom1 =  getAtom1();
+        Atom atom2 =  getAtom2();
         double covalentRatio = atom1.getCovalentRadius()/(atom2.getCovalentRadius() + atom1.getCovalentRadius());
         Vector3D fullBondVector = atom2.getCoordinates().minus(atom1.getCoordinates());
         Vector3D midBond = atom1.getCoordinates().plus(fullBondVector.times(covalentRatio));

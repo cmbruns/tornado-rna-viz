@@ -31,31 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Leucine extends AminoAcid {
-
-    public Leucine() {
-        super();
-    }
-
-    public Leucine(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    
-    public char getOneLetterCode() {
-        return 'L';
-    }
-
-    
-    public String getThreeLetterCode() {
-        return "Leu";
-    }
-
-    
-    public String getResidueName() {
-        return "leucine";
-    }
-
+    public Leucine() {super('L', "Leu", "leucine");}
 }

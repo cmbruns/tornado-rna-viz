@@ -31,43 +31,19 @@
  */
 package org.simtk.molecularstructure.nucleicacid;
 
-import java.awt.Color;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-
-import org.simtk.molecularstructure.atom.LocatedMoleculeAtom;
-import org.simtk.molecularstructure.atom.PDBAtomSet;
+import java.util.Set;
 
 /** 
  * @author Christopher Bruns
  * 
  */
 public class Cytidylate extends Pyrimidine {
-    public Cytidylate() {}
-    public Cytidylate(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
-    public String getResidueName() {return "cytidylate";}
-    
-    static private Color defaultColor = new Color(130,180,255); // pale blue
-    public Color getDefaultColor() {return defaultColor;}
+    public Cytidylate() {super('C', "C  ", "cytidylate");}
 
-    public char getOneLetterCode() {return 'C';}
-
-    public Collection getHydrogenBondAcceptors() {
-        HashSet answer = new HashSet();
-
-        for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            LocatedMoleculeAtom a = (LocatedMoleculeAtom) i.next();
-            answer.add(a);
-        }
-
-        String acceptorAtomNames[] = {" N3 "};
-        for (int i = 0; i < acceptorAtomNames.length; i++) {
-            String atomName = acceptorAtomNames[i];
-            LocatedMoleculeAtom a = getAtom(atomName);
-            if (a != null) answer.add(a);
-        }
-        
+    @Override
+    public Set<String> getHydrogenBondAcceptorAtomNames() {
+        Set<String> answer = super.getHydrogenBondAcceptorAtomNames();
+        answer.add(" N3 ");
         return answer;
     }
 }

@@ -33,7 +33,7 @@ import org.jdom.*;
 import org.jdom.filter.*;
 import org.jdom.input.SAXBuilder;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.PDBAtom;
+import org.simtk.molecularstructure.atom.Atom;
 import org.simtk.molecularstructure.nucleicacid.*;
 
 import java.io.File;
@@ -262,9 +262,9 @@ public class RnamlDocument {
     		}
     	}
     	
-		mol5.addSecondaryStructure(thisBP);
+		mol5.secondaryStructures().add(thisBP);
 		if (mol5i!=mol3i){
-			mol3.addSecondaryStructure(thisBP);
+			mol3.secondaryStructures().add(thisBP);
 		}
 		
 	}
@@ -306,9 +306,9 @@ public class RnamlDocument {
     		}
     	}
     	if (dup !=null){
-    		mol5.addSecondaryStructure(dup);
+    		mol5.secondaryStructures().add(dup);
     		if (mol5i!=mol3i){
-    			mol3.addSecondaryStructure(dup);
+    			mol3.secondaryStructures().add(dup);
     		}
     	}
     }
@@ -333,8 +333,8 @@ public class RnamlDocument {
 		}
 		int nNucBases = 0;
 		for (Residue res: (mol.residues())){
-			if (!(res instanceof PDBResidue)) return false;
-			if (isDeemedNucleotide((PDBResidue) res, "rnaview")) {
+			if (!(res instanceof Residue)) return false;
+			if (isDeemedNucleotide((Residue) res, "rnaview")) {
 				nNucBases++;
 			}
 		}
@@ -346,7 +346,7 @@ public class RnamlDocument {
 		}
 			}
 
-	public boolean isDeemedNucleotide(PDBResidue res, String source){
+	public boolean isDeemedNucleotide(Residue res, String source){
 		
 		if (!source.equalsIgnoreCase("rnaview")){
 			return true;
@@ -403,7 +403,7 @@ public class RnamlDocument {
 				    return id;                         #other cases 
 				}
 		*/		
-		PDBAtom N1, C2, C6;
+		Atom N1, C2, C6;
 		double distN1C2, distN1C6, distC2C6;
 
 		N1 = getNamedAtom(res, "N1");
@@ -422,8 +422,8 @@ public class RnamlDocument {
 		return false;
 	}
 	
-	private PDBAtom getNamedAtom(PDBResidue res, String name){
-		PDBAtom result = null;
+	private Atom getNamedAtom(Residue res, String name){
+		Atom result = null;
 		for (String tryName: (Arrays.asList(name, " "+name, " "+name+" "))){
 			result = res.getAtom(tryName);
 			if (result!=null) break;

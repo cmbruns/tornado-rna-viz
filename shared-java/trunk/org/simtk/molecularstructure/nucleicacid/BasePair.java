@@ -45,8 +45,8 @@ import org.simtk.util.*;
 public class BasePair 
 implements Iterable<Residue>, SecondaryStructure
 {
-    Nucleotide residue1;
-    Nucleotide residue2;
+    Residue residue1;
+    Residue residue2;
     protected String source;
     protected Biopolymer parentMolecule;
     protected EdgeType edge_1;
@@ -108,19 +108,19 @@ implements Iterable<Residue>, SecondaryStructure
     
     public static BasePair makeBasePair(Residue r1, Residue r2, String source){
         if ((r1!=null)&&(r2!=null)){
-            if ((r1 instanceof Nucleotide)&& (r2 instanceof Nucleotide)){
+            if ((r1.getResidueType() instanceof Nucleotide)&& (r2.getResidueType() instanceof Nucleotide)){
             	BasePair thisBP = getBasePair(r1, r2, source);
             	if (thisBP==null) {
-            		thisBP = new BasePair((Nucleotide)r1,(Nucleotide)r2);
+            		thisBP = new BasePair(r1, r2);
                 	thisBP.setSource(source);
             	}
                 return thisBP;
             }
             else {
-                if (!(r1 instanceof Nucleotide)){
+                if (!(r1.getResidueType() instanceof Nucleotide)){
                     System.out.println("unrecognized residue reported by "+source+" as basepaired: "+ r1);
                 }
-                if (!(r2 instanceof Nucleotide)){
+                if (!(r2.getResidueType() instanceof Nucleotide)){
                     System.out.println("unrecognized residue reported by "+source+" as basepaired: "+ r2 );
                 }
             }
@@ -128,15 +128,15 @@ implements Iterable<Residue>, SecondaryStructure
         return null;
     }
     
-    public BasePair(Nucleotide r1, Nucleotide r2) {
+    public BasePair(Residue r1, Residue r2) {
         if (r1 == null) throw new NullPointerException();
         if (r2 == null) throw new NullPointerException();
         
         // Put the two bases in a deterministic order
         int r1Index = r1.getResidueNumber();
         int r2Index = r2.getResidueNumber();
-        char r1Code = r1.getInsertionCode();
-        char r2Code = r2.getInsertionCode();
+        char r1Code = r1.getPdbInsertionCode();
+        char r2Code = r2.getPdbInsertionCode();
 
         // Put lowest number first
         if (r1Index > r2Index) {
@@ -156,8 +156,8 @@ implements Iterable<Residue>, SecondaryStructure
             residue1 = r1;
             residue2 = r2;
         }
-        r1.addSecondaryStructure(this);
-        r2.addSecondaryStructure(this);
+        r1.secondaryStructures().add(this);
+        r2.secondaryStructures().add(this);
         return;            
     }
     
@@ -205,8 +205,8 @@ implements Iterable<Residue>, SecondaryStructure
     
     public void setMolecule(Biopolymer molecule) {this.parentMolecule = molecule;}
     
-    public Nucleotide getResidue1() {return residue1;}
-    public Nucleotide getResidue2() {return residue2;}
+    public Residue getResidue1() {return residue1;}
+    public Residue getResidue2() {return residue2;}
 
     public Plane3D getBasePlane() 
     throws InsufficientAtomsException
@@ -214,16 +214,16 @@ implements Iterable<Residue>, SecondaryStructure
         // 1) compute best plane containing base group atoms
         Set<Vector3D> planeAtoms = new HashSet<Vector3D>();
         if (residue1 != null) {
-            LocatedMolecule base = residue1.get(Nucleotide.baseGroup);
+            Molecular base = residue1.get(Nucleotide.baseGroup);
             if (base != null) {
-                for (LocatedAtom a : base.atoms()) planeAtoms.add(a.getCoordinates());
+                for (Atom a : base.atoms()) planeAtoms.add(a.getCoordinates());
             }
         }
         
         if (residue2 != null) {
-            LocatedMolecule base = residue2.get(Nucleotide.baseGroup);
+            Molecular base = residue2.get(Nucleotide.baseGroup);
             if (base != null) {
-                for (LocatedAtom a : base.atoms()) planeAtoms.add(a.getCoordinates());
+                for (Atom a : base.atoms()) planeAtoms.add(a.getCoordinates());
             }
         }
         
@@ -248,14 +248,14 @@ implements Iterable<Residue>, SecondaryStructure
         
         // 1) compute best plane containing base group atoms
         Collection<Vector3D> planeAtoms = new Vector<Vector3D>();
-        LocatedMolecule base = residue1.get(Nucleotide.baseGroup);
-        for (Iterator i = base.getAtomIterator(); i.hasNext();) {
-            LocatedAtom a = (LocatedAtom) i.next();
+        Molecular base = residue1.get(Nucleotide.baseGroup);
+        for (Iterator<Atom> i = base.atoms().iterator(); i.hasNext();) {
+            Atom a =  i.next();
             planeAtoms.add(a.getCoordinates());
         }
         base = residue2.get(Nucleotide.baseGroup);
-        for (Iterator i = base.getAtomIterator(); i.hasNext();) {
-            LocatedAtom a = (LocatedAtom) i.next();
+        for (Iterator<Atom> i = base.atoms().iterator(); i.hasNext();) {
+            Atom a =  i.next();
             planeAtoms.add(a.getCoordinates());
         }
         Plane3D basePairPlane;
@@ -299,7 +299,7 @@ implements Iterable<Residue>, SecondaryStructure
                 return false;
             }
             public Residue next() {
-                PDBResidue answer = null;
+                Residue answer = null;
                 if (residueIndex == 1) answer = residue1;
                 else if (residueIndex == 2) answer = residue2;
                 else { 

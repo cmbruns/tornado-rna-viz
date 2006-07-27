@@ -44,11 +44,7 @@ import org.simtk.molecularstructure.atom.*;
  * \brief One nucleotide base in a DNA or RNA molecule
  *
  */
-public class Nucleotide extends PDBResidueClass {
-
-    static private Color defaultColor = new Color(255,150,255); // magenta for unknown nucleotide
-    public Color getDefaultColor() {return defaultColor;}
-        
+public class Nucleotide extends ResidueTypeClass {
     static String[] baseGroupAtomNames = {
         " N1 ", " C2 ", " N3 ", " C4 ", " C5 ", " C6 ", " N7 ", " C8 ", " N9 ", // inner rings
         " O2 ", " N2 ", " O4 ", " N4 ", " O6 ", " N6 "}; // side atoms
@@ -59,65 +55,25 @@ public class Nucleotide extends PDBResidueClass {
     static public FunctionalGroup sugarGroup = new FunctionalGroup(sugarGroupAtomNames);
     static public FunctionalGroup phosphateGroup = new FunctionalGroup(phosphateGroupAtomNames);
     
-    public Collection getHydrogenBondDonors() {
-        HashSet answer = new HashSet();
-
-        for (Iterator i = super.getHydrogenBondDonors().iterator(); i.hasNext(); ) {
-            LocatedAtom a = (LocatedAtom) i.next();
-            answer.add(a);
-        }
-
-        // Note: donor/acceptor status of N1,N3 depends upon exact base
-        // So see those derived classes for additional atoms
-        String donorAtomNames[] = {" O2*", " N2 ", " N4 ", " N6 ", };
-        for (int i = 0; i < donorAtomNames.length; i++) {
-            String atomName = donorAtomNames[i];
-            LocatedAtom a = getAtom(atomName);
-            if (a != null) answer.add(a);
-        }
-        
+    @Override
+    public Set<String> getHydrogenBondDonorAtomNames() {
+        Set<String> answer = new HashSet<String>();
+        answer.addAll(super.getHydrogenBondDonorAtomNames());
+        String[] donors = {" O2*", " N2 ", " N4 ", " N6 ", };
+        for (String atomName : donors) answer.add(atomName);
         return answer;
     }
-    public Collection getHydrogenBondAcceptors() {
-        HashSet answer = new HashSet();
 
-        for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            LocatedAtom a = (LocatedAtom) i.next();
-            answer.add(a);
-        }
-
-        String acceptorAtomNames[] = {" O2*", " N7 ", " O2 ", " O4 ", " O6 "};
-        for (int i = 0; i < acceptorAtomNames.length; i++) {
-            String atomName = acceptorAtomNames[i];
-            LocatedAtom a = getAtom(atomName);
-            if (a != null) answer.add(a);
-        }
-        
-        return answer;
-    }
-    
-    public Vector3D getBackbonePosition() throws InsufficientAtomsException {
-        LocatedAtom atom = null;
-
-        // Try different atoms in order of preference
-        if (atom == null) atom = getAtom(" P  ");
-
-        // C5* is nice because it is in the plane of the ring
-        if (atom == null) atom = getAtom(" C5*");
-
-        if (atom == null) return null;
-        return atom.getCoordinates();
+    @Override
+    public Set<String> getHydrogenBondAcceptorAtomNames() {
+        Set<String> answer = new HashSet<String>();
+        answer.addAll(super.getHydrogenBondAcceptorAtomNames());
+        String[] acceptors = {" O2*", " N2 ", " N4 ", " N6 ", };
+        for (String atomName : acceptors) answer.add(atomName);
+        return answer;        
     }
 
-    public Vector3D getSideChainPosition() throws InsufficientAtomsException {
-        LocatedMolecule base = get(baseGroup);
-        if (base != null)
-            return base.getCenterOfMass();
-        else return null;
-    }
-    
-    public String getResidueName() {return "(unknown nucleotide type)";}
-
+    @Override
     protected void addGenericBonds() {
         super.addGenericBonds();
         // Ribose carbon carbon bonds
@@ -162,36 +118,11 @@ public class Nucleotide extends PDBResidueClass {
         addGenericBond(" C6 ", " O6 ");
     }
     
-    public Nucleotide() {}
-    public Nucleotide(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms); 
+    public Nucleotide(char olc, String tlc, String name) {
+        super(olc, tlc, name);
     }
     
-    public char getOneLetterCode() {return 'N';}
-
-    static public Nucleotide createFactoryNucleotide(PDBAtomSet bagOfAtoms) {
-        if (bagOfAtoms == null) return null;
-        if (bagOfAtoms.size() == 0) return null;
-
-        // Distinguish among subclasses
-        PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
-        String residueName = atom.getPDBResidueName().trim().toUpperCase();
-
-        if (residueName.equals("A")) return new Adenylate(bagOfAtoms);
-        if (residueName.equals("C")) return new Cytidylate(bagOfAtoms);
-        if (residueName.equals("G")) return new Guanylate(bagOfAtoms);
-        if (residueName.equals("I")) return new Inositate(bagOfAtoms);
-        if (residueName.equals("T")) return new Thymidylate(bagOfAtoms);
-        if (residueName.equals("U")) return new Uridylate(bagOfAtoms);
-
-        // Modified version of nucleotides
-        if (modifiedAdenylates.contains(residueName)) return new Adenylate(bagOfAtoms);
-        if (modifiedCytidylates.contains(residueName)) return new Cytidylate(bagOfAtoms);
-        if (modifiedGuanylates.contains(residueName)) return new Guanylate(bagOfAtoms);
-        if (modifiedInositates.contains(residueName)) return new Inositate(bagOfAtoms);
-        if (modifiedThymidylates.contains(residueName)) return new Thymidylate(bagOfAtoms);
-        if (modifiedUridylates.contains(residueName)) return new Uridylate(bagOfAtoms);
-
-        return new Nucleotide(bagOfAtoms); // default
-    }
+    // public Nucleotide() {
+    //     super('N', "UNK", "(unknown nucleotide)");
+    // }
 }

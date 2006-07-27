@@ -26,11 +26,18 @@
  */
 
 /*
- * Created on May 11, 2005
+ * Created on Apr 22, 2005
  *
  */
-package org.simtk.molecularstructure.protein;
+package org.simtk.molecularstructure.atom;
 
-public class Methionine extends AminoAcid {
-    public Methionine() {super('M', "Met", "methionine");}
+import java.util.Vector;
+
+/** 
+ * @author Christopher Bruns
+ * 
+ * Simple container for manipulating sets of PDBAtoms
+ *
+ */
+public class AtomSet extends Vector<Atom> {
 }

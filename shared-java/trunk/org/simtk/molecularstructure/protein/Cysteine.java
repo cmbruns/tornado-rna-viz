@@ -31,12 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Cysteine extends AminoAcid {
-    public Cysteine() {}
-    public Cysteine(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
-    public String getResidueName() {return "cysteine";}
-    public char getOneLetterCode() {return 'C';}
-    public String getThreeLetterCode() {return "Cys";}
+    public Cysteine() {super('C', "Cys", "cysteine");}
 }

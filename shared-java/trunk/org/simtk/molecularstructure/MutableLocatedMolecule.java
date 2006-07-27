@@ -26,9 +26,5 @@
  */
 package org.simtk.molecularstructure;
 
-import org.simtk.molecularstructure.atom.PDBAtom;
-
-public interface MutableLocatedMolecule extends MovableMolecule {
-    public void addAtom(PDBAtom atom);
-    public void removeAtom(PDBAtom atom);
+public interface MutableLocatedMolecule extends Molecule {
 }

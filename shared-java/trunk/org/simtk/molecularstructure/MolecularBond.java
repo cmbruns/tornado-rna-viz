@@ -31,7 +31,7 @@ import org.simtk.molecularstructure.atom.*;
 
 public interface MolecularBond {
     public Collection atoms();
-    public MoleculeAtom getOtherAtom(MoleculeAtom firstAtom);
+    public Atom getOtherAtom(Atom firstAtom);
     public Iterator iterator(); // on atoms
     public Atom getAtom1();
     public Atom getAtom2();

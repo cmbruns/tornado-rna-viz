@@ -31,31 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Valine extends AminoAcid {
-
-    public Valine() {
-        super();
-    }
-
-    public Valine(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    
-    public char getOneLetterCode() {
-        return 'V';
-    }
-
-    
-    public String getThreeLetterCode() {
-        return "Val";
-    }
-
-    
-    public String getResidueName() {
-        return "valine";
-    }
-
+    public Valine() {super('V', "Val", "valine");}
 }

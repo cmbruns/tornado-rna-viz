@@ -31,31 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Phenylalanine extends AminoAcid {
-
-    public Phenylalanine() {
-        super();
-    }
-
-    public Phenylalanine(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    
-    public char getOneLetterCode() {
-        return 'F';
-    }
-
-    
-    public String getThreeLetterCode() {
-        return "Phe";
-    }
-
-    
-    public String getResidueName() {
-        return "phenylalanine";
-    }
-
+    public Phenylalanine() {super('F', "Phe", "phenylalanine");}
 }

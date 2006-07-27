@@ -40,102 +40,90 @@ import org.simtk.molecularstructure.atom.*;
  *
  * \brief A macromolecular heteropolymer, such as protein or DNA
  */
-public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopolymer {
-	List<Residue> residues = new Vector<Residue>();
-    Hashtable residueNumbers = new Hashtable();
+public class BiopolymerClass 
+extends MoleculeClass 
+implements Biopolymer 
+{
     // maps atom names of bondable atoms that bond one residue to the next
-    Hashtable genericResidueBonds = new Hashtable(); 
-    private Collection<SecondaryStructure> secondaryStructure = new LinkedHashSet<SecondaryStructure>();
-
+    private Map<String, Set<String>> genericResidueBonds = new HashMap<String, Set<String>>(); 
+    private Set<SecondaryStructure> secondaryStructure = new LinkedHashSet<SecondaryStructure>();
+    private NumberedResidues residues = new NumberedResidues();
+    
+    public List<Residue> residues() {return residues;}
+    
 	// Distinguish between array index of residues and their sequence "number"
-	public Residue getResidue(int i) {return (PDBResidue) residues.get(i);} // array index
-
-    // public Vector residues() {return residues;}
-    public Iterator getResidueIterator() {return residues.iterator();}
+	public Residue getResidue(int i) {return residues.get(i);} // array index
 
     // sequence number
     public Residue getResidueByNumber(int i) {return getResidueByNumber(new Integer(i).toString());}
     public Residue getResidueByNumber(int i, char insertionCode) {return getResidueByNumber(new Integer(i).toString() + insertionCode);}
-    public Residue getResidueByNumber(String n) {return (PDBResidue) residueNumbers.get(n);}
+    public Residue getResidueByNumber(String n) {return residues.getResidueByNumber(n);}
 
-    public int getResidueCount() {return residues.size();}
+    // public int getResidueCount() {return residues.size();}
 	
-    public Collection<Residue> residues() {return residues;}
-    
-	public BiopolymerClass() {
-        super();
+	public BiopolymerClass(char chainId) {
+        super(chainId);
         addGenericResidueBonds();
         createResidueBonds();
     } // Empty molecule
-    public BiopolymerClass(PDBAtomSet atomSet) {
-        super(atomSet); // fills atoms array
 
-        // Parse into residues
-        // Each residue should have a unique index/insertionCode combination
-        // TODO But what if the residue name (pathologically) changes within an index/insertionCode?
-        String previousResidueKey = "Hey, this isn't a reasonable residue key!!!";
-        PDBAtomSet newResidueAtoms = new PDBAtomSet();
-        for (int a = 0; a < atomSet.size(); a++) {
-            PDBAtom atom = (PDBAtom) atomSet.get(a);
-            String residueKey = "" + atom.getResidueNumber() + atom.getInsertionCode();
-            if (!residueKey.equals(previousResidueKey)) { // Start a new residue, flush the old one
-                if (newResidueAtoms.size() > 0) {
-                    PDBResidue residue = PDBResidueClass.createFactoryResidue(newResidueAtoms);
-                    residues.add(residue);
-                    String numberString = "" + residue.getResidueNumber();
-                    String fullString = numberString + residue.getInsertionCode();
-                    residueNumbers.put(fullString, residue); // number plus insertion code
-                    // Only the first residue with a particular number gets to be invoked by that number alone
-                    if (!residueNumbers.containsKey(numberString)) 
-                        residueNumbers.put(numberString, residue); // number 
-                }
-                newResidueAtoms = new PDBAtomSet();
-            }
-            newResidueAtoms.addElement(atom);
-            
-            previousResidueKey = residueKey;
-        }
-        // Flush final set of atoms
-        if (newResidueAtoms.size() > 0) {
-            PDBResidue residue = PDBResidueClass.createFactoryResidue(newResidueAtoms);
-            residues.add(residue);
-            String numberString = "" + residue.getResidueNumber();
-            String fullString = numberString + residue.getInsertionCode();
-            residueNumbers.put(fullString, residue); // number plus insertion code
-            // Only the first residue with a particular number gets to be invoked by that number alone
-            if (!residueNumbers.containsKey(numberString)) 
-                residueNumbers.put(numberString, residue); // number 
-        }
-
-        addGenericResidueBonds();
-        createResidueBonds();
-        
-        // Connect residues in a doubly linked list
-        PDBResidueClass previousResidue = null;
-        for (Iterator i = residues.iterator(); i.hasNext(); ) {
-            PDBResidueClass residue = (PDBResidueClass) i.next();
-        // for (Residue residue : residues) {
-            if (previousResidue != null) {
-                residue.setPreviousResidue(previousResidue);
-                previousResidue.setNextResidue(residue);
-            }
-            previousResidue = residue;
-        }
-    }
+//    public BiopolymerClass(PDBAtomSet atomSet) {
+//        super(atomSet); // fills atoms array
+//
+//        // Parse into residues
+//        // Each residue should have a unique index/insertionCode combination
+//        // TODO But what if the residue name (pathologically) changes within an index/insertionCode?
+//        String previousResidueKey = "Hey, this isn't a reasonable residue key!!!";
+//        PDBAtomSet newResidueAtoms = new PDBAtomSet();
+//        for (int a = 0; a < atomSet.size(); a++) {
+//            Atom atom = (Atom) atomSet.get(a);
+//            String residueKey = "" + atom.getResidueNumber() + atom.getInsertionCode();
+//            if (!residueKey.equals(previousResidueKey)) { // Start a new residue, flush the old one
+//                if (newResidueAtoms.size() > 0) {
+//                    Residue residue = ResidueClass.createFactoryResidue(newResidueAtoms);
+//                    residues.add(residue);
+//                }
+//                newResidueAtoms = new PDBAtomSet();
+//            }
+//            newResidueAtoms.addElement(atom);
+//            
+//            previousResidueKey = residueKey;
+//        }
+//        // Flush final set of atoms
+//        if (newResidueAtoms.size() > 0) {
+//            Residue residue = ResidueClass.createFactoryResidue(newResidueAtoms);
+//            residues.add(residue);
+//        }
+//
+//        addGenericResidueBonds();
+//        createResidueBonds();
+//        
+//        // Connect residues in a doubly linked list
+//        Residue previousResidue = null;
+//        for (Iterator i = residues.iterator(); i.hasNext(); ) {
+//            Residue residue = (Residue) i.next();
+//        // for (Residue residue : residues) {
+//            if (previousResidue != null) {
+//                residue.setPreviousResidue(previousResidue);
+//                previousResidue.setNextResidue(residue);
+//            }
+//            previousResidue = residue;
+//        }
+//    }
 
     public void addSecondaryStructure(SecondaryStructure ss) {
         this.secondaryStructure.add(ss);
     }
     
-    public Iterator getSecondaryStructureIterator() {return this.secondaryStructure.iterator();}
+    // public Iterator secondaryStructures().iterator() {return this.secondaryStructure.iterator();}
 
-    public Collection<SecondaryStructure> secondaryStructures() {return this.secondaryStructure;}
+    public Set<SecondaryStructure> secondaryStructures() {return this.secondaryStructure;}
     
     protected void addGenericResidueBond(String atom1, String atom2) {
         // Don't add bond in both directions; these bonds have a direction
         if (!genericResidueBonds.containsKey(atom1))
-            genericResidueBonds.put(atom1, new HashSet());
-        ((HashSet)genericResidueBonds.get(atom1)).add(atom2);
+            genericResidueBonds.put(atom1, new HashSet<String>());
+        genericResidueBonds.get(atom1).add(atom2);
     }
     
     protected void addGenericResidueBonds() {
@@ -146,21 +134,21 @@ public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopo
      * 
      */
     protected void createResidueBonds() {
-        PDBResidue previousResidue = null;
+        Residue previousResidue = null;
         for (Iterator r1 = residues.iterator(); r1.hasNext(); ) {
-            PDBResidue residue = (PDBResidue) r1.next();
+            Residue residue = (Residue) r1.next();
             if (previousResidue != null) {
                 for (Iterator s2 = genericResidueBonds.keySet().iterator(); s2.hasNext(); ) {
                     String firstAtomName = (String) s2.next();
-                    MutablePDBAtom firstAtom = (MutablePDBAtom) previousResidue.getAtom(firstAtomName);
+                    Atom firstAtom = previousResidue.getAtom(firstAtomName);
                     if (firstAtom != null) {
                         for (Iterator s3 = ((HashSet)genericResidueBonds.get(firstAtomName)).iterator(); s3.hasNext(); ) {
                             String secondAtomName = (String) s3.next();
-                            MutablePDBAtom secondAtom = (MutablePDBAtom) residue.getAtom(secondAtomName);
+                            Atom secondAtom =  residue.getAtom(secondAtomName);
                             if (secondAtom != null) {
                                 // TODO check distance
-                                firstAtom.addBond(secondAtom);
-                                secondAtom.addBond(firstAtom);
+                                firstAtom.bonds().add(secondAtom);
+                                secondAtom.bonds().add(firstAtom);
                             }
                         }
                     }
@@ -171,4 +159,101 @@ public class BiopolymerClass extends PDBMoleculeClass implements ObservableBiopo
         }
     }
 
+    /**
+     *  
+      * @author Christopher Bruns
+      * 
+      * Container that maintains a mapping of residue number to residue
+     */
+    class NumberedResidues extends Vector<Residue> {
+        private Map<String, Residue> residueNumbers = new HashMap<String, Residue>();
+        
+        public Residue getResidueByNumber(String n) {return residueNumbers.get(n);}
+        
+        public boolean add(Residue residue) {
+            Residue prev = null;
+            if (size() > 0) prev = get(size() - 1);
+            boolean answer = super.add(residue);
+            if (answer) {
+                if (prev != null) {
+                    residue.setPreviousResidue(prev);
+                    prev.setNextResidue(residue);
+                }
+                addNumberResidue(residue);
+            }
+            return answer;
+        }
+        
+        public boolean addAll(Collection<? extends Residue> c) {
+            Residue prev = null;
+            if (size() > 0) prev = get(size() - 1);
+            boolean answer = super.addAll(c);
+            if (answer) {
+                for (Residue residue : c) {
+                    if (prev != null) {
+                        residue.setPreviousResidue(prev);
+                        prev.setNextResidue(residue);                        
+                    }
+                    addNumberResidue(residue);
+                    prev = residue;
+                }
+            }
+            return answer;
+        }
+        
+        public void clear() {
+            super.clear();
+            residueNumbers.clear();
+        }
+        
+        public boolean remove(Object residue) {
+            boolean answer = super.remove(residue);
+            if (answer) {
+                if (residue instanceof Residue) removeNumberResidue((Residue)residue);
+            }
+            return answer;
+        }
+        
+        public boolean removeAll(Collection<?> c) {
+            boolean answer = super.removeAll(c);
+            if (answer) {
+                for (Object residue : c)
+                    if (residue instanceof Residue) removeNumberResidue((Residue)residue);
+            }
+            return answer;
+        }        
+        
+        public boolean retainAll(Collection<?> c) {
+            boolean answer = super.removeAll(c);
+            if (answer) {
+                residueNumbers.clear();
+                for (Residue residue : this)
+                    addNumberResidue(residue);
+            }
+            return answer;
+        }        
+        
+        private void addNumberResidue(Residue residue) {
+            // TODO - set next and previous residue pointers
+            
+            String numberString = "" + residue.getResidueNumber();
+            String fullString = numberString + residue.getPdbInsertionCode();
+            residueNumbers.put(fullString, residue); // number plus insertion code
+            // Only the first residue with a particular number gets to be invoked by that number alone
+            if (!residueNumbers.containsKey(numberString)) 
+                residueNumbers.put(numberString, residue); // number 
+        }
+        
+        private void removeNumberResidue(Residue residue) {
+            String numberString = "" + residue.getResidueNumber();
+            String fullString = numberString + residue.getPdbInsertionCode();
+            
+            String[] numbers = {numberString, fullString};
+            for (String number : numbers) {
+                if (residue == residueNumbers.get(number))
+                    residueNumbers.remove(number);
+            }
+        }
+
+    }
 }

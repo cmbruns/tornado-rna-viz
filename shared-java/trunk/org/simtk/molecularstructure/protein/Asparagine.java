@@ -31,28 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Asparagine extends AminoAcid {
-
-    public Asparagine() {
-        super();
-    }
-
-    public Asparagine(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    public char getOneLetterCode() {
-        return 'N';
-    }
-
-    public String getThreeLetterCode() {
-        return "Asn";
-    }
-
-    public String getResidueName() {
-        return "asparagine";
-    }
-
+    public Asparagine() {super('N', "Asn", "asparagine");}
 }

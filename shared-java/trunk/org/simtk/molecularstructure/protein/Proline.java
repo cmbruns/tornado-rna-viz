@@ -31,15 +31,8 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Proline extends AminoAcid {
-
-    public Proline() {}
-    public Proline(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
-    public String getResidueName() {return "proline";}
-    public char getOneLetterCode() {return 'P';}
-    public String getThreeLetterCode() {return "Pro";}
+    public Proline() {super('P', "Pro", "proline");}
 
     protected void addGenericBonds() {
         super.addGenericBonds();

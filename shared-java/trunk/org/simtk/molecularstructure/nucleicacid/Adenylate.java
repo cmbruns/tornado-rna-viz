@@ -40,31 +40,13 @@ import org.simtk.molecularstructure.atom.*;
  * 
  * 
  */
-public class Adenylate extends Purine {
-    
-    public Adenylate() {}
-    public Adenylate(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
-    public String getResidueName() {return "adenylate";}
-    public char getOneLetterCode() {return 'A';}
+public class Adenylate extends Purine {    
+    public Adenylate() {super('A', "A  ", "adenylate");}
 
-    static private Color defaultColor = new Color(150,255,150); // green
-    public Color getDefaultColor() {return defaultColor;}
-    
-    public Collection getHydrogenBondAcceptors() {
-        HashSet answer = new HashSet();
-
-        for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            LocatedMoleculeAtom a = (LocatedMoleculeAtom) i.next();
-            answer.add(a);
-        }
-
-        String acceptorAtomNames[] = {" N1 "};
-        for (int i = 0; i < acceptorAtomNames.length; i++) {
-            String atomName = acceptorAtomNames[i];
-            LocatedMoleculeAtom a = getAtom(atomName);
-            if (a != null) answer.add(a);
-        }
-        
+    @Override
+    public Set<String> getHydrogenBondAcceptorAtomNames() {
+        Set<String> answer = super.getHydrogenBondAcceptorAtomNames();
+        answer.add(" N1 ");
         return answer;
     }
 }

@@ -21,31 +21,64 @@
  */
 
 /*
- * Created on Dec 1, 2005
+ * Created on Apr 26, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.molecularstructure;
 
 import java.util.*;
+
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.atom.*;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * A molecule whose atomic positions are known
- */
-public interface LocatedMolecule extends Molecule, MassBody {
-    public Vector3D getCenterOfMass();
+public class MolecularClass implements Molecular {
+    private Set<Atom> atoms = new LinkedHashSet<Atom>();
+
+    public MolecularClass() {}
+
+    public MolecularClass(AtomSet atomSet) {
+        atoms().addAll(atomSet);
+    }
+
+    public Set<Atom> atoms() {return atoms;}
+
+    public double getMass() {
+        double mass = 0.0;
+        for (Atom atom : atoms()) {
+            mass += atom.getMass();
+        }
+        return mass;
+    }
+    
+    public Vector3D getCenterOfMass() {
+        Vector3D com = new Vector3DClass(0,0,0);
+        double totalMass = 0.0;
+        for (Atom atom : atoms()) {
+            double mass = atom.getMass();
+            com = com.plus(atom.getCenterOfMass().times(mass));
+            totalMass += mass;
+        }
+        if (totalMass == 0.0) return null;
+        else return com.times(1.0 / totalMass);
+    }
+
     /**
      * Change the position of the molecule by the specified amount
      * @param t amount to translate
      */
-    // public Collection<Atom> atoms();
-    // public Iterator getAtomIterator();
-    public Plane3D bestPlane3D() throws InsufficientPointsException;
-    // public boolean containsAtom(Atom atom);
-    // public int getAtomCount();
-    public Vector3D[] getCoordinates();
+    public Plane3D bestPlane3D() 
+    throws InsufficientPointsException
+    {
+        Vector3D[] coordinates = new Vector3DClass[atoms().size()];
+        double[] masses = new double[atoms().size()];
+
+        int a = 0;
+        for (Atom atom : atoms()) {
+            coordinates[a] = atom.getCoordinates();
+            masses[a] = atom.getMass();
+
+            a++;
+        }
+        return Plane3D.bestPlane3D(coordinates, masses);
+    }
 }

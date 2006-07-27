@@ -31,43 +31,21 @@
  */
 package org.simtk.molecularstructure.nucleicacid;
 
-import java.awt.Color;
 import java.util.*;
-
-import org.simtk.molecularstructure.atom.LocatedMoleculeAtom;
-import org.simtk.molecularstructure.atom.PDBAtomSet;
 
 /** 
  * @author Christopher Bruns
  * 
  */
 public class Guanylate extends Purine {
-    public Guanylate() {}
-    public Guanylate(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
-    public String getResidueName() {return "guanylate";}
- 
-    static private Color defaultColor = new Color(120,120,120); // charcoal
-    public Color getDefaultColor() {return defaultColor;}
+    public Guanylate() {
+        super('G', "G  ", "guanylate");
+    }
 
-    public char getOneLetterCode() {return 'G';}
-
-    public Collection getHydrogenBondDonors() {
-        HashSet answer = new HashSet();
-
-        for (Iterator i = super.getHydrogenBondDonors().iterator(); i.hasNext(); ) {
-            LocatedMoleculeAtom a = (LocatedMoleculeAtom) i.next();
-            answer.add(a);
-        }
-
-        // Note: donor/acceptor status of N1,N3 depends upon exact base
-        // So see those derived classes for additional atoms
-        String donorAtomNames[] = {" N1 "};
-        for (int i = 0; i < donorAtomNames.length; i++) {
-            String atomName = donorAtomNames[i];
-            LocatedMoleculeAtom a = getAtom(atomName);
-            if (a != null) answer.add(a);
-        }
-        
+    @Override
+    public Set<String> getHydrogenBondDonorAtomNames() {
+        Set<String> answer = super.getHydrogenBondDonorAtomNames();
+        answer.add(" N1 ");
         return answer;
     }
 }

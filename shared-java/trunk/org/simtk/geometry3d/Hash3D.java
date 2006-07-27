@@ -81,7 +81,7 @@ import java.util.*;
   * the method by a factor of O((1/s)^3 * ln(1/s)).  This effect will kick in
   * more slowly than the "s too big" effect.
  */
-public class Hash3D extends Hashtable
+public class Hash3D<V> extends HashMap<Vector3D, V>
 // implements Map<Vector3D, V> // Java 1.5 only...
 {
     // The base class hashtable maps exact positions to the object at that position
@@ -108,7 +108,7 @@ public class Hash3D extends Hashtable
      * @param object
      * @return
      */
-    public Object put(Vector3D position, Object object) {
+    public V put(Vector3D position, V object) {
         // Place the object into its parent cubelet
         Cubelet cubelet = getCubelet(position);
         cubelet.put(position, object);
@@ -121,17 +121,14 @@ public class Hash3D extends Hashtable
      * 
      * @param key the position of the object to remove
      */
-    public Object remove(Object key) {
-        if (! (key instanceof Vector3D)) return null;
-
-        Vector3D vec = (Vector3D) key;
+    public Object remove(Vector3D vec) {
         Object value = get(vec);
         if (value == null) return null;
         
         Cubelet cubelet = getCubelet(vec);
         cubelet.remove(vec);
 
-        return super.remove(key);
+        return super.remove(vec);
     }
     
     // Empty the entire data structure
@@ -162,8 +159,8 @@ public class Hash3D extends Hashtable
      * @param radius
      * @return
      */
-    public Object getClosest(Vector3D position, double radius) {
-        Object answer = null;
+    public V getClosest(Vector3D position, double radius) {
+        V answer = null;
 
         // Use squared distances to minimize expensive flops (i.e. sqrt())
         // The code complexity:optimization tradeoff is not bad for this optimization.
@@ -201,7 +198,7 @@ public class Hash3D extends Hashtable
      * @param radius
      * @return
      */
-    public Collection neighborValues(Vector3D position, double radius) {
+    public Collection<V> neighborValues(Vector3D position, double radius) {
         Vector neighbors = new Vector();
         Iterator i = neighborKeys(position, radius).iterator();
         while (i.hasNext()) {

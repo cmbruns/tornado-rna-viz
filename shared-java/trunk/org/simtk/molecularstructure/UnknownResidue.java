@@ -31,23 +31,8 @@
  */
 package org.simtk.molecularstructure;
 
-import java.util.Collection;
-
-import org.simtk.molecularstructure.atom.*;
-
-public class UnknownResidue extends PDBResidueClass {
-	String PDBResidueName = "";
-
-	UnknownResidue(PDBAtomSet bagOfAtoms) {
-		super(bagOfAtoms);
-		Object[] myAtoms = getAtoms().toArray();
-		if (myAtoms.length>0){
-			PDBAtom a0 = (PDBAtom) myAtoms[0];
-			PDBResidueName = a0.getPDBResidueName();
-		}
-	}
-    
-    public char getOneLetterCode() {return '?';}
-    public String getResidueName() {return "(unknown residue type "+PDBResidueName+") ";}
-    
+public class UnknownResidue extends ResidueClass {
+    UnknownResidue() {
+        super(ResidueTypeClass.UNKNOWN_RESIDUE_TYPE);
+    }
 }

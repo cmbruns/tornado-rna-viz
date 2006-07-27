@@ -31,28 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Aspartate extends AminoAcid {
-
-    public Aspartate() {
-        super();
-    }
-
-    public Aspartate(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    public char getOneLetterCode() {
-        return 'D';
-    }
-
-    public String getThreeLetterCode() {
-        return "Asp";
-    }
-
-    public String getResidueName() {
-        return "aspartate";
-    }
-
+    public Aspartate() {super('D', "Asp", "aspartate");}
 }

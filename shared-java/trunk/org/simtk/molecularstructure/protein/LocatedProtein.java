@@ -28,6 +28,6 @@ package org.simtk.molecularstructure.protein;
 
 import org.simtk.molecularstructure.*;
 
-public interface LocatedProtein extends Protein, LocatedMolecule {
+public interface LocatedProtein extends Protein, Molecule {
 
 }

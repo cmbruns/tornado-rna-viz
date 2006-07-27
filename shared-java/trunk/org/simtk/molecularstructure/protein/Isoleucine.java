@@ -31,31 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Isoleucine extends AminoAcid {
-
-    public Isoleucine() {
-        super();
-    }
-
-    public Isoleucine(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    
-    public char getOneLetterCode() {
-        return 'I';
-    }
-
-    
-    public String getThreeLetterCode() {
-        return "Ile";
-    }
-
-    
-    public String getResidueName() {
-        return "isoleucine";
-    }
-
+    public Isoleucine() {super('I', "Ile", "isoleucine");}
 }

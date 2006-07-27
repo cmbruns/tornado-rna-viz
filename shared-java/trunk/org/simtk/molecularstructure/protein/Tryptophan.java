@@ -31,31 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Tryptophan extends AminoAcid {
-
-    public Tryptophan() {
-        super();
-    }
-
-    public Tryptophan(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    
-    public char getOneLetterCode() {
-        return 'W';
-    }
-
-    
-    public String getThreeLetterCode() {
-        return "Trp";
-    }
-
-    
-    public String getResidueName() {
-        return "tryptophan";
-    }
-
+    public Tryptophan() {super('W', "Trp", "typtophan");}
 }

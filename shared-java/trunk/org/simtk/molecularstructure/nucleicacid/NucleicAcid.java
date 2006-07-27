@@ -42,8 +42,7 @@ import org.simtk.geometry3d.*;
  * \brief A single molecule of DNA or RNA
  */
 public class NucleicAcid extends BiopolymerClass {    
-    public NucleicAcid() {} // Empty molecule
-    public NucleicAcid(PDBAtomSet atomSet) {super(atomSet);}
+    public NucleicAcid(char chainId) {super(chainId);} // Empty molecule
     
     protected void addGenericResidueBonds() {
         super.addGenericResidueBonds();
@@ -84,19 +83,19 @@ public class NucleicAcid extends BiopolymerClass {
         int samePlaneCount = 0;
 
         // Close in space
-        Hash3D centroidHash = new Hash3D(4.0);
+        Hash3D<Residue> centroidHash = new Hash3D<Residue>(4.0);
 
         RESIDUE: for (Residue residue : this.residues()) {
 
             // Only use nucleotides
-            if (! (residue instanceof Nucleotide)) continue RESIDUE;
+            if (! (residue.getResidueType() instanceof Nucleotide)) continue RESIDUE;
 
             // Only use residues with coordinates
-            if (! (residue instanceof LocatedResidue)) continue RESIDUE;            
-            LocatedResidue locatedResidue = (LocatedResidue) residue;
+            if (! (residue instanceof Residue)) continue RESIDUE;            
+            Residue locatedResidue = (Residue) residue;
 
             // Only use residues with base coordinates
-            LocatedMolecule base;
+            Molecular base;
             try {base = locatedResidue.get(Nucleotide.baseGroup);}//see PBDResidueClass.java
             catch (InsufficientAtomsException exc) {continue RESIDUE;}
             
@@ -117,10 +116,11 @@ public class NucleicAcid extends BiopolymerClass {
         Set<Residue> residuesAlreadyTested = new HashSet<Residue>(); // only check each residue once
         for (Iterator iterCentroid = centroidHash.keySet().iterator(); iterCentroid.hasNext(); ) {
             Vector3D centroid = (Vector3D) iterCentroid.next();
-            PDBResidueClass residue = (PDBResidueClass) centroidHash.get(centroid);
+            Residue residue = centroidHash.get(centroid);
             residuesAlreadyTested.add(residue);
-            for (Iterator iterOtherResidue = centroidHash.neighborValues(centroid, centroidDistanceCutoff).iterator(); iterOtherResidue.hasNext(); ) {
-                LocatedResidue otherResidue = (PDBResidueClass) iterOtherResidue.next();
+            for (Residue otherResidue : centroidHash.neighborValues(centroid, centroidDistanceCutoff)) {
+            // for (Iterator iterOtherResidue = centroidHash.neighborValues(centroid, centroidDistanceCutoff).iterator(); iterOtherResidue.hasNext(); ) {
+            //     Residue otherResidue = (Residue) iterOtherResidue.next();
                 if (residue == otherResidue) continue; // no self hits
                 if (residuesAlreadyTested.contains(otherResidue)) continue;
                 // If we got here there are two residues within 8 Angstroms of one another
@@ -146,11 +146,11 @@ public class NucleicAcid extends BiopolymerClass {
                 
                 // Atomic touching criterion - polar atoms
                 double minDistance = 1000;
-                for (Iterator iterAtom1 = residue.getAtomIterator(); iterAtom1.hasNext(); ) {
-                    LocatedAtom atom1 = (LocatedAtom) iterAtom1.next();
+                for (Iterator<Atom> iterAtom1 = residue.atoms().iterator(); iterAtom1.hasNext(); ) {
+                    Atom atom1 =  iterAtom1.next();
                     if (! ((atom1.getElementName().equals("oxygen")) || (atom1.getElementName().equals("nitrogen")))) continue;
-                    for (Iterator iterAtom2 = otherResidue.getAtomIterator(); iterAtom2.hasNext(); ) {
-                        LocatedMoleculeAtom atom2 = (LocatedMoleculeAtom) iterAtom2.next();
+                    for (Iterator<Atom> iterAtom2 = otherResidue.atoms().iterator(); iterAtom2.hasNext(); ) {
+                        Atom atom2 =  iterAtom2.next();
                         if (! ((atom2.getElementName().equals("oxygen")) || (atom2.getElementName().equals("nitrogen")))) continue;
                         double testDistance = atom1.distance(atom2);
                         if (testDistance < minDistance) minDistance = testDistance;
@@ -158,7 +158,7 @@ public class NucleicAcid extends BiopolymerClass {
                 }
                 if (minDistance > atomicDistance) continue; // No close atoms
                 
-                basePairs.add(new BasePair((Nucleotide) residue, (Nucleotide) otherResidue));
+                basePairs.add(new BasePair(residue, otherResidue));
             }
         }
         // System.out.println("" + closePairCount + " close base pairs found");
@@ -313,28 +313,25 @@ public class NucleicAcid extends BiopolymerClass {
         Vector answer = new Vector();
 
         // Create a hash of hydrogen bond donor atoms
-        Hash3D donorAtoms = new Hash3D(3.50);
-        Map<Atom, Nucleotide> donorNucleotides = new HashMap<Atom, Nucleotide>();
-        for (Iterator iterResidue = getResidueIterator(); iterResidue.hasNext(); ) {
-            PDBResidue residue = (PDBResidue) iterResidue.next();
-            if (! (residue instanceof Nucleotide)) continue;
-            Nucleotide nucleotide = (Nucleotide) residue;
-            for (Iterator iterAtom = nucleotide.getHydrogenBondDonors().iterator(); iterAtom.hasNext(); ) {
-                LocatedAtom atom = (LocatedAtom) iterAtom.next();
+        Hash3D<Atom> donorAtoms = new Hash3D<Atom>(3.50);
+        Map<Atom, Residue> donorNucleotides = new HashMap<Atom, Residue>();
+        for (Residue nucleotide : residues()) {
+            if (! (nucleotide.getResidueType() instanceof Nucleotide)) continue;
+            for (Atom atom : nucleotide.getHydrogenBondDonors()) {
                 donorAtoms.put(atom.getCoordinates(), atom);
                 donorNucleotides.put(atom, nucleotide);
             }
         }
         
         // Loop over acceptor atoms, try to find donors
-        for (Iterator iterResidue = getResidueIterator(); iterResidue.hasNext(); ) {
-            PDBResidue residue = (PDBResidue) iterResidue.next();
-            if (! (residue instanceof Nucleotide)) continue;
-            Nucleotide acceptorNucleotide = (Nucleotide) residue;
-            for (Iterator iterAcceptorAtom = acceptorNucleotide.getHydrogenBondAcceptors().iterator(); iterAcceptorAtom.hasNext(); ) {
-                LocatedMoleculeAtom acceptorAtom = (LocatedMoleculeAtom) iterAcceptorAtom.next();
-                for (Iterator iterDonorAtom = donorAtoms.neighborValues(acceptorAtom.getCoordinates(), maxHydrogenBondDistance).iterator(); iterDonorAtom.hasNext(); ) {
-                    LocatedAtom donorAtom = (LocatedAtom) iterDonorAtom.next();
+        for (Iterator iterResidue = residues().iterator(); iterResidue.hasNext(); ) {
+            Residue residue = (Residue) iterResidue.next();
+            if (! (residue.getResidueType() instanceof Nucleotide)) continue;
+            Residue acceptorNucleotide = (Residue) residue;
+            for (Iterator<Atom> iterAcceptorAtom = acceptorNucleotide.getHydrogenBondAcceptors().iterator(); iterAcceptorAtom.hasNext(); ) {
+                Atom acceptorAtom =  iterAcceptorAtom.next();
+                for (Iterator<Atom> iterDonorAtom = donorAtoms.neighborValues(acceptorAtom.getCoordinates(), maxHydrogenBondDistance).iterator(); iterDonorAtom.hasNext(); ) {
+                    Atom donorAtom =  iterDonorAtom.next();
                     // This atom pair are now closer than the maximum distance cutoff of 3.5 Angstroms
                     
                     // Exclude atoms in the same residue

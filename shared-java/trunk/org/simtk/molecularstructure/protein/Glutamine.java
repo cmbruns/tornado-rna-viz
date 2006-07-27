@@ -31,28 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Glutamine extends AminoAcid {
-
-    public Glutamine() {
-        super();
-    }
-
-    public Glutamine(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    public char getOneLetterCode() {
-        return 'Q';
-    }
-
-    public String getThreeLetterCode() {
-        return "Gln";
-    }
-
-    public String getResidueName() {
-        return "glutamine";
-    }
-
+    public Glutamine() {super('Q', "Gln", "glutamine");}
 }

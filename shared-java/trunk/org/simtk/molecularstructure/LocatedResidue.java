@@ -26,8 +26,9 @@
  */
 package org.simtk.molecularstructure;
 
-import java.util.Collection;
+import java.util.Set;
 import org.simtk.geometry3d.Vector3D;
+import org.simtk.molecularstructure.atom.Atom;
 
 /**
  *  
@@ -35,10 +36,5 @@ import org.simtk.geometry3d.Vector3D;
   * 
   * A residue whose atomic positions are known
  */
-public interface LocatedResidue extends Residue, LocatedMolecule {
-    public Collection getHydrogenBondDonors();
-    public Collection getHydrogenBondAcceptors();
-    public Vector3D getBackbonePosition() throws InsufficientAtomsException;
-    public Vector3D getSideChainPosition() throws InsufficientAtomsException;
-    public LocatedMolecule get(FunctionalGroup fg) throws InsufficientAtomsException; // TODO
+public interface LocatedResidue extends Residue {
 }

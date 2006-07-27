@@ -26,10 +26,10 @@
  */
 package org.simtk.molecularstructure.atom;
 
-import java.awt.Color;
+import org.simtk.molecularstructure.Chemical;
 
-public interface ChemicalElement {
-    public Color getDefaultAtomColor();
+public interface ChemicalElement extends Chemical {
+    // public Color getDefaultAtomColor();
     public String getElementSymbol();
     public String getElementName();
     public double getMass();

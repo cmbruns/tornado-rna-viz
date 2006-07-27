@@ -46,12 +46,14 @@ import org.simtk.geometry3d.*;
  *
  * A collection of one or more molecules, as might be found in a PDB file.
  */
-public class MoleculeCollection {
-    Collection<Atom> atoms = new Vector<Atom>();
+public class MoleculeCollection 
+extends MolecularClass
+{
+    // Set<Atom> atoms = new LinkedHashSet<Atom>();
     List<Molecule> molecules = new Vector<Molecule>();
 
-    Vector3D centerOfMass = new Vector3DClass();
-    double mass = 0;
+    // Vector3D centerOfMass = new Vector3DClass();
+    // double mass = 0;
     
     private String mTitle = "";
     public String getTitle() {return mTitle;}
@@ -65,20 +67,31 @@ public class MoleculeCollection {
     public String getInputStructureFileName() {return m_inputStructureFileName;}
     public void setInputStructureFileName(String s) {m_inputStructureFileName = s;}
 
+    @Override
     public double getMass() {
+        double mass = 0.0;
+        for (Molecule molecule : molecules()) {
+            mass += molecule.getMass();
+        }
         return mass;
     }
+    
+    @Override
     public Vector3D getCenterOfMass() {
-        if (mass <= 0) return null;
-        return centerOfMass;
+        Vector3D com = new Vector3DClass(0,0,0);
+        double totalMass = 0.0;
+        for (Molecule molecule : molecules()) {
+            double mass = molecule.getMass();
+            com = com.plus(molecule.getCenterOfMass().times(mass));
+            totalMass += mass;
+        }
+        if (totalMass == 0.0) return null;
+        else return com.times(1.0 / totalMass);
     }
     
     public Collection<Molecule> molecules() {return molecules;}
     
-    public int getMoleculeCount() {return molecules.size();}
-    public LocatedMolecule getMolecule(int i) {return (LocatedMolecule) molecules.get(i);}
-    
-    public int getAtomCount() {return atoms.size();}
+    public Molecule getMolecule(int i) {return (Molecule) molecules.get(i);}
     
     public void loadPDBFormat(String fileName) throws FileNotFoundException, IOException, InterruptedException {
 		FileInputStream fileStream = new FileInputStream(fileName);
@@ -154,8 +167,8 @@ public class MoleculeCollection {
             else if (PDBLine.substring(0,6).equals("HETNAM")) {
                 String newHet = PDBLine.substring(11,14).trim();
                 if (newHet.length() > 0) {
-                    if (!PDBResidueClass.knownHetatms.contains(newHet)) {
-                    	PDBResidueClass.knownHetatms.add(newHet);
+                    if (!ResidueClass.knownHetatms.contains(newHet)) {
+                    	ResidueClass.knownHetatms.add(newHet);
                     }
                 }
             }
@@ -233,34 +246,24 @@ public class MoleculeCollection {
         
         // Now that the header section of the PDB file has been parsed,
         // Read one molecule at a time
-        PDBMolecule mol = null;
+        Molecule mol = null;
         do {
-            mol = PDBMoleculeClass.createFactoryPDBMolecule(reader);
+            mol = MoleculeClass.createFactoryPDBMolecule(reader);
 		    if (mol == null) break;
 
             molecules.add(mol);
 
             // Hash molecule by chain ID for later resolution of secondary structure
-            String chainID = mol.getChainID();
+            String chainID = mol.getPdbChainId();
             if (! chainMolecules.containsKey(chainID))
                 chainMolecules.put(chainID, new Vector<Molecule>());
             Collection<Molecule> m = chainMolecules.get(chainID);
             m.add(mol);
             
-            // Update center of mass of entire molecule collection            
-            double myMassProportion = getMass() / (getMass() + mol.getMass());
-            centerOfMass = new Vector3DClass( centerOfMass.times(myMassProportion).plus(
-                    mol.getCenterOfMass().times(1.0 - myMassProportion) ) );
-            
-            mass += mol.getMass();
-
             // Populate the collection-wide atoms array
-            for (Iterator i = mol.getAtomIterator(); i.hasNext(); ) {
-                LocatedAtom a = (LocatedAtom) i.next();
-                atoms.add(a);
-            }
-            
-        } while (mol.getAtomCount() > 0);
+            atoms().addAll(mol.atoms());
+
+        } while (mol.atoms().size() > 0);
 
         // Apply PDB secondary structures
         SS: for (SecondaryStructure structure : secondaryStructures) {
@@ -289,8 +292,8 @@ public class MoleculeCollection {
                 // Set relationship among residue/biopolymer/structure
                 structure.addResidue(residue);
                 structure.setMolecule(biopolymer);
-                biopolymer.addSecondaryStructure(structure);
-                residue.addSecondaryStructure(structure);
+                biopolymer.secondaryStructures().add(structure);
+                residue.secondaryStructures().add(structure);
             }
         }
 	}    

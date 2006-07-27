@@ -32,11 +32,7 @@ package org.simtk.molecularstructure;
   * 
   * PDBMolecule interface applies to both chains and residues
  */
-public interface PDBMolecule extends LocatedMolecule {
-
-    // getResidueByNumber is not for individual residues
-    // public Residue getResidueByNumber(int i, char insertionCode);
-
-    public String getChainID();
+public interface PDBMolecule extends Molecule {
+    public String getPdbChainId();
     public void setChainID(String chainID);
 }

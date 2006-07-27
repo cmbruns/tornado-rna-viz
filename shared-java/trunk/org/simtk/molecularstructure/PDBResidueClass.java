@@ -46,7 +46,7 @@ import org.simtk.util.*;
  * \brief One monomer residue of a Biopolymer
  *
  */
-public abstract class PDBResidueClass extends PDBMoleculeClass implements Selectable, MutablePDBResidue {
+public abstract class PDBResidueClass extends MolecularClass implements Residue {
     private static Color defaultColor = new Color(255, 255, 255);
     
     public static List<String> modifiedAdenylates   = Arrays.asList("+A","1MA"); 
@@ -75,11 +75,11 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         
     public Color getDefaultColor() {return defaultColor;}
     
-    public Collection getHydrogenBondDonors() {
-        return new HashSet();
+    public Set<Atom> getHydrogenBondDonors() {
+        return new HashSet<Atom>();
     }
-    public Collection getHydrogenBondAcceptors() {
-        return new HashSet();        
+    public Set<Atom> getHydrogenBondAcceptors() {
+        return new HashSet<Atom>();        
     }
     
     /**
@@ -116,33 +116,33 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
      * 
      * @param bagOfAtoms
      */
-    public PDBResidueClass(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-        addGenericBonds();
-        indexAtoms(bagOfAtoms);
-        createGenericBonds();
-    }
+//    public PDBResidueClass(PDBAtomSet bagOfAtoms) {
+//        super(bagOfAtoms);
+//        addGenericBonds();
+//        indexAtoms(bagOfAtoms);
+//        createGenericBonds();
+//    }
     
-    protected void indexAtoms(PDBAtomSet bagOfAtoms) {
+    protected void indexAtoms(AtomSet bagOfAtoms) {
         if (bagOfAtoms == null) return;
         
         // Inherit residue properties from the first atom in the list
         if (bagOfAtoms.size() > 0) {
-            PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
-            insertionCode = atom.getInsertionCode();
-            residueNumber = atom.getResidueNumber();
+            Atom atom = (Atom) bagOfAtoms.get(0);
+//            insertionCode = atom.getInsertionCode();
+//            residueNumber = atom.getResidueNumber();
         }
         
         for (int a = 0; a < bagOfAtoms.size(); a++) {
-            PDBAtom atom = (PDBAtom) bagOfAtoms.get(a);
+            Atom atom = (Atom) bagOfAtoms.get(a);
             // atoms.add(atom);
             
             // Create index for lookup by atom name
             // Short atom name
-            String atomName = atom.getPDBAtomName();
+            String atomName = atom.getAtomName();
             
             // Insertion code qualified atom name
-            char insertionCode = atom.getInsertionCode();
+//            char insertionCode = atom.getInsertionCode();
             String fullAtomName = atomName + ":";
             if (insertionCode != ' ') {fullAtomName = fullAtomName + insertionCode;}
             
@@ -169,17 +169,17 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
         ((HashSet)genericBonds.get(atom2)).add(atom1);
     }
     
-    public LocatedMolecule get(FunctionalGroup fg) 
+    public Molecular get(FunctionalGroup fg) 
     throws InsufficientAtomsException
     {
         String[] groupAtomNames = fg.getAtomNames();
-        MutableLocatedMolecule mol = new PDBMoleculeClass();
+        Molecular mol = new MolecularClass();
         for (int n = 0; n < groupAtomNames.length ; n ++) {
             String atomName = groupAtomNames[n];
-            PDBAtom atom = getAtom(atomName);
-            if (atom != null) mol.addAtom(atom);
+            Atom atom = getAtom(atomName);
+            if (atom != null) mol.atoms().add(atom);
         }
-        if (mol.getAtomCount() < 1)
+        if (mol.atoms().size() < 1)
             throw new InsufficientAtomsException();
 
         return mol;
@@ -217,27 +217,23 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
      */
     // TODO - this only works for PDB atoms right now
     void createGenericBonds() {
-        ATOM1: for (Iterator a1 = getAtomIterator(); a1.hasNext(); ) {
-            LocatedAtom atom = (LocatedAtom) a1.next();
-            if (! (atom instanceof PDBAtomClass)) continue ATOM1;
-            MutablePDBAtom atom1 = (MutablePDBAtom) atom;
-            
+        ATOM1: for (Atom atom1 : atoms()) {
             // Assign bonds from residue dictionary
-            if (genericBonds.containsKey(atom1.getPDBAtomName())) {
-                BOND: for (Iterator b2 = ((HashSet)genericBonds.get(atom1.getPDBAtomName())).iterator(); b2.hasNext(); ) {
+            if (genericBonds.containsKey(atom1.getAtomName())) {
+                BOND: for (Iterator b2 = ((HashSet)genericBonds.get(atom1.getAtomName())).iterator(); b2.hasNext(); ) {
                     String a2Name = (String) b2.next();
                     if (! atomNames.containsKey(a2Name)) continue BOND;
                     ATOM2: for (Atom a2 : atomNames.get(a2Name)) {
                     // ATOM2: for (Iterator a2 = ((Vector)atomNames.get(a2Name)).iterator(); a2.hasNext(); ) {
-                        MutablePDBAtom atom2 = (MutablePDBAtom) a2;
-                        if (! (atom2 instanceof PDBAtom)) continue ATOM2;
+                        Atom atom2 =  a2;
+                        if (! (atom2 instanceof Atom)) continue ATOM2;
     
-                        PDBAtom pdbAtom2 = (PDBAtom) atom2;
-                        if (! (atom1.getAlternateLocationIndicator() == pdbAtom2.getAlternateLocationIndicator()))
-                            continue ATOM2;
+                        Atom pdbAtom2 = (Atom) atom2;
+                        // if (! (atom1.getAlternateLocationIndicator() == pdbAtom2.getAlternateLocationIndicator()))
+                        //     continue ATOM2;
                         
-                        atom1.addBond(atom2);
-                        atom2.addBond(atom1);
+                        atom1.bonds().add(atom2);
+                        atom2.bonds().add(atom1);
                     }
                 }
             }
@@ -254,9 +250,9 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
      * @param atomName
      * @return
      */
-    public PDBAtom getAtom(String atomName) {
+    public Atom getAtom(String atomName) {
         if (!atomNames.containsKey(atomName)) return null;
-        return (PDBAtom) atomNames.get(atomName).iterator().next();
+        return (Atom) atomNames.get(atomName).iterator().next();
     }
     
     
@@ -264,28 +260,28 @@ public abstract class PDBResidueClass extends PDBMoleculeClass implements Select
      * Create a new Residue of the correct type, e.g. AminoAcid, Adenosine, etc.
      * @return Returns a Residue object of the correct subtype
      */
-    static PDBResidue createFactoryResidue(PDBAtomSet bagOfAtoms) {
-        if (bagOfAtoms == null) return null;
-        if (bagOfAtoms.size() == 0) return null;
-        PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
-        if (isProtein(atom.getPDBResidueName())) return AminoAcid.createFactoryAminoAcid(bagOfAtoms);
-        else if (isNucleicAcid(atom.getPDBResidueName())) return Nucleotide.createFactoryNucleotide(bagOfAtoms);
-        else if (isKnownHetatm(atom.getPDBResidueName())) return new UnknownResidue(bagOfAtoms);
-        
-        else {
-			System.out.println("unknown residue: name "+atom.getPDBResidueName()+", record name: "+atom.getPDBRecordName());
-        	return new UnknownResidue(bagOfAtoms); // default to base class
-        }
-    }
+//    static Residue createFactoryResidue(PDBAtomSet bagOfAtoms) {
+//        if (bagOfAtoms == null) return null;
+//        if (bagOfAtoms.size() == 0) return null;
+//        Atom atom = (Atom) bagOfAtoms.get(0);
+//        if (isProtein(atom.getPDBResidueName())) return AminoAcid.createFactoryAminoAcid(bagOfAtoms);
+//        else if (isNucleicAcid(atom.getPDBResidueName())) return Nucleotide.createFactoryNucleotide(bagOfAtoms);
+//        else if (isKnownHetatm(atom.getPDBResidueName())) return new UnknownResidue(bagOfAtoms);
+//        
+//        else {
+//			System.out.println("unknown residue: name "+atom.getPDBResidueName()+", record name: "+atom.getPDBRecordName());
+//        	return new UnknownResidue(bagOfAtoms); // default to base class
+//        }
+//    }
     
-    public String toString() {
-    	if (getOneLetterCode()!='?'){
-    		return "Chain: "+getChainID()+", res: "+getOneLetterCode() + " " + getResidueNumber();
-    	}
-    	else {
-    		return "Chain: "+getChainID()+", res: "+getResidueName() + " " + getResidueNumber();
-    	}
-    }
+//    public String toString() {
+//    	if (getOneLetterCode()!='?'){
+//    		return "Chain: "+getPdbChainId()+", res: "+getOneLetterCode() + " " + getResidueNumber();
+//    	}
+//    	else {
+//    		return "Chain: "+getPdbChainId()+", res: "+getResidueName() + " " + getResidueNumber();
+//    	}
+//    }
     public static boolean isSolvent(String residueName) {
         String trimmedName = residueName.trim().toUpperCase(); // remove spaces
 

@@ -34,7 +34,7 @@ package org.simtk.molecularstructure;
 import org.simtk.molecularstructure.atom.*;
 
 public class HydrogenBond extends LocatedMoleculeBondClass {
-    public HydrogenBond(LocatedMoleculeAtom donor, LocatedMoleculeAtom acceptor) {super(donor,acceptor);}
+    public HydrogenBond(Atom donor, Atom acceptor) {super(donor,acceptor);}
     
     // Hydrogen bonds are not symmetric, so swapping the atoms is not equal
     public boolean equals(Object o) {

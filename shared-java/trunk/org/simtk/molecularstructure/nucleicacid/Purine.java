@@ -31,23 +31,17 @@
  */
 package org.simtk.molecularstructure.nucleicacid;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-
-import org.simtk.molecularstructure.atom.LocatedMoleculeAtom;
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
+import java.util.*;
 /** 
  * @author Christopher Bruns
  * 
  * 
  */
 public class Purine extends Nucleotide {
-    public Purine() {}
-    public Purine(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
-    public char getOneLetterCode() {return 'R';}
-    
+    // public Purine() {super('R', "PUR", "(unidentified purine)");}
+    public Purine(char olc, String tlc, String name) {super(olc, tlc, name);}
+
+    @Override
     protected void addGenericBonds() {
         super.addGenericBonds();
         // Note - sugar-base linkage depends upon nucleotide type
@@ -55,21 +49,10 @@ public class Purine extends Nucleotide {
         // addGenericBond(" C1*", " N1 ");
     }
 
-    public Collection getHydrogenBondAcceptors() {
-        HashSet answer = new HashSet();
-
-        for (Iterator i = super.getHydrogenBondAcceptors().iterator(); i.hasNext(); ) {
-            LocatedMoleculeAtom a = (LocatedMoleculeAtom) i.next();
-            answer.add(a);
-        }
-
-        String acceptorAtomNames[] = {" N3 "};
-        for (int i = 0; i < acceptorAtomNames.length; i++) {
-            String atomName = acceptorAtomNames[i];
-            LocatedMoleculeAtom a = getAtom(atomName);
-            if (a != null) answer.add(a);
-        }
-        
+    @Override
+    public Set<String> getHydrogenBondAcceptorAtomNames() {
+        Set<String> answer = super.getHydrogenBondAcceptorAtomNames();
+        answer.add(" N3 ");
         return answer;
     }
     

@@ -31,31 +31,6 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 public class Lysine extends AminoAcid {
-
-    public Lysine() {
-        super();
-    }
-
-    public Lysine(PDBAtomSet bagOfAtoms) {
-        super(bagOfAtoms);
-    }
-
-    
-    public char getOneLetterCode() {
-        return 'K';
-    }
-
-    
-    public String getThreeLetterCode() {
-        return "Lys";
-    }
-
-    
-    public String getResidueName() {
-        return "lysine";
-    }
-
+    public Lysine() {super('K', "Lys", "lysine");}
 }

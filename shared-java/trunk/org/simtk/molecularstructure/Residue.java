@@ -26,19 +26,38 @@
  */
 package org.simtk.molecularstructure;
 
-import java.awt.Color;
+// import java.awt.Color;
 import java.util.*;
 
-public interface Residue {
-    public Color getDefaultColor();
+import org.simtk.geometry3d.Vector3D;
+import org.simtk.molecularstructure.atom.*;
+
+public interface Residue 
+extends ResidueType, Molecular
+{
+    // public Color getDefaultColor();
     public Residue getPreviousResidue();
     public Residue getNextResidue();
-    public char getOneLetterCode();
-    public String getResidueName();
     public int getResidueNumber();
-    public Iterator getSecondaryStructureIterator();
+    public ResidueType getResidueType();
+    public Atom getAtom(String atomName);
+    public char getPdbInsertionCode();
+
+    // public Iterator getSecondaryStructureIterator();
     public Collection<SecondaryStructure> secondaryStructures();
-    public void addSecondaryStructure(SecondaryStructure structure);
-    public void setPreviousResidue(PDBResidueClass r);
-    public void setNextResidue(PDBResidueClass r);
+    // public void addSecondaryStructure(SecondaryStructure structure);
+    public void setPreviousResidue(Residue r);
+    public void setNextResidue(Residue r);
+    public void setResidueNumber(int residueNumber);
+
+    public Set<Atom> getHydrogenBondDonors();
+    public Set<Atom> getHydrogenBondAcceptors();
+    public Vector3D getBackbonePosition() throws InsufficientAtomsException;
+    public Vector3D getSideChainPosition() throws InsufficientAtomsException;
+    public Molecular get(FunctionalGroup fg) throws InsufficientAtomsException; // TODO
+
+    public boolean isStrand();
+    public boolean isHelix();
+    public boolean isAlphaHelix();
+
 }

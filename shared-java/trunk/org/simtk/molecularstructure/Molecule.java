@@ -26,6 +26,11 @@
  */
 package org.simtk.molecularstructure;
 
-public interface Molecule {
+import org.simtk.geometry3d.InsufficientPointsException;
+import org.simtk.geometry3d.Plane3D;
+import org.simtk.geometry3d.Vector3D;
+
+public interface Molecule extends Molecular {
     boolean isSolvent();
+    String getPdbChainId();
 }

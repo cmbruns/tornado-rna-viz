@@ -62,8 +62,8 @@ public class SequenceAlignment {
      * mapping of the residues between the two molecules.
      */
     public void alignNaively() {
-        Iterator i1 = molecule1.getResidueIterator();
-        Iterator i2 = molecule2.getResidueIterator();
+        Iterator i1 = molecule1.residues().iterator();
+        Iterator i2 = molecule2.residues().iterator();
 
         while (i1.hasNext() && i2.hasNext())
             alignedResidues.add(new ResiduePair((Residue) i1.next(), (Residue) i2.next()));
@@ -89,10 +89,10 @@ public class SequenceAlignment {
             ResiduePair pair = (ResiduePair) i.next();
             Residue r1 = pair.getResidue1();
             Residue r2 = pair.getResidue2();
-            if ( (r1 instanceof LocatedResidue) && (r2 instanceof LocatedResidue) ) {
+            if ( (r1 instanceof Residue) && (r2 instanceof Residue) ) {
                 try {
-                    Vector3D vec1 = ((LocatedResidue)r1).getBackbonePosition();
-                    Vector3D vec2 = ((LocatedResidue)r2).getBackbonePosition(); 
+                    Vector3D vec1 = ((Residue)r1).getBackbonePosition();
+                    Vector3D vec2 = ((Residue)r2).getBackbonePosition(); 
                     if ( (vec1 != null) && (vec2 != null) ) {
                         v1.add(vec1);
                         v2.add(vec2);

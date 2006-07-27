@@ -21,23 +21,29 @@
  */
 
 /*
- * Created on Dec 9, 2005
+ * Created on Apr 24, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.molecularstructure.protein;
+package org.simtk.molecularstructure;
 
-import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
+import java.util.*;
 
-public class PDBProteinClass 
-extends BiopolymerClass 
-implements Protein
-// implements PDBMolecule, LocatedProtein 
-{
-    public PDBProteinClass(char chainId) {super(chainId);}
-    
-    protected void addGenericResidueBonds() {
-        super.addGenericResidueBonds();
-        // TODO this is not working
-        addGenericResidueBond(" C  ", " N  ");
-    }
+import org.simtk.geometry3d.InsufficientPointsException;
+import org.simtk.geometry3d.MassBody;
+import org.simtk.geometry3d.Plane3D;
+import org.simtk.geometry3d.Vector3D;
+
+/** 
+ *  
+  * @author Christopher Bruns
+  * 
+  * Common interface for molecules, functional groups, and residues.
+  * As opposed to Molecule, which should be a complete molecule, while
+  * Molecular can refer to a portion of a molecule.
+ */
+public interface Molecular extends Chemical, MassBody {
+    public Set<Atom> atoms();
+    public Plane3D bestPlane3D() throws InsufficientPointsException;
+    // public Vector3D[] getCoordinates();
 }

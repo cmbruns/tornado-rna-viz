@@ -26,5 +26,20 @@
  */
 package org.simtk.molecularstructure.atom;
 
-public interface Atom extends ChemicalElement {
+import java.util.Collection;
+import org.simtk.geometry3d.MassBody;
+import org.simtk.geometry3d.*;
+
+public interface Atom extends ChemicalElement, MassBody {
+    public String getAtomName();
+    public Vector3D getCoordinates();
+    public double getTemperatureFactor();
+    public double getOccupancy();
+    public Collection<Atom> bonds();
+    public double distance(Atom atom2);
+    
+    public void setAtomName(String name);
+    public void setCoordinates(Vector3D coordinates);
+    public void setOccupancy(double o);
+    public void setTemperatureFactor(double b);
 }

@@ -31,48 +31,21 @@
  */
 package org.simtk.molecularstructure.protein;
 
-import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.*;
-import java.util.*;
 
 /** 
  * @author Christopher Bruns
  * 
  * One protein amino acid residue
  */
-abstract public class AminoAcid extends PDBResidueClass {
-    public AminoAcid() {}
-    public AminoAcid(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
+public class AminoAcid extends ResidueTypeClass {
 
-    abstract public char getOneLetterCode();
-    abstract public String getThreeLetterCode();
-    abstract public String getResidueName();
-
-    public boolean isStrand() {
-        for (Iterator i = getSecondaryStructureIterator(); i.hasNext();) {
-            SecondaryStructure structure = (SecondaryStructure) i.next();
-            if (structure instanceof BetaStrand)
-                return true;
-        }
-        return false;        
-    }
-    public boolean isHelix() {
-        for (Iterator i = getSecondaryStructureIterator(); i.hasNext();) {
-            SecondaryStructure structure = (SecondaryStructure) i.next();
-            if (structure instanceof Helix)
-                return true;
-        }
-        return false;        
-    }
-    public boolean isAlphaHelix() {
-        for (Iterator i = getSecondaryStructureIterator(); i.hasNext();) {
-            SecondaryStructure structure = (SecondaryStructure) i.next();
-            if ((structure instanceof Helix) && 
-                    (((Helix)structure).getHelixType() == Helix.ALPHA) )
-                return true;
-        }
-        return false;
+//    public AminoAcid() {
+//        super('X', "UNK", "(unknown amino acid)");
+//    }
+    
+    public AminoAcid(char olc, String tlc, String name) {
+        super(olc, tlc, name);
     }
     
     static String[] sideChainAtomNames = {
@@ -86,24 +59,6 @@ abstract public class AminoAcid extends PDBResidueClass {
     static public FunctionalGroup backboneGroup = new FunctionalGroup(backboneAtomNames);
 
     @Override
-    public Vector3D getBackbonePosition()  throws InsufficientAtomsException
-    {
-        LocatedAtom atom = getAtom(" CA ");
-        if (atom == null) return null;
-        return atom.getCoordinates();
-    }
-
-    @Override
-    public Vector3D getSideChainPosition() throws InsufficientAtomsException 
-    {
-        LocatedMolecule sideChain = get(sideChainGroup);
-        if (sideChain.getAtomCount() >= 1)
-            return get(sideChainGroup).getCenterOfMass();
-        // TODO - handle glycine and other no side chain cases
-        //  by estimating position of fake CA
-        else return null;
-    }
-    
     protected void addGenericBonds() {
         super.addGenericBonds();
         // Backbone
@@ -156,36 +111,7 @@ abstract public class AminoAcid extends PDBResidueClass {
 
         addGenericBond(" CZ ", " OH "); // TYR
         addGenericBond(" CZ ", " NH1"); // ARG
-        addGenericBond(" CZ ", " NH2"); // ARG
-        
+        addGenericBond(" CZ ", " NH2"); // ARG        
     }
     
-    static public AminoAcid createFactoryAminoAcid(PDBAtomSet bagOfAtoms) {
-        // Distinguish among subclasses
-        PDBAtom atom = (PDBAtom) bagOfAtoms.get(0);
-        String residueName = atom.getPDBResidueName().trim().toUpperCase();
-        
-        if (residueName.equals("ALA")) {return new Alanine(bagOfAtoms);}
-        if (residueName.equals("CYS")) {return new Cysteine(bagOfAtoms);}
-        if (residueName.equals("ASP")) {return new Aspartate(bagOfAtoms);}
-        if (residueName.equals("GLU")) {return new Glutamate(bagOfAtoms);}
-        if (residueName.equals("PHE")) {return new Phenylalanine(bagOfAtoms);}
-        if (residueName.equals("GLY")) {return new Glycine(bagOfAtoms);}
-        if (residueName.equals("HIS")) {return new Histidine(bagOfAtoms);}
-        if (residueName.equals("ILE")) {return new Isoleucine(bagOfAtoms);}
-        if (residueName.equals("LYS")) {return new Lysine(bagOfAtoms);}
-        if (residueName.equals("LEU")) {return new Leucine(bagOfAtoms);}
-        if (residueName.equals("MET")) {return new Methionine(bagOfAtoms);}
-        if (residueName.equals("ASN")) {return new Asparagine(bagOfAtoms);}
-        if (residueName.equals("PRO")) {return new Proline(bagOfAtoms);}
-        if (residueName.equals("GLN")) {return new Glutamine(bagOfAtoms);}
-        if (residueName.equals("ARG")) {return new Arginine(bagOfAtoms);}
-        if (residueName.equals("SER")) {return new Serine(bagOfAtoms);}
-        if (residueName.equals("THR")) {return new Threonine(bagOfAtoms);}
-        if (residueName.equals("VAL")) {return new Valine(bagOfAtoms);}
-        if (residueName.equals("TRP")) {return new Tryptophan(bagOfAtoms);}
-        if (residueName.equals("TYR")) {return new Tyrosine(bagOfAtoms);}
-
-        return new UnknownAminoAcid(bagOfAtoms);
-    }
 }

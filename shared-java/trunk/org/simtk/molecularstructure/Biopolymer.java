@@ -30,12 +30,12 @@ import java.util.*;
 
 public interface Biopolymer extends Molecule {
     public Residue getResidue(int i);
-    public Iterator getResidueIterator();
+    // public Iterator getResidueIterator();
     public Residue getResidueByNumber(int i);
-    public int getResidueCount();
-    public void addSecondaryStructure(SecondaryStructure structure);
-    public Iterator getSecondaryStructureIterator();
+    // public int getResidueCount();
+    // public void addSecondaryStructure(SecondaryStructure structure);
+    // public Iterator getSecondaryStructureIterator();
 
-    public Collection<SecondaryStructure> secondaryStructures();
-    public Collection<Residue> residues();
+    public Set<SecondaryStructure> secondaryStructures();
+    public List<Residue> residues();
 }

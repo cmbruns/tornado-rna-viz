@@ -31,14 +31,11 @@
  */
 package org.simtk.molecularstructure.nucleicacid;
 
-import org.simtk.molecularstructure.atom.PDBAtomSet;
-
 /**
  * @author Christopher Bruns
  *
  * \brief A molecule of deoxyribonucleic acid (DNA), the blueprint of life.
  */
 public class DNA extends NucleicAcid {
-    public DNA() {} // Empty molecule
-    public DNA(PDBAtomSet atomSet) {super(atomSet);}
+    public DNA(char chainId) {super(chainId);} // Empty molecule
 }

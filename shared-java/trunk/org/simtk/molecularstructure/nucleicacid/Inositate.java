@@ -31,41 +31,20 @@
  */
 package org.simtk.molecularstructure.nucleicacid;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-
-import org.simtk.molecularstructure.atom.LocatedMoleculeAtom;
-import org.simtk.molecularstructure.atom.PDBAtomSet;
+import java.util.Set;
 
 /** 
  * @author Christopher Bruns
  * 
  */
 public class Inositate extends Purine {
-    public Inositate() {}
-    public Inositate(PDBAtomSet bagOfAtoms) {super(bagOfAtoms);}
-    public String getResidueName() {return "inosylate";}
-
-    public char getOneLetterCode() {return 'I';}
-
-    public Collection getHydrogenBondDonors() {
-        HashSet answer = new HashSet();
-
-        for (Iterator i = super.getHydrogenBondDonors().iterator(); i.hasNext(); ) {
-            LocatedMoleculeAtom a = (LocatedMoleculeAtom) i.next();
-            answer.add(a);
-        }
-
-        // Note: donor/acceptor status of N1,N3 depends upon exact base
-        // So see those derived classes for additional atoms
-        String donorAtomNames[] = {" N1 "};
-        for (int i = 0; i < donorAtomNames.length; i++) {
-            String atomName = donorAtomNames[i];
-            LocatedMoleculeAtom a = getAtom(atomName);
-            if (a != null) answer.add(a);
-        }
-        
+    public Inositate() {
+        super('I', "I  ", "inositate");
+    }
+    @Override
+    public Set<String> getHydrogenBondDonorAtomNames() {
+        Set<String> answer = super.getHydrogenBondDonorAtomNames();
+        answer.add(" N1 ");
         return answer;
     }
 }
