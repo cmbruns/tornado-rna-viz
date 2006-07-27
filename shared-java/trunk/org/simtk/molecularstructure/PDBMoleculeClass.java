@@ -42,7 +42,7 @@ import org.simtk.molecularstructure.atom.*;
  */
 public class PDBMoleculeClass 
 extends MoleculeClass
-implements MutableLocatedMolecule, PDBMolecule {
+implements Molecule, PDBMolecule {
     // private Collection<Atom> atoms = new LinkedHashSet<Atom>();
     // protected Vector atoms = new Vector();
     // protected Vector<Bond> bonds = new Vector<Bond>();
