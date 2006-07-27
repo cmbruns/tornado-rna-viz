@@ -61,7 +61,7 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     // Parameters describing the region of sequence being shown
     int leftEdgeVirtualPixel = 0;
     
-    private ObservableBiopolymer sequenceMolecule = null;
+    private Biopolymer sequenceMolecule = null;
 
     // Track mapping of string positions to residue objects
     protected Hashtable residuePositions = new Hashtable();
@@ -229,20 +229,20 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         // TODO respond to molecule change, but only if it's a sequence change
     }
 
-    public ObservableBiopolymer getMolecule() {
+    public Biopolymer getMolecule() {
         return sequenceMolecule;
     }
 
-    public void setMolecule(ObservableBiopolymer molecule) {
+    public void setMolecule(Biopolymer molecule) {
         if (molecule == sequenceMolecule) return; // no change
 
         // Remove interest in old molecule
-        if (sequenceMolecule != null) sequenceMolecule.deleteObserver(this);
+        // if (sequenceMolecule != null) sequenceMolecule.deleteObserver(this);
 
         // Change molecules
         sequenceMolecule = molecule;
         // Register for updates
-        sequenceMolecule.addObserver(this);
+        // sequenceMolecule.addObserver(this);
 
         // Import sequence
         numberOfResidues = 0;
