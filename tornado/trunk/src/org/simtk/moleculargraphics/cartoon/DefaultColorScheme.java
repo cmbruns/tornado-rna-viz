@@ -29,8 +29,7 @@ package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.Color;
 import org.simtk.molecularstructure.atom.Atom;
-import org.simtk.molecularstructure.nucleicacid.Nucleotide;
-import org.simtk.molecularstructure.Molecule;
+import org.simtk.molecularstructure.*;
 
 public class DefaultColorScheme implements ColorScheme {
     public static ColorScheme DEFAULT_COLOR_SCHEME = new DefaultColorScheme();
@@ -43,7 +42,7 @@ public class DefaultColorScheme implements ColorScheme {
             return AtomColorScheme.PALE_CPK_COLORS.colorOf(colorable);
         } catch (UnknownObjectColorException exc) {}
         
-        if (colorable instanceof Nucleotide) try {
+        if (colorable instanceof Residue) try {
             return SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME.colorOf(colorable);
         } catch (UnknownObjectColorException exc) {}
         

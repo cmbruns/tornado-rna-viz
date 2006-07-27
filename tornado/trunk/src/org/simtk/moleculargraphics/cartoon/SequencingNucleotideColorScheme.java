@@ -29,6 +29,7 @@ package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.Color;
 import org.simtk.molecularstructure.nucleicacid.*;
+import org.simtk.molecularstructure.*;
 
 public class SequencingNucleotideColorScheme implements ColorScheme {
     private static Color adenylateColor = new Color(200, 255, 200); // green
@@ -41,18 +42,20 @@ public class SequencingNucleotideColorScheme implements ColorScheme {
         SEQUENCING_NUCLEOTIDE_COLOR_SCHEME = new SequencingNucleotideColorScheme();
     
     public Color colorOf(Object colorable) throws UnknownObjectColorException {
-        if (! (colorable instanceof Nucleotide))
+        if (! (colorable instanceof Residue))
             throw new UnknownObjectColorException();
 
-        if (colorable instanceof Adenylate) 
+        Residue residue = (Residue) colorable;
+        
+        if (residue.getResidueType() instanceof Adenylate) 
             return adenylateColor;
-        else if (colorable instanceof Guanylate) 
+        else if (residue.getResidueType() instanceof Guanylate) 
             return guanylateColor;
-        else if (colorable instanceof Cytidylate) 
+        else if (residue.getResidueType() instanceof Cytidylate) 
             return cytidylateColor;
-        else if (colorable instanceof Thymidylate) 
+        else if (residue.getResidueType() instanceof Thymidylate) 
             return thymidylateColor;
-        else if (colorable instanceof Uridylate) 
+        else if (residue.getResidueType() instanceof Uridylate) 
             return uridylateColor;
 
         else throw new UnknownObjectColorException();

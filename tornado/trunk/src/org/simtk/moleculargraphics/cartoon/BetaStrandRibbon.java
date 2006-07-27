@@ -29,6 +29,7 @@ package org.simtk.moleculargraphics.cartoon;
 
 import vtk.*;
 import org.simtk.molecularstructure.protein.*;
+import org.simtk.molecularstructure.*;
 import org.simtk.geometry3d.*;
 import org.simtk.moleculargraphics.Spline3D;
 import java.util.*;
@@ -44,7 +45,7 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
     protected double lengthResolution = 0.5; // Affects sharpness of color boundaries
     
     public BetaStrandRibbon(
-            List<AminoAcid> residues, 
+            List<Residue> residues, 
             double ribbonThickness, 
             double strandWidth,
             int startIndex,
@@ -66,7 +67,7 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
     }
 
     protected void createBetaStrand(
-            List<AminoAcid> residues, 
+            List<Residue> residues, 
             double ribbonThickness, 
             double strandWidth,
             int startIndex,
@@ -105,7 +106,7 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
     }
 
     protected void oldCreateBetaStrand(
-            List<AminoAcid> residues, 
+            List<Residue> residues, 
             double ribbonThickness, 
             double strandWidth,
             int startIndex,
@@ -118,7 +119,7 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
         
         Vector3D previousNormal = null;
         int resCount = 0;
-        for (AminoAcid residue : residues) {
+        for (Residue residue : residues) {
             resCount ++;
             try {
                 Vector3D ca = residue.getAtom("CA").getCoordinates();
@@ -147,15 +148,15 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
                 
                 // If there are residues before and after, use position that minimizes pleating
                 try {
-                    Vector3D prev = ((AminoAcid)residue.getPreviousResidue()).getAtom("CA").getCoordinates();
-                    Vector3D next = ((AminoAcid)residue.getNextResidue()).getAtom("CA").getCoordinates();
+                    Vector3D prev = (residue.getPreviousResidue()).getAtom("CA").getCoordinates();
+                    Vector3D next = (residue.getNextResidue()).getAtom("CA").getCoordinates();
                     pos = ca.plus(ca.plus(prev.plus(next))).times(0.25);
                 } catch (NullPointerException exc) {}
                 
                 // Extend halfway to previous residue
                 if (resCount == 1) {
                     try {
-                        Vector3D prev = ((AminoAcid)residue.getPreviousResidue()).getAtom("CA").getCoordinates();
+                        Vector3D prev = (residue.getPreviousResidue()).getAtom("CA").getCoordinates();
                         Vector3D p = ca.plus(prev).times(0.50);
 
                         positions.add(p);
@@ -172,7 +173,7 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
                 // Extend halfway to following residue
                 if (resCount == residues.size()) {
                     try {
-                        Vector3D next = ((AminoAcid)residue.getNextResidue()).getAtom("CA").getCoordinates();
+                        Vector3D next = (residue.getNextResidue()).getAtom("CA").getCoordinates();
                         Vector3D p = ca.plus(next).times(0.50);
 
                         positions.add(p);

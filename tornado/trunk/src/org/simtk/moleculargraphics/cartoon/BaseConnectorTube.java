@@ -32,16 +32,16 @@ import org.simtk.molecularstructure.nucleicacid.*;
 
 public class BaseConnectorTube extends MoleculeCartoonClass {
     
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         NucleicAcid nucleicAcid = (NucleicAcid) molecule;
         for (Residue residue : nucleicAcid.residues()) {
-            if (! (residue instanceof Nucleotide)) return;
-            addNucleotide((Nucleotide)residue);
+            if (! (residue.getResidueType() instanceof Nucleotide)) return;
+            addNucleotide((Residue)residue);
         }
     }
     
-    public void addNucleotide(Nucleotide residue) {
+    public void addNucleotide(Residue residue) {
         try {
             BaseConnectorTubeActor actorToon = 
                 new BaseConnectorTubeActor(residue);

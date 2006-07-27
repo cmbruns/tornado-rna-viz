@@ -62,7 +62,7 @@ public class TubeAndStickTrace extends CompositeCartoon {
         addSubToon(rods);
     }
     
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         tubes.addMolecule(m);
         rods.addMolecule(m);
     }

@@ -191,7 +191,7 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
             g.setFont(numberFont);
             g.setColor(getForeground());
             for (int r = leftPosition; r <= rightPosition; r++) {
-                PDBResidue res = (PDBResidue) positionResidues.get(new Integer(r));
+                Residue res = (Residue) positionResidues.get(new Integer(r));
                 if (res != null) {
                     int residueNumber = res.getResidueNumber();
                     
@@ -249,8 +249,8 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         residuePositions.clear();
         positionResidues.clear();
         residueSymbols.clear();
-        for (Iterator iterResidue = molecule.getResidueIterator(); iterResidue.hasNext();) {
-            PDBResidue residue = (PDBResidue) iterResidue.next();
+        for (Iterator iterResidue = molecule.residues().iterator(); iterResidue.hasNext();) {
+            Residue residue = (Residue) iterResidue.next();
             Integer indexInteger = new Integer(numberOfResidues);
             residuePositions.put(residue, indexInteger);
             positionResidues.put(indexInteger, residue);

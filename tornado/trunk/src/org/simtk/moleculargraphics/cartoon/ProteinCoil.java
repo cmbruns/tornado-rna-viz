@@ -31,13 +31,13 @@ import java.util.List;
 import java.util.Vector;
 
 import org.simtk.geometry3d.Vector3D;
-import org.simtk.molecularstructure.protein.*;
+import org.simtk.molecularstructure.*;
 
 import vtk.*;
 
 public class ProteinCoil extends ProteinRibbonSegment {
     public ProteinCoil(
-            List<AminoAcid> residues,
+            List<Residue> residues,
             double diameter) 
     throws NoCartoonCreatedException
     {
@@ -69,7 +69,7 @@ public class ProteinCoil extends ProteinRibbonSegment {
     }
     
     protected void createCoil(
-            List<AminoAcid> residues, 
+            List<Residue> residues, 
             double diameter) 
     throws NoCartoonCreatedException {
         List<Vector3D> positions = new Vector<Vector3D>();
@@ -78,7 +78,7 @@ public class ProteinCoil extends ProteinRibbonSegment {
         
         int resCount = 0;
         Vector3D previousNormal = null;
-        RES: for (AminoAcid residue : residues) {
+        RES: for (Residue residue : residues) {
             resCount ++;
             try {
                 Vector3D ca = residue.getAtom("CA").getCoordinates();
@@ -104,7 +104,7 @@ public class ProteinCoil extends ProteinRibbonSegment {
                 // Extend halfway to previous residue
                 if (resCount == 1) {
                     try {
-                        Vector3D prev = ((AminoAcid)residue.getPreviousResidue()).getAtom("CA").getCoordinates();
+                        Vector3D prev = (residue.getPreviousResidue()).getAtom("CA").getCoordinates();
                         Vector3D p = ca.plus(prev).times(0.50);
 
                         positions.add(p);
@@ -125,7 +125,7 @@ public class ProteinCoil extends ProteinRibbonSegment {
                 // Extend halfway to following residue
                 if (resCount == residues.size()) {
                     try {
-                        Vector3D next = ((AminoAcid)residue.getNextResidue()).getAtom("CA").getCoordinates();
+                        Vector3D next = (residue.getNextResidue()).getAtom("CA").getCoordinates();
                         Vector3D p = ca.plus(next).times(0.50);
 
                         positions.add(p);

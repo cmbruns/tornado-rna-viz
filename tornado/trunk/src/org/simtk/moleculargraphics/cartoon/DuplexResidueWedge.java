@@ -128,7 +128,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         // orientByNormal(); // not supported for tensorGlyph
     }
 
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         NucleicAcid nucleicAcid = (NucleicAcid) molecule;
         Collection<Duplex> duplexen = nucleicAcid.identifyHairpins();
@@ -146,8 +146,8 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                 BasePair basePair = (BasePair) iterBasePair.next();
                 // Nucleotide residue = (Nucleotide) iterResidue.next();
 
-                Nucleotide residue1 = basePair.getResidue1();
-                Nucleotide residue2 = basePair.getResidue2();
+                Residue residue1 = basePair.getResidue1();
+                Residue residue2 = basePair.getResidue2();
 
                 // Put residue position on cylinder axis                
                 // Ignore residues lacking base atoms
@@ -179,10 +179,10 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                 // Make it all neatly orthogonal
                 residueDirection = (MutableVector3D) thirdDirection.cross(duplexDirection);                
 
-                PDBResidue residues[] = {residue1, residue2};
+                Residue residues[] = {residue1, residue2};
                 
                 for (int i = 0; i < 2; i++) {
-                    PDBResidue residue = residues[i];
+                    Residue residue = residues[i];
                     
                     Vector currentObjects = new Vector(); // assign molecular object on which to index this wedge
                     currentObjects.add(molecule);

@@ -127,7 +127,7 @@ public class BackboneStick extends GlyphCartoon {
         orientByNormal();
     }
 
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -144,21 +144,20 @@ public class BackboneStick extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof PDBResidue) {
-            PDBResidue residue = (PDBResidue) molecule;
+        if (molecule instanceof Residue) {
+            Residue residue = (Residue) molecule;
             currentObjects.remove(currentObjects.size() - 1); 
             addResidue(residue, currentObjects);
         }
         else if (molecule instanceof Biopolymer) {
             Biopolymer biopolymer = (Biopolymer) molecule;
             for (Residue residue : biopolymer.residues()) {
-                if (residue instanceof LocatedResidue)
-                    addMolecule((LocatedResidue) residue);
+                addResidue(residue, null);
             }
         }
     }
     
-    void addResidue(LocatedResidue residue, List parentObjects) {
+    void addResidue(Residue residue, List parentObjects) {
         if (residue == null) return;
         
         // Don't add things that have already been added
@@ -171,17 +170,17 @@ public class BackboneStick extends GlyphCartoon {
 
         Vector3D nextPosition = null;
         if (residue.getNextResidue() != null)
-            if (residue.getNextResidue() instanceof LocatedResidue) {
+            if (residue.getNextResidue() instanceof Residue) {
                 try {
-                    nextPosition = ((LocatedResidue)residue.getNextResidue()).getBackbonePosition();
+                    nextPosition = ((Residue)residue.getNextResidue()).getBackbonePosition();
                 } catch (InsufficientAtomsException exc) {}
             }
 
         Vector3D previousPosition = null;
         if (residue.getPreviousResidue() != null) 
-            if (residue.getPreviousResidue() instanceof LocatedResidue) {
+            if (residue.getPreviousResidue() instanceof Residue) {
                 try {
-                    previousPosition = ((LocatedResidue)residue.getPreviousResidue()).getBackbonePosition();
+                    previousPosition = ((Residue)residue.getPreviousResidue()).getBackbonePosition();
                 } catch (InsufficientAtomsException exc) {}
             }
         

@@ -30,6 +30,7 @@ package org.simtk.moleculargraphics.cartoon;
 import vtk.*;
 
 import org.simtk.molecularstructure.protein.*;
+import org.simtk.molecularstructure.*;
 import org.simtk.geometry3d.*;
 import java.util.*;
 
@@ -52,7 +53,7 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
      * @param endFlag -1 for first residue, +1 for final residue, zero for others
      * @return
      */
-    protected static Vector3D hBondNormal(AminoAcid residue, int endFlag) {
+    protected static Vector3D hBondNormal(Residue residue, int endFlag) {
         Vector3D ca,c,n,o;
         try {
             ca = residue.getAtom("CA").getCoordinates();
@@ -68,7 +69,7 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
         Vector3D co = o.minus(c).unit();
         Vector3D nh = null;
         try {
-            Vector3D prevC = ((AminoAcid)residue.getPreviousResidue()).getAtom("C").getCoordinates();
+            Vector3D prevC = ((Residue)residue.getPreviousResidue()).getAtom("C").getCoordinates();
             nh = ca.minus(n).cross(prevC.minus(n)).unit();
             nh = nh.cross(chainDirection).unit();
             // point N-H bond in same direction as C-O bond, so they agree
@@ -89,11 +90,11 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
         return norm;
     }
     
-    protected static Vector3D chainDirection(AminoAcid residue) {
+    protected static Vector3D chainDirection(Residue residue) {
         // If there are residues before and after, get chain direction from them
         try {
             Vector3D ca = residue.getAtom("CA").getCoordinates();
-            Vector3D prev = ((AminoAcid)residue.getPreviousResidue()).getAtom("CA").getCoordinates();
+            Vector3D prev = ((Residue)residue.getPreviousResidue()).getAtom("CA").getCoordinates();
             Vector3D chainDirection = ca.minus(prev).unit();
             return chainDirection;
         } 

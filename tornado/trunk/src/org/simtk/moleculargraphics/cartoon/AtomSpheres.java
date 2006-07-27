@@ -35,7 +35,7 @@ public class AtomSpheres extends MoleculeCartoonClass {
         addSubToon(spheres);
     }
 
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         if (m.isSolvent()) return;
         spheres.addMolecule(m);
         updateActors();

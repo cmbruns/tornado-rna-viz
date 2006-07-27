@@ -27,11 +27,11 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.molecularstructure.LocatedMolecule;
+import org.simtk.molecularstructure.Molecule;
 
 public class MoleculeTensorCartoon extends MoleculeCartoonClass {
     
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         try {
             MoleculeTensorActor actorToon = 
                 new MoleculeTensorActor(molecule);

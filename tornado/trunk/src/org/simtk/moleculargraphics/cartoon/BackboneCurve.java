@@ -27,7 +27,7 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.molecularstructure.LocatedMolecule;
+import org.simtk.molecularstructure.Molecule;
 
 public class BackboneCurve extends MoleculeCartoonClass {
     // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
@@ -35,7 +35,7 @@ public class BackboneCurve extends MoleculeCartoonClass {
     BackboneCurve() {
     }
     
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         try {
             NewBackboneCurveActor actorToon = 
                 new NewBackboneCurveActor(4.0, 1.0, molecule);

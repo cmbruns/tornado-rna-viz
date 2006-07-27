@@ -91,7 +91,7 @@ public class BasePairOval extends TensorGlyphCartoon {
         
     }
 
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (molecule instanceof NucleicAcid)
             addNucleicAcid((NucleicAcid)molecule);
     }
@@ -103,28 +103,28 @@ public class BasePairOval extends TensorGlyphCartoon {
     }
     
     public void addBasePair(BasePair basePair) {
-        Nucleotide res1 = basePair.getResidue1();
-        Nucleotide res2 = basePair.getResidue2();
+        Residue res1 = basePair.getResidue1();
+        Residue res2 = basePair.getResidue2();
         
         addNucleotide(res1, res2);
         addNucleotide(res2, res1);
     }
     
-    public void addNucleotide(Nucleotide res1, Nucleotide res2) {
+    public void addNucleotide(Residue res1, Residue res2) {
         
         Collection<Vector3D> base1Points = new HashSet<Vector3D>();
         try {
             for (Atom baseAtom : res1.get(Nucleotide.baseGroup).atoms()) {
-                if (baseAtom instanceof LocatedAtom)
-                    base1Points.add( ((LocatedAtom)baseAtom).getCoordinates());
+                if (baseAtom instanceof Atom)
+                    base1Points.add( (baseAtom).getCoordinates());
             }
         } catch (InsufficientAtomsException exc) {return;}
         
         Collection<Vector3D> base2Points = new HashSet<Vector3D>();
         try {
             for (Atom baseAtom : res2.get(Nucleotide.baseGroup).atoms()) {
-                if (baseAtom instanceof LocatedAtom)
-                    base2Points.add( ((LocatedAtom)baseAtom).getCoordinates());
+                if (baseAtom instanceof Atom)
+                    base2Points.add( (baseAtom).getCoordinates());
             }
         } catch (InsufficientAtomsException exc) {return;}
 
@@ -132,11 +132,11 @@ public class BasePairOval extends TensorGlyphCartoon {
         Vector3D pos1, pos2;
 
         // July 19, 2006: base position upon extension of glycosidic bond
-        LocatedAtom c11 = res1.getAtom("C1*");
-        LocatedAtom c12 = res2.getAtom("C1*");
-        LocatedAtom n1 = res1.getAtom("N9");
+        Atom c11 = res1.getAtom("C1*");
+        Atom c12 = res2.getAtom("C1*");
+        Atom n1 = res1.getAtom("N9");
         if (n1 == null) n1 = res1.getAtom("N1");
-        LocatedAtom n2 = res2.getAtom("N9");
+        Atom n2 = res2.getAtom("N9");
         if (n2 == null) n2 = res2.getAtom("N1");
         // Glycosidic bond direction:
         Vector3D glyc1 = n1.getCoordinates().minus(c11.getCoordinates()).unit();

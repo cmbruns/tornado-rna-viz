@@ -77,7 +77,7 @@ public class BondStickCartoon extends GlyphCartoon {
         orientByNormal();
     }
 
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (molecule == null) return;
 
         Vector parentObjects = null;
@@ -94,26 +94,30 @@ public class BondStickCartoon extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof LocatedResidue) {
-            LocatedResidue residue = (LocatedResidue) molecule;
-            for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                addAtom((PDBAtom)i.next(), currentObjects);
+        if (molecule instanceof Residue) {
+            Residue residue = (Residue) molecule;
+            for (Iterator i = residue.atoms().iterator(); i.hasNext(); ) {
+                addAtom((Atom)i.next(), currentObjects);
             }
         }
         else if (molecule instanceof Biopolymer) {
             Biopolymer biopolymer = (Biopolymer) molecule;
-            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
+            for (Iterator iterResidue = biopolymer.residues().iterator(); iterResidue.hasNext(); ) {
                 Residue residue = (Residue) iterResidue.next();
-                if (residue instanceof LocatedResidue)
-                    addMolecule((LocatedResidue) residue);
+                    addResidue(residue);
             }
         }
-        else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            addAtom((PDBAtom)i1.next(), currentObjects);
+        else for (Iterator<Atom> i1 = molecule.atoms().iterator(); i1.hasNext(); ) {
+            addAtom(i1.next(), currentObjects);
         }        
     }
     
-    void addAtom(PDBAtom atom, Vector parentObjects) {
+    void addResidue(Residue residue) {
+        for (Atom atom : residue.atoms())
+            addAtom(atom, null);
+    }
+    
+    void addAtom(Atom atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added
@@ -132,8 +136,7 @@ public class BondStickCartoon extends GlyphCartoon {
         double colorScalar = toonColors.getColorIndex(atom);
 
         // For bonded atoms, draw a line for each bond
-        for (Iterator i2 = atom.getBonds().iterator(); i2.hasNext(); ) {
-            PDBAtom atom2 = (PDBAtom) i2.next();
+        for (Atom atom2 : atom.bonds()) {
             Vector3D midpoint = new Vector3DClass( c.plus(atom2.getCoordinates()).times(0.5) ); // middle of bond
             Vector3D b = new Vector3DClass( c.plus(midpoint).times(0.5) ); // middle of half-bond
             MutableVector3D n = new Vector3DClass( midpoint.minus(c).unit() ); // direction vector
@@ -146,7 +149,7 @@ public class BondStickCartoon extends GlyphCartoon {
 
             // Direction of this half bond
             // To make the two half-bonds line up flush, choose a deterministic direction between the two atoms
-            if ( (atom.getPDBAtomName().compareTo(atom2.getPDBAtomName())) > 0 ) {
+            if ( (atom.getAtomName().compareTo(atom2.getAtomName())) > 0 ) {
                 n.timesEquals(-1.0);
             }
             

@@ -32,13 +32,13 @@ import java.util.Vector;
 
 import org.simtk.geometry3d.Vector3D;
 import org.simtk.moleculargraphics.Spline3D;
-import org.simtk.molecularstructure.protein.*;
+import org.simtk.molecularstructure.*;
 
 import vtk.vtkPolyData;
 
 public class ProteinHelix extends ProteinRibbonSegment {
     public ProteinHelix(
-            List<AminoAcid> residues,
+            List<Residue> residues,
             double ribbonThickness, 
             double helixWidth,
             int startIndex,
@@ -82,7 +82,7 @@ public class ProteinHelix extends ProteinRibbonSegment {
     }
     
     protected void createAlphaHelix(
-            List<AminoAcid> residues, 
+            List<Residue> residues, 
             double ribbonThickness, 
             double strandWidth,
             int startIndex,
@@ -121,7 +121,7 @@ public class ProteinHelix extends ProteinRibbonSegment {
     }
 
     protected void oldCreateAlphaHelix(
-            List<AminoAcid> residues,
+            List<Residue> residues,
             double ribbonThickness,
             double helixWidth)
     throws NoCartoonCreatedException {
@@ -130,7 +130,7 @@ public class ProteinHelix extends ProteinRibbonSegment {
         List<Object> aminoAcids = new Vector<Object>();
         
         int resCount = 0;
-        for (AminoAcid residue : residues) {
+        for (Residue residue : residues) {
             resCount ++;
             try {
                 Vector3D ca = residue.getAtom("CA").getCoordinates();
@@ -143,7 +143,7 @@ public class ProteinHelix extends ProteinRibbonSegment {
                 // Extend halfway to previous residue
                 if (resCount == 1) {
                     try {
-                        Vector3D prev = ((AminoAcid)residue.getPreviousResidue()).getAtom("CA").getCoordinates();
+                        Vector3D prev = residue.getPreviousResidue().getAtom("CA").getCoordinates();
                         Vector3D p = ca.plus(prev).times(0.50);
 
                         positions.add(p);
@@ -162,7 +162,7 @@ public class ProteinHelix extends ProteinRibbonSegment {
                 // Extend halfway to following residue
                 if (resCount == residues.size()) {
                     try {
-                        Vector3D next = ((AminoAcid)residue.getNextResidue()).getAtom("CA").getCoordinates();
+                        Vector3D next = residue.getNextResidue().getAtom("CA").getCoordinates();
                         Vector3D p = ca.plus(next).times(0.50);
 
                         positions.add(p);

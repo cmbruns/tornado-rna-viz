@@ -40,7 +40,7 @@ public class ProteinRibbonSphereTest extends AtomSphereActor {
         super(1.0);
     }
 
-    void addMolecule(LocatedMolecule molecule, Vector parentObjects) {
+    void addMolecule(Molecule molecule, Vector parentObjects) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -54,40 +54,40 @@ public class ProteinRibbonSphereTest extends AtomSphereActor {
         }
         currentObjects.add(molecule);
         
-        // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof AminoAcid) {
-            AminoAcid residue = (AminoAcid) molecule;
-            System.out.println("Amino acid found");
-
-            double colorScalar = toonColors.getColorIndex(molecule);
-
-            // Vector3D c = residue.getBackbonePosition();
-            
-            try {
-                Vector3D[] points = createCoilPath(residue);
-    
-                double radius = 0.5;
-                
-                for (int i = 0; i < points.length; i++) {
-                    Vector3D c = points[i];
-                    
-                    linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
-                
-                    lineNormals.InsertNextTuple3(radius, 0.0, 0.0);
-    
-                    // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
-                    colorScalars.InsertNextValue(colorScalar);
-                }
-            } catch (InsufficientAtomsException exc) {} // skip this residue
-            
-            // TODO - put spline positions
-        }
-        else if (molecule instanceof Biopolymer) {
+        if (molecule instanceof Biopolymer) {
             Biopolymer biopolymer = (Biopolymer) molecule;
-            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
-                addMolecule((LocatedMolecule) iterResidue.next(), currentObjects);
+            for (Residue residue : biopolymer.residues()) {
+                addResidue(residue);
             }
         }
+    }
+    
+    public void addResidue(Residue residue) {
+        // If it's a biopolymer, index the glyphs by residue
+        if (! (residue.getResidueType() instanceof AminoAcid)) return;
+
+        System.out.println("Amino acid found");
+
+        double colorScalar = toonColors.getColorIndex(residue);
+
+        // Vector3D c = residue.getBackbonePosition();
+        
+        try {
+            Vector3D[] points = createCoilPath(residue);
+
+            double radius = 0.5;
+            
+            for (int i = 0; i < points.length; i++) {
+                Vector3D c = points[i];
+                
+                linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
+            
+                lineNormals.InsertNextTuple3(radius, 0.0, 0.0);
+
+                // glyphColors.add(currentObjects, lineData, lineScalars.GetNumberOfTuples(), colorScalar);
+                colorScalars.InsertNextValue(colorScalar);
+            }
+        } catch (InsufficientAtomsException exc) {} // skip this residue        
     }
 
     /**
@@ -98,7 +98,7 @@ public class ProteinRibbonSphereTest extends AtomSphereActor {
      * @param startResidue
      * @return
      */
-    private Vector3D[] createCoilPath(AminoAcid startResidue) 
+    private Vector3D[] createCoilPath(Residue startResidue) 
     throws InsufficientAtomsException 
     {
         int numberOfOutputPoints = splineFactor;
@@ -110,14 +110,14 @@ public class ProteinRibbonSphereTest extends AtomSphereActor {
         vtkCardinalSpline splineZ = new vtkCardinalSpline();
 
         // 1) Populate spline with upstream residue positions, if available
-        AminoAcid residueMinusOne = startResidue;
+        Residue residueMinusOne = startResidue;
         if (startResidue.getPreviousResidue() != null)
-            residueMinusOne = (AminoAcid) startResidue.getPreviousResidue();
+            residueMinusOne = (Residue) startResidue.getPreviousResidue();
         Vector3D positionMinusOne = residueMinusOne.getBackbonePosition();
 
-        AminoAcid residueMinusTwo = residueMinusOne;
+        Residue residueMinusTwo = residueMinusOne;
         if (residueMinusOne.getPreviousResidue() != null)
-            residueMinusTwo = (AminoAcid) residueMinusOne.getPreviousResidue();
+            residueMinusTwo = (Residue) residueMinusOne.getPreviousResidue();
         Vector3D positionMinusTwo = residueMinusTwo.getBackbonePosition();
 
         splineX.AddPoint(-2, positionMinusTwo.getX());
@@ -135,14 +135,14 @@ public class ProteinRibbonSphereTest extends AtomSphereActor {
         splineZ.AddPoint(0, position.getZ());              
         
         // 3) Populate spline with downstream residue positions, if available
-        AminoAcid residuePlusOne = startResidue;
+        Residue residuePlusOne = startResidue;
         if (startResidue.getNextResidue() != null)
-            residuePlusOne = (AminoAcid) startResidue.getNextResidue();
+            residuePlusOne = (Residue) startResidue.getNextResidue();
         Vector3D positionPlusOne = residuePlusOne.getBackbonePosition();
 
-        AminoAcid residuePlusTwo = residuePlusOne;
+        Residue residuePlusTwo = residuePlusOne;
         if (residuePlusOne.getNextResidue() != null)
-            residuePlusTwo = (AminoAcid) residuePlusOne.getNextResidue();
+            residuePlusTwo = (Residue) residuePlusOne.getNextResidue();
         Vector3D positionPlusTwo = residuePlusTwo.getBackbonePosition();
 
         splineX.AddPoint(1, positionPlusOne.getX());

@@ -47,7 +47,7 @@ public class BasePairRod extends CylinderCartoon {
         cylinderSource.SetCapping(1);
     }
 
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (molecule instanceof NucleicAcid) {
             NucleicAcid rna = (NucleicAcid) molecule;
             
@@ -65,8 +65,8 @@ public class BasePairRod extends CylinderCartoon {
     }
     
     public void addBasePair(BasePair basePair) throws InsufficientAtomsException {
-        Nucleotide base1 = basePair.getResidue1();
-        Nucleotide base2 = basePair.getResidue2();
+        Residue base1 = basePair.getResidue1();
+        Residue base2 = basePair.getResidue2();
 
         // Get backbone positions, if they exist
         Vector3D start, end;

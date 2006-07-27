@@ -35,7 +35,7 @@ public class MoleculeBlobs extends MoleculeCartoonClass {
         // addSubToon(blobs);
     }
 
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         if (m.isSolvent()) return;
 
         // 5 Angstroms resolution

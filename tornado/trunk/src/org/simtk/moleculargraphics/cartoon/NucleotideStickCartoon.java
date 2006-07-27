@@ -31,9 +31,7 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
@@ -119,32 +117,28 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         colorByScalar(); // Take color from glyph scalar
     }
 
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (molecule == null) return;
 
-        // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof Nucleotide) {
-            Nucleotide nucleotide = (Nucleotide) molecule;
-            addNucleotide(nucleotide);
-        }
         else if (molecule instanceof NucleicAcid) {
             NucleicAcid nucleicAcid = (NucleicAcid) molecule;
-            for (Iterator iterResidue = nucleicAcid.getResidueIterator(); iterResidue.hasNext(); ) {
+            for (Iterator iterResidue = nucleicAcid.residues().iterator(); iterResidue.hasNext(); ) {
                 Residue residue = (Residue) iterResidue.next();
-                if (residue instanceof Nucleotide)
-                    addMolecule((Nucleotide) residue);
+                if (residue.getResidueType() instanceof Nucleotide)
+                    addNucleotide(residue);
             }
         }
     }
     
-    void addNucleotide(Nucleotide nucleotide) {
+    void addNucleotide(Residue nucleotide) {
         if (nucleotide == null) return;
+        if (! (nucleotide.getResidueType() instanceof Nucleotide)) return;
         
         // Don't add things that have already been added
         // if (glyphColors.containsKey(nucleotide)) return;
 
         // Put end of rod in the middle of the Watson-Crick face
-        LocatedAtom sideChainAtom;
+        Atom sideChainAtom;
         if (nucleotide instanceof Purine)
             sideChainAtom = nucleotide.getAtom(" N1 ");
         else sideChainAtom = nucleotide.getAtom(" N3 ");

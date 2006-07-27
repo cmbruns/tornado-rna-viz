@@ -61,7 +61,7 @@ public class Tornado3DCanvas extends StructureCanvas
     // ResidueActionBroadcaster residueActionBroadcaster;
 
 //    vtkProp currentHighlight;
-//    PDBResidue currentHighlightedResidue;
+//    Residue currentHighlightedResidue;
 //    MutableLocatedMolecule selectedAtoms = new MoleculeClass();
     
     vtkRenderer overlayRenderer;

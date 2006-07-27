@@ -76,7 +76,7 @@ public class ProteinRibbon extends MoleculeCartoonClass {
     
     public vtkProp3D getVtkProp3D() {return assembly;}
     
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         if (m instanceof LocatedProtein) {
             insertOneProtein((LocatedProtein) m);
         }
@@ -102,7 +102,7 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         }
     }
 
-    public void hide(LocatedMolecule m) {
+    public void hide(Molecule m) {
         if (moleculeCartoons.containsKey(m)) {
             Collection cartoons = (Collection) moleculeCartoons.get(m);
             for (Iterator i = cartoons.iterator(); i.hasNext();) {
@@ -111,16 +111,16 @@ public class ProteinRibbon extends MoleculeCartoonClass {
             }
         }
         if (m instanceof Biopolymer) {
-            Iterator i = ((Biopolymer)m).getResidueIterator();
+            Iterator i = ((Biopolymer)m).residues().iterator();
             while (i.hasNext()) {
                 Object residue = i.next();
-                if (residue instanceof LocatedMolecule)
-                    hide((LocatedMolecule) residue);
+                if (residue instanceof Molecule)
+                    hide((Molecule) residue);
             }
         }
     }
 
-    public void show(LocatedMolecule m) {
+    public void show(Molecule m) {
         if (moleculeCartoons.containsKey(m)) {
             Collection cartoons = (Collection) moleculeCartoons.get(m);
             for (Iterator i = cartoons.iterator(); i.hasNext();) {
@@ -129,16 +129,16 @@ public class ProteinRibbon extends MoleculeCartoonClass {
             }
         }
         if (m instanceof Biopolymer) {
-            Iterator i = ((Biopolymer)m).getResidueIterator();
+            Iterator i = ((Biopolymer)m).residues().iterator();
             while (i.hasNext()) {
                 Object residue = i.next();
-                if (residue instanceof LocatedMolecule)
-                    show((LocatedMolecule) residue);
+                if (residue instanceof Molecule)
+                    show((Molecule) residue);
             }
         }
     }
 
-//    private vtkActor insertOneAminoAcid(AminoAcid aa) {
+//    private vtkActor insertOneAminoAcid(Residue aa) {
 //        // TODO check for secondary structure type
 //        vtkActor actor = createCoilActor(aa);
 //        assembly.AddPart(actor);
@@ -158,13 +158,13 @@ public class ProteinRibbon extends MoleculeCartoonClass {
             if (structure instanceof Helix)  {
                 // System.out.println("One helix found");
                 Vector helixResidues = new Vector();
-                for (Iterator res = structure.getResidueIterator(); res.hasNext(); ) {
+                for (Iterator res = structure.residues().iterator(); res.hasNext(); ) {
                     Residue residue = (Residue) res.next();
                     helixResidues.add(residue);
                     renderedResidues.add(residue);
                 }
-                AminoAcid[] helixResidueArray = new AminoAcid[helixResidues.size()];
-                helixResidueArray = (AminoAcid[]) helixResidues.toArray(helixResidueArray);
+                Residue[] helixResidueArray = new Residue[helixResidues.size()];
+                helixResidueArray = (Residue[]) helixResidues.toArray(helixResidueArray);
                 vtkActor helixActor = createHelixActor(helixResidueArray);
                 assembly.AddPart(helixActor);
             }
@@ -174,13 +174,13 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         for (SecondaryStructure structure : protein.secondaryStructures()) {
             if (structure instanceof BetaStrand) {
                 Vector strandResidues = new Vector();
-                for (Iterator res = structure.getResidueIterator(); res.hasNext(); ) {
+                for (Iterator res = structure.residues().iterator(); res.hasNext(); ) {
                     Residue residue = (Residue) res.next();
                     strandResidues.add(residue);
                     renderedResidues.add(residue);
                 }
-                AminoAcid[] strandResidueArray = new AminoAcid[strandResidues.size()];
-                strandResidueArray = (AminoAcid[]) strandResidues.toArray(strandResidueArray);
+                Residue[] strandResidueArray = new Residue[strandResidues.size()];
+                strandResidueArray = (Residue[]) strandResidues.toArray(strandResidueArray);
                 vtkActor strandActor = createStrandActor(strandResidueArray);
                 assembly.AddPart(strandActor);
             }
@@ -188,15 +188,15 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         
         // Add coils
         Vector coilResidues = new Vector();
-        for (Iterator i = protein.getResidueIterator(); i.hasNext();) {
+        for (Iterator i = protein.residues().iterator(); i.hasNext();) {
             Residue residue = (Residue) i.next();
-            if (! (residue instanceof AminoAcid)) continue;
+            if (! (residue.getResidueType() instanceof AminoAcid)) continue;
 
             if (renderedResidues.contains(residue)) {
                 if (coilResidues.size() > 0) {
                     // flush coil residues when a non-coil is found
-                    AminoAcid[] coil = new AminoAcid[coilResidues.size()];
-                    coil = (AminoAcid[]) coilResidues.toArray(coil);
+                    Residue[] coil = new Residue[coilResidues.size()];
+                    coil = (Residue[]) coilResidues.toArray(coil);
                     vtkActor coilActor = createCoilActor(coil);
                     assembly.AddPart(coilActor);
                     coilResidues.clear();
@@ -208,21 +208,21 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         // flush final coil segment
         if (coilResidues.size() > 0) {
             // flush coil residues
-            AminoAcid[] coil = new AminoAcid[coilResidues.size()];
-            coil = (AminoAcid[]) coilResidues.toArray(coil);
+            Residue[] coil = new Residue[coilResidues.size()];
+            coil = (Residue[]) coilResidues.toArray(coil);
             vtkActor coilActor = createCoilActor(coil);
             assembly.AddPart(coilActor);
             coilResidues.clear();
         }
     }
     
-    private vtkActor createCoilActor(AminoAcid[] residues) {
+    private vtkActor createCoilActor(Residue[] residues) {
         Vector pathVectors = new Vector();
         Vector normalVectors = new Vector();        
 
         // Add one actor for each residue
         for (int i = 0; i < residues.length; i ++) {
-            AminoAcid residue = residues[i];
+            Residue residue = residues[i];
 
             Vector3D[] v = createCoilPath(residue);
             Vector3D[] n = createNormalPath(residue);
@@ -240,13 +240,13 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         return createCoilActor(paths, normals);
     }
     
-    private vtkActor createStrandActor(AminoAcid[] residues) {
+    private vtkActor createStrandActor(Residue[] residues) {
         Vector pathVectors = new Vector();
         Vector normalVectors = new Vector();        
 
         // Add one actor for each residue
         for (int i = 0; i < residues.length; i ++) {
-            AminoAcid residue = residues[i];
+            Residue residue = residues[i];
 
             Vector3D[] v = createCoilPath(residue);
             Vector3D[] n = createNormalPath(residue);
@@ -419,13 +419,13 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         return strandActor;        
     }
     
-    private vtkActor createHelixActor(AminoAcid[] residues) {
+    private vtkActor createHelixActor(Residue[] residues) {
         Vector pathVectors = new Vector();
         Vector normalVectors = new Vector();        
 
         // Add one actor for each residue
         for (int i = 0; i < residues.length; i ++) {
-            AminoAcid residue = residues[i];
+            Residue residue = residues[i];
 
             Vector3D[] v = createCoilPath(residue);
             Vector3D[] n = createNormalPath(residue);
@@ -517,7 +517,7 @@ public class ProteinRibbon extends MoleculeCartoonClass {
      * @param m
      * @param c
      */
-    private void addToIndex(LocatedMolecule m, Hidable c) {
+    private void addToIndex(Molecule m, Hidable c) {
         if (! (moleculeCartoons.containsKey(m)))
             moleculeCartoons.put(m, new HashSet());
         Collection set = (Collection) moleculeCartoons.get(m);
@@ -529,7 +529,7 @@ public class ProteinRibbon extends MoleculeCartoonClass {
 //     * @param startResidue
 //     * @return
 //     */
-//    private vtkActor createCoilActor(AminoAcid startResidue) {
+//    private vtkActor createCoilActor(Residue startResidue) {
 //        Vector3D[] vectorPath = createCoilPath(startResidue);
 //        Vector3D[] normalPath = createNormalPath(startResidue);
 //        return createCoilActor(vectorPath, normalPath);
@@ -599,7 +599,7 @@ public class ProteinRibbon extends MoleculeCartoonClass {
      * @param startResidue
      * @return
      */
-    private Vector3D[] createCoilPath(AminoAcid startResidue) {
+    private Vector3D[] createCoilPath(Residue startResidue) {
         Vector3D[] answer = new Vector3D[splineFactor];
 
         int residueIndex = getSplineIndex(startResidue);
@@ -610,7 +610,7 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         return answer;
     }
     
-    private Vector3D[] createNormalPath(AminoAcid startResidue) {
+    private Vector3D[] createNormalPath(Residue startResidue) {
         Vector3D[] answer = new Vector3D[splineFactor];
 
         int residueIndex = getSplineIndex(startResidue);
@@ -628,15 +628,15 @@ public class ProteinRibbon extends MoleculeCartoonClass {
     }
 
     // Alpha carbon position or other canonical location for use in constructing splines
-    Vector3D getSplinePosition(AminoAcid residue) throws InsufficientAtomsException {
+    Vector3D getSplinePosition(Residue residue) throws InsufficientAtomsException {
         
         Vector3D answer = residue.getBackbonePosition();
         
         // TODO - return flattened position for beta strands
         if (residue.isStrand()) {
             try {
-                Vector3D previous = ((LocatedResidue)residue.getPreviousResidue()).getBackbonePosition();
-                Vector3D next = ((LocatedResidue)residue.getNextResidue()).getBackbonePosition();
+                Vector3D previous = ((Residue)residue.getPreviousResidue()).getBackbonePosition();
+                Vector3D next = ((Residue)residue.getNextResidue()).getBackbonePosition();
                 Vector3D current = residue.getBackbonePosition();
                 // Average of midpoints to previous and next backbone positions
                 answer = current.plus(current).plus(previous).plus(next).times(0.25);
@@ -647,7 +647,7 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         return answer;
     }
 
-    Vector3D getSplineNormal(AminoAcid residue) throws InsufficientAtomsException {
+    Vector3D getSplineNormal(Residue residue) throws InsufficientAtomsException {
         Vector3D answer = new Vector3DClass(1, 0, 0); // default if all else fails
         
         // If the residue is in the middle of a continuous chain, set the normal in the plane of
@@ -658,21 +658,21 @@ public class ProteinRibbon extends MoleculeCartoonClass {
 
         Residue previousResidue = residue.getPreviousResidue();
         Residue followingResidue = residue.getNextResidue();
-        if ( (previousResidue != null) && (previousResidue instanceof LocatedResidue) ) {
-            p = ((LocatedResidue)previousResidue).getBackbonePosition();
+        if ( (previousResidue != null) && (previousResidue instanceof Residue) ) {
+            p = ((Residue)previousResidue).getBackbonePosition();
         }
-        if ( (followingResidue != null) && (followingResidue instanceof LocatedResidue) ) {
-            f = ((LocatedResidue)followingResidue).getBackbonePosition();
+        if ( (followingResidue != null) && (followingResidue instanceof Residue) ) {
+            f = ((Residue)followingResidue).getBackbonePosition();
         }
         
         // If there are not previous and following residues, use N and C atoms instead
         if (p == null) {
-            LocatedAtom atom = residue.getAtom(" N  ");
+            Atom atom = residue.getAtom(" N  ");
             if (atom != null)
                 p = atom.getCoordinates();
         }
         if (f == null) {
-            LocatedAtom atom = residue.getAtom(" C  ");
+            Atom atom = residue.getAtom(" C  ");
             if (atom != null)
                 f = atom.getCoordinates();
         }
@@ -692,7 +692,7 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         return answer;
     }
     
-    int getSplineIndex(AminoAcid aa) {
+    int getSplineIndex(Residue aa) {
         // TODO - can cause null pointer exception
         return ((Integer)residueSplineIndices.get(aa)).intValue();
     }
@@ -703,11 +703,9 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         Vector3D previousNormal = null;
 
         int residueIndex = 0;
-        RESIDUE: for (Iterator i = molecule.getResidueIterator(); i.hasNext();) {
-            Object o = i.next();
-            if ((o instanceof AminoAcid) && (o instanceof LocatedMolecule)) {
+        RESIDUE: for (Residue residue : molecule.residues()) {
+            if (residue.getResidueType() instanceof AminoAcid) {
                 residueIndex ++;
-                AminoAcid residue = (AminoAcid) o;
                 
                 Vector3D position = null;
                 Vector3D normal = null;

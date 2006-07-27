@@ -34,7 +34,7 @@ package org.simtk.moleculargraphics.cartoon;
 import java.util.*;
 
 import org.simtk.geometry3d.*;
-import org.simtk.molecularstructure.LocatedMolecule;
+import org.simtk.molecularstructure.Molecule;
 import org.simtk.molecularstructure.Molecule;
 import org.simtk.molecularstructure.MoleculeCollection;
 
@@ -103,7 +103,7 @@ public abstract class GlyphCartoon extends ActorCartoonClass {
         lineGlyph.SetColorModeToColorByScalar(); // Take color from scalar        
     }
 
-    public abstract void addMolecule(LocatedMolecule molecule);
+    public abstract void addMolecule(Molecule molecule);
 
     class GlyphPosition {
         private vtkPolyData glyphData;

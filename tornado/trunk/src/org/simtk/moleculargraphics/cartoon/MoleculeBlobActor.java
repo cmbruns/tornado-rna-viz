@@ -47,7 +47,7 @@ public class MoleculeBlobActor extends ActorCartoonClass {
     double blurRatio = 1.50;
     Molecule molecule = null;
 
-    public MoleculeBlobActor(LocatedMolecule molecule, double resolution) {
+    public MoleculeBlobActor(Molecule molecule, double resolution) {
         this.resolution = resolution;
         addMolecule(molecule);
     }
@@ -60,13 +60,13 @@ public class MoleculeBlobActor extends ActorCartoonClass {
         return (int) Math.round(v/resolution);
     }
     
-    protected void addMolecule(LocatedMolecule molecule) {
+    protected void addMolecule(Molecule molecule) {
         if (molecule == null) return;
         this.molecule = molecule;
 
         // Identify molecule bounding box
         BoundingBox molBox = null;
-        for (LocatedAtom atom : molecule.atoms()) {
+        for (Atom atom : molecule.atoms()) {
             double r = atom.getVanDerWaalsRadius();
             Vector3D c = atom.getCoordinates();
             double[] bounds = {
@@ -131,7 +131,7 @@ public class MoleculeBlobActor extends ActorCartoonClass {
         // System.out.println("Scale factor = " + scaleFactor);
         
         // Populate density
-        for (LocatedAtom atom : molecule.atoms()) {
+        for (Atom atom : molecule.atoms()) {
             double r = atom.getVanDerWaalsRadius();
             Vector3D c = atom.getCoordinates();
 

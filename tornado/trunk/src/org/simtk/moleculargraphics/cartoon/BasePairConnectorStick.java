@@ -36,11 +36,6 @@ import org.simtk.molecularstructure.nucleicacid.*;
 import vtk.*;
 
 public class BasePairConnectorStick extends TensorGlyphCartoon {
-    private int baseColorIndex = 1;
-    private Map<Color, Integer> colorIndices = new HashMap<Color, Integer>();
-    protected ColorScheme colorScheme = 
-        SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME;
-    
     public BasePairConnectorStick() {
         super();
         
@@ -55,7 +50,7 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
         setGlyphSource(cylinderSource.GetOutput());        
     }
 
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (molecule instanceof NucleicAcid)
             addNucleicAcid((NucleicAcid)molecule);
     }
@@ -67,14 +62,14 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
     }
 
     public void addBasePair(BasePair basePair) {
-        Nucleotide res1 = basePair.getResidue1();
-        Nucleotide res2 = basePair.getResidue2();
+        Residue res1 = basePair.getResidue1();
+        Residue res2 = basePair.getResidue2();
         
         addNucleotide(res1);
         addNucleotide(res2);
     }
     
-    public void addNucleotide(Nucleotide res) {
+    public void addNucleotide(Residue res) {
         Vector3D pos1;
         try {
             pos1 = res.getBackbonePosition();

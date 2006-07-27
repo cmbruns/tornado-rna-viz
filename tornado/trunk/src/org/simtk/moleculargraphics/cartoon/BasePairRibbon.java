@@ -37,7 +37,7 @@ public class BasePairRibbon extends CompositeCartoon {
         addSubToon(backbone);
     }
 
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         rods.addMolecule(m);
         backbone.addMolecule(m);
     }

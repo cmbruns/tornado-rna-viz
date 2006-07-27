@@ -35,7 +35,7 @@ public class WireFrame extends MoleculeCartoonClass {
         addSubToon(wireFrame);
     }
 
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         if (m.isSolvent()) return;
         wireFrame.addMolecule(m);
         updateActors();

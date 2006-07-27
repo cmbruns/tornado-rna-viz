@@ -58,7 +58,7 @@ public class FineRibbonCartoon extends CompositeCartoon {
         addSubToon(ovalToon);
     }
 
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         // wireToon.add(m);
         
         if (m instanceof NucleicAcid) {
@@ -66,7 +66,7 @@ public class FineRibbonCartoon extends CompositeCartoon {
 
             backboneRibbon.addMolecule(nucleicAcid);
 
-            Set<Nucleotide> basePairResidues = new HashSet<Nucleotide>();
+            Set<Residue> basePairResidues = new HashSet<Residue>();
             for (SecondaryStructure structure : nucleicAcid.secondaryStructures())
                 if (structure instanceof BasePair) {
                     BasePair basePair = (BasePair) structure;
@@ -78,8 +78,8 @@ public class FineRibbonCartoon extends CompositeCartoon {
                     
             
             for (Residue residue : ((NucleicAcid)m).residues()) {
-                if (! (residue instanceof Nucleotide)) continue;
-                Nucleotide nucleotide = (Nucleotide) residue;
+                if (! (residue.getResidueType() instanceof Nucleotide)) continue;
+                Residue nucleotide = (Residue) residue;
                 
                 if (basePairResidues.contains(nucleotide))
                     // pairStick.addNucleotide(nucleotide);

@@ -63,7 +63,7 @@ public class ResidueSphereActor extends GlyphCartoon {
     }
     
     
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (molecule == null) return;
 
         // Don't add things that have already been added
@@ -79,20 +79,20 @@ public class ResidueSphereActor extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof PDBResidueClass) {
-            PDBResidueClass residue = (PDBResidueClass) molecule;
+        if (molecule instanceof Residue) {
+            Residue residue = (Residue) molecule;
             currentObjects.remove(currentObjects.size() - 1); // This object will be re-added
             addResidue(residue, currentObjects);
         }
         else if (molecule instanceof BiopolymerClass) {
             BiopolymerClass biopolymer = (BiopolymerClass) molecule;
-            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
-                addResidue((PDBResidueClass) iterResidue.next(), currentObjects);
+            for (Iterator<Residue> iterResidue = biopolymer.residues().iterator(); iterResidue.hasNext(); ) {
+                addResidue(iterResidue.next(), currentObjects);
             }
         }        
     }
     
-    void addResidue(PDBResidueClass residue, Set<Object> parentObjects) {
+    void addResidue(Residue residue, Set<Object> parentObjects) {
         if (residue == null) return;
 
         // Collect molecular objects on which to index the glyphs
@@ -110,8 +110,8 @@ public class ResidueSphereActor extends GlyphCartoon {
         linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
         
         double sphereRadius = defaultSphereRadius;
-        if (residue instanceof Nucleotide) sphereRadius = nucleotideSphereRadius;
-        if (residue instanceof AminoAcid) sphereRadius = aminoAcidSphereRadius;
+        if (residue.getResidueType() instanceof Nucleotide) sphereRadius = nucleotideSphereRadius;
+        if (residue.getResidueType() instanceof AminoAcid) sphereRadius = aminoAcidSphereRadius;
         
         lineNormals.InsertNextTuple3(sphereRadius, 0.0, 0.0);
 

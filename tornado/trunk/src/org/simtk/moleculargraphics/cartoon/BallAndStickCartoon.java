@@ -52,7 +52,7 @@ public class BallAndStickCartoon extends CompositeCartoon {
         addSubToon(balls);
     }
     
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         sticks.addMolecule(m);
         balls.addMolecule(m);
     }

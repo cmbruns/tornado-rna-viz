@@ -58,7 +58,7 @@ public class RopeAndCylinder extends CompositeCartoon {
         addSubToon(cpks);
     }
     
-    public void addMolecule(LocatedMolecule m) {
+    public void addMolecule(Molecule m) {
         if (m instanceof NucleicAcid) {
             addNucleicAcid((NucleicAcid) m); 
         }
@@ -76,23 +76,23 @@ public class RopeAndCylinder extends CompositeCartoon {
     protected void addNucleicAcid(NucleicAcid molecule) {
         // Distinguish duplex residues from rope residues
 
-        Set<LocatedResidue> allResidues = new LinkedHashSet<LocatedResidue>();
+        Set<Residue> allResidues = new LinkedHashSet<Residue>();
         for (Residue residue : molecule.residues())
-            if (residue instanceof LocatedResidue) allResidues.add((LocatedResidue) residue);
+            allResidues.add(residue);
 
-        Set<LocatedResidue> duplexResidues = new HashSet<LocatedResidue>();
+        Set<Residue> duplexResidues = new HashSet<Residue>();
         for (SecondaryStructure structure : molecule.secondaryStructures()) {
             if (structure instanceof Duplex) {
                 Duplex duplex = (Duplex) structure;
                 for (Residue residue : duplex.residues()) {
-                    if (residue instanceof LocatedResidue) duplexResidues.add((LocatedResidue) residue);                    
+                    duplexResidues.add(residue);                    
                 }
             }
         }
         
         // Duplex residues that attach to non-duplex residues should also get ropes
-        Set<LocatedResidue> ropeResidues = new LinkedHashSet<LocatedResidue>();
-        for (LocatedResidue residue : allResidues) {
+        Set<Residue> ropeResidues = new LinkedHashSet<Residue>();
+        for (Residue residue : allResidues) {
             boolean isRopeResidue = false;
             if (duplexResidues.contains(residue)) { // In a duplex             
                 // Only put a rope if this attaches to a non-duplex residue
@@ -118,7 +118,7 @@ public class RopeAndCylinder extends CompositeCartoon {
         List<Object> parentObjects = new Vector<Object>();
         parentObjects.add(molecule);
         
-        for (LocatedResidue residue : ropeResidues) {
+        for (Residue residue : ropeResidues) {
             nucRopes.addResidue(residue, parentObjects);
         }
 

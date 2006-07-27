@@ -103,6 +103,9 @@ public class vtkArrowWidthFilter extends vtkProgrammableFilter {
         }
 
         int numPts = input.GetNumberOfPoints();
+        
+        if (numPts < 1) return;
+        
         Vector3D finalPoint = new Vector3DClass(input.GetPoint(numPts - 1));
         
         // We cannot rely upon distance from the end to determine what is in 

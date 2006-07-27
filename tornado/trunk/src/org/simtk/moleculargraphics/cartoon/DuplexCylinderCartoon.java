@@ -39,11 +39,9 @@ import vtk.*;
 import org.simtk.geometry3d.*;
 import org.simtk.moleculargraphics.GraphicsCylinder;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.PDBAtom;
+import org.simtk.molecularstructure.atom.Atom;
 import org.simtk.molecularstructure.nucleicacid.*;
-import org.simtk.molecularstructure.protein.AminoAcid;
-import org.simtk.molecularstructure.protein.Helix;
-import org.simtk.util.*;
+import org.simtk.molecularstructure.Residue;
 
 /** 
  *  
@@ -68,13 +66,13 @@ public class DuplexCylinderCartoon extends MoleculeCartoonClass
         // TODO
     }
 
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         addNucleicAcid((NucleicAcid) molecule);
     }
-    public void hide(LocatedMolecule molecule) {} // TODO
+    public void hide(Molecule molecule) {} // TODO
     public void hide() {} // TODO
-    public void show(LocatedMolecule molecule) {} // TODO
+    public void show(Molecule molecule) {} // TODO
     public void show() {} // TODO
     public void clear() {} // TODO
 
@@ -92,8 +90,13 @@ public class DuplexCylinderCartoon extends MoleculeCartoonClass
             	List<BasePair> dupBPs = dup.basePairs();
             	BasePair firstBP = dupBPs.get(0);
             	BasePair lastBP = dupBPs.get(dupBPs.size()-1);
-            	Nucleotide res5 = firstBP.getResidue1();
-            	if (res5.getChainID().equals(nucleicAcid.getChainID())){
+                
+                // Only create duplexes for the molecule in which the
+                // first residue appears.
+            	Residue res5 = firstBP.getResidue1();
+            	// if (res5.getPdbChainId().equals(nucleicAcid.getPdbChainId())){
+                if (res5.equals(nucleicAcid.getResidueByNumber(res5.getResidueNumber()))){
+                    
 	                // System.out.println("Duplex found: "+dup.helixString());
 	                try {addDuplex(dup);}
 	                catch (InsufficientPointsException exc) {}
@@ -208,8 +211,8 @@ public class DuplexCylinderCartoon extends MoleculeCartoonClass
                 basePairEndAlphas.put(previousBasePair, new Double(startAlpha));
             
             // Create cylinder slicing plane using vector between residue atoms
-            PDBAtom atom1 = basePair.getResidue1().getAtom(" C1*");
-            PDBAtom atom2 = basePair.getResidue2().getAtom(" C1*");
+            Atom atom1 = basePair.getResidue1().getAtom(" C1*");
+            Atom atom2 = basePair.getResidue2().getAtom(" C1*");
             Vector3D direction = atom2.getCoordinates().minus(atom1.getCoordinates()).unit();
             // Make sure direction is perpendicular to the helix axis
             direction = direction.minus(helixDirection.times(helixDirection.dot(direction))).unit();

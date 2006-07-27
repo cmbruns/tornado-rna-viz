@@ -34,6 +34,7 @@ package org.simtk.moleculargraphics.cartoon;
 import vtk.*;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.Atom;
 
 /** 
  * @author Christopher Bruns
@@ -54,7 +55,7 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
     public NewBackboneCurveActor(
             double width, 
             double thickness,
-            LocatedMolecule molecule)
+            Molecule molecule)
     throws NoCartoonCreatedException
     {
         // Something is screwy with back vs. front faces of ribbon
@@ -79,9 +80,11 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
         
         Vector3D previousNormal = null;
         boolean isFirstResidue = true;
+        Residue previousResidue = null;
+        double colorScalar = 0;
         RESIDUE: for (Residue res : biopolymer.residues()) {
-            if (! (res instanceof LocatedResidue)) continue RESIDUE;
-            LocatedResidue residue = (LocatedResidue) res;
+            if (! (res instanceof Residue)) continue RESIDUE;
+            Residue residue = (Residue) res;
             
             Vector3D backbonePosition;
             try {
@@ -95,7 +98,7 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
                 sideChainPosition = residue.getSideChainPosition();
             } catch (InsufficientAtomsException exc) {}
 
-            double colorScalar = toonColors.getColorIndex(residue);
+            colorScalar = toonColors.getColorIndex(residue);
             
             if (backbonePosition == null) continue RESIDUE;
             
@@ -112,38 +115,51 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
                 Vector3D chainDirection = new Vector3DClass(0,0.01,0);
                 
                 try {
-                    Vector3D dir1 = ((LocatedResidue)residue.getNextResidue()).getBackbonePosition().minus(backbonePosition);
+                    Vector3D dir1 = ((Residue)residue.getNextResidue()).getBackbonePosition().minus(backbonePosition);
                     chainDirection = chainDirection.plus(dir1);
                 } catch (Exception e) {}                
                 try {
-                    Vector3D dir2 = backbonePosition.minus(((LocatedResidue)residue.getPreviousResidue()).getBackbonePosition());
+                    Vector3D dir2 = backbonePosition.minus(((Residue)residue.getPreviousResidue()).getBackbonePosition());
                     chainDirection = chainDirection.plus(dir2);
                 } catch (Exception e) {}
                 
                 chainDirection = chainDirection.unit();
                 
                 Vector3D right = chainDirection.cross(normal).unit();
-                normal = right.cross(chainDirection).unit();                
+                normal = right.cross(chainDirection).unit();  
             }
             
-            // Extend first residue to the 5' hydroxyl
-            if (isFirstResidue && (residue instanceof PDBResidue)) {
+            // Extend first residue to the phosphate or 5' hydroxyl
+            if (isFirstResidue) {
                 isFirstResidue = false;
-                try {
-                    Vector3D oh5 = ((PDBResidue)residue).getAtom("O5*").getCoordinates();
-                    linePoints.InsertNextPoint(oh5.toArray());
-                    lineNormals.InsertNextTuple3(normal.x(), normal.y(), normal.z());
-                    colorScalars.InsertNextValue(colorScalar);                    
-                } catch (Exception exc) {}
+                Atom o5 = residue.getAtom("P");
+                if (o5 == null) o5 = residue.getAtom("O5*");
+                if (o5 != null) {
+                    Vector3D o5Pos = o5.getCoordinates();
+                    if (o5Pos != null) {
+                        linePoints.InsertNextPoint(o5Pos.toArray());
+                        lineNormals.InsertNextTuple3(normal.x(), normal.y(), normal.z());
+                        colorScalars.InsertNextValue(colorScalar);
+                    }
+                }
             }
             
             linePoints.InsertNextPoint(backbonePosition.toArray());
             lineNormals.InsertNextTuple3(normal.x(), normal.y(), normal.z());
             colorScalars.InsertNextValue(colorScalar);
             
-            previousNormal = normal;
+            previousNormal = normal;            
+            previousResidue = residue;
         }
         
+        // Extend final residue to the 3' hydroxyl
+        try {
+            Vector3D oh3 = previousResidue.getAtom("O5*").getCoordinates();
+            linePoints.InsertNextPoint(oh3.toArray());
+            lineNormals.InsertNextTuple3(previousNormal.x(), previousNormal.y(), previousNormal.z());
+            colorScalars.InsertNextValue(colorScalar);                    
+        } catch (Exception exc) {}
+
         int numberOfPoints = linePoints.GetNumberOfPoints();
         if (numberOfPoints < 2) 
             throw new NoCartoonCreatedException("Not enough points for backbone curve");
@@ -160,11 +176,23 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
         lineData.GetPointData().SetScalars(colorScalars);
         lineData.GetPointData().SetNormals(lineNormals);
 
+//        System.out.println("Backbone curve line data:");
+//        for (int i = 0; i < numberOfPoints; i ++) {
+//            double[] p = lineData.GetPoint(i);
+//            double[] n = lineData.GetPointData().GetNormals().GetTuple3(i);
+//            System.out.println("  "+i+": ("+p[0]+", "+p[1]+", "+p[2]+")");
+//        }
+        
+        // Remove duplicate points
+        vtkCleanPolyData cleanFilter = new vtkCleanPolyData();
+        cleanFilter.SetInput(lineData);
+        
         // Smooth the path of the backbone
         vtkSplineFilter splineFilter = new vtkSplineFilter();
         splineFilter.SetSubdivideToLength();
         splineFilter.SetLength(lengthResolution);
-        splineFilter.SetInput(lineData);
+        splineFilter.SetInput(cleanFilter.GetOutput());
+        splineFilter.Update(); // TODO - for debugging
         
         // Correct the interpolated scalars back to integer values
         vtkRoundScalarsFilter roundingFilter = new vtkRoundScalarsFilter();

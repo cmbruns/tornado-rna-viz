@@ -39,7 +39,7 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
     protected double helixWidth = 2.80;
     protected double strandWidth = 2.20;
     
-    public void addMolecule(LocatedMolecule molecule) 
+    public void addMolecule(Molecule molecule) 
     throws NoCartoonCreatedException
     {
         if (! (molecule instanceof Protein)) {
@@ -48,21 +48,21 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
         Protein protein = (Protein) molecule;
         
         // First pass, note the secondary structure of each residue
-        Set<AminoAcid> betaResidues = new HashSet<AminoAcid>();
-        Set<AminoAcid> alphaResidues = new HashSet<AminoAcid>();
+        Set<Residue> betaResidues = new HashSet<Residue>();
+        Set<Residue> alphaResidues = new HashSet<Residue>();
         for (SecondaryStructure structure : protein.secondaryStructures()) {
 
             if (structure instanceof BetaStrand) {
                 for (Residue residue : structure.residues()) {
-                    if (residue instanceof AminoAcid)
-                        betaResidues.add((AminoAcid)residue);
+                    if (residue.getResidueType() instanceof AminoAcid)
+                        betaResidues.add((Residue)residue);
                 }                
             }            
 
             else if (structure instanceof Helix) {
                 for (Residue residue : structure.residues()) {
-                    if (residue instanceof AminoAcid)
-                        alphaResidues.add((AminoAcid)residue);
+                    if (residue.getResidueType() instanceof AminoAcid)
+                        alphaResidues.add((Residue)residue);
                 }                
             }            
         }
@@ -71,12 +71,12 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
         int resIndex = 0;
         Spline3D positionSpline = new Spline3D();
         Spline3D normalSpline = new Spline3D();
-        AminoAcid previousResidue = null;
+        Residue previousResidue = null;
         Vector3D previousNormal = null;
-        List<AminoAcid> molResidueList = new Vector<AminoAcid>();
+        List<Residue> molResidueList = new Vector<Residue>();
         for (Residue residue : protein.residues()) {            
-            if (! (residue instanceof AminoAcid)) continue;
-            AminoAcid aminoAcid = (AminoAcid) residue;
+            if (! (residue instanceof Residue)) continue;
+            Residue aminoAcid = (Residue) residue;
             resIndex ++;
             molResidueList.add(aminoAcid);
 
@@ -114,8 +114,8 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
                 // Adjust CA position to minimize pleating in beta strands
                 // If there are residues before and after, use position that minimizes pleating
                 try {
-                    Vector3D prev = ((AminoAcid)residue.getPreviousResidue()).getAtom("CA").getCoordinates();
-                    Vector3D next = ((AminoAcid)residue.getNextResidue()).getAtom("CA").getCoordinates();
+                    Vector3D prev = ((Residue)residue.getPreviousResidue()).getAtom("CA").getCoordinates();
+                    Vector3D next = ((Residue)residue.getNextResidue()).getAtom("CA").getCoordinates();
                     position = position.plus(position.plus(prev.plus(next))).times(0.25);
                 } catch (NullPointerException exc) {}
             }
@@ -144,10 +144,10 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
         
         // Third pass, note stretches of same structure type
         ResType previousType = ResType.NONE;
-        List<AminoAcid> residueList = new Vector<AminoAcid>();
+        List<Residue> residueList = new Vector<Residue>();
         resIndex = 0;
         int structureStart = 1;
-        for (AminoAcid aminoAcid : molResidueList) {
+        for (Residue aminoAcid : molResidueList) {
             resIndex ++;
 
             ResType resType = ResType.COIL; // default
@@ -168,7 +168,7 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
     }
     
     protected void addResidues(
-            List<AminoAcid> residues, 
+            List<Residue> residues, 
             ResType type,
             int startIndex,
             Spline3D positionSpline, 

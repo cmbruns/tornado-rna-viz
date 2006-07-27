@@ -27,17 +27,15 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.geometry3d.*;
-import org.simtk.molecularstructure.LocatedMolecule;
-import org.simtk.molecularstructure.atom.LocatedAtom;
-import org.simtk.molecularstructure.nucleicacid.*;
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.Atom;
 
 import vtk.*;
 
 public class BaseConnectorTubeActor extends ActorCartoonClass {
     private double tubeRadius = 0.5;
 
-    public BaseConnectorTubeActor(Nucleotide residue) 
+    public BaseConnectorTubeActor(Residue residue) 
     throws NoCartoonCreatedException
     {
         int colorScalar = toonColors.getColorIndex(residue);
@@ -46,15 +44,15 @@ public class BaseConnectorTubeActor extends ActorCartoonClass {
         
         vtkPoints linePoints = new vtkPoints();
 
-        LocatedAtom p = residue.getAtom("P");
-        LocatedAtom o5 = residue.getAtom("O5*");
-        LocatedAtom c1 = residue.getAtom("C1*");
-        LocatedAtom n = residue.getAtom("N9");
+        Atom p = residue.getAtom("P");
+        Atom o5 = residue.getAtom("O5*");
+        Atom c1 = residue.getAtom("C1*");
+        Atom n = residue.getAtom("N9");
         if (n == null)
             n = residue.getAtom("N1");
         
-        LocatedAtom[] atoms = {p,o5,c1,n};
-        for (LocatedAtom atom : atoms) {
+        Atom[] atoms = {p,o5,c1,n};
+        for (Atom atom : atoms) {
             if (atom == null) continue;
             linePoints.InsertNextPoint(atom.getCoordinates().toArray());
             colorScalars.InsertNextValue(colorScalar);

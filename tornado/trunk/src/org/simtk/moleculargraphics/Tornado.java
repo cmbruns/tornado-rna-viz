@@ -749,8 +749,8 @@ implements ResidueActionListener
 
     void loadPDBFile(MoleculeCollection molecules) {
 
-        setMessage("Read " + molecules.getAtomCount() + " atoms, in " +
-                molecules.getMoleculeCount() + " molecules");
+        setMessage("Read " + molecules.atoms().size() + " atoms, in " +
+                molecules.molecules().size() + " molecules");
         
         moleculeCollection = molecules;
         
@@ -763,13 +763,13 @@ implements ResidueActionListener
         residueActionBroadcaster.fireClearResidues();
         BiopolymerClass bp = null;
         // for (Molecule molecule : molecules.molecules()) {
-        for (Iterator i1 = molecules.molecules().iterator(); i1.hasNext();) {
-            LocatedMolecule molecule = (LocatedMolecule) i1.next();
+        for (Iterator<Molecule> i1 = molecules.molecules().iterator(); i1.hasNext();) {
+            Molecule molecule = i1.next();
             if (molecule instanceof BiopolymerClass) {
                 bp = (BiopolymerClass) molecule;
                 
                 // for (Residue residue : bp.residues())
-                for (Iterator i2 = bp.getResidueIterator(); i2.hasNext(); ) {
+                for (Iterator i2 = bp.residues().iterator(); i2.hasNext(); ) {
                     Residue residue = (Residue) i2.next();
                     residueActionBroadcaster.fireAdd(residue);
                 }
@@ -891,7 +891,10 @@ implements ResidueActionListener
         if (residue == null) setMessage(" ");
         else {
             currentCartoon.colorToon(currentHighlightedResidue, colorScheme);
+            
             currentCartoon.colorToon(residue, highlightColorScheme);
+            // for (Atom atom : residue.)
+            
             canvas.repaint();
 
             setMessage("Residue " + residue.getResidueName() + 

@@ -71,7 +71,7 @@ public class AtomSphereActor extends GlyphCartoon {
     
     public void setScale(double s) {sizeScale = s;}
     
-    public void addMolecule(LocatedMolecule molecule) {
+    public void addMolecule(Molecule molecule) {
         if (molecule == null) return;
 
         Vector parentObjects = null;
@@ -88,27 +88,33 @@ public class AtomSphereActor extends GlyphCartoon {
         currentObjects.add(molecule);
         
         // If it's a biopolymer, index the glyphs by residue
-        if (molecule instanceof PDBResidue) {
-            PDBResidue residue = (PDBResidue) molecule;
-            for (Iterator i = residue.getAtomIterator(); i.hasNext(); ) {
-                PDBAtom atom = (PDBAtom) i.next();
+        if (molecule instanceof Residue) {
+            Residue residue = (Residue) molecule;
+            for (Iterator i = residue.atoms().iterator(); i.hasNext(); ) {
+                Atom atom = (Atom) i.next();
                 addAtom(atom, currentObjects);                    
             }
         }
+        
         else if (molecule instanceof Biopolymer) {
             Biopolymer biopolymer = (Biopolymer) molecule;
-            for (Iterator iterResidue = biopolymer.getResidueIterator(); iterResidue.hasNext(); ) {
-                addMolecule((PDBResidueClass) iterResidue.next());
-            }
+            for (Residue residue : biopolymer.residues())
+                addResidue(residue);
         }
-        else for (LocatedAtom atom : molecule.atoms()) {
+        
+        else for (Atom atom : molecule.atoms()) {
         // else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
-            // PDBAtom atom = (PDBAtom) i1.next();
+            // Atom atom = (Atom) i1.next();
             addAtom(atom, currentObjects);
         }        
     }
     
-    void addAtom(LocatedAtom atom, Vector parentObjects) {
+    public void addResidue(Residue residue) {
+        for (Atom atom : residue.atoms())
+            addAtom(atom, null);
+    }
+    
+    void addAtom(Atom atom, Vector parentObjects) {
         if (atom == null) return;
         
         // Don't add things that have already been added

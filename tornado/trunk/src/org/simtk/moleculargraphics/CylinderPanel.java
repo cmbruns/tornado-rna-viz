@@ -84,10 +84,10 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		renWin.addMouseMotionListener(this);
 		
 		 // Test reading of PDB file
-		 RNA rna = new RNA();
+		 RNA rna = new RNA('Q');
 		 try {
 		     rna = (RNA) PDBMoleculeClass.createFactoryPDBMolecule("1x8w.pdb2");
-			 System.out.println("" + rna.getAtomCount() + " atoms read");
+			 System.out.println("" + rna.atoms().size() + " atoms read");
 		 }
 		 catch (java.io.FileNotFoundException e) {System.err.println(e);}
 		 catch (java.io.IOException e) {System.err.println(e);}
@@ -95,12 +95,12 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 		 // Put shapes around each phosphate
 		 // (start with spheres)
 		 Vector3D previousCenter = null;
-		 for (int r = 0; r < rna.getResidueCount(); r++) {
-             if (! (rna.getResidue(r) instanceof PDBResidue))
+		 for (int r = 0; r < rna.residues().size(); r++) {
+             if (! (rna.getResidue(r) instanceof Residue))
                  continue;
 
-		     PDBResidue residue = (PDBResidue) rna.getResidue(r);
-		     PDBAtom phosphorus = residue.getAtom("P");
+		     Residue residue = (Residue) rna.getResidue(r);
+		     Atom phosphorus = residue.getAtom("P");
 		     if (phosphorus != null) {
 		         // Create sphere at phosphate
 		         Vector3D center = phosphorus.getCoordinates();
@@ -155,7 +155,7 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 	}
 	
 	int sphereCount = 0;
-	public void addSphere(Vector3D center, double radius, Color color, PDBResidue residue) {
+	public void addSphere(Vector3D center, double radius, Color color, Residue residue) {
 	    sphereCount ++;
 	    
 	    vtkSphereSource sphere = new vtkSphereSource();
@@ -260,9 +260,9 @@ public class CylinderPanel extends JPanel implements ActionListener, MouseMotion
 			            // System.out.println(propName);
 		            }
 
-		            PDBResidueClass pickedResidue = (PDBResidueClass) vtkPropObjects.get(prop);
+		            Residue pickedResidue = (Residue) vtkPropObjects.get(prop);
 		            if (pickedResidue != null) {
-		                String residueLabel = "Residue " + pickedResidue.getOneLetterCode() + " " + pickedResidue.residueNumber;
+		                String residueLabel = "Residue " + pickedResidue.getOneLetterCode() + " " + pickedResidue.getResidueNumber();
 			            System.out.println(residueLabel);
 			            mouseIsOverAResidue = true;
 		            }

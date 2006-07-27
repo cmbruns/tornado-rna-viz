@@ -51,7 +51,7 @@ public class MoleculeTensorActor extends ActorCartoonClass {
      */
     static double splineFactor = 5.0;
     
-    public MoleculeTensorActor(LocatedMolecule molecule) 
+    public MoleculeTensorActor(Molecule molecule) 
     throws NoCartoonCreatedException
     {
         // Only draw shapes for macromolecules
@@ -66,7 +66,7 @@ public class MoleculeTensorActor extends ActorCartoonClass {
         // 1) Compute center of mass of molecule
         Vector3D centerOfMass = new Vector3DClass(0,0,0);
         double totalMass = 0.0;
-        for (LocatedAtom atom : molecule.atoms()) {
+        for (Atom atom : molecule.atoms()) {
             centerOfMass = centerOfMass.plus(atom.getCoordinates());
             totalMass += 1.0;
         }
@@ -81,7 +81,7 @@ public class MoleculeTensorActor extends ActorCartoonClass {
                 double matrixElement = 0;
                 double totalWeight = 0;
                 double weight = 1.0;
-                for (LocatedAtom atom : molecule.atoms()) {
+                for (Atom atom : molecule.atoms()) {
                     Vector3D point = atom.getCoordinates();
                     double deltaJ = point.getElement(j) - centerOfMass.getElement(j);
                     double deltaI = point.getElement(i) - centerOfMass.getElement(i);
