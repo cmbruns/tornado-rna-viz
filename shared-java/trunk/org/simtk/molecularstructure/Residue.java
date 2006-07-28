@@ -60,4 +60,5 @@ extends ResidueType, Molecular
     public boolean isHelix();
     public boolean isAlphaHelix();
 
+    public void updateAtomPosition(Atom atom);
 }

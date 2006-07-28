@@ -158,7 +158,7 @@ extends MolecularClass
                 if (PDBLine.length() >= 66) {
                     String id = PDBLine.substring(62,66).trim();
                     if (id.length() == 4) {
-                    	setPdbId(id);
+                    	if (! id.equals("XXXX")) setPdbId(id);
                     	//title = "PDB ID "+id+"-- "+title;
                     }
                 }

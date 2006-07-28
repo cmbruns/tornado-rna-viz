@@ -46,28 +46,47 @@ public class AtomClass implements Atom {
     // Atom fields
     private ChemicalElement m_element;
     private String m_atomName = null;
+
+    private AtomPosition position = null;
+    private Map<String, AtomPosition> atomPositions = new HashMap<String, AtomPosition>();
     
     // Located atom fields
-    private Vector3D m_coordinates = null;
+    // private Vector3D m_coordinates = null;
     
     // Molecule Atom fields
     private Set<Atom> m_bonds = new HashSet<Atom>();
     
-    private double temperatureFactor = Double.NaN;
-    private double occupancy = Double.NaN;
+    // private double temperatureFactor = Double.NaN;
+    // private double occupancy = Double.NaN;
     
-	public AtomClass(String PDBLine) throws ParseException {
+	public AtomClass(String pdbLine) throws ParseException {
 	    try {
-	        readPDBLine(PDBLine);
+	        readPdbLine(pdbLine);
 	    } catch (ParseException exc) {}
 	}
 	
+    public void addPosition(AtomPosition pos) {
+        char altLoc = pos.getPdbAltLoc();
+        atomPositions.put(""+altLoc, pos);
+
+        // Update primary position
+        if (position == null) position = pos;
+        // Choose the primary position with the highest occupancy
+        else {
+            if (pos.getOccupancy() > position.getOccupancy())
+                position = pos;
+        }
+    }
+    
     public Vector3D getCenterOfMass() {return getCoordinates();}
     
     // LocatedAtom interface methods
     // public Vector3D coordinates();
     // public void setCoordinates(Vector3D coordinates);
-    public Vector3D getCoordinates() {return m_coordinates;}
+    public Vector3D getCoordinates() {
+        if (position == null) return null;
+        return position.getCoordinates();
+    }
     public double distance(Atom atom2) {return getCoordinates().distance(atom2.getCoordinates());}
 
     // MoleculeAtom interface methods
@@ -92,21 +111,28 @@ public class AtomClass implements Atom {
      * @see org.simtk.molecularstructure.atom.PDBAtom#setAtomName(java.lang.String)
      */
     
-    public double getOccupancy() {return occupancy;}
-    public void setOccupancy(double o) {this.occupancy = o;}
-    
-    public double getTemperatureFactor() {return temperatureFactor;}
-    public void setTemperatureFactor(double b) {this.temperatureFactor = b;}
-    
-    public void setCoordinates(Vector3D v) {
-        m_coordinates = v;
+    public double getOccupancy() {
+        if (position == null) return Double.NaN;
+        return position.getOccupancy();
     }
+    
+    // public void setOccupancy(double o) {this.occupancy = o;}
+    
+    public double getTemperatureFactor() {
+        if (position == null) return Double.NaN;
+        return position.getTemperatureFactor();
+    }
+    // public void setTemperatureFactor(double b) {this.temperatureFactor = b;}
+    
+    // public void setCoordinates(Vector3D v) {
+    //     m_coordinates = v;
+    // }
     
     public void setAtomName(String atomName) {
         m_atomName = atomName;
     }
 
-	public void readPDBLine(String PDBLine) 
+	public void readPdbLine(String pdbLine) 
 		throws ParseException
 	{	
 		// PDB Fields: A applies to Atom, R to Residue, M to molecule
@@ -143,15 +169,12 @@ public class AtomClass implements Atom {
 		//
 		//A   79 - 80        LString(2)      charge         Charge on the atom.
 	
-		setAtomName(PDBLine.substring(12,16));
+		setAtomName(pdbLine.substring(12,16));
 
-        setCoordinates( new Vector3DClass(
-				(new Double(PDBLine.substring(30,38).trim())).doubleValue(),
-				(new Double(PDBLine.substring(38,46).trim())).doubleValue(),
-				(new Double(PDBLine.substring(46,54).trim())).doubleValue() ));
+        addPosition(new AtomPosition(pdbLine));
 
         // Rectify the two possible element containing fields
-        String elementName = PDBLine.substring(76,78).toUpperCase().replaceAll("[^A-Z]", "").trim();
+        String elementName = pdbLine.substring(76,78).toUpperCase().replaceAll("[^A-Z]", "").trim();
         String atomElement = getAtomName().substring(0,2).toUpperCase().replaceAll("[^A-Z]", "").trim();
 
         ChemicalElement element = ChemicalElementClass.getElementByName(elementName);

@@ -29,14 +29,13 @@ package org.simtk.pdb;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-
 import javax.swing.*;
 import java.net.*;
-
 import org.simtk.gui.*;
 import java.util.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.mvc.*;
+import edu.stanford.ejalbert.BrowserLauncher;
 
 public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements ActionListener, Observer {
     static final long serialVersionUID = 01L;
@@ -132,28 +131,69 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
         contentPanel.add(new JSeparator());
         contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
 
-        loadFileButton = new JButton("From file...");
+        //////////////// Load from File ///////////////////
+        
+        JPanel loadFromFilePanel = new JPanel();
+        
+        loadFromFilePanel.add(new JLabel("Option 1: "));
+        
+        loadFileButton = new JButton("Load file...");
         loadFileButton.addActionListener(this);
         loadFileButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        contentPanel.add(loadFileButton);
+        loadFromFilePanel.add(loadFileButton);
+
+        contentPanel.add(loadFromFilePanel);
 
         contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
         contentPanel.add(new JSeparator());
         contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
         
+        
+        ////////////////// Load from PDB Web site ///////////////////
+        
         JPanel webPDBPanel = new JPanel();
         webPDBPanel.setLayout(new BoxLayout(webPDBPanel, BoxLayout.X_AXIS));
 
-        label = new JLabel(" PDB ID (4 characters): ");
-        webPDBPanel.add(label);
+        JPanel docPanel = new JPanel();
+        docPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        docPanel.setLayout(new BoxLayout(docPanel, BoxLayout.Y_AXIS));
+        docPanel.add(new JLabel("Option 2: "));
+        docPanel.add(Box.createVerticalStrut(10));
+        docPanel.add(new JLabel("From Protein"));
+        docPanel.add(new JLabel("Data Bank (PDB)"));
+        docPanel.add(new PdbLinkLabel("Web Site"));
+        
+        webPDBPanel.add(docPanel);
+        
+        JPanel formPanel = new JPanel();
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.add(new JLabel("Enter PDB ID"));
+        formPanel.add(new JLabel("(4 characters)"));
+        
+        // label = new JLabel(" PDB ID (4 characters): ");
+        // webPDBPanel.add(label);
 
+        JPanel fieldPanel = new JPanel();
+        fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.X_AXIS));
+        fieldPanel.add(Box.createHorizontalGlue());
         idField = new JTextField(defaultPdbId, 4);
         idField.addActionListener(this);
-        webPDBPanel.add(idField);
+        idField.setMaximumSize(idField.getPreferredSize());
+        idField.setMinimumSize(idField.getPreferredSize());
+        idField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        fieldPanel.add(idField);
+        fieldPanel.add(Box.createHorizontalGlue());
 
-        webPDBButton = new JButton("From web");
+        formPanel.add(Box.createVerticalStrut(5));
+        formPanel.add(fieldPanel);
+        formPanel.add(Box.createVerticalStrut(5));
+
+        webPDBButton = new JButton("Fetch");
         webPDBButton.addActionListener(this);
-        webPDBPanel.add(webPDBButton);
+        formPanel.add(webPDBButton);
+        
+        webPDBPanel.add(formPanel);
 
         webPDBPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         contentPanel.add(webPDBPanel);
@@ -161,12 +201,16 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
         String unitOptions[] = {"Biological Unit (recommended)", "Crystallographic Unit"};
         bioUnitList = new JComboBox(unitOptions);
         bioUnitList.setSelectedIndex(0); // biological unit
-        contentPanel.add(bioUnitList);
+        // This option is unecessary -- advanced users can go straight to the PDB
+        // contentPanel.add(bioUnitList);
         
         contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
         contentPanel.add(new JSeparator());
-        contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
 
+        contentPanel.add(Box.createVerticalGlue());
+
+        contentPanel.add(Box.createRigidArea(new Dimension(0,8)));
+        
         cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(this);
         cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -252,6 +296,7 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
             
             // Load PDB molecule from the internet
             String pdbId = idField.getText().trim().toLowerCase();
+            setPdbId(pdbId.toUpperCase());
             
             // Get the PDB file over the internet
             boolean isBioUnit = true;
@@ -327,6 +372,10 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
 
         if (loadPDBProcess.isSuccessful()) {
             MoleculeCollection molecules = loadPDBProcess.getMolecules();
+            
+            if ( (molecules.getPdbId() == null) && (getPdbId() != null) )
+                molecules.setPdbId(getPdbId());
+            
             readStructureFromMoleculeCollection(molecules);
             setVisible(false); // Hide dialog after success
         }
@@ -401,3 +450,19 @@ class MoleculeFileChooser extends JFileChooser {
     }
 }
 
+class PdbLinkLabel extends JLinkLabel {
+    PdbLinkLabel(String text) {super(text);}
+    
+    @Override
+    protected void respondToClick() {
+        String urlString = "http://www.rcsb.org/pdb/";
+        try {BrowserLauncher.openURL(urlString);}
+        catch (IOException exc2) {
+            JOptionPane.showMessageDialog(
+                    this, 
+                    "Error: failed to launch browser to PDB site "+urlString,
+                    "Error: Browser launch error",
+                    JOptionPane.ERROR_MESSAGE);
+        }        
+    }
+}

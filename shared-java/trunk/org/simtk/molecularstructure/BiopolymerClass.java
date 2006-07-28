@@ -64,7 +64,6 @@ implements Biopolymer
 	public BiopolymerClass(char chainId) {
         super(chainId);
         addGenericResidueBonds();
-        createResidueBonds();
     } // Empty molecule
 
 //    public BiopolymerClass(PDBAtomSet atomSet) {
@@ -129,36 +128,6 @@ implements Biopolymer
     protected void addGenericResidueBonds() {
     }
     
-    /** 
-     * Identify covalent bonds connecting residues.
-     * 
-     */
-    protected void createResidueBonds() {
-        Residue previousResidue = null;
-        for (Iterator r1 = residues.iterator(); r1.hasNext(); ) {
-            Residue residue = (Residue) r1.next();
-            if (previousResidue != null) {
-                for (Iterator s2 = genericResidueBonds.keySet().iterator(); s2.hasNext(); ) {
-                    String firstAtomName = (String) s2.next();
-                    Atom firstAtom = previousResidue.getAtom(firstAtomName);
-                    if (firstAtom != null) {
-                        for (Iterator s3 = ((HashSet)genericResidueBonds.get(firstAtomName)).iterator(); s3.hasNext(); ) {
-                            String secondAtomName = (String) s3.next();
-                            Atom secondAtom =  residue.getAtom(secondAtomName);
-                            if (secondAtom != null) {
-                                // TODO check distance
-                                firstAtom.bonds().add(secondAtom);
-                                secondAtom.bonds().add(firstAtom);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            previousResidue = residue;
-        }
-    }
-
     /**
      *  
       * @author Christopher Bruns
@@ -175,10 +144,7 @@ implements Biopolymer
             if (size() > 0) prev = get(size() - 1);
             boolean answer = super.add(residue);
             if (answer) {
-                if (prev != null) {
-                    residue.setPreviousResidue(prev);
-                    prev.setNextResidue(residue);
-                }
+                if (prev != null) linkResidues(prev, residue);
                 addNumberResidue(residue);
             }
             return answer;
@@ -190,10 +156,7 @@ implements Biopolymer
             boolean answer = super.addAll(c);
             if (answer) {
                 for (Residue residue : c) {
-                    if (prev != null) {
-                        residue.setPreviousResidue(prev);
-                        prev.setNextResidue(residue);                        
-                    }
+                    if (prev != null) linkResidues(prev, residue);
                     addNumberResidue(residue);
                     prev = residue;
                 }
@@ -232,6 +195,27 @@ implements Biopolymer
             }
             return answer;
         }        
+        
+        private void linkResidues(Residue res1, Residue res2) {
+            res2.setPreviousResidue(res1);
+            res1.setNextResidue(res2);                        
+
+            for (String firstAtomName : genericResidueBonds.keySet()) {
+                Atom firstAtom = res1.getAtom(firstAtomName);
+                if (firstAtom == null) continue;
+                for (String secondAtomName : genericResidueBonds.get(firstAtomName)) {
+                    Atom secondAtom =  res2.getAtom(secondAtomName);
+                    if (secondAtom == null) continue;
+
+                    // Check distance
+                    double d = firstAtom.distance(secondAtom);
+                    if (d > 4.0) continue;
+                    
+                    firstAtom.bonds().add(secondAtom);
+                    secondAtom.bonds().add(firstAtom);
+                }
+            }
+        }
         
         private void addNumberResidue(Residue residue) {
             // TODO - set next and previous residue pointers

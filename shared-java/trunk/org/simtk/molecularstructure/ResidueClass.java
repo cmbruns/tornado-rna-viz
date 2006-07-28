@@ -420,6 +420,10 @@ public class ResidueClass extends MolecularClass implements Residue {
         return false;
     }
 
+    public void updateAtomPosition(Atom atom) {        
+        residueAtoms.updateAtomPosition(atom);
+    }
+    
     /**
      *  
       * @author Christopher Bruns
@@ -429,6 +433,11 @@ public class ResidueClass extends MolecularClass implements Residue {
     class ResidueAtoms extends LinkedHashSet<Atom> {
         private Residue residue;
         private Map<String, Set<Atom> > nameAtoms = new HashMap<String, Set<Atom> >();
+
+        // Maybe iodine has the largest "ordinary" covalent radius of 1.33
+        private double maxCovalentRadius = 1.40;
+        // Create a hash for rapid access
+        private Hash3D<Atom> atomHash = new Hash3D<Atom>(maxCovalentRadius);
         
         ResidueAtoms(Residue residue) {
             this.residue = residue;
@@ -497,6 +506,16 @@ public class ResidueClass extends MolecularClass implements Residue {
             }
         }
         
+        public void updateAtomPosition(Atom atom) {
+            // I don't know how to remove the old position from the hash3d,
+            // but that's probably OK because the distance will be checked anyway.
+            for (Atom atom2 : atom.bonds())
+                atom2.bonds().remove(atom);
+            atom.bonds().clear();
+
+            addAtomName(atom);
+        }
+        
         private void addAtomName(Atom atom) {
             // Create index for lookup by atom name
             for (String name : atomNames(atom)) {
@@ -505,6 +524,8 @@ public class ResidueClass extends MolecularClass implements Residue {
             }
             
             // Create bonds between atoms
+            atomHash.put(atom.getCoordinates(), atom);
+
             // 1) Look for generic bonds
             String atomName1 = atom.getAtomName();
             Map<String, Set<String>> gBonds = residue.getResidueType().genericBonds();
@@ -517,7 +538,32 @@ public class ResidueClass extends MolecularClass implements Residue {
                 }
             }
             else { // No generic bonds? bond by distance
-                // TODO
+                double cutoffDistance = (atom.getCovalentRadius() + maxCovalentRadius) * 1.5;
+
+                for (Atom atom2 : atomHash.neighborValues(atom.getCoordinates(), cutoffDistance)) {
+                    if (atom.equals(atom2)) continue;
+                    
+                    // Make sure the bond length is about right
+                    double distance;
+                    distance = atom.distance(atom2);
+                    
+                    double covalentDistance = atom.getCovalentRadius() + atom2.getCovalentRadius();
+                    double vanDerWaalsDistance = atom.getVanDerWaalsRadius() + atom2.getVanDerWaalsRadius();
+                    // Bond length must be at least 3/4 of that expected
+                    double minDistance = 0.75 * (covalentDistance);
+
+                    // Bond length must be closer to covalent than to van der Waals distance
+                    if (covalentDistance >= vanDerWaalsDistance) continue;
+
+                    double discriminantDistance = vanDerWaalsDistance - covalentDistance;
+                    double maxDistance = covalentDistance + 0.25 * discriminantDistance;
+                    if (maxDistance > 1.25 * covalentDistance) maxDistance = 1.25 * covalentDistance;
+                    if (distance < minDistance) continue;
+                    if (distance > maxDistance) continue;
+                    
+                    atom.bonds().add(atom2);
+                    atom2.bonds().add(atom);
+                }
             }
         }
         

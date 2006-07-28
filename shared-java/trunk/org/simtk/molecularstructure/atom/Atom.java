@@ -39,7 +39,8 @@ public interface Atom extends ChemicalElement, MassBody {
     public double distance(Atom atom2);
     
     public void setAtomName(String name);
-    public void setCoordinates(Vector3D coordinates);
-    public void setOccupancy(double o);
-    public void setTemperatureFactor(double b);
+    public void addPosition(AtomPosition position);
+    // public void setCoordinates(Vector3D coordinates);
+    // public void setOccupancy(double o);
+    // public void setTemperatureFactor(double b);
 }

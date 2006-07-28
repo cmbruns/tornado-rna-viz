@@ -184,8 +184,18 @@ implements Molecule
                     
                     atomCount ++;
                     Residue currentResidue = residues.get(residues.size() - 1);
-                    Atom atom = new AtomClass(pdbLine);
-                    currentResidue.atoms().add(atom);
+
+                    String atomName = pdbLine.substring(12,16);
+                    Atom atom = currentResidue.getAtom(atomName);
+                    if (atom == null) { // need to create a new atom
+                        atom = new AtomClass(pdbLine);
+                        currentResidue.atoms().add(atom);
+                    }
+                    else {  // Add position to existing atom
+                        atom.addPosition(new AtomPosition(pdbLine));
+                        currentResidue.updateAtomPosition(atom);
+                    }
+
                 } catch (ParseException exc) {}
 
 			} // ATOM or HETATM record
