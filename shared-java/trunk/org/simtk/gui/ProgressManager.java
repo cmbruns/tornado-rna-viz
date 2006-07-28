@@ -57,6 +57,7 @@ public class ProgressManager extends Thread implements ObservableInterface {
         managedProcess = process;
         
         ProgressDialogClass progressDialogClass = new ProgressDialogClass(description);
+        progressDialogClass.setTitle(description);
         progressDialogClass.setLocationRelativeTo(parent);
         progressDialogClass.setVisible(true);
         this.progressDialog = progressDialogClass;
