@@ -52,7 +52,7 @@ public class InertialRotationThread extends Thread {
 
     private double rotationPerFrame = 0.6; // Degrees
     
-    private double nutationStep = rotationPerFrame * 10; // Degrees
+    private double nutationStep = -rotationPerFrame * 10; // Degrees
     private volatile double nutationAngle = 0.0;
     private double nutationConeAngle = 5.0; // Degrees
     

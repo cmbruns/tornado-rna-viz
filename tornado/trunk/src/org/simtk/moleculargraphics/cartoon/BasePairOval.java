@@ -30,29 +30,28 @@ import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.geometry3d.*;
-
-import java.awt.Color;
 import java.util.*;
 
 import vtk.*;
 
 public class BasePairOval extends TensorGlyphCartoon {
+    protected double height = 1.7;
+    protected double width = 5.0;
+    vtkTransformPolyDataFilter transformFilter = new vtkTransformPolyDataFilter();
     
     public BasePairOval() {
-        super();
-        
         vtkCylinderSource cylinderSource = new vtkCylinderSource();
         cylinderSource.SetResolution(20);
         cylinderSource.SetCapping(1);
-        cylinderSource.SetRadius(2.5);
-        cylinderSource.SetHeight(1.5);
+        cylinderSource.SetRadius(width * 0.5);
+        cylinderSource.SetHeight(height);
 
         // Stretch the cylinder in one direction to make an oval
         vtkTransform transform = new vtkTransform();
         transform.Identity();
         transform.Scale(2.2, 1.0, 1.0);
 
-        vtkTransformPolyDataFilter transformFilter = new vtkTransformPolyDataFilter();
+        // vtkTransformPolyDataFilter transformFilter = new vtkTransformPolyDataFilter();
         transformFilter.SetTransform(transform);
         transformFilter.SetInput(cylinderSource.GetOutput());
         
@@ -74,8 +73,14 @@ public class BasePairOval extends TensorGlyphCartoon {
         vtkPolyData cutPoly = new vtkPolyData();
         cutPoly.SetPoints(stripper.GetOutput().GetPoints());
         cutPoly.SetPolys(stripper.GetOutput().GetLines());
+        cutPoly.GetPointData().SetNormals(stripper.GetOutput().GetPointData().GetNormals());
+
+        // Flip the cap in the opposite direction
+        vtkReverseSense reverseFilter = new vtkReverseSense();
+        reverseFilter.SetInput(cutPoly);
+        
         vtkTriangleFilter cutTriangles = new vtkTriangleFilter();
-        cutTriangles.SetInput(cutPoly);
+        cutTriangles.SetInput(reverseFilter.GetOutput());
         
         // combine shape and cap
         vtkAppendPolyData append = new vtkAppendPolyData();

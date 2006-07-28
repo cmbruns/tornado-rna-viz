@@ -33,6 +33,7 @@ import org.simtk.molecularstructure.protein.*;
 
 public class FineRibbonCartoon extends CompositeCartoon {
     private BasePairOval ovalToon = new BasePairOval();
+    private BasePairBrick brickToon = new BasePairBrick();
     private NucleotideStickCartoon nucStick = new NucleotideStickCartoon();
     private BallAndStickCartoon stickToon = new BallAndStickCartoon();
     private BackboneCurve backboneRibbon = new BackboneCurve();
@@ -56,6 +57,7 @@ public class FineRibbonCartoon extends CompositeCartoon {
         // addSubToon(pairStick);
         addSubToon(baseConnectors);
         addSubToon(ovalToon);
+        addSubToon(brickToon);
     }
 
     public void addMolecule(Molecule m) {
@@ -70,7 +72,21 @@ public class FineRibbonCartoon extends CompositeCartoon {
             for (SecondaryStructure structure : nucleicAcid.secondaryStructures())
                 if (structure instanceof BasePair) {
                     BasePair basePair = (BasePair) structure;
-                    ovalToon.addBasePair(basePair);
+
+                    boolean isCanonicalPair = true;
+                    if (basePair.getEdge_1() == BasePair.EdgeType.HOOGSTEEN)
+                        isCanonicalPair = false;
+                    if (basePair.getEdge_1() == BasePair.EdgeType.SUGAR)
+                        isCanonicalPair = false;
+                    if (basePair.getEdge_2() == BasePair.EdgeType.HOOGSTEEN)
+                        isCanonicalPair = false;
+                    if (basePair.getEdge_2() == BasePair.EdgeType.SUGAR)
+                        isCanonicalPair = false;
+                    
+                    if (isCanonicalPair) 
+                        ovalToon.addBasePair(basePair);
+                    else
+                        brickToon.addBasePair(basePair);
 
                     basePairResidues.add(basePair.getResidue1());
                     basePairResidues.add(basePair.getResidue2());
