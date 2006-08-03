@@ -188,7 +188,9 @@ implements Molecule
                     String atomName = pdbLine.substring(12,16);
                     Atom atom = currentResidue.getAtom(atomName);
                     if (atom == null) { // need to create a new atom
-                        atom = new AtomClass(pdbLine);
+                        AtomClass newAtom = new AtomClass(pdbLine);
+                        newAtom.setResidue(currentResidue);
+                        atom = newAtom;
                         currentResidue.atoms().add(atom);
                     }
                     else {  // Add position to existing atom

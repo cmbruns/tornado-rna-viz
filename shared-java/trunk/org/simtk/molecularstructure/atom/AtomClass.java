@@ -32,7 +32,7 @@
 package org.simtk.molecularstructure.atom;
 
 import org.simtk.geometry3d.*;
-
+import org.simtk.molecularstructure.Residue;
 import java.util.*;
 import java.text.ParseException;
 
@@ -49,6 +49,8 @@ public class AtomClass implements Atom {
 
     private AtomPosition position = null;
     private Map<String, AtomPosition> atomPositions = new HashMap<String, AtomPosition>();
+    
+    private Residue residue = null;
     
     // Located atom fields
     // private Vector3D m_coordinates = null;
@@ -89,6 +91,9 @@ public class AtomClass implements Atom {
     }
     public double distance(Atom atom2) {return getCoordinates().distance(atom2.getCoordinates());}
 
+    public Residue getResidue() {return residue;}
+    public void setResidue(Residue r) {this.residue = r;}
+    
     // MoleculeAtom interface methods
     public Set<Atom> bonds() {return m_bonds;}
     

@@ -27,6 +27,7 @@
 package org.simtk.molecularstructure.atom;
 
 import java.util.Collection;
+import org.simtk.molecularstructure.Residue;
 import org.simtk.geometry3d.MassBody;
 import org.simtk.geometry3d.*;
 
@@ -43,4 +44,6 @@ public interface Atom extends ChemicalElement, MassBody {
     // public void setCoordinates(Vector3D coordinates);
     // public void setOccupancy(double o);
     // public void setTemperatureFactor(double b);
+    
+    public Residue getResidue();
 }
