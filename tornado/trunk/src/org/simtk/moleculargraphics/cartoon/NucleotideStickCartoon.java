@@ -41,10 +41,10 @@ import org.simtk.molecularstructure.atom.*;
 import vtk.*;
 
 public class NucleotideStickCartoon extends GlyphCartoon {
-    double stickLength = 6.0;
+    double stickLength = 4.0;
     double stickRadius = 0.50;
     double sphereFudge = 1.05; // spheres aren't quit flush with cylinder for some reason
-    int cylinderResolution = 8;
+    int cylinderResolution = 7;
 
     public NucleotideStickCartoon() {
         this(0.50);
@@ -166,7 +166,7 @@ public class NucleotideStickCartoon extends GlyphCartoon {
         Vector3D startStickCenter = c.plus(n.times(stickLength * 0.5));
         Vector3D endStickCenter = rodEnd.minus(n.times(stickLength * 0.5));
 
-        int colorScalar = toonColors.getColorIndex(nucleotide);
+        int colorScalar = getColorIndex(nucleotide);
 
         Vector3D stickCenterVector = endStickCenter.minus(startStickCenter);
         for (int s = 0; s < numberOfSticks; s++) {

@@ -30,6 +30,7 @@ import vtk.*;
 import java.util.*;
 import java.awt.Color;
 import org.simtk.geometry3d.*;
+import org.simtk.molecularstructure.Chemical;
 
 public abstract class CylinderCartoon extends GlyphCartoon {
     protected double cylinderRadius;
@@ -63,7 +64,7 @@ public abstract class CylinderCartoon extends GlyphCartoon {
         orientByNormal();
     }
     
-    protected void addCylinder(Vector3D begin, Vector3D end, Color color, Object modelObject) {
+    protected void addCylinder(Vector3D begin, Vector3D end, Color color, Chemical modelObject) {
         // Vector3D midPoint = begin.plus(end.minus(begin).times(0.5)).v3();
         Vector3D normal = end.minus(begin).unit();
         
@@ -90,7 +91,7 @@ public abstract class CylinderCartoon extends GlyphCartoon {
             linePoints.InsertNextPoint(stickCenter.getX(), stickCenter.getY(), stickCenter.getZ());
             lineNormals.InsertNextTuple3(normal.getX(), normal.getY(), normal.getZ());
 
-            double colorScalar = toonColors.getColorIndex(modelObject);
+            double colorScalar = getColorIndex(modelObject);
             
             Collection<Object> modelObjects = new Vector<Object>();
             modelObjects.add(modelObject);

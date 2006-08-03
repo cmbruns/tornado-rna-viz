@@ -47,7 +47,7 @@ public class BaseConnectorTube extends MoleculeCartoonClass {
                 new BaseConnectorTubeActor(residue);
             if (actorToon.isPopulated()) {
                 subToons.add(actorToon);
-                actorSet.add(actorToon.getActor());
+                actorSet.add(actorToon);
             }
         } catch (NoCartoonCreatedException exc) {}        
     }

@@ -47,23 +47,16 @@ import vtk.*;
   * 
  */
 public abstract class GlyphCartoon extends ActorCartoonClass {
-    // GlyphIndex glyphColors = new GlyphIndex();
-
     // Glyph positions
     vtkPolyData lineData = new vtkPolyData();
     vtkPoints linePoints = new vtkPoints(); // bond centers
     vtkFloatArray lineNormals = new vtkFloatArray(); // bond directions/lengths
-
-    // vtkFloatArray lineScalars = new vtkFloatArray();
-
     vtkFloatArray colorScalars = new vtkFloatArray();
    
     private vtkGlyph3D lineGlyph = new vtkGlyph3D();
-    // vtkPolyDataMapper glyphMapper = mapper;
 
-    // vtkActor glyphActor = new vtkActor();
-
-    // private MassBodyClass massBody = new MassBodyClass();
+    protected double highlightFactor = 1.01;
+    private vtkGlyph3D highlightGlyph = new vtkGlyph3D();    
     
     GlyphCartoon() {
         super();
@@ -83,24 +76,40 @@ public abstract class GlyphCartoon extends ActorCartoonClass {
         mapper.SetInput(lineGlyph.GetOutput());
         
         actor.SetMapper(mapper);
+
+        highlightGlyph.SetInput(lineData);
+        highlightGlyph.SetScaleFactor(highlightFactor);
+        
+        highlightMapper.SetInput(highlightGlyph.GetOutput());
+
+        highlightActor.SetMapper(highlightMapper);
+        highlightActor.GetProperty().SetRepresentationToWireframe();
     }
 
     // Override these functions to use TensorGlyph rather than vtkGlyph3D
     public void setGlyphSource(vtkPolyData data) {
         lineGlyph.SetSource(data);
+        highlightGlyph.SetSource(data);
+        // growPointsFilter.SetInput(data);
     }
     public void scaleByNormal() {
         lineGlyph.SetScaleModeToScaleByVector(); // Take length from normal
         lineGlyph.SetVectorModeToUseNormal(); // Take direction from normal
+
+        highlightGlyph.SetScaleModeToScaleByVector(); // Take length from normal
+        highlightGlyph.SetVectorModeToUseNormal(); // Take direction from normal
     }
     public void scaleNone() {
         lineGlyph.SetScaleModeToDataScalingOff(); // Do not adjust size
+        highlightGlyph.SetScaleModeToDataScalingOff(); // Do not adjust size
     }
     public void orientByNormal() {
         lineGlyph.SetVectorModeToUseNormal(); // Take direction from normal        
+        highlightGlyph.SetVectorModeToUseNormal(); // Take direction from normal        
     }
     public void colorByScalar() {
         lineGlyph.SetColorModeToColorByScalar(); // Take color from scalar        
+        highlightGlyph.SetColorModeToColorByScalar(); // Take color from scalar
     }
 
     public abstract void addMolecule(Molecule molecule);

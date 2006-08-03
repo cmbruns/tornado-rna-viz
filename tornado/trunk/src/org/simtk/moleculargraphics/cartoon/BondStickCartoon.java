@@ -31,6 +31,7 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import java.awt.Color;
 import java.util.*;
 
 import org.simtk.geometry3d.*;
@@ -133,7 +134,7 @@ public class BondStickCartoon extends GlyphCartoon {
 
         Vector3D c = atom.getCoordinates();
 
-        double colorScalar = toonColors.getColorIndex(atom);
+        double colorScalar = getColorIndex(atom);
 
         // For bonded atoms, draw a line for each bond
         for (Atom atom2 : atom.bonds()) {
@@ -171,4 +172,10 @@ public class BondStickCartoon extends GlyphCartoon {
         }
     }
     
+    public void highlightResidue(Residue residue, Color color) {
+        highlightResidueByAtomScalars(residue, color);
+    }
+    public void unhighlightResidue(Residue residue) {
+        unhighlightResidueByAtomScalars(residue);
+    }
 }

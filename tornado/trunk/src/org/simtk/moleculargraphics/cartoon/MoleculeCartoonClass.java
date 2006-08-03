@@ -38,7 +38,7 @@ import vtk.*;
 public abstract class MoleculeCartoonClass 
 implements MoleculeCartoon 
 {
-    protected Set<vtkActor> actorSet = new HashSet<vtkActor>(); 
+    protected Set<ActorCartoon> actorSet = new HashSet<ActorCartoon>(); 
     protected vtkPolyDataMapper mapper = new vtkPolyDataMapper();
     protected ToonColors toonColors = new ToonColors(mapper);
     protected Set<BaseCartoon> subToons = new HashSet<BaseCartoon>();
@@ -62,7 +62,7 @@ implements MoleculeCartoon
         toonColors.setColor(colorScheme);
     }
     
-    public Set<vtkActor> vtkActors() {
+    public Set<ActorCartoon> vtkActors() {
         return actorSet;
     }    
 
@@ -80,7 +80,7 @@ implements MoleculeCartoon
             if (subToon instanceof ActorCartoon) {
                 ActorCartoon toon = (ActorCartoon) subToon;
                 if (toon.isPopulated())
-                    actorSet.add(toon.getActor());
+                    actorSet.add(toon);
                 else
                     actorSet.remove(toon.getActor());
             }

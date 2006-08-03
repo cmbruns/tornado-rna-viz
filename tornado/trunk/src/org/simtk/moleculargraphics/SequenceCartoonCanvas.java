@@ -31,7 +31,11 @@
  */
 package org.simtk.moleculargraphics;
 
-import java.awt.*;
+// import java.awt.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.*;
 import java.util.*;
 import org.simtk.util.*;
@@ -44,17 +48,20 @@ import org.simtk.molecularstructure.*;
   * Simple rectangular cartoon representation of a macromolecular sequence
  */
 public class SequenceCartoonCanvas extends BufferedCanvas 
-implements MouseMotionListener, ResidueActionListener, AdjustmentListener, MouseListener
+implements MouseMotionListener, ResidueHighlightListener, 
+AdjustmentListener, MouseListener, ActiveMoleculeListener
 {
     public static final long serialVersionUID = 1L;
     // Tornado tornado;
-    ResidueActionBroadcaster residueActionBroadcaster;
+    ResidueHighlightBroadcaster residueHighlightBroadcaster;
     // boolean userIsInteracting = false;
     TornadoSequenceCanvas sequenceCanvas;
+    
+    protected Map<Residue, Color> highlightedResidues = new LinkedHashMap<Residue, Color>();
 
-    Hashtable residuePositions = new Hashtable();
+    Map<Residue, Integer> residuePositions = new LinkedHashMap<Residue, Integer>();
     Hashtable positionResidues = new Hashtable();
-    int highlight = -1;
+    // int highlight = -1;
     int residueCount = 0;
 
     Color cartoonBackgroundColor = new Color(200, 200, 200);
@@ -70,13 +77,11 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     Cursor leftRightCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
 
-    private Color selectionColor;
-
-    public SequenceCartoonCanvas(ResidueActionBroadcaster b, TornadoSequenceCanvas s) {
+    public SequenceCartoonCanvas(ResidueHighlightBroadcaster b, TornadoSequenceCanvas s) {
         super();
         sequenceCanvas = s;
         // tornado = t;
-        residueActionBroadcaster = b;
+        residueHighlightBroadcaster = b;
         setBackground(Color.white);
         checkSize();
         addMouseMotionListener(this);
@@ -103,15 +108,21 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
     public void setPreferredSize(Dimension d) {prefSize = d;}
     
 
-    public void setSelectionColor(Color c) {
-        selectionColor = c;
-    }
-
     public void checkSize() {
         Dimension preferredSize = new Dimension(cartoonMargin * 2 + cartoonRight - cartoonLeft + 1, cartoonHeight);
         setSize(preferredSize);
     }
     
+    class HighlightSegment {
+        int start;
+        int end;
+        Color color;
+        HighlightSegment(int start, int end, Color color) {
+            this.start = start;
+            this.end = end;
+            this.color = color;
+        }
+    }
     public void paint(Graphics g) {
 
         // Clear background
@@ -162,58 +173,54 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
             g.fillRect(leftPixel, cartoonTop, rightPixel - leftPixel + 1, cartoonHeight - 2);            
         }
         
-        // Draw highlight
-        if (highlight >= 0) {
-            int highlightLeft = positionPixel(highlight - 0.5);
-            int highlightRight = positionPixel(highlight + 0.5);
-            int highlightWidth = highlightRight - highlightLeft + 1;
-            if (highlightWidth < 1) highlightWidth = 1;
-            
-            g.setColor(Color.yellow);
-            g.fillRect(highlightLeft, cartoonTop, highlightWidth, cartoonHeight - 2);
-        }
-        
-        // Draw selection
+        // Draw highlights
         // Sort selected residues into contiguous ranges
-        HashSet processedSelections = new HashSet();
-        Vector selectStarts = new Vector();
-        Vector selectEnds = new Vector();
-        for (Iterator i = residueActionBroadcaster.getSelected().iterator(); i.hasNext(); ) {
-            Residue r = (Residue) i.next();
+        HashSet<Residue> processedSelections = new HashSet<Residue>();
+        // Map<Color, Integer> selectStarts = new LinkedHashMap<Color, Integer>();
+        // Map<Color, Integer> selectEnds = new LinkedHashMap<Color, Integer>();
+        List<HighlightSegment> highlightSegments = new Vector<HighlightSegment>();
+        
+        for (Residue r : highlightedResidues.keySet()) {
             if (processedSelections.contains(r)) continue; // skip residues we already saw
             processedSelections.add(r);
 
+            Color color = highlightedResidues.get(r);
+            
             // Find start of this selected range
             Residue f = r;
             while (true) {
-                if (f.getPreviousResidue() == null) break;
-                if ( ! residueActionBroadcaster.getSelected().contains(f.getPreviousResidue())) break;
-                f = f.getPreviousResidue();
+                Residue prev = f.getPreviousResidue();
+                if (prev == null) break; // start of chain
+                if ( ! highlightedResidues.containsKey(prev)) break; // not highlighted
+                if ( ! highlightedResidues.get(prev).equals(color)) break; // not same color
+                f = prev;
                 processedSelections.add(f);
             }
 
             // Find end of this selected range
             Residue e = r;
             while (true) {
-                if (e.getNextResidue() == null) break;
-                if ( ! residueActionBroadcaster.getSelected().contains(e.getNextResidue())) break;
-                e = e.getNextResidue();
+                Residue next = e.getNextResidue();
+                if (next == null) break;
+                if ( ! highlightedResidues.containsKey(next)) break;
+                if ( ! highlightedResidues.get(next).equals(color)) break;
+                e = next;
                 processedSelections.add(e);
             }
             
-            Integer startPosition = (Integer) residuePositions.get(e);
-            Integer endPosition = (Integer) residuePositions.get(f);
+            
+            Integer startPosition = residuePositions.get(f);
+            Integer endPosition = residuePositions.get(e);
             if ( (startPosition != null) && (endPosition != null) ) {
-                selectEnds.add(startPosition);
-                selectStarts.add(endPosition);
+                highlightSegments.add(new HighlightSegment(startPosition, endPosition, color));
             }
         }
 
         // Paint a rectangle for each selection
-        g.setColor(selectionColor);
-        for (int i = 0; i < selectStarts.size(); i++) {
-            int start = ((Integer)selectStarts.get(i)).intValue();
-            int end = ((Integer)selectEnds.get(i)).intValue();
+        for (HighlightSegment segment : highlightSegments) {
+            g.setColor(segment.color);
+            int start = segment.start;
+            int end = segment.end;
             int startPixel = positionPixel(start - 0.5);
             int endPixel = positionPixel(end + 0.5);
             g.fillRect(startPixel, cartoonTop, (endPixel - startPixel + 1), cartoonHeight - 2);            
@@ -245,7 +252,7 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         if (mouseIsInCartoon(e)) {
             if (e.getClickCount() == 2) {
                 // TODO double click should center on position
-                residueActionBroadcaster.fireCenterOn(mouseResidue(e));
+                // residueHighlightBroadcaster.fireCenterOn(mouseResidue(e));
             }
             else mouseDragged(e);
         }
@@ -280,12 +287,12 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
             int mouseY = e.getY();
             // Is it in the cartoon area?
             if (mouseIsInCartoon(e)) {
-                residueActionBroadcaster.lubricateUserInteraction();
+                // residueHighlightBroadcaster.lubricateUserInteraction();
                 setCursor(leftRightCursor);
                 Residue residue = mouseResidue(e);
                 if (residue != null) {
-                    residueActionBroadcaster.fireHighlight(residue);
-                    repaint();
+                    // residueHighlightBroadcaster.fireHighlight(residue);
+                    // repaint();
                 }
             }
             else 
@@ -298,12 +305,12 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
 
         // Did this drag begin in the cartoon area?
         if (mousePressedInCartoon) {
-            residueActionBroadcaster.lubricateUserInteraction();
+            sequenceCanvas.lubricateUserInteraction();
             setCursor(leftRightCursor);
             Residue residue = mouseResidue(e);
             if (residue != null) {
-                sequenceCanvas.centerOn(residue);
-                residueActionBroadcaster.fireHighlight(residue);
+                sequenceCanvas.centerOnResidue(residue);
+                // residueHighlightBroadcaster.fireHighlight(residue);
             }
         }
     }
@@ -332,7 +339,7 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
     public void clearResidues() {
         residuePositions.clear();
         positionResidues.clear();
-        highlight = -1;
+        highlightedResidues.clear();
         residueCount = 0;
     }    
     public void add(Residue r) {
@@ -341,30 +348,35 @@ implements MouseMotionListener, ResidueActionListener, AdjustmentListener, Mouse
         residueCount ++;
     }    
 
-    public void highlight(Residue r) {
+    public void highlightResidue(Residue r, Color c) {
         if (residuePositions.containsKey(r)) {
-            highlight = ((Integer)residuePositions.get(r)).intValue();
+            highlightedResidues.put(r, c);
             repaint();
         }
-        else unHighlightResidue();
     }
-    public void unHighlightResidue() {
-        highlight = -1;
+    
+    
+    public void unhighlightResidue(Residue r) {
+        highlightedResidues.remove(r);
         repaint();
     }
-    public void select(Selectable s) {
+
+    public void unhighlightResidues() {
+        highlightedResidues.clear();
         repaint();
     }
-    public void unSelect(Selectable s) {
-        repaint();
-    }
-    public void unSelect() {
-        repaint();
-    }
-    public void centerOn(Residue r) {} // This sequence does not move
 
     // Respond to sequence scroll bar event - redraw
     public void adjustmentValueChanged(AdjustmentEvent e) {
         repaint();
+    }
+
+    public void setActiveMolecule(Molecule molecule) {
+        if (molecule instanceof Biopolymer) {
+            clearResidues();
+            for (Residue residue : ((Biopolymer)molecule).residues()) {
+                add(residue);
+            }
+        }
     }
 }

@@ -29,6 +29,7 @@ package org.simtk.moleculargraphics;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
 import javax.swing.*;
 import org.simtk.geometry3d.*;
 import org.simtk.moleculargraphics.cartoon.*;
@@ -38,6 +39,8 @@ import vtk.*;
 public class StructureCanvas extends vtkPanel 
 implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, MassBody
 {
+    protected Map<vtkActor, ActorCartoon> actorCartoons = new HashMap<vtkActor, ActorCartoon>();
+
     static {
         // Keep vtk canvas from obscuring swing widgets
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
@@ -127,12 +130,21 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         if (cartoon.vtkActors().size() < 1) return;
         
         Lock();
-        for (vtkActor actor : cartoon.vtkActors()) {
-            // GetRenderer().AddProp(assembly); // vtk 4.4
-            GetRenderer().AddViewProp(actor); // vtk 5.0
+        for (ActorCartoon actor : cartoon.vtkActors()) {
+            add(actor);
         }
         UnLock();
         repaint();
+    }
+    
+    public void add(ActorCartoon cartoon) {
+        GetRenderer().AddViewProp(cartoon.getActor()); // vtk 5.0
+        actorCartoons.put(cartoon.getActor(), cartoon);
+        
+        // Use cage selection
+        vtkActor highlightActor = cartoon.getHighlightActor();
+        GetRenderer().AddViewProp(highlightActor); // vtk 5.0
+        actorCartoons.put(highlightActor, cartoon);
     }
     
     public void update(Observable observable, Object object) {
@@ -412,6 +424,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         
         Vector3D com = box.center();
         GetRenderer().GetActiveCamera().SetFocalPoint(com.x(), com.y(), com.z());
+        resetCameraClippingRange();
     }
 //    public void centerByMass() {
 //        // Vector3D centerOfMass = massBody.getCenterOfMass();

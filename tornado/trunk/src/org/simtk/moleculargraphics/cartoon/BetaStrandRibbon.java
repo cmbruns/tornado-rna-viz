@@ -76,7 +76,7 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
     throws NoCartoonCreatedException {
         List<Vector3D> positions = new Vector<Vector3D>();
         List<Vector3D> normals = new Vector<Vector3D>();
-        List<Object> aminoAcids = new Vector<Object>();
+        List<Chemical> aminoAcids = new Vector<Chemical>();
 
         double minT = startIndex - 0.5;
         double maxT = startIndex + residues.size() - 0.5;
@@ -115,7 +115,7 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
     throws NoCartoonCreatedException {
         List<Vector3D> positions = new Vector<Vector3D>();
         List<Vector3D> normals = new Vector<Vector3D>();
-        List<Object> aminoAcids = new Vector<Object>();
+        List<Chemical> aminoAcids = new Vector<Chemical>();
         
         Vector3D previousNormal = null;
         int resCount = 0;
@@ -197,7 +197,7 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
     protected void createArrow(
             List<Vector3D> positions, 
             List<Vector3D> normals, 
-            List<Object> objects,
+            List<Chemical> objects,
             double ribbonThickness,
             double arrowWidth
             ) {

@@ -195,7 +195,7 @@ public class BackboneStick extends GlyphCartoon {
         try {color = colorScheme.colorOf(residue);}
         catch (UnknownObjectColorException exc) {color = Color.white;}
         
-        double colorScalar = toonColors.getColorIndex(residue);
+        double colorScalar = getColorIndex(residue);
 
         if (previousPosition != null) {
             // Point midway between two residues

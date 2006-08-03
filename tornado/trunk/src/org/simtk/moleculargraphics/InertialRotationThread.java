@@ -169,7 +169,7 @@ public class InertialRotationThread extends Thread {
                     continue;
                 }
                 // Do not rotate if the user is trying to do something
-                if (tornado.userIsInteracting()) {
+                if (tornado.getUserIsInteracting()) {
                     tornado.flushUserIsInteracting();
                     continue;
                 }

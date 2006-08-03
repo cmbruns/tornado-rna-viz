@@ -92,8 +92,7 @@ public class BasePairOval extends TensorGlyphCartoon {
         normals.SetFeatureAngle(80);
         normals.SetInput(append.GetOutput());
         
-        setGlyphSource(normals.GetOutput());
-        
+        setGlyphSource(normals.GetOutput());        
     }
 
     public void addMolecule(Molecule molecule) {
@@ -184,7 +183,7 @@ public class BasePairOval extends TensorGlyphCartoon {
                 edgeDirection.x(), edgeDirection.y(), edgeDirection.z()
                 );
 
-        double colorScalar = toonColors.getColorIndex(res1);
+        double colorScalar = getColorIndex(res1);
 
         colorScalars.InsertNextValue(colorScalar);
         

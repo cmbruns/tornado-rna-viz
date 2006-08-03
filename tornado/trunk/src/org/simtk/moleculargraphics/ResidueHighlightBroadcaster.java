@@ -26,40 +26,46 @@
  */
 
 /*
- * Created on May 6, 2005
+ * Created on Jun 7, 2005
  *
  */
 package org.simtk.moleculargraphics;
 
-import org.simtk.molecularstructure.*;
-import org.simtk.util.*;
+import org.simtk.molecularstructure.Residue;
+import java.util.*;
+import java.awt.Color;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * Methods by which grapical representations of biopolymer sequences (e.g. DNA, protein) can
-  * display sets of selected residues, and individual residues with the current focus.
- */
-public interface ResidueActionListener extends SelectionListener {
+public class ResidueHighlightBroadcaster {
+    protected Set<ResidueHighlightListener> listeners = 
+        new LinkedHashSet<ResidueHighlightListener>();
+    protected Color color = new Color(100, 100, 255);
 
+    public void addResidueHighlightListener(ResidueHighlightListener l) {
+        listeners.add(l);
+    }
     
-    /**
-     * Color one Residue yellow, or otherwise indicate that the residue has the current focus.
-     * At most one residue at a time should be highlighted.  The suggested color is yellow.
-     * @param r
-     */
-    public void highlight(Residue r);
-
+    public void removeResidueHighlightListener(ResidueHighlightListener l) {
+        listeners.remove(l);
+    }
     
-    /**
-     * Turn off the highlight of the highlighted residue, if any
-     *
-     */
-    public void unHighlightResidue();
+    public void fireHighlight(Residue r) {
+        for (ResidueHighlightListener listener : listeners)
+            listener.highlightResidue(r, color);
+    }
 
+    public void fireUnhighlightResidue(Residue r) {
+        for (ResidueHighlightListener listener : listeners)
+            listener.unhighlightResidue(r);
+    }
     
-    public void add(Residue r);
-    public void clearResidues();
-    public void centerOn(Residue r);
+    public void fireUnhighlightResidues() {
+        for (ResidueHighlightListener listener : listeners)
+            listener.unhighlightResidues();
+    }    
+
+    public void setHighlightColor(Color color) {
+        this.color = color;
+    }
+
+    public Color getHighlightColor() {return color;}
 }

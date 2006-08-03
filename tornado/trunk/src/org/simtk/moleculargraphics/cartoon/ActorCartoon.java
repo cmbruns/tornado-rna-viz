@@ -29,6 +29,8 @@ package org.simtk.moleculargraphics.cartoon;
 
 import vtk.*;
 
+import org.simtk.molecularstructure.*;
+
 /**
  *  
   * @author Christopher Bruns
@@ -41,4 +43,6 @@ public interface ActorCartoon extends BaseCartoon {
     public vtkActor getActor();
     public vtkPolyDataMapper getMapper();
     public boolean isPopulated();
+    public Chemical getChemicalFromScalar(int scalar);
+    public vtkActor getHighlightActor();
 }

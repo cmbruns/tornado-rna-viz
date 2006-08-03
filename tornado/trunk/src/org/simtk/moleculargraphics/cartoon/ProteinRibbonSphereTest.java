@@ -68,7 +68,7 @@ public class ProteinRibbonSphereTest extends AtomSphereActor {
 
         System.out.println("Amino acid found");
 
-        double colorScalar = toonColors.getColorIndex(residue);
+        double colorScalar = getColorIndex(residue);
 
         // Vector3D c = residue.getBackbonePosition();
         

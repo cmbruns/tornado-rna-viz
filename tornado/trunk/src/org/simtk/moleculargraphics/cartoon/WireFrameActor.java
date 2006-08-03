@@ -128,7 +128,7 @@ public class WireFrameActor extends GlyphCartoon {
 
         Vector3D c = atom.getCoordinates();
 
-        double colorScalar = toonColors.getColorIndex(atom);
+        double colorScalar = getColorIndex(atom);
 
         // For unbonded atoms, put a cross at atom position
         if (atom.bonds().size() == 0) {
@@ -200,5 +200,12 @@ public class WireFrameActor extends GlyphCartoon {
         colorScalars.InsertNextValue(colorScalar);
         
         isPopulated = true;
+    }
+
+    public void highlightResidue(Residue residue, Color color) {
+        highlightResidueByAtomScalars(residue, color);
+    }
+    public void unhighlightResidue(Residue residue) {
+        unhighlightResidueByAtomScalars(residue);
     }
 }

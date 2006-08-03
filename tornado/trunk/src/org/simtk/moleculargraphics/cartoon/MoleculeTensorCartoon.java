@@ -37,7 +37,7 @@ public class MoleculeTensorCartoon extends MoleculeCartoonClass {
                 new MoleculeTensorActor(molecule);
             if (actorToon.isPopulated()) {
                 subToons.add(actorToon);
-                actorSet.add(actorToon.getActor());
+                actorSet.add(actorToon);
             }
         } catch (NoCartoonCreatedException exc) {}
     }

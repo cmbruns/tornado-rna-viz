@@ -27,18 +27,26 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.molecularstructure.Molecule;
+import org.simtk.molecularstructure.*;
+import java.util.List;
 
-public class BackboneCurve extends MoleculeCartoonClass {
-    // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
-
-    BackboneCurve() {
+public class BackboneTubeCartoon extends MoleculeCartoonClass {
+    protected double radius = 1.0;
+    
+    BackboneTubeCartoon(double radius) {
+        this.radius = radius;
     }
     
     public void addMolecule(Molecule molecule) {
-        try {
-            NewBackboneCurveActor actorToon = 
-                new NewBackboneCurveActor(4.0, 1.0, molecule);
+        if (! (molecule instanceof Biopolymer) ) return;
+        Biopolymer biopolymer = (Biopolymer) molecule;
+        addResidues(biopolymer.residues());
+    }
+
+    public void addResidues(List<Residue> residues) {
+        try {            
+            BackboneTubeActor actorToon = 
+                new BackboneTubeActor(radius, residues);
             if (actorToon.isPopulated()) {
                 subToons.add(actorToon);
                 actorSet.add(actorToon);

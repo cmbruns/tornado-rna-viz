@@ -33,7 +33,7 @@ import org.simtk.molecularstructure.*;
 import vtk.vtkActor;
 
 public interface MoleculeCartoon extends BaseCartoon {
-    public Set<vtkActor> vtkActors();    
+    public Set<ActorCartoon> vtkActors();    
     public void add(MoleculeCollection moleculeCollection);
     public void addMolecule(Molecule molecule) throws NoCartoonCreatedException;
     public void addSubToon(BaseCartoon subToon);

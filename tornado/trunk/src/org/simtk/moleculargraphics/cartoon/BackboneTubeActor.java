@@ -32,48 +32,33 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import vtk.*;
-
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.Atom;
+import java.util.List;
 
 /** 
  * @author Christopher Bruns
  * 
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
-public class NewBackboneCurveActor extends ActorCartoonClass {
-    double ribbonThickness = 1.00;
-    double ribbonWidth = 1.50;
+public class BackboneTubeActor extends ActorCartoonClass {
+    double radius = 1.5;
     double lengthResolution = 1.00; // (Angstroms) for smoothing
-    boolean useArrowHead = true;
-    protected double highlightGap = 0.05;
+    int numberOfSides = 5;
     
     /**
      * How many spline segments per residue
      */
     static double splineFactor = 5.0;
     
-    public NewBackboneCurveActor(
-            double width, 
-            double thickness,
-            Molecule molecule)
+    public BackboneTubeActor(
+            double radius, 
+            List<Residue> residues)
     throws NoCartoonCreatedException
-    {
-        // Something is screwy with back vs. front faces of ribbon
-        // I replaced this section with a SetFlipNormals(1) in the pipeline
-        // actor.GetProperty().BackfaceCullingOff();
-        // actor.GetProperty().FrontfaceCullingOn();
-        // highlightActor.GetProperty().BackfaceCullingOff();
-        // highlightActor.GetProperty().FrontfaceCullingOn();
-        
-        this.ribbonWidth = width;
-        this.ribbonThickness = thickness;
+    {        
+        this.radius = radius;
 
-        if (! (molecule instanceof Biopolymer)) 
-            throw new NoCartoonCreatedException("Not a biopolymer for backbone curve");
-        Biopolymer biopolymer = (Biopolymer) molecule;
-        
         vtkPoints linePoints = new vtkPoints();
         vtkFloatArray lineNormals = new vtkFloatArray();
         lineNormals.SetNumberOfComponents(3);
@@ -87,7 +72,7 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
         boolean isFirstResidue = true;
         Residue previousResidue = null;
         double colorScalar = 0;
-        RESIDUE: for (Residue res : biopolymer.residues()) {
+        RESIDUE: for (Residue res : residues) {
             if (! (res instanceof Residue)) continue RESIDUE;
             Residue residue = (Residue) res;
             
@@ -181,13 +166,6 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
         lineData.GetPointData().SetScalars(colorScalars);
         lineData.GetPointData().SetNormals(lineNormals);
 
-//        System.out.println("Backbone curve line data:");
-//        for (int i = 0; i < numberOfPoints; i ++) {
-//            double[] p = lineData.GetPoint(i);
-//            double[] n = lineData.GetPointData().GetNormals().GetTuple3(i);
-//            System.out.println("  "+i+": ("+p[0]+", "+p[1]+", "+p[2]+")");
-//        }
-        
         // Remove duplicate points
         vtkCleanPolyData cleanFilter = new vtkCleanPolyData();
         cleanFilter.SetInput(lineData);
@@ -197,81 +175,45 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
         splineFilter.SetSubdivideToLength();
         splineFilter.SetLength(lengthResolution);
         splineFilter.SetInput(cleanFilter.GetOutput());
-        splineFilter.Update(); // TODO - for debugging
-        
-        mapper.SetScalarModeToUsePointData();
-        mapper.ColorByArrayComponent("colors", 0);
-        mapper.SetInput(createArrowRibbon(0.00, splineFilter.GetOutput()));
-
-        actor.SetMapper(mapper);
-        
-        highlightMapper.SetScalarModeToUsePointData();
-        highlightMapper.ColorByArrayComponent("colors", 0);
-        highlightMapper.SetInput(createArrowRibbon(highlightGap, splineFilter.GetOutput()));
-
-        highlightActor.SetMapper(highlightMapper);
-        highlightActor.GetProperty().SetRepresentationToWireframe();
-
-        isPopulated = true;
-    } 
-    
-    private vtkPolyData createArrowRibbon(double growSize, vtkDataSet polyLine) {
-        // Correct the interpolated scalars back to integer values
-        vtkRoundScalarsFilter roundingFilter = new vtkRoundScalarsFilter();
-        roundingFilter.SetInput(polyLine);
-        
-        // Shift positions so that extruded ribbon will be centered
-        vtkPreExtrusionCenteringFilter centeringFilter = new vtkPreExtrusionCenteringFilter();
-        centeringFilter.SetThickness(ribbonThickness);
-        
-        // TODO - this is a kludge that depends upon the order in which
-        // the main actor and the highlight actor are created.
-        // Is the centering being applied twice to the same points?
-        if (growSize != 0.0) {
-            centeringFilter.SetThickness(growSize);
-        }
-        
-        centeringFilter.SetInput(roundingFilter.GetOutput());
-        
-        // Widen the line into a ribbon
-        vtkRibbonFilter ribbonFilter = new vtkRibbonFilter();
-        ribbonFilter.SetAngle(0); // Perpendicular to normals
-        
-        if (useArrowHead) {            
-            // Insert scalars and extra points to make a nice arrow head
-            vtkArrowWidthFilter arrowFilter = new vtkArrowWidthFilter();
-            arrowFilter.SetWidth(ribbonWidth + growSize);
-            arrowFilter.SetThickness(ribbonThickness + growSize);
-            arrowFilter.SetInput(centeringFilter.GetOutput());
-
-            ribbonFilter.SetInput(arrowFilter.GetOutput());
-            ribbonFilter.VaryWidthOn();
-            ribbonFilter.SetWidth(arrowFilter.GetRibbonFilterWidth()); // minimum width
-            ribbonFilter.SetWidthFactor(arrowFilter.GetRibbonFilterWidthFactor()); // maximum / minimum
-        }
-        else {
-            ribbonFilter.SetInput(centeringFilter.GetOutput());
-            ribbonFilter.VaryWidthOff();
-            ribbonFilter.SetWidth(ribbonWidth + growSize); // minimum width
-            ribbonFilter.SetWidthFactor(1.0); // maximum / minimum
-        }
         
         vtkSetScalarsFilter setScalarsFilter = new vtkSetScalarsFilter();
         setScalarsFilter.SetScalars("colors");
-        setScalarsFilter.SetInput(ribbonFilter.GetOutput());
+        setScalarsFilter.SetInput(splineFilter.GetOutput());
 
-        vtkLinearExtrusionFilter extrusionFilter = new vtkLinearExtrusionFilter();
-        extrusionFilter.SetCapping(1);
-        extrusionFilter.SetExtrusionTypeToNormalExtrusion();
-        extrusionFilter.SetScaleFactor(ribbonThickness + growSize);
-        extrusionFilter.SetInput(setScalarsFilter.GetOutput());
+        // Correct the interpolated scalars back to integer values
+        vtkRoundScalarsFilter roundingFilter = new vtkRoundScalarsFilter();
+        roundingFilter.SetInput(setScalarsFilter.GetOutput());
         
-        vtkPolyDataNormals normalsFilter = new vtkPolyDataNormals();
-        normalsFilter.SetFeatureAngle(80.0);
-        normalsFilter.SetInput(extrusionFilter.GetOutput());
-        // TODO - flip normals is required for some reason?!?!
-        normalsFilter.SetFlipNormals(1);
+        // Widen the line into a tube
+        vtkTubeFilter tubeFilter = new vtkTubeFilter();
+        tubeFilter.SetRadius(radius);
+        tubeFilter.SetVaryRadiusToVaryRadiusOff();
+        tubeFilter.SetNumberOfSides(numberOfSides);
+        tubeFilter.SetInput(roundingFilter.GetOutput());
         
-        return normalsFilter.GetOutput();
-    }
+        mapper.SetScalarModeToUsePointData();
+        mapper.ColorByArrayComponent("colors", 0);
+        mapper.SetInput(tubeFilter.GetOutput());
+
+        actor.SetMapper(mapper);
+        
+        // For highlighting
+        
+        // Widen the line into a tube
+        vtkTubeFilter highlightTubeFilter = new vtkTubeFilter();
+        highlightTubeFilter.SetRadius(radius * 1.01);
+        highlightTubeFilter.SetVaryRadiusToVaryRadiusOff();
+        highlightTubeFilter.SetNumberOfSides(numberOfSides);
+        highlightTubeFilter.SetInput(roundingFilter.GetOutput());
+        highlightTubeFilter.Update();
+        
+        highlightMapper.SetScalarModeToUsePointData();
+        highlightMapper.ColorByArrayComponent("colors", 0);
+        highlightMapper.SetInput(highlightTubeFilter.GetOutput());
+
+        highlightActor.SetMapper(highlightMapper);
+        highlightActor.GetProperty().SetRepresentationToWireframe();
+        
+        isPopulated = true;
+    }    
 }

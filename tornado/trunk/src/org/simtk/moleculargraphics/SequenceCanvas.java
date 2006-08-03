@@ -59,13 +59,13 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     int numberBaseLine = 5;
     
     // Parameters describing the region of sequence being shown
-    int leftEdgeVirtualPixel = 0;
+    private int leftEdgeVirtualPixel = 0;
     
     private Biopolymer sequenceMolecule = null;
 
     // Track mapping of string positions to residue objects
-    protected Hashtable residuePositions = new Hashtable();
-    protected Hashtable positionResidues = new Hashtable();
+    protected Map<Residue, Integer> residuePositions = new LinkedHashMap<Residue, Integer>();
+    protected Map<Integer, Residue> positionResidues = new LinkedHashMap<Integer, Residue>();
     Vector residueSymbols = new Vector();
 
     public SequenceCanvas() {
@@ -282,6 +282,12 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     }
     
     public int getLeftEdgePixel() {return leftEdgeVirtualPixel;}
+    public int getRightEdgePixel() {
+        Rectangle viewRect = getVisibleRect();
+        
+        int answer = leftEdgeVirtualPixel + viewRect.width - 1;
+        return answer;
+    }
     
     static final long serialVersionUID = 01L;
 }

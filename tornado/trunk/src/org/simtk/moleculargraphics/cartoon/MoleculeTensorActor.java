@@ -109,7 +109,7 @@ public class MoleculeTensorActor extends ActorCartoonClass {
         points.InsertNextPoint(centerOfMass.toArray());
 
         // One color: the color of the molecule
-        double colorScalar = toonColors.getColorIndex(molecule);
+        double colorScalar = getColorIndex(molecule);
         vtkFloatArray colorScalars = new vtkFloatArray();
         colorScalars.SetNumberOfComponents(1);
         colorScalars.InsertNextTuple1(colorScalar);

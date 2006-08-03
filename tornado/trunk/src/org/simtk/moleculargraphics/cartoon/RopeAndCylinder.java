@@ -45,7 +45,8 @@ import vtk.*;
 public class RopeAndCylinder extends CompositeCartoon {
 
     DuplexCylinderCartoon duplexes = new DuplexCylinderCartoon();
-    BackboneStick nucRopes = new BackboneStick(1.00);
+    // BackboneStick nucRopes = new BackboneStick(1.00);
+    BackboneTubeCartoon nucRopes = new BackboneTubeCartoon(1.00);
     BackboneStick proteinRopes = new BackboneStick(0.5);
     BallAndStickCartoon cpks = new BallAndStickCartoon();
     
@@ -91,7 +92,7 @@ public class RopeAndCylinder extends CompositeCartoon {
         }
         
         // Duplex residues that attach to non-duplex residues should also get ropes
-        Set<Residue> ropeResidues = new LinkedHashSet<Residue>();
+        List<Residue> ropeResidues = new Vector<Residue>();
         for (Residue residue : allResidues) {
             boolean isRopeResidue = false;
             if (duplexResidues.contains(residue)) { // In a duplex             
@@ -118,9 +119,10 @@ public class RopeAndCylinder extends CompositeCartoon {
         List<Object> parentObjects = new Vector<Object>();
         parentObjects.add(molecule);
         
-        for (Residue residue : ropeResidues) {
-            nucRopes.addResidue(residue, parentObjects);
-        }
+        nucRopes.addResidues(ropeResidues);
+//        for (Residue residue : ropeResidues) {
+//            nucRopes.addResidue(residue, parentObjects);
+//        }
 
         duplexes.addMolecule(molecule);        
         // ropes.add(molecule);

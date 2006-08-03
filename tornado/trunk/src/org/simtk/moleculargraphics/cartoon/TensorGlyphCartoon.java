@@ -41,7 +41,9 @@ import vtk.*;
  */
 abstract public class TensorGlyphCartoon extends GlyphCartoon {
 
-    protected vtkTensorGlyph tensorGlyph = new vtkTensorGlyph();
+    private vtkTensorGlyph tensorGlyph = new vtkTensorGlyph();
+    private vtkTensorGlyph highlightTensorGlyph = new vtkTensorGlyph();
+    
     vtkFloatArray tensors = new vtkFloatArray();
 
     TensorGlyphCartoon() {
@@ -49,20 +51,34 @@ abstract public class TensorGlyphCartoon extends GlyphCartoon {
         tensorGlyph.ThreeGlyphsOff();
         tensorGlyph.SymmetricOff();
 
+        highlightTensorGlyph.ExtractEigenvaluesOff();  // Treat as a rotation matrix, not as something with eigenvalues
+        highlightTensorGlyph.ThreeGlyphsOff();
+        highlightTensorGlyph.SymmetricOff();
+        highlightTensorGlyph.SetScaleFactor(highlightFactor);
+
         tensors.SetNumberOfComponents(9);
         lineData.GetPointData().SetTensors(tensors);
         
         // disconnect the vtkGlyph3D, which is replaced by TensorGlyph in this derived class
         tensorGlyph.SetInput(lineData);
         mapper.SetInput(tensorGlyph.GetOutput());
+        
+        highlightTensorGlyph.SetInput(lineData);
+        highlightMapper.SetInput(highlightTensorGlyph.GetOutput());
+        
+        // Cause errors if subclasses try to use overridden members
+        // lineGlyph = null;
+        // highlightGlyph = null;
     }
 
     // Override these functions to use TensorGlyph rather than vtkGlyph3D
     public void setGlyphSource(vtkPolyData data) {
         tensorGlyph.SetSource(data);
+        highlightTensorGlyph.SetSource(data);
     }
     public void scaleNone() {
         tensorGlyph.SetScaling(0); // Do not adjust size
+        highlightTensorGlyph.SetScaling(0); // Do not adjust size        
     }
     public void scaleByNormal() {
         throw new UnsupportedOperationException();
@@ -73,5 +89,7 @@ abstract public class TensorGlyphCartoon extends GlyphCartoon {
     public void colorByScalar() {
         tensorGlyph.ColorGlyphsOn();
         tensorGlyph.SetColorMode(0);
+        highlightTensorGlyph.ColorGlyphsOn();
+        highlightTensorGlyph.SetColorMode(0);
     }
 }

@@ -22,27 +22,45 @@
  */
 
 /*
- * Created on Jul 18, 2006
+ * Created on Jul 31, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.toon.secstruct;
 
-import org.simtk.molecularstructure.Molecule;
+import junit.framework.TestCase;
+import java.net.URL;
+import java.io.*;
+import javax.swing.*;
+import java.awt.*;
 
-public class BackboneCurve extends MoleculeCartoonClass {
-    // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
+public class TestSecondaryStructureCanvas extends TestCase {
 
-    BackboneCurve() {
-    }
-    
-    public void addMolecule(Molecule molecule) {
+    public static void main(String[] args) {
+        // junit.textui.TestRunner.run(TestSecondaryStructureCanvas.class);
+
         try {
-            NewBackboneCurveActor actorToon = 
-                new NewBackboneCurveActor(4.0, 1.0, molecule);
-            if (actorToon.isPopulated()) {
-                subToons.add(actorToon);
-                actorSet.add(actorToon);
-            }
-        } catch (NoCartoonCreatedException exc) {}
+            (new TestSecondaryStructureCanvas()).testLoadSStructViewFile();
+        } catch (IOException exc) {}
     }
+
+    /*
+     * Test method for 'org.simtk.toon.secstruct.SecondaryStructureCanvas.loadSStructViewFile(InputStream)'
+     */
+    public void testLoadSStructViewFile() throws IOException {
+        SecondaryStructureCanvas canvas = new SecondaryStructureCanvas(null);
+        
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL url = classLoader.getResource("sstructs/e.coli16s.coord");
+        InputStream testStream = url.openConnection().getInputStream();
+        canvas.loadSStructViewFile(testStream);
+
+        JFrame frame = new JFrame();
+        frame.getRootPane().setLayout(new BorderLayout());
+        frame.getRootPane().add(canvas, BorderLayout.CENTER);;
+        frame.pack();
+        frame.setSize(300, 300);
+        frame.setVisible(true);
+
+    }
+
 }

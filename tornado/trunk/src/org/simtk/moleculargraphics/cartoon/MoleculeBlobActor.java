@@ -110,7 +110,7 @@ public class MoleculeBlobActor extends ActorCartoonClass {
 
         int numScalars = dimensions[0] * dimensions[1] * dimensions[2];
         
-        int colorScalar = toonColors.getColorIndex(molecule);
+        int colorScalar = getColorIndex(molecule);
         vtkDataArray colorScalars = new vtkFloatArray();
         colorScalars.SetNumberOfComponents(1);
         colorScalars.SetNumberOfTuples(numScalars);
@@ -178,20 +178,22 @@ public class MoleculeBlobActor extends ActorCartoonClass {
         }
         
         // Choose cutoff based on actual density observed
-        // Use the average non-zero density
+        // Use the root-mean-squared non-zero density
         int cellCount = 0;
         double totalDensity = 0.0;
         for (int i = 0; i < volArray.GetNumberOfTuples(); ++i) {
             double vol = volArray.GetTuple1(i);
             if (vol > 0.0) {
                 ++ cellCount;
-                totalDensity += vol;
+                totalDensity += vol * vol;
             }
         }
+        totalDensity = Math.sqrt(totalDensity);
         if (cellCount < 1) return;
         if (totalDensity == 0.0) return;
-        double averageDensity = totalDensity / cellCount;
-        double densityCutoff = 1.0 * averageDensity;
+        double rmsDensity = totalDensity / cellCount;
+        rmsDensity = Math.sqrt(rmsDensity);
+        double densityCutoff = 1.3 * rmsDensity;
         
         vtkContourFilter contourFilter = new vtkContourFilter();
         contourFilter.SetInput(imageData); 

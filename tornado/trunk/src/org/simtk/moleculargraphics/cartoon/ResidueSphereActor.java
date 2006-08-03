@@ -104,7 +104,7 @@ public class ResidueSphereActor extends GlyphCartoon {
 
         Vector3D c = residue.getCenterOfMass();
 
-        double colorScalar = toonColors.getColorIndex(residue);
+        double colorScalar = getColorIndex(residue);
 
         // Draw a sphere for each atom
         linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());

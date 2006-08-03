@@ -47,7 +47,7 @@ public class ProteinCoil extends ProteinRibbonSegment {
     protected void createCoil(
             List<Vector3D> positions, 
             List<Vector3D> normals, 
-            List<Object> objects,
+            List<Chemical> objects,
             double diameter) {
 
         vtkTubeFilter tubeFilter = new vtkTubeFilter();
@@ -74,7 +74,7 @@ public class ProteinCoil extends ProteinRibbonSegment {
     throws NoCartoonCreatedException {
         List<Vector3D> positions = new Vector<Vector3D>();
         List<Vector3D> normals = new Vector<Vector3D>();
-        List<Object> aminoAcids = new Vector<Object>();
+        List<Chemical> aminoAcids = new Vector<Chemical>();
         
         int resCount = 0;
         Vector3D previousNormal = null;

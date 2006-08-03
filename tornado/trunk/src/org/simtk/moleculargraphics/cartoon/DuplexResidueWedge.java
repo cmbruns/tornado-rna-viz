@@ -136,7 +136,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
             Duplex duplex = (Duplex) iterDuplex.next();
 
             Cylinder duplexCylinder;
-            try {duplexCylinder = DuplexCylinderCartoon.doubleHelixCylinder(duplex);}
+            try {duplexCylinder = DuplexCylinderActor.doubleHelixCylinder(duplex);}
             catch (InsufficientPointsException exc) {continue DUPLEX;}
        
             MutableVector3D duplexDirection = new Vector3DClass( duplexCylinder.getHead().minus(duplexCylinder.getTail()).unit() );
@@ -189,7 +189,7 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                     currentObjects.add(duplex);
                     currentObjects.add(residue);
                     
-                    double colorScalar = toonColors.getColorIndex(residue);
+                    double colorScalar = getColorIndex(residue);
     
                     linePoints.InsertNextPoint(helixCenter.getX(), helixCenter.getY(), helixCenter.getZ());
                     lineNormals.InsertNextTuple3(residueDirection.getX(), residueDirection.getY(), residueDirection.getZ());

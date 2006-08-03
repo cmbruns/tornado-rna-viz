@@ -111,7 +111,7 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
         return null;
     }
 
-    protected vtkPolyData createPolyLine(List<Vector3D> positions, List<Vector3D> normals, List<Object> objects) {
+    protected vtkPolyData createPolyLine(List<Vector3D> positions, List<Vector3D> normals, List<Chemical> objects) {
         // Data structures for points, normals, and colors
         vtkPoints linePoints = new vtkPoints();
         vtkFloatArray lineNormals = new vtkFloatArray();
@@ -134,7 +134,7 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
 
             // Add 0.5 because the mapper seems to use floor() to convert 
             // interpolated values to integers
-            colorScalars.InsertNextValue(toonColors.getColorIndex(objects.get(i)));
+            colorScalars.InsertNextValue(getColorIndex(objects.get(i)));
 
             dummyScalars.InsertNextValue(1.0);
         }

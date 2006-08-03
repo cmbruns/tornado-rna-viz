@@ -35,10 +35,15 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
+
 import vtk.*;
 import java.awt.event.*;
 import net.java.games.jogl.*;
 import org.simtk.util.*;
+import org.simtk.moleculargraphics.cartoon.ActorCartoon;
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.Atom;
+import org.simtk.geometry3d.*;
 
 /** 
  * @author Christopher Bruns
@@ -46,8 +51,13 @@ import org.simtk.util.*;
  * Three dimensional rendering canvas for molecular structures in Tornado application
  */
 public class Tornado3DCanvas extends StructureCanvas 
- implements MouseMotionListener, MouseListener, ComponentListener, KeyListener
+ implements MouseMotionListener, MouseListener, 
+ ComponentListener, KeyListener, ResidueHighlightListener,
+ ResidueCenterListener
 {
+    protected ResidueHighlightBroadcaster residueHighlightBroadcaster = null;
+    protected ResidueCenterBroadcaster residueCenterBroadcaster = null;
+    protected Map<Residue, Color> highlightResidues = new LinkedHashMap<Residue, Color>();
     
     HashSet currentlyDepressedKeyboardKeys = new HashSet();
     
@@ -100,6 +110,13 @@ public class Tornado3DCanvas extends StructureCanvas
         
         // Required for fog to work?
         // createTestObject();
+    }
+    
+    public void setResidueHighlightBroadcaster(ResidueHighlightBroadcaster r) {
+        residueHighlightBroadcaster = r;
+    }
+    public void setResidueCenterBroadcaster(ResidueCenterBroadcaster r) {
+        residueCenterBroadcaster = r;
     }
     
     private void loadSimtkLogo() {
@@ -424,19 +441,96 @@ public class Tornado3DCanvas extends StructureCanvas
 
     boolean doPick = true;
     public void mouseClicked(MouseEvent event) {
-        if (doPick) {
+        picker.SetTolerance(0.05);
+        
+        Vector3D pickPosition = null;
+        Residue clickedResidue = null;
+        
+        if (doPick) do {
             Date startTime = new Date();
             
-            // Residue residue = mouseResidue(event);
-//            if (residue != null) {
-//                // System.out.println("Residue found");
-//                // residueActionBroadcaster.fireHighlight(residue);
-//            }
-                
-            Date endTime = new Date();
-            long milliseconds = endTime.getTime() - startTime.getTime();
-            // System.out.println("pick took " + milliseconds + " milliseconds");
+            picker.Pick(event.getX(), getHeight() - event.getY(), 0.0, ren);
+            
+            vtkActor actor = picker.GetActor();
+            if (actor == null) {
+                System.out.println("No actor");
+                break;
+            }
+
+            pickPosition = new Vector3DClass(picker.GetPickPosition());
+            
+            // System.out.println("Point id = " + pointId);
+            int cellId = picker.GetCellId();
+            if (cellId < 0) {
+                System.out.println("No cell");
+                break;
+            }
+
+            vtkCell cell = actor.GetMapper().GetInputAsDataSet().GetCell(cellId);
+            
+            int pointId = cell.GetPointIds().GetId(0);
+            vtkDataArray scalars = actor.GetMapper().GetInputAsDataSet().GetPointData().GetScalars();
+            if (scalars == null) {
+                System.out.println("No scalars");
+                break;
+            }
+            double scalar = scalars.GetTuple1(pointId);
+
+            ActorCartoon toon = actorCartoons.get(actor);
+            if (toon == null) {
+                System.out.println("No cartoon");
+                break;
+            }
+
+            Chemical chemical = toon.getChemicalFromScalar((int)scalar);
+            if (chemical == null) {
+                System.out.println("No chemical");
+                break;                
+            }
+
+            if (chemical instanceof Residue) {
+                clickedResidue = (Residue) chemical;
+            }
+            else if (chemical instanceof Atom) {
+                // figure out residue
+                clickedResidue = ((Atom)chemical).getResidue();
+            }
+            
+            break;
+        } while (true);
+
+        // Double click to center on residue, 
+        // or center on whatever was clicked
+        if (event.getClickCount() == 2) {
+            if (clickedResidue != null) {
+                residueCenterBroadcaster.fireCenter(clickedResidue);
+                return;
+            }
+            else if (pickPosition != null) {
+                cam.SetFocalPoint(pickPosition.toArray());
+                resetCameraClippingRange();
+                repaint();
+                return;
+            }
         }
+        
+        if (clickedResidue == null) return;
+        
+        // Shift/ctrl click to add or remove residue to selection
+        else if ( event.isControlDown() || event.isShiftDown() ) { // Control click preserves other selections
+            if (highlightResidues.containsKey(clickedResidue))
+                residueHighlightBroadcaster.fireUnhighlightResidue(clickedResidue);
+            else
+                residueHighlightBroadcaster.fireHighlight(clickedResidue);
+        }
+        // Regular click to select just this residue
+        else { // Normal click - unselect all
+            residueHighlightBroadcaster.fireUnhighlightResidues();
+            residueHighlightBroadcaster.fireHighlight(clickedResidue);            
+        }
+        
+        repaint();
+
     }
     
     
@@ -465,4 +559,61 @@ public class Tornado3DCanvas extends StructureCanvas
         currentlyDepressedKeyboardKeys.remove(KeyEvent.getKeyText(e.getKeyCode()));
         super.keyReleased(e);
     }
+
+    public void unhighlightResidues() {
+        highlightResidues.clear();
+        for (ActorCartoon toon : actorCartoons.values()) {
+            if (! (toon instanceof ResidueHighlightListener)) continue;
+            ResidueHighlightListener listener = (ResidueHighlightListener) toon;
+            listener.unhighlightResidues();
+        }
+        repaint();
+    }
+    public void unhighlightResidue(Residue residue) {
+        highlightResidues.remove(residue);
+        for (ActorCartoon toon : actorCartoons.values()) {
+            if (! (toon instanceof ResidueHighlightListener)) continue;
+            ResidueHighlightListener listener = (ResidueHighlightListener) toon;
+            listener.unhighlightResidue(residue);
+        }
+        repaint();
+    }
+    public void highlightResidue(Residue residue, Color color) {
+        highlightResidues.put(residue, color);
+        for (ActorCartoon toon : actorCartoons.values()) {
+            if (! (toon instanceof ResidueHighlightListener)) continue;
+            ResidueHighlightListener listener = (ResidueHighlightListener) toon;
+            listener.highlightResidue(residue, color);
+        }
+        repaint();
+    }
+
+    public void centerOnResidue(Residue residue) {
+        Vector3D position = null;
+
+        // Try back bone position
+        if (position == null) {
+            try {position = residue.getBackbonePosition();}
+            catch (Exception exc) {}
+        }
+        
+        // Try center of mass
+        if (position == null) position = residue.getCenterOfMass();
+        
+        if (position == null) return;
+        
+        
+        cam.SetFocalPoint(position.toArray());
+        resetCameraClippingRange();
+        repaint();
+    }
+
+    // Preserve highlights when a new cartoon is used
+    public void add(ActorCartoon cartoon) {
+        super.add(cartoon);
+        for (Residue residue : highlightResidues.keySet()) {
+            highlightResidue(residue, highlightResidues.get(residue));
+        }
+    }
+
 }

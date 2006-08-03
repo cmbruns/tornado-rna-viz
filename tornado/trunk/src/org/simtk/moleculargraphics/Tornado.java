@@ -47,6 +47,7 @@ import org.simtk.rnaml.RnamlDocument;
 import org.simtk.util.*;
 import edu.stanford.ejalbert.BrowserLauncher;
 import vtk.*;
+import org.simtk.toon.secstruct.*;
 
 /** 
  * @author Christopher Bruns
@@ -55,8 +56,13 @@ import vtk.*;
  *
  */
 public class Tornado extends JFrame 
-implements ResidueActionListener 
+implements ResidueHighlightListener
 {
+    // private ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
+    protected ResidueHighlightBroadcaster residueHighlightBroadcaster = new ResidueHighlightBroadcaster();
+    protected ResidueCenterBroadcaster residueCenterBroadcaster = new ResidueCenterBroadcaster();
+    protected ActiveMoleculeBroadcaster activeMoleculeBroadcaster = new ActiveMoleculeBroadcaster();
+
     protected Color initialBackgroundColor = Color.white;
     // 
     // Public
@@ -72,8 +78,8 @@ implements ResidueActionListener
     // protected ColorScheme yellowColorScheme = new ConstantColor(Color.yellow);
     // protected ColorScheme cyanColorScheme = new ConstantColor(Color.cyan);
     protected ColorScheme colorScheme = DefaultColorScheme.DEFAULT_COLOR_SCHEME;
-    protected ColorScheme highlightColorScheme = 
-        new HighlightColorScheme(Color.yellow, colorScheme);
+    // protected ColorScheme highlightColorScheme = 
+    //     new HighlightColorScheme(Color.yellow, colorScheme);
 
     // private MolecularCartoonClass.CartoonType cartoonType = 
     //     MolecularCartoonClass.CartoonType.WIRE_FRAME;
@@ -113,7 +119,8 @@ implements ResidueActionListener
         // Secondary structure canvas
         SecondaryStructureCanvas canvas2D = null;
         if (drawSecondaryStructure) {
-            canvas2D = new SecondaryStructureCanvas(residueActionBroadcaster);
+            canvas2D = new SecondaryStructureCanvas(residueHighlightBroadcaster);
+            residueHighlightBroadcaster.addResidueHighlightListener(canvas2D);
 
             // canvas.setMinimumSize(new Dimension(10,10));
             // canvas2D.setMinimumSize(new Dimension(10, 10));
@@ -146,8 +153,8 @@ implements ResidueActionListener
         panel.add(initialLoadStructurePanel);
         
         // Sequence area
-        sequencePane = new SequencePane(residueActionBroadcaster);
-        sequenceCartoonCanvas = new SequenceCartoonCanvas(residueActionBroadcaster, sequencePane.getSequenceCanvas());
+        sequencePane = new SequencePane(residueHighlightBroadcaster, residueCenterBroadcaster, this);
+        sequenceCartoonCanvas = new SequenceCartoonCanvas(residueHighlightBroadcaster, sequencePane.getSequenceCanvas());
 
         panel.add(sequenceCartoonCanvas);
 
@@ -178,12 +185,23 @@ implements ResidueActionListener
                 
         setMessage("No molecules are currently loaded");
         
-        residueActionBroadcaster.addSelectionListener(sequencePane);
-        // residueActionBroadcaster.addSelectionListener(canvas);
-        residueActionBroadcaster.addSelectionListener(sequenceCartoonCanvas);
-        residueActionBroadcaster.addSelectionListener(this);
+        
+        // Set up various event listeners
+        residueHighlightBroadcaster.addResidueHighlightListener(sequencePane);
+        // residueHighlightBroadcaster.addSelectionListener(canvas);
+        residueHighlightBroadcaster.addResidueHighlightListener(sequenceCartoonCanvas);
+        residueHighlightBroadcaster.addResidueHighlightListener(canvas);
+        residueHighlightBroadcaster.addResidueHighlightListener(this);
         if (drawSecondaryStructure)
-            residueActionBroadcaster.addSelectionListener(canvas2D);
+            residueHighlightBroadcaster.addResidueHighlightListener(canvas2D);
+        
+        activeMoleculeBroadcaster.addActiveMoleculeListener(sequenceCartoonCanvas);
+        activeMoleculeBroadcaster.addActiveMoleculeListener(sequencePane);
+        
+        canvas.setResidueHighlightBroadcaster(residueHighlightBroadcaster);
+        canvas.setResidueCenterBroadcaster(residueCenterBroadcaster);
+        residueCenterBroadcaster.addResidueCenterListener(canvas);
+        residueCenterBroadcaster.addResidueCenterListener(sequencePane);
         
         setBackgroundColor(Color.white);
     }
@@ -548,7 +566,7 @@ implements ResidueActionListener
                 canvas.add(currentCartoon);
                 
                 if (currentHighlightedResidue != null)
-                    residueActionBroadcaster.fireHighlight(currentHighlightedResidue);
+                    residueHighlightBroadcaster.fireHighlight(currentHighlightedResidue);
             }
             else {
                 // TODO - alert user that there was no geometry
@@ -760,7 +778,7 @@ implements ResidueActionListener
         (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
 
         // Display sequence of first molecule that has a sequence
-        residueActionBroadcaster.fireClearResidues();
+        residueHighlightBroadcaster.fireUnhighlightResidues();
         BiopolymerClass bp = null;
         // for (Molecule molecule : molecules.molecules()) {
         for (Iterator<Molecule> i1 = molecules.molecules().iterator(); i1.hasNext();) {
@@ -768,11 +786,7 @@ implements ResidueActionListener
             if (molecule instanceof BiopolymerClass) {
                 bp = (BiopolymerClass) molecule;
                 
-                // for (Residue residue : bp.residues())
-                for (Iterator i2 = bp.residues().iterator(); i2.hasNext(); ) {
-                    Residue residue = (Residue) i2.next();
-                    residueActionBroadcaster.fireAdd(residue);
-                }
+                activeMoleculeBroadcaster.fireSetActiveMolecle(molecule);
                 
                 break; // only put the sequence of the first molecule with a sequence
             }
@@ -887,15 +901,15 @@ implements ResidueActionListener
         }
     }
     
-    public void highlight(Residue residue) {
+    public void highlightResidue(Residue residue, Color color) {
         if (residue == null) setMessage(" ");
         else {
-            currentCartoon.colorToon(currentHighlightedResidue, colorScheme);
+            // currentCartoon.colorToon(currentHighlightedResidue, colorScheme);
             
-            currentCartoon.colorToon(residue, highlightColorScheme);
+            // currentCartoon.colorToon(residue, highlightColorScheme);
             // for (Atom atom : residue.)
             
-            canvas.repaint();
+            // canvas.repaint();
 
             setMessage("Residue " + residue.getResidueName() + 
                 " (" + residue.getOneLetterCode() + ") " + residue.getResidueNumber());
@@ -904,25 +918,29 @@ implements ResidueActionListener
         }
     }
     
-    public void unHighlightResidue() {
+    public void unhighlightResidues() {
         setMessage(" "); // Use a space, otherwise message panel collapses
         currentHighlightedResidue = null;
     }
-    public void select(Selectable r) {}
-    public void unSelect(Selectable r) {}    
-    public void unSelect() {}    
-    public void add(Residue r) {}    
+    public void unhighlightResidue(Residue r) {
+        if (currentHighlightedResidue == r) {
+            setMessage(" "); // Use a space, otherwise message panel collapses
+            currentHighlightedResidue = null;
+        }
+    }
     public void clearResidues() {
         currentHighlightedResidue = null;
     }
-    public void centerOn(Residue r) {}
     
-    public synchronized boolean userIsInteracting() {
-        return residueActionBroadcaster.userIsInteracting();
-    }
-    
+    protected volatile boolean userIsInteracting = false;
+    public synchronized boolean getUserIsInteracting() {
+        return userIsInteracting;
+    }    
     public synchronized void flushUserIsInteracting() {
-        residueActionBroadcaster.flushUserInteraction();
+        userIsInteracting = false;
+    }
+    public synchronized void lubricateUserInteraction() {
+        userIsInteracting = true;
     }
     
     public void updateTitleBar() {
@@ -979,7 +997,6 @@ implements ResidueActionListener
     private Cursor defaultCursor = new Cursor (Cursor.DEFAULT_CURSOR);
     private Cursor waitCursor = new Cursor (Cursor.WAIT_CURSOR);
 
-    private ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
     
     private String titleBase = "toRNAdo";
 

@@ -63,7 +63,7 @@ public class ProteinHelix extends ProteinRibbonSegment {
     protected void createTaperedRibbon(
             List<Vector3D> positions, 
             List<Vector3D> normals, 
-            List<Object> objects,
+            List<Chemical> objects,
             double ribbonThickness,
             double ribbonWidth) {
         // Insert scalars and extra points to make a nice arrow head
@@ -91,7 +91,7 @@ public class ProteinHelix extends ProteinRibbonSegment {
     throws NoCartoonCreatedException {
         List<Vector3D> positions = new Vector<Vector3D>();
         List<Vector3D> normals = new Vector<Vector3D>();
-        List<Object> aminoAcids = new Vector<Object>();
+        List<Chemical> aminoAcids = new Vector<Chemical>();
 
         double minT = startIndex - 0.5;
         double maxT = startIndex + residues.size() - 0.5;
@@ -127,7 +127,7 @@ public class ProteinHelix extends ProteinRibbonSegment {
     throws NoCartoonCreatedException {
         List<Vector3D> positions = new Vector<Vector3D>();
         List<Vector3D> normals = new Vector<Vector3D>();
-        List<Object> aminoAcids = new Vector<Object>();
+        List<Chemical> aminoAcids = new Vector<Chemical>();
         
         int resCount = 0;
         for (Residue residue : residues) {

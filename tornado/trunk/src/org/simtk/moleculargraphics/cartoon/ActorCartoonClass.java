@@ -33,15 +33,49 @@ package org.simtk.moleculargraphics.cartoon;
 
 import vtk.*;
 
-public class ActorCartoonClass implements ActorCartoon {
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
+import org.simtk.moleculargraphics.*;
+import java.awt.Color;
+
+public class ActorCartoonClass 
+implements ActorCartoon, ResidueHighlightListener
+{
+    protected ColorScheme invisibleColorScheme = new ConstantColor(new Color(100,100,255,0));
+    
     protected vtkActor actor = new vtkActor();
     protected vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-    protected ToonColors toonColors = new ToonColors(mapper);
+    private ToonColors toonColors = new ToonColors(mapper);
+
+    // protected vtkPolyDataMapper selectionMapper = new vtkPolyDataMapper();
+    // protected ToonColors selectionToonColors = new ToonColors(selectionMapper);
+    // protected vtkActor selectionActor = new vtkActor();
+
     protected boolean isPopulated = false;
+
+    protected vtkActor highlightActor = new vtkActor();
+    protected vtkPolyDataMapper highlightMapper = new vtkPolyDataMapper();
+    protected ToonColors highlightToonColors = new ToonColors(highlightMapper);
 
     ActorCartoonClass() {
         actor.SetMapper(mapper);
         actor.GetProperty().BackfaceCullingOn();
+        
+        highlightActor.SetMapper(highlightMapper);
+        highlightActor.GetProperty().SetRepresentationToWireframe();
+        highlightActor.GetProperty().BackfaceCullingOn();
+        highlightActor.SetVisibility(0);  // Start with no visibility
+        
+        // Until all classes implement a highlightActor, create
+        // a default input to the mapper
+        vtkPointSource pointSource = new vtkPointSource();
+        pointSource.SetRadius(0.0);
+        highlightMapper.SetInput(pointSource.GetOutput());
+    }
+    
+    protected int getColorIndex(Chemical colorable) {
+        int index = highlightToonColors.getColorIndex(colorable);
+        return toonColors.getColorIndex(colorable);
     }
     
     public void colorToon(Object object, ColorScheme colorScheme) {
@@ -61,4 +95,56 @@ public class ActorCartoonClass implements ActorCartoon {
     }    
 
     public boolean isPopulated() {return isPopulated;}
+    
+    public Chemical getChemicalFromScalar(int scalar) {
+        return toonColors.getChemicalFromScalar(scalar);
+    }
+
+    public vtkActor getHighlightActor() {return highlightActor;}
+    
+    public void unhighlightResidues() {
+        highlightToonColors.setColor(invisibleColorScheme);
+    }
+    public void unhighlightResidue(Residue residue) {
+        unhighlightResidueByResidueScalars(residue);
+    }
+    public void highlightResidue(Residue residue, Color color) {
+        highlightResidueByResidueScalars(residue, color);
+    }
+    
+    protected void highlightResidueByResidueScalars(Residue residue, Color color) {
+        ColorScheme colorScheme = new ConstantColor(color);
+        highlightToonColors.setColor(residue, colorScheme);        
+
+        if (highlightToonColors.hasVisibleColor() )
+            highlightActor.SetVisibility(1);
+    }
+    
+    protected void highlightResidueByAtomScalars(Residue residue, Color color) {
+        ColorScheme colorScheme = new ConstantColor(color);
+        highlightToonColors.setColor(residue, colorScheme);        
+        for (Atom atom : residue.atoms()) {
+            highlightToonColors.setColor(atom, colorScheme);
+        }
+
+        if (highlightToonColors.hasVisibleColor() )
+            highlightActor.SetVisibility(1);
+    }
+
+    protected void unhighlightResidueByResidueScalars(Residue residue) {
+        highlightToonColors.setColor(residue, invisibleColorScheme);        
+
+        if (! highlightToonColors.hasVisibleColor() )
+            highlightActor.SetVisibility(0);
+    }
+    
+    protected void unhighlightResidueByAtomScalars(Residue residue) {
+        highlightToonColors.setColor(residue, invisibleColorScheme);        
+        for (Atom atom : residue.atoms()) {
+            highlightToonColors.setColor(atom, invisibleColorScheme);
+        }
+        
+        if (! highlightToonColors.hasVisibleColor() )
+            highlightActor.SetVisibility(0);
+    }
 }

@@ -38,8 +38,8 @@ public class MoleculeBlobs extends MoleculeCartoonClass {
     public void addMolecule(Molecule m) {
         if (m.isSolvent()) return;
 
-        // 5 Angstroms resolution
-        MoleculeBlobActor blobs = new MoleculeBlobActor(m, 5.0);
+        // 3 Angstroms resolution
+        MoleculeBlobActor blobs = new MoleculeBlobActor(m, 3.0);
         addSubToon(blobs);
     }
     

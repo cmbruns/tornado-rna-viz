@@ -105,7 +105,7 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
 
         int glyphIndex = colorScalars.GetNumberOfTuples();
         
-        double colorScalar = toonColors.getColorIndex(res);
+        double colorScalar = getColorIndex(res);
 
         // glyphColors.add(currentObjects, lineData, glyphIndex, colorScalar);
         

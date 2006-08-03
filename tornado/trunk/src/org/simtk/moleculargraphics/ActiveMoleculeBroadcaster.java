@@ -31,31 +31,23 @@
  */
 package org.simtk.moleculargraphics;
 
-import java.awt.*;
-import org.simtk.molecularstructure.*;
-import org.simtk.util.*;
+import org.simtk.molecularstructure.Molecule;
+import java.util.*;
 
-public class SecondaryStructureCanvas extends BufferedCanvas 
-implements ResidueActionListener
-{
-    static final long serialVersionUID = 1L;
-    ResidueActionBroadcaster residueActionBroadcaster;
-    
-    public SecondaryStructureCanvas(ResidueActionBroadcaster b) {
-        residueActionBroadcaster = b;
-        setBackground(Color.white);
+public class ActiveMoleculeBroadcaster {
+    protected Set<ActiveMoleculeListener> listeners = 
+        new LinkedHashSet<ActiveMoleculeListener>();
+
+    public void addActiveMoleculeListener(ActiveMoleculeListener l) {
+        listeners.add(l);
     }
-
-    public void add(Residue residue) {}
-    public void clearResidues() {}
-    public void highlight(Residue residue) {}
-    public void unHighlightResidue() {}
-    public void select(Selectable s) {}
-    public void unSelect(Selectable s) {}
-    public void unSelect() {}
-    public void centerOn(Residue residue) {}
     
-    public void paint(Graphics g) {
-        super.paint(g);
+    public void removeActiveMoleculeListener(ActiveMoleculeListener l) {
+        listeners.remove(l);
+    }
+    
+    public void fireSetActiveMolecle(Molecule m) {
+        for (ActiveMoleculeListener listener : listeners)
+            listener.setActiveMolecule(m);
     }
 }

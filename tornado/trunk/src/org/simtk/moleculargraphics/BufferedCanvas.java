@@ -31,7 +31,12 @@
  */
 package org.simtk.moleculargraphics;
 
-import java.awt.*;
+// import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.event.*;
 
 /** 
  *  
@@ -39,7 +44,10 @@ import java.awt.*;
   * 
   * AWT canvas with double buffering
  */
-public class BufferedCanvas extends Canvas {
+public class BufferedCanvas 
+extends JPanel
+implements ComponentListener
+{
     public static final long serialVersionUID = 1L;
     
     Image offScreenImage;
@@ -72,12 +80,20 @@ public class BufferedCanvas extends Canvas {
         }
     }
     
-    public void setSize(int width, int height) {
-        super.setSize(width, height);
+//    public void setSize(int width, int height) {
+//        super.setSize(width, height);
+//        checkOffScreen();
+//    }
+//    public void setSize(Dimension d) {
+//        super.setSize(d);
+//        checkOffScreen();
+//    }
+    
+    public void componentResized(ComponentEvent event) {
+        System.out.println("resize");
         checkOffScreen();
     }
-    public void setSize(Dimension d) {
-        super.setSize(d);
-        checkOffScreen();
-    }
+    public void componentHidden(ComponentEvent event) {}
+    public void componentMoved(ComponentEvent event) {}
+    public void componentShown(ComponentEvent event) {}
 }

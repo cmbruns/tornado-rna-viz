@@ -46,7 +46,8 @@ import org.simtk.molecularstructure.*;
  * Window area for displaying the molecular sequence of residues in Tornado application.
  */
 public class SequencePane extends JScrollPane 
-implements ResidueActionListener
+implements ResidueHighlightListener, ActiveMoleculeListener,
+ResidueCenterListener
 {
     public static final long serialVersionUID = 1L;
     
@@ -61,13 +62,17 @@ implements ResidueActionListener
     TornadoSequenceCanvas sequenceCanvas;
     // NumberPane numberPane;
     Color backgroundColor = Color.white;
-    // Tornado tornado;
-    ResidueActionBroadcaster residueActionBroadcaster;
+    Tornado tornado;
+    ResidueHighlightBroadcaster residueHighlightBroadcaster;
+    ResidueCenterBroadcaster residueCenterBroadcaster;
     Panel contentPanel;
     
-    SequencePane(ResidueActionBroadcaster b) {
-        residueActionBroadcaster = b;
-        // tornado = parent;
+    SequencePane(ResidueHighlightBroadcaster b, 
+            ResidueCenterBroadcaster c,
+            Tornado parent) {
+        residueHighlightBroadcaster = b;
+        residueCenterBroadcaster = c;
+        tornado = parent;
         
         // Only scroll horizontally
         setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -76,7 +81,11 @@ implements ResidueActionListener
         getViewport().setBackground(backgroundColor); // for when text panel does not fill viewport
         getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
         
-        sequenceCanvas = new TornadoSequenceCanvas("This is a test", this, residueActionBroadcaster);
+        sequenceCanvas = new TornadoSequenceCanvas(
+                "This is a test", 
+                this, 
+                residueHighlightBroadcaster,
+                residueCenterBroadcaster);
 
         contentPanel = new Panel();
         contentPanel.setBackground(Color.white);
@@ -118,6 +127,18 @@ implements ResidueActionListener
 //        sequenceCanvas.setSelectionColor(c);
 //    }
 
+    public void setActiveMolecule(Molecule molecule) {
+        if (molecule instanceof Biopolymer) {
+            clearResidues();
+            for (Residue residue: ((Biopolymer)molecule).residues()) {
+                add(residue);
+            }
+            repaint();
+        }
+    }
+    
+    public void lubricateUserInteraction() {tornado.lubricateUserInteraction();}
+    
     Dimension maxSize = new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
     Dimension minSize = new Dimension(10,10);
     public Dimension getMaximumSize() {
@@ -165,25 +186,17 @@ implements ResidueActionListener
         if (firstResidue == null) firstResidue = r;
     }
     
-    public void highlight(Residue r) {
-        sequenceCanvas.highlight(r);
+    public void highlightResidue(Residue r, Color c) {
+        sequenceCanvas.highlightResidue(r, c);
         currentHighlightedResidue = r;
     }
-    public void unHighlightResidue() {
-        sequenceCanvas.unHighlightResidue();
+    public void unhighlightResidues() {
+        sequenceCanvas.unhighlightResidues();
         currentHighlightedResidue = null;
     }
-    public void select(Selectable r) {
-        sequenceCanvas.select(r);
-    }
-    public void unSelect(Selectable r) {
-        sequenceCanvas.unSelect(r);
-    }
-    public void unSelect() {
-        sequenceCanvas.unSelect();
-    }
-    public void centerOn(Residue r) {
-        sequenceCanvas.centerOn(r);
+    public void unhighlightResidue(Residue r) {
+        sequenceCanvas.unhighlightResidue(r);
+        if (currentHighlightedResidue == r) currentHighlightedResidue = null;
     }
 
     /**
@@ -195,35 +208,47 @@ implements ResidueActionListener
     class NextResidueAction extends AbstractAction {
         public static final long serialVersionUID = 1L;
         public void actionPerformed(ActionEvent e) {
-            highlightNextResidue();
+            highlightNextResidue(Color.blue);
         }
     }
     class PreviousResidueAction extends AbstractAction {
         public static final long serialVersionUID = 1L;
         public void actionPerformed(ActionEvent e) {
-            highlightPreviousResidue();
+            highlightPreviousResidue(Color.blue);
         }
     }
 
-    void highlightNextResidue() {
+    void highlightNextResidue(Color c) {
+        Residue oldResidue = currentHighlightedResidue;
         Residue nextResidue = null;
-        if (currentHighlightedResidue == null) // Go to first residue
+        if (oldResidue == null) // Go to first residue
             nextResidue = firstResidue;
         else 
             nextResidue = currentHighlightedResidue.getNextResidue();
 
-        if (nextResidue == null) residueActionBroadcaster.fireUnHighlightResidue();
-        else residueActionBroadcaster.fireHighlight(nextResidue);
+        if (oldResidue != null) residueHighlightBroadcaster.fireUnhighlightResidue(oldResidue);
+        if (nextResidue != null) {
+            residueHighlightBroadcaster.fireHighlight(nextResidue);
+            residueCenterBroadcaster.fireCenter(nextResidue);
+        }
     }
 
-    void highlightPreviousResidue() {
+    void highlightPreviousResidue(Color c) {
+        Residue oldResidue = currentHighlightedResidue;
         Residue previousResidue = null;
-        if (currentHighlightedResidue == null) 
+        if (oldResidue == null) // Go to last residue
             previousResidue = finalResidue;
         else 
             previousResidue = currentHighlightedResidue.getPreviousResidue();
 
-        if (previousResidue == null) residueActionBroadcaster.fireUnHighlightResidue();
-        else residueActionBroadcaster.fireHighlight(previousResidue);
+        if (oldResidue != null) residueHighlightBroadcaster.fireUnhighlightResidue(oldResidue);
+        if (previousResidue != null) {
+            residueHighlightBroadcaster.fireHighlight(previousResidue);
+            residueCenterBroadcaster.fireCenter(previousResidue);
+        }
+    }
+
+    public void centerOnResidue(Residue residue) {
+        sequenceCanvas.centerOnResidue(residue);
     }
 }

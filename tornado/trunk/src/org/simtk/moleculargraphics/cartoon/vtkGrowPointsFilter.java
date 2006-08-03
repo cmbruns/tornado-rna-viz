@@ -22,27 +22,44 @@
  */
 
 /*
- * Created on Jul 18, 2006
+ * Created on Jul 12, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.molecularstructure.Molecule;
+import vtk.*;
+import org.simtk.geometry3d.*;
 
-public class BackboneCurve extends MoleculeCartoonClass {
-    // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * Move points along normal direction
+ */
+public class vtkGrowPointsFilter extends vtkProgrammableFilter {
+    protected double distance = 1.0;
+    
+    public vtkGrowPointsFilter() {
+        SetExecuteMethod(this, "Execute");
+    }
 
-    BackboneCurve() {
+    public void SetDistance(double d) {
+        this.distance = d;
     }
     
-    public void addMolecule(Molecule molecule) {
-        try {
-            NewBackboneCurveActor actorToon = 
-                new NewBackboneCurveActor(4.0, 1.0, molecule);
-            if (actorToon.isPopulated()) {
-                subToons.add(actorToon);
-                actorSet.add(actorToon);
-            }
-        } catch (NoCartoonCreatedException exc) {}
+    public void Execute() {
+        vtkPolyData input = GetPolyDataInput();
+
+        vtkPolyData output = GetPolyDataOutput();
+        output.DeepCopy(input);
+        
+        vtkPoints points = output.GetPoints();
+        vtkDataArray normals = output.GetPointData().GetNormals();
+        for (int i = 0; i < normals.GetNumberOfTuples(); ++i) {
+            Vector3D point = new Vector3DClass(points.GetPoint(i));
+            Vector3D normal = new Vector3DClass(normals.GetTuple3(i));
+            Vector3D newPoint = point.plus(normal.times(distance));
+            points.SetPoint(i, newPoint.toArray());
+        }
     }
 }

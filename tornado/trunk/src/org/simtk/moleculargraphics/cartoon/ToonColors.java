@@ -28,73 +28,91 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.Color;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.*;
+import org.simtk.molecularstructure.Chemical;
 import vtk.vtkLookupTable;
 import vtk.vtkPolyDataMapper;
 
 public class ToonColors {
     protected vtkLookupTable lut = new vtkLookupTable();
-    protected Map<Object, Integer> colorIndices = new HashMap<Object, Integer>();
+    protected Map<Chemical, Integer> chemicalIndices = new HashMap<Chemical, Integer>();
+    protected Map<Integer, Chemical> indexChemicals = new HashMap<Integer, Chemical>();
     protected int nextColorIndex = 0;
-    protected int initialTableSize = 50;
+    protected int initialTableSize = 5;
     protected vtkPolyDataMapper mapper;
+    protected Color defaultColor = new Color(100,100,255,0);
     
-    ToonColors(vtkPolyDataMapper m) {
+    // protected boolean hasVisibleColor = false;
+    protected Set<Integer> visibleColorIndices = new HashSet<Integer>();
+    
+    ToonColors(vtkPolyDataMapper mapper) {
         lut.SetNumberOfTableValues(initialTableSize);
         lut.Build();
 
-        this.mapper = m;
+        this.mapper = mapper;
         mapper.ScalarVisibilityOn();
         mapper.SetColorModeToMapScalars();
         mapper.SetLookupTable(lut);
         mapper.SetScalarRange(0, lut.GetNumberOfTableValues() - 1);
+    }
 
+    public void setDefaultColor(Color color) {
+        defaultColor = color;
     }
     
     void setColor(Object colorable, ColorScheme colorScheme) {
-        if (! (colorIndices.containsKey(colorable))) return;
+        if (! (chemicalIndices.containsKey(colorable))) return;
         
-        int index = colorIndices.get(colorable);
+        int index = chemicalIndices.get(colorable);
         try {
             Color color = colorScheme.colorOf(colorable);
             double[] c = {
                     color.getRed()/255.0, 
                     color.getGreen()/255.0, 
                     color.getBlue()/255.0, 
-                    1.0};
+                    color.getAlpha()/255.0};
             lut.SetTableValue(index, c);
+            
+            // Keep track of visible vs. invisible colors
+            if (c[3] > 0) visibleColorIndices.add(index);
+            else visibleColorIndices.remove(index);
+                
         } catch (UnknownObjectColorException exc) {}            
     }
     
     void setColor(ColorScheme colorScheme) {
         // Color all objects
-        for (Object object : colorIndices.keySet()) {
-            int index = colorIndices.get(object);
+        for (Object object : chemicalIndices.keySet()) {
+            int index = chemicalIndices.get(object);
             try {
                 Color color = colorScheme.colorOf(object);
                 double[] c = {
                         color.getRed()/255.0, 
                         color.getGreen()/255.0, 
                         color.getBlue()/255.0, 
-                        1.0};
+                        color.getAlpha()/255.0};
                 lut.SetTableValue(index, c);
+
+                if (c[3] > 0) visibleColorIndices.add(index);
+                else visibleColorIndices.remove(index);
+
             } catch (UnknownObjectColorException exc) {}
         }
     }
     
-    int getColorIndex(Object colorable) {
-        if (! (colorIndices.containsKey(colorable)) ) {
-            colorIndices.put(colorable, nextColorIndex);
+    int getColorIndex(Chemical colorable) {
+        if (! (chemicalIndices.containsKey(colorable)) ) {
+            int index = nextColorIndex;
+            chemicalIndices.put(colorable, index);
+            indexChemicals.put(index, colorable);
             nextColorIndex ++;
             
             if (nextColorIndex > lut.GetNumberOfTableValues()) {
                 // 1) remember old table values
-                // double[][] existingColorScalars = new double[(lut.GetNumberOfTableValues())][];
-                // for (int c = 0; c < existingColorScalars.length; c++) {
-                //     existingColorScalars[c] = lut.GetTableValue(c);
-                // }
+                double[][] existingColorScalars = new double[(lut.GetNumberOfTableValues())][];
+                for (int c = 0; c < existingColorScalars.length; c++) {
+                    existingColorScalars[c] = lut.GetTableValue(c);
+                }
                 
                 // 2) construct larger table
                 lut.SetNumberOfTableValues(2 * nextColorIndex);
@@ -102,10 +120,22 @@ public class ToonColors {
                 mapper.SetScalarRange(0, lut.GetNumberOfTableValues() - 1);
                 
                 // 3) insert previous values into the color table
-                // for (int c = 0; c < existingColorScalars.length; c++)
-                //     lut.SetTableValue(c, existingColorScalars[c]);
+                for (int c = 0; c < existingColorScalars.length; c++) {
+                   lut.SetTableValue(c, existingColorScalars[c]);
+                }
                 
             }
+            
+            double[] c = {
+                    defaultColor.getRed()/255.0, 
+                    defaultColor.getGreen()/255.0, 
+                    defaultColor.getBlue()/255.0, 
+                    defaultColor.getAlpha()/255.0};
+            lut.SetTableValue(index, c);
+
+            if (c[3] > 0) visibleColorIndices.add(index);
+            else visibleColorIndices.remove(index);
+
         }
         
         // Add 0.5 because the mapper seems to use floor() to convert 
@@ -115,16 +145,15 @@ public class ToonColors {
 
         // BUT, with large color tables (above 3300 entries), the indices 
         // seem to get rounded UP
-        return colorIndices.get(colorable);
+        // So instead of adding 0.5 here, include a rounding filter in the
+        // vtk pipeline in cases where interpolation might occur.
+        
+        return chemicalIndices.get(colorable);
     }
     
-//    void applyMapper(vtkPolyDataMapper mapper) {
-//        mapper.ScalarVisibilityOn();
-//        mapper.SetColorModeToMapScalars();
-//        mapper.SetLookupTable(lut);
-//        mapper.SetScalarRange(0.0, 10000);
-//    }
-
-    class ToonColorsNotFinalizedException extends RuntimeException {}
-    class ToonColorsFinalizedException extends RuntimeException {}
+    public Chemical getChemicalFromScalar(int scalar) {
+        return indexChemicals.get(scalar);
+    }
+    
+    public boolean hasVisibleColor() {return (visibleColorIndices.size() > 0);}
 }

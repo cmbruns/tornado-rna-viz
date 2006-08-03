@@ -31,6 +31,7 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import java.awt.Color;
 import java.util.*;
 import vtk.*;
 import org.simtk.geometry3d.*;
@@ -74,6 +75,7 @@ public class AtomSphereActor extends GlyphCartoon {
     public void addMolecule(Molecule molecule) {
         if (molecule == null) return;
 
+        
         Vector parentObjects = null;
         
         // Don't add things that have already been added
@@ -130,7 +132,7 @@ public class AtomSphereActor extends GlyphCartoon {
 
         Vector3D c = atom.getCoordinates();
 
-        double colorScalar = toonColors.getColorIndex(atom);
+        double colorScalar = getColorIndex(atom);
 
         // Draw a sphere for each atom
         linePoints.InsertNextPoint(c.getX(), c.getY(), c.getZ());
@@ -143,5 +145,12 @@ public class AtomSphereActor extends GlyphCartoon {
         colorScalars.InsertNextValue(colorScalar);
         
         isPopulated = true;
+    }
+
+    public void highlightResidue(Residue residue, Color color) {
+        highlightResidueByAtomScalars(residue, color);
+    }
+    public void unhighlightResidue(Residue residue) {
+        unhighlightResidueByAtomScalars(residue);
     }
 }

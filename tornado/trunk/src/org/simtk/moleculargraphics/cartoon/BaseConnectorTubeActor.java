@@ -38,7 +38,7 @@ public class BaseConnectorTubeActor extends ActorCartoonClass {
     public BaseConnectorTubeActor(Residue residue) 
     throws NoCartoonCreatedException
     {
-        int colorScalar = toonColors.getColorIndex(residue);
+        int colorScalar = getColorIndex(residue);
         vtkFloatArray colorScalars = new vtkFloatArray();
         colorScalars.SetNumberOfComponents(1);
         
@@ -72,6 +72,16 @@ public class BaseConnectorTubeActor extends ActorCartoonClass {
         lineData.SetLines(lineCells);
         lineData.GetPointData().SetScalars(colorScalars);
 
+        vtkTubeFilter highglightTubeFilter = new vtkTubeFilter();
+        highglightTubeFilter.SetRadius(tubeRadius * 1.02);
+        highglightTubeFilter.SetNumberOfSides(6);
+        highglightTubeFilter.SetCapping(1);
+        highglightTubeFilter.SetVaryRadius(0);
+        highglightTubeFilter.SetInput(lineData);
+
+        highlightMapper.SetInput(highglightTubeFilter.GetOutput());
+        highlightActor.SetMapper(highlightMapper);
+        
         vtkTubeFilter tubeFilter = new vtkTubeFilter();
         tubeFilter.SetRadius(tubeRadius);
         tubeFilter.SetNumberOfSides(6);
@@ -81,6 +91,8 @@ public class BaseConnectorTubeActor extends ActorCartoonClass {
                 
         mapper.SetInput(tubeFilter.GetOutput());
         actor.SetMapper(mapper);
+        
+        
         
         isPopulated = true;
     }    
