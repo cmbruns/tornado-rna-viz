@@ -28,7 +28,7 @@ package org.simtk.pdb;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.*;
 import java.util.zip.GZIPInputStream;
 
 import javax.swing.SwingUtilities;
@@ -129,7 +129,10 @@ public class LoadPdbUrlProcess extends LoadPDBProcess {
         this.url = url;
     }
     protected InputStream getInputStream() throws IOException {
-        InputStream inStream = url.openConnection().getInputStream();
+        if (url == null) throw new IOException("Missing URL");
+        URLConnection urlConnection = url.openConnection();
+        if (urlConnection == null) throw new IOException("Unable to open URL: "+url);
+        InputStream inStream = urlConnection.getInputStream();
         
         if ( (url.toString().endsWith(".gz")) )
             inStream = new GZIPInputStream(inStream);

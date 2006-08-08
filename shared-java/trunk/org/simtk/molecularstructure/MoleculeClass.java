@@ -261,9 +261,7 @@ implements Molecule
 
         for (Residue residue : residues) {
             if (answer instanceof Biopolymer) ((Biopolymer)answer).residues().add(residue);
-            for (Atom atom : residue.atoms()) {
-                answer.atoms().add(atom);
-            }
+            answer.atoms().addAll(residue.atoms());
         }
 
         return answer;
