@@ -47,8 +47,8 @@ public class ProteinHelix extends ProteinRibbonSegment {
     throws NoCartoonCreatedException
     {
         // Something is screwy with back vs. front faces of ribbon
-        actor.GetProperty().BackfaceCullingOff();
-        actor.GetProperty().FrontfaceCullingOn();
+        // actor.GetProperty().BackfaceCullingOff();
+        // actor.GetProperty().FrontfaceCullingOn();
 
         createAlphaHelix(
                 residues, 
@@ -93,8 +93,9 @@ public class ProteinHelix extends ProteinRibbonSegment {
         List<Vector3D> normals = new Vector<Vector3D>();
         List<Chemical> aminoAcids = new Vector<Chemical>();
 
-        double minT = startIndex - 0.5;
-        double maxT = startIndex + residues.size() - 0.5;
+        double extraBit = 0.05; // Make structures overlap a bit
+        double minT = startIndex - 0.5 - extraBit;
+        double maxT = startIndex + residues.size() - 0.5 + extraBit;
 
         double strandResolution = 0.25; // In units of residues
         int numPoints = (int)(1.0 + (maxT - minT) / strandResolution);

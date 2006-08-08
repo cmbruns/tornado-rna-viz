@@ -22,45 +22,42 @@
  */
 
 /*
- * Created on Jul 12, 2006
+ * Created on Aug 7, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.toon.secstruct;
 
-import vtk.*;
-import org.simtk.geometry3d.*;
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.nucleicacid.*;
+import junit.framework.TestCase;
 
-/**
- *  
-  * @author Christopher Bruns
-  * 
-  * Move points along normal direction
- */
-public class vtkGrowPointsFilter extends vtkProgrammableFilter {
-    protected double distance = 1.0;
-    
-    public vtkGrowPointsFilter() {
-        SetExecuteMethod(this, "Execute");
+public class TestSecondaryStructureDiagram extends TestCase {
+
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(TestSecondaryStructureDiagram.class);
     }
 
-    public void SetDistance(double d) {
-        this.distance = d;
-    }
-    
-    public void Execute() {
-        vtkPolyData input = GetPolyDataInput();
-
-        vtkPolyData output = GetPolyDataOutput();
-        output.DeepCopy(input);
+    /*
+     * Test method for 'org.simtk.toon.secstruct.SecondaryStructureDiagramModel.createDiagram(RNA)'
+     */
+    public void testCreateDiagram() {
+        SecondaryStructureDiagramModel diagram = new SecondaryStructureDiagramModel();
         
-        vtkPoints points = output.GetPoints();
-        vtkDataArray normals = output.GetPointData().GetNormals();
-        if (normals == null) return;
-        for (int i = 0; i < normals.GetNumberOfTuples(); ++i) {
-            Vector3D point = new Vector3DClass(points.GetPoint(i));
-            Vector3D normal = new Vector3DClass(normals.GetTuple3(i));
-            Vector3D newPoint = point.plus(normal.times(distance));
-            points.SetPoint(i, newPoint.toArray());
+        MoleculeCollection molecules = new MoleculeCollection();
+        try {
+            molecules.loadPDBFormat("resources/structures/1GRZ.pdb");
+        } 
+        catch (java.io.FileNotFoundException exc) {return;}
+        catch (java.io.IOException exc) {return;}
+        catch (InterruptedException exc) {return;}
+        
+        for (Molecule molecule : molecules.molecules()) {
+            if (! (molecule instanceof NucleicAcid)) continue;
+            NucleicAcid rna = (NucleicAcid) molecule;
+            for (BasePair basePair : rna.identifyBasePairs())
+                rna.secondaryStructures().add(basePair);
+            diagram.createDiagram(rna);
         }
     }
+
 }

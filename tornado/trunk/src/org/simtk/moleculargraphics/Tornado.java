@@ -89,7 +89,7 @@ implements ResidueHighlightListener
     protected ToonRange toonRange = new ToonRange();
     
     Tornado() {
-        super("toRNAdo: (no structures currently loaded)");
+        super("SimTK ToRNAdo: (no structures currently loaded)");
         
         // try {currentCartoon = (MoleculeCartoon) initialCartoonType.newInstance();} 
         // catch (InstantiationException exc) {System.err.println(exc);}
@@ -564,9 +564,6 @@ implements ResidueHighlightListener
             if (currentCartoon.vtkActors().size() > 0) {
                 canvas.clear();
                 canvas.add(currentCartoon);
-                
-                if (currentHighlightedResidue != null)
-                    residueHighlightBroadcaster.fireHighlight(currentHighlightedResidue);
             }
             else {
                 // TODO - alert user that there was no geometry
@@ -754,6 +751,7 @@ implements ResidueHighlightListener
     
     class LoadPDBAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+            loadStructureDialog.setLocationRelativeTo(Tornado.this);
             loadStructureDialog.setVisible(true);
         }
     }
@@ -868,7 +866,7 @@ implements ResidueHighlightListener
     
     class AboutTornadoAction implements ActionListener {
         String aboutString = 
-            " toRNAdo version " + tornadoVersion + "\n"+
+            " SimTK ToRNAdo version " + tornadoVersion + "\n"+
              " Copyright (c) 2005, Stanford University. All rights reserved. \n"+
              " Redistribution and use in source and binary forms, with or without \n"+
              " modification, are permitted provided that the following conditions\n"+
@@ -896,7 +894,7 @@ implements ResidueHighlightListener
             
         
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null, aboutString, "About toRNAdo", 
+            JOptionPane.showMessageDialog(null, aboutString, "About SimTK ToRNAdo", 
                     JOptionPane.INFORMATION_MESSAGE);
         }
     }
@@ -974,7 +972,7 @@ implements ResidueHighlightListener
     // private JMenu cartoonMenu = null;
     private JMenu viewMenu = null;
 
-    private static String tornadoVersion = "0.50";
+    private static String tornadoVersion = "0.90";
     
     private ClassLoader classLoader;
     private SequencePane sequencePane;
@@ -998,7 +996,7 @@ implements ResidueHighlightListener
     private Cursor waitCursor = new Cursor (Cursor.WAIT_CURSOR);
 
     
-    private String titleBase = "toRNAdo";
+    private String titleBase = "SimTK ToRNAdo";
 
 	public String getCurrentPath() {
 		return currentPath;

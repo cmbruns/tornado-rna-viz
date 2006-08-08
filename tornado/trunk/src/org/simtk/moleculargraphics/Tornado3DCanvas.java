@@ -37,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 
 import vtk.*;
+
 import java.awt.event.*;
 import net.java.games.jogl.*;
 import org.simtk.util.*;
@@ -61,7 +62,7 @@ public class Tornado3DCanvas extends StructureCanvas
     
     HashSet currentlyDepressedKeyboardKeys = new HashSet();
     
-    boolean showLogo = false;
+    boolean showLogo = true;
     boolean doFog = true;
     boolean fogLinear = true;
     GL gl;
@@ -77,7 +78,7 @@ public class Tornado3DCanvas extends StructureCanvas
     vtkRenderer overlayRenderer;
     vtkImageData logoImageData = null;
     vtkPNGReader logoReader;
-    vtkImageActor logoActor;
+    vtkActor2D logoActor;
     int logoWidth;
     int logoHeight;
 
@@ -85,13 +86,7 @@ public class Tornado3DCanvas extends StructureCanvas
     Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     
     ClassLoader classLoader;
-
     
-    private Color selectionColor;
-    public void setSelectionColor(Color c) {
-        selectionColor = c;
-    }
-
     public Tornado3DCanvas() {
         super();
         
@@ -120,33 +115,6 @@ public class Tornado3DCanvas extends StructureCanvas
     }
     
     private void loadSimtkLogo() {
-        // Discover version of vtk we are using
-        vtkVersion versionVTK = new vtkVersion();
-        int vtkMajorVersion = versionVTK.GetVTKMajorVersion();
-        int vtkMinorVersion = versionVTK.GetVTKMinorVersion();
-        int vtkBuildVersion = versionVTK.GetVTKBuildVersion();
-        double vtkDoubleVersion = vtkMajorVersion + 0.1 * vtkMinorVersion + 0.001 * vtkBuildVersion;
-        
-        // Use a front layer to decorate the display
-        overlayRenderer = new vtkRenderer();
-        rw.AddRenderer(overlayRenderer);
-        rw.SetNumberOfLayers(2);
-        overlayRenderer.InteractiveOff();
-        overlayRenderer.GetActiveCamera().ParallelProjectionOn();
-        overlayRenderer.GetActiveCamera().SetParallelScale(100);
-        
-        // Layer order depends upon vtk version
-        if (vtkDoubleVersion >= 4.5) {
-            ren.SetLayer(0);
-            overlayRenderer.SetLayer(1);                
-        }
-        else {
-            ren.SetLayer(1);
-            overlayRenderer.SetLayer(0);
-        }
-
-        // Create logo image for lower right hand corner
-        // Create vtk image pixel by pixel
         
         Image logoImage = Toolkit.getDefaultToolkit().createImage(classLoader.getResource("images/simtk3.png"));
         MediaTracker tracker = new MediaTracker(this);
@@ -196,18 +164,27 @@ public class Tornado3DCanvas extends StructureCanvas
         logoWidth = w;
         logoHeight = h;
             
-        logoActor = new vtkImageActor();
+        vtkImageMapper imageMapper = new vtkImageMapper();
+        imageMapper.SetInput(logoImageData);
+        
+        imageMapper.SetColorWindow(255.0);
+        imageMapper.SetColorLevel(127.5);
 
-        if (logoImageData != null)
-            logoActor.SetInput(logoImageData);
-        else
-            throw new RuntimeException("Logo load failed");
-
-        overlayRenderer.AddActor(logoActor);  
+        logoActor = new vtkActor2D();
+        logoActor.SetMapper(imageMapper);
+    }
+    
+    public void clear() {
+        super.clear();
+        
+        if ( (showLogo) && (logoActor != null) )
+            GetRenderer().AddActor2D(logoActor);
     }
     
     public void setBackgroundColor(Color c) {
         super.setBackgroundColor(c);
+        if (scaleBar != null)
+            scaleBar.setBackgroundColor(c);
         if (gl != null) {
             float[] fogColor = new float[] {
                     (float) (backgroundColor.getRed()/255.0),
@@ -292,36 +269,32 @@ public class Tornado3DCanvas extends StructureCanvas
         // System.err.println("resize");
         
         if (showLogo) {
+            Lock();
             
-            if ((overlayRenderer != null) && (overlayRenderer.GetActiveCamera() != null)) {
-                Lock();
-    
-                // Keep the logo small
-                overlayRenderer.GetActiveCamera().SetParallelScale(getHeight()/2);
-    
-                System.out.println("Window size = "+getWidth()+", "+getHeight());
-    
-                int logoX = getWidth()/2 - logoWidth;
-                int logoY = -getHeight()/2;
+            // int logoX = getWidth()/2 - logoWidth;
+            // int logoY = -getHeight()/2;
+            int logoX = getWidth() - logoWidth - 5;
+            int logoY = 5;
+            
+            if (logoImageData != null) {
                 
-                if (logoImageData != null) {
-                    logoImageData.SetOrigin(logoX, logoY, 0);
-                    logoImageData.Modified();
-                    System.out.println("Logo data recentered at "+logoX+", "+logoY);
-                }
-                else if (logoReader != null) {
-                    // Keep the logo in the lower right corner
-                    logoReader.SetDataOrigin(logoX, logoY, 0);
-                    System.out.println("Logo reader recentered at "+logoX+", "+logoY);
-                }
-    
-                UnLock();
-                
-                // Cause update
-                resetCameraClippingRange(); // somehow this is needed for screen update
-                
-                // repaint();
+                // logoImageData.SetOrigin(logoX, logoY, 0);
+                // logoImageData.Modified();
+
+                logoActor.SetPosition(logoX, logoY);
+
+                // System.out.println("Logo data recentered at "+logoX+", "+logoY);
             }
+            else if (logoReader != null) {
+                // Keep the logo in the lower right corner
+                logoReader.SetDataOrigin(logoX, logoY, 0);
+                // System.out.println("Logo reader recentered at "+logoX+", "+logoY);
+            }
+
+            UnLock();
+                
+            // Cause update
+            resetCameraClippingRange(); // somehow this is needed for screen update
         }
     }
     public void componentMoved(ComponentEvent e) {}

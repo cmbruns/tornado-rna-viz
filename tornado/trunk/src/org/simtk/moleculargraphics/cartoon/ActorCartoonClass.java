@@ -64,7 +64,20 @@ implements ActorCartoon, ResidueHighlightListener
         highlightActor.SetMapper(highlightMapper);
         highlightActor.GetProperty().SetRepresentationToWireframe();
         highlightActor.GetProperty().BackfaceCullingOn();
-        highlightActor.SetVisibility(0);  // Start with no visibility
+        highlightActor.GetProperty().SetLineWidth(2);
+
+        // Failed attempts to remove shading of cages:
+        // SetScalarMaterialModeToAmbient causes transparency to be ignored
+        // SetScalarMaterialModeToAmbientAndDiffuse causes color to be way too pale
+        // highlightActor.GetProperty().SetDiffuse(0.0);
+        // highlightActor.GetProperty().SetAmbient(1000.0);
+        // highlightActor.GetProperty().SetSpecular(0.0); 
+        // highlightMapper.SetScalarMaterialModeToAmbientAndDiffuse();
+
+        // Start with no visibility to minimize artefacts of
+        // having invisible cages around everything.
+        // and also to minimize performance problems
+        highlightActor.SetVisibility(0);  
         
         // Until all classes implement a highlightActor, create
         // a default input to the mapper

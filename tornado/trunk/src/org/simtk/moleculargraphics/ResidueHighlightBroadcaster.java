@@ -38,7 +38,7 @@ import java.awt.Color;
 public class ResidueHighlightBroadcaster {
     protected Set<ResidueHighlightListener> listeners = 
         new LinkedHashSet<ResidueHighlightListener>();
-    protected Color color = new Color(100, 100, 255);
+    protected Color color = new Color(100, 120, 255);
 
     public void addResidueHighlightListener(ResidueHighlightListener l) {
         listeners.add(l);

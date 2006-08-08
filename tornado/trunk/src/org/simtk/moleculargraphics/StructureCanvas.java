@@ -41,6 +41,9 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
 {
     protected Map<vtkActor, ActorCartoon> actorCartoons = new HashMap<vtkActor, ActorCartoon>();
 
+    protected boolean useScaleBar = true;
+    protected ScaleBar scaleBar;
+
     static {
         // Keep vtk canvas from obscuring swing widgets
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
@@ -84,6 +87,10 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
     public StructureCanvas() {
         addMouseWheelListener(this);
         setUpLights();
+
+        if (useScaleBar) {
+           scaleBar = new ScaleBar(this);
+        }
     }
     
     // public double getMass() {return massBody.getMass();}
@@ -269,6 +276,9 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         float backClip = 2.00f * distanceToFocus;
         
         cam.SetClippingRange(frontClip, backClip);
+
+        if (useScaleBar)
+            scaleBar.updateScaleBar(cam);
     }
 
     public void mouseDragged(MouseEvent event) {
@@ -374,6 +384,10 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         // GetRenderer().RemoveAllProps(); // vtk 4.4
         GetRenderer().RemoveAllViewProps(); // vtk 5.0
         // massBody.clear();
+        
+        if (useScaleBar)
+            for (vtkActor2D actor : scaleBar.getVtkActors())
+                GetRenderer().AddActor2D(actor);
     }
     
     public BoundingBox getBoundingBox() {
@@ -424,6 +438,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         
         Vector3D com = box.center();
         GetRenderer().GetActiveCamera().SetFocalPoint(com.x(), com.y(), com.z());
+
         resetCameraClippingRange();
     }
 //    public void centerByMass() {

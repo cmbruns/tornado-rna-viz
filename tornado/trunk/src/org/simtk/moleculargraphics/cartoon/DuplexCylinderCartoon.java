@@ -59,11 +59,6 @@ public class DuplexCylinderCartoon extends MoleculeCartoonClass
         if (! (molecule instanceof NucleicAcid)) return;
         addNucleicAcid((NucleicAcid) molecule);
     }
-    public void hide(Molecule molecule) {} // TODO
-    public void hide() {} // TODO
-    public void show(Molecule molecule) {} // TODO
-    public void show() {} // TODO
-    public void clear() {} // TODO
 
     public void addNucleicAcid(NucleicAcid nucleicAcid) {
 //        Collection<Duplex> hairpins = nucleicAcid.identifyHairpins();
@@ -96,7 +91,8 @@ public class DuplexCylinderCartoon extends MoleculeCartoonClass
 
     }
     public void addDuplex(Duplex duplex) throws InsufficientPointsException {
-        ActorCartoon actor = new DuplexCylinderActor(duplex);
+        ActorCartoon actor = new NewDuplexCylinderActor(duplex);
+        // ActorCartoon actor = new BasePairsCylinderActor(duplex.basePairs(), 9.0);
         if (actor.isPopulated()) {
             subToons.add(actor);
             vtkActors().add(actor);

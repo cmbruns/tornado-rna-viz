@@ -122,7 +122,7 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
             positionSpline.addPoint(resIndex, position);
 
             
-            // At the very beginning, add one special point point
+            // At the very beginning, add one special point
             if (resIndex == 1) {
                 Vector3D b = aminoAcid.getAtom("N").getCoordinates();
                 positionSpline.addPoint(resIndex - 0.5, b);
@@ -208,7 +208,14 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
         
         else {
             try {
-                ProteinCoil coil = new ProteinCoil(residues, ribbonThickness);
+                ProteinCoil coil = new ProteinCoil(
+                        residues, 
+                        ribbonThickness * 0.8, 
+                        startIndex,
+                        positionSpline,
+                        normalSpline
+                        );
+                // ProteinCoil coil = new ProteinCoil(residues, ribbonThickness);
                 actorSet.add(coil);
                 subToons.add(coil);
             } catch (NoCartoonCreatedException exc) {}                        

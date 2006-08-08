@@ -229,7 +229,7 @@ ResidueCenterListener
         if (oldResidue != null) residueHighlightBroadcaster.fireUnhighlightResidue(oldResidue);
         if (nextResidue != null) {
             residueHighlightBroadcaster.fireHighlight(nextResidue);
-            residueCenterBroadcaster.fireCenter(nextResidue);
+            // residueCenterBroadcaster.fireCenter(nextResidue);
         }
     }
 
@@ -244,7 +244,7 @@ ResidueCenterListener
         if (oldResidue != null) residueHighlightBroadcaster.fireUnhighlightResidue(oldResidue);
         if (previousResidue != null) {
             residueHighlightBroadcaster.fireHighlight(previousResidue);
-            residueCenterBroadcaster.fireCenter(previousResidue);
+            // residueCenterBroadcaster.fireCenter(previousResidue);
         }
     }
 

@@ -154,11 +154,15 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
         lineData.GetPointData().SetScalars(dummyScalars);
         lineData.GetPointData().AddArray(colorScalars);
 
+        // Remove duplicate points
+        vtkCleanPolyData cleanFilter = new vtkCleanPolyData();
+        cleanFilter.SetInput(lineData);
+        
         vtkSplineFilter splineFilter = new vtkSplineFilter();
         splineFilter.SetSubdivideToLength();
         splineFilter.SetLength(lengthResolution);
-        splineFilter.SetInput(lineData);
-        
+        splineFilter.SetInput(cleanFilter.GetOutput());
+
         return splineFilter.GetOutput();
     }
     
@@ -191,15 +195,22 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
         // setScalarsFilter.SetInput(normalsFilter.GetOutput());
         setScalarsFilter.SetInput(ribbonFilter.GetOutput());
 
+        // Correct the interpolated scalars back to integer values
+        // So the residue boundaries will be correct
+        vtkRoundScalarsFilter roundingFilter = new vtkRoundScalarsFilter();
+        roundingFilter.SetInput(setScalarsFilter.GetOutput());
+        
         vtkLinearExtrusionFilter extrusionFilter = new vtkLinearExtrusionFilter();
         extrusionFilter.SetCapping(1);
         extrusionFilter.SetExtrusionTypeToNormalExtrusion();
         extrusionFilter.SetScaleFactor(thickness);
-        extrusionFilter.SetInput(setScalarsFilter.GetOutput());
+        extrusionFilter.SetInput(roundingFilter.GetOutput());
         
         vtkPolyDataNormals normalsFilter = new vtkPolyDataNormals();
         normalsFilter.SetFeatureAngle(80);
         normalsFilter.SetInput(extrusionFilter.GetOutput());
+        // TODO - for some reason these normals must be flipped...
+        normalsFilter.SetFlipNormals(1);
         
         finishVtkPipeline(normalsFilter.GetOutput());
     }
@@ -212,6 +223,16 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
         mapper.SetInput(polyData);
 
         actor.SetMapper(mapper);
+        
+        vtkGrowPointsFilter growPointsFilter = new vtkGrowPointsFilter();
+        growPointsFilter.SetInput(polyData);
+        growPointsFilter.SetDistance(0.05);
+        
+        highlightMapper.SetScalarModeToUsePointData();
+        highlightMapper.ColorByArrayComponent("colors", 0);
+        highlightMapper.SetInput((vtkPolyData)growPointsFilter.GetOutput());
+
+        highlightActor.SetMapper(highlightMapper);
         
         isPopulated = true;
     }

@@ -53,6 +53,7 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
     protected java.util.List<Font> fonts = new Vector<Font>();
     // fontHeights is initialized in the paint() method
     protected java.util.Map<Font, Double> fontHeights = null;
+    protected java.util.Map<Font, Double> fontWidths = null;
 
     protected double baseSpacing = 4.0; // TODO - measure this
     
@@ -130,9 +131,11 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
         // Compute font heights only the first time they are needed
         if (fontHeights == null) {
             fontHeights = new HashMap<Font, Double>();
+            fontWidths = new HashMap<Font, Double>();
             FontRenderContext frc = g2.getFontRenderContext();
             for (Font font : fonts) {
                 fontHeights.put(font, (double) font.getLineMetrics("ACGT", frc).getHeight());
+                fontWidths.put(font, (double) g.getFontMetrics(font).charWidth('G'));
             }
         }
         
@@ -149,16 +152,25 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
             font = f;
             if (fontHeights.get(f) > spacing * 1.0) break; // font is big enough
         }
-        if (font != null) g.setFont(font);
+        
+        int maxH = 20;
+        int maxW = 20;
+        
+        if (font != null) {
+            g.setFont(font);
+            maxH = (int)(fontHeights.get(font) + 1);
+            maxW = (int)(fontWidths.get(font) + 1);
+        }
+        
         
         for (Base base : bases) {
             int x = (int)(screenCenterX + scale * (base.getPosX() - centerX));
             int y = (int)(screenCenterY - scale * (base.getPosY() - centerY));
 
-            if (x < 0 ) continue;
-            if (y < 0 ) continue;
-            if (x > getSize().width) continue;
-            if (y > getSize().height) continue;
+            if (x < -maxW) continue;
+            if (y < -maxH) continue;
+            if (x > getSize().width + maxW) continue;
+            if (y > getSize().height + maxH) continue;
             
             // Draw a little square if the image is too zoomed out to draw characters
             if (font == null) {
@@ -204,7 +216,9 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
     // MouseListener interface
     int oldMouseX = 0;
     int oldMouseY = 0;
-    public void mouseEntered(MouseEvent event) {}
+    public void mouseEntered(MouseEvent event) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+    }
     public void mouseExited(MouseEvent event) {}
     public void mousePressed(MouseEvent event) {
         oldMouseX = event.getX();

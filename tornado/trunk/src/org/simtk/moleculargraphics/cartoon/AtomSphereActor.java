@@ -81,20 +81,12 @@ public class AtomSphereActor extends GlyphCartoon {
         // Don't add things that have already been added
         // if (glyphColors.containsKey(molecule)) return;
         
-        // Collect molecular objects on which to index the glyphs
-        Vector currentObjects = new Vector();
-        if (parentObjects != null) {
-            for (int i = 0; i < parentObjects.size(); i++)
-                currentObjects.add(parentObjects.get(i));
-        }
-        currentObjects.add(molecule);
-        
         // If it's a biopolymer, index the glyphs by residue
         if (molecule instanceof Residue) {
             Residue residue = (Residue) molecule;
             for (Iterator i = residue.atoms().iterator(); i.hasNext(); ) {
                 Atom atom = (Atom) i.next();
-                addAtom(atom, currentObjects);                    
+                addAtom(atom);                    
             }
         }
         
@@ -107,28 +99,20 @@ public class AtomSphereActor extends GlyphCartoon {
         else for (Atom atom : molecule.atoms()) {
         // else for (Iterator i1 = molecule.getAtomIterator(); i1.hasNext(); ) {
             // Atom atom = (Atom) i1.next();
-            addAtom(atom, currentObjects);
+            addAtom(atom);
         }        
     }
     
     public void addResidue(Residue residue) {
         for (Atom atom : residue.atoms())
-            addAtom(atom, null);
+            addAtom(atom);
     }
     
-    void addAtom(Atom atom, Vector parentObjects) {
+    void addAtom(Atom atom) {
         if (atom == null) return;
         
         // Don't add things that have already been added
         // if (glyphColors.containsKey(atom)) return;
-
-        // Collect molecular objects on which to index the glyphs
-        Vector currentObjects = new Vector();
-        if (parentObjects != null) {
-            for (int i = 0; i < parentObjects.size(); i++)
-                currentObjects.add(parentObjects.get(i));
-        }
-        currentObjects.add(atom);
 
         Vector3D c = atom.getCoordinates();
 

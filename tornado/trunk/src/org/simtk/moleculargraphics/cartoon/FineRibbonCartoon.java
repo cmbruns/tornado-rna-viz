@@ -74,13 +74,13 @@ public class FineRibbonCartoon extends CompositeCartoon {
                     BasePair basePair = (BasePair) structure;
 
                     boolean isCanonicalPair = true;
-                    if (basePair.getEdge(basePair.getResidue1()) == BasePair.EdgeType.HOOGSTEEN)
+                    if (basePair.getEdge_1() == BasePair.EdgeType.HOOGSTEEN)
                         isCanonicalPair = false;
-                    if (basePair.getEdge(basePair.getResidue1()) == BasePair.EdgeType.SUGAR)
+                    if (basePair.getEdge_1() == BasePair.EdgeType.SUGAR)
                         isCanonicalPair = false;
-                    if (basePair.getEdge(basePair.getResidue2()) == BasePair.EdgeType.HOOGSTEEN)
+                    if (basePair.getEdge_2() == BasePair.EdgeType.HOOGSTEEN)
                         isCanonicalPair = false;
-                    if (basePair.getEdge(basePair.getResidue2()) == BasePair.EdgeType.SUGAR)
+                    if (basePair.getEdge_2() == BasePair.EdgeType.SUGAR)
                         isCanonicalPair = false;
                     
                     if (isCanonicalPair) 

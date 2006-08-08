@@ -32,6 +32,7 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
 
 /** 
  * @author Christopher Bruns
@@ -42,6 +43,8 @@ public class BallAndStickCartoon extends CompositeCartoon {
 
     BondStickCartoon sticks = new BondStickCartoon(0.15);
     AtomSphereActor balls = new AtomSphereActor(0.25);
+    // Lone metal atoms should be large
+    AtomSphereActor largeBalls = new AtomSphereActor(0.80);
 
     public BallAndStickCartoon() {
         // Make spheres be caps for sticks
@@ -50,10 +53,18 @@ public class BallAndStickCartoon extends CompositeCartoon {
         
         addSubToon(sticks);
         addSubToon(balls);
+        addSubToon(largeBalls);
     }
     
     public void addMolecule(Molecule m) {
         sticks.addMolecule(m);
-        balls.addMolecule(m);
+
+        // Make lone atoms other than oxygen large
+        for (Atom atom : m.atoms()) {
+            if ( (atom.bonds().size() == 0) && (! atom.getElementSymbol().equals("O")) )
+                largeBalls.addAtom(atom);
+            else 
+                balls.addAtom(atom);
+        }
     }
 }

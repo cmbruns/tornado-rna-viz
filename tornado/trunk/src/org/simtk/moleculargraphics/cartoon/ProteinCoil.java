@@ -29,19 +29,72 @@ package org.simtk.moleculargraphics.cartoon;
 
 import java.util.List;
 import java.util.Vector;
-
+import org.simtk.moleculargraphics.Spline3D;
 import org.simtk.geometry3d.Vector3D;
 import org.simtk.molecularstructure.*;
 
 import vtk.*;
 
 public class ProteinCoil extends ProteinRibbonSegment {
+//    public ProteinCoil(
+//            List<Residue> residues,
+//            double diameter) 
+//    throws NoCartoonCreatedException
+//    {
+//        createCoil(residues, diameter);
+//    }
+
     public ProteinCoil(
-            List<Residue> residues,
-            double diameter) 
+            List<Residue> residues, 
+            double diameter, 
+            int startIndex,
+            Spline3D positionSpline,
+            Spline3D normalSpline
+            ) 
     throws NoCartoonCreatedException
     {
-        createCoil(residues, diameter);
+        createCoil(residues, diameter, startIndex, positionSpline, normalSpline);
+    }
+    
+    protected void createCoil(
+            List<Residue> residues, 
+            double diameter, 
+            int startIndex,
+            Spline3D positionSpline,
+            Spline3D normalSpline)
+    throws NoCartoonCreatedException
+    {
+    
+        List<Vector3D> positions = new Vector<Vector3D>();
+        List<Vector3D> normals = new Vector<Vector3D>();
+        List<Chemical> aminoAcids = new Vector<Chemical>();
+    
+        double extraBit = 0.05; // Make structures overlap a bit
+        double minT = startIndex - 0.5 - extraBit;
+        double maxT = startIndex + residues.size() - 0.5 + extraBit;
+    
+        double strandResolution = 0.25; // In units of residues
+        int numPoints = (int)(1.0 + (maxT - minT) / strandResolution);
+        double increment = (maxT - minT) / (numPoints - 1.0);
+        
+        for (int i = 0; i < numPoints; ++i) {
+            double t = minT + i * increment;
+            Vector3D normal = normalSpline.evaluate(t).unit();
+            Vector3D position = positionSpline.evaluate(t);
+            
+            normals.add(normal);
+            positions.add(position);
+    
+            int residueIndex = (int)Math.round(t - minT);
+            if (residueIndex < 0) residueIndex = 0;
+            if (residueIndex >= residues.size()) residueIndex = residues.size() - 1;
+            aminoAcids.add(residues.get(residueIndex));
+        }
+    
+        if (positions.size() < 1) 
+            throw new NoCartoonCreatedException("No positions found for Secondary Structure");
+    
+        createCoil(positions, normals, aminoAcids, diameter);        
     }
 
     protected void createCoil(
@@ -67,8 +120,9 @@ public class ProteinCoil extends ProteinRibbonSegment {
 
         finishVtkPipeline((vtkPolyData)setScalarsFilter.GetOutput());
     }
+
     
-    protected void createCoil(
+    protected void oldCreateCoil(
             List<Residue> residues, 
             double diameter) 
     throws NoCartoonCreatedException {
