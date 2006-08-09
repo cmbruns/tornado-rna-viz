@@ -32,6 +32,7 @@
 package org.simtk.moleculargraphics;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 
 import java.awt.*;
 import java.io.*;
@@ -420,18 +421,18 @@ implements ResidueHighlightListener
         stereoscopicOptionsGroup.add(checkItem);
         menu.add(checkItem);
 
-//        menu = new JMenu("Secondary Structure");
-//        menuBar.add(menu);
+        menu = new JMenu("Secondary Structure");
+        menuBar.add(menu);
+        
+        menuItem = new JMenuItem("Load Seconday Structure File...");
+        menuItem.setEnabled(true);
+        menuItem.addActionListener(new LoadRnamlAction());
+        menu.add(menuItem);
 //        
-//        menuItem = new JMenuItem("Use RNAML File...");
-//        menuItem.setEnabled(true);
-//        menuItem.addActionListener(new ApplyRnamlAction());
-//        menu.add(menuItem);
-//        
-//        menuItem = new JMenuItem("Compute from structure");
-//        menuItem.setEnabled(true);
-//        menuItem.addActionListener(new ComputeSecondaryStructureAction());
-//        menu.add(menuItem);
+        menuItem = new JMenuItem("Compute from structure");
+        menuItem.setEnabled(true);
+        menuItem.addActionListener(new ComputeSecondaryStructureAction());
+        menu.add(menuItem);        
         
         menu = new JMenu("Help");
         menuBar.add(menu);
@@ -493,13 +494,110 @@ implements ResidueHighlightListener
         }
     }
 
-    // For me the programmer to use when creating new actions
-    class ApplyRnamlAction implements ActionListener {
+    // 
+    class LoadRnamlAction implements ActionListener {
+        JFileChooser rnamlFileChooser;
+        String rnamlPath = "";
+
         public void actionPerformed(ActionEvent e) {
-            // TODO
+            // Check for RNAML secondary structures
+            // needs to be made more robust & expansive
+            // looks in local direrctory, doesn't know loc of PDB
+        	MoleculeCollection molecules = Tornado.this.moleculeCollection;
+            boolean haveNucleic = false;
+            for (Molecule m : molecules.molecules()) 
+                if (m instanceof NucleicAcid) haveNucleic = true;
+            if (!haveNucleic){
+//            	TODO should add an error alert here as well
+            	return;
+            }
+            
+            if ((rnamlFileChooser == null)){
+            	rnamlPath = Tornado.this.currentPath;
+            	rnamlFileChooser = new JFileChooser(Tornado.this.currentPath);            
+                rnamlFileChooser.setFileFilter(new RnamlFilter());
+            }
+		    
+            boolean foundRnaml = false;
+            if ((molecules.getPdbId() != null) )  {
+                String rnamlFileName = molecules.getPdbId()+".pdb.xml";
+                
+                // File curDir = new File(".");
+                File curDir = rnamlFileChooser.getCurrentDirectory();
+                java.util.List dirList = Arrays.asList(curDir.list());
+                if (dirList.contains(rnamlFileName)){
+                	rnamlFileChooser.setSelectedFile(new File(rnamlFileName));
+                }
+                else {
+                    // System.out.println("can't find xml file "+rnamlFileName);
+                    // System.out.println("directory listing includes "+dirList);
+                }
+            }
+
+            
+            int returnVal = rnamlFileChooser.showOpenDialog(Tornado.this);
+		    if (returnVal != JFileChooser.APPROVE_OPTION){
+		    	return;//user canceled
+		    }
+            try {
+                File rnamlFile = rnamlFileChooser.getSelectedFile();//new File(curDir, rnamlFileName);
+                RnamlDocument rnamlDoc = new RnamlDocument(rnamlFile, molecules);
+                rnamlDoc.importSecondaryStructures();
+                (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+                foundRnaml = true;
+            } 
+            catch (org.jdom.JDOMException exc) {
+                exc.printStackTrace();
+            }
+            catch (IOException exc) {
+                exc.printStackTrace();
+            }
+            catch (NullPointerException exc) {
+                exc.printStackTrace();
+            }
+
+/*    	    String savePath = rnamlFileChooser.getCurrentDirectory().getPath();
+            String FS = System.getProperty("file.separator");
+	        int index = savePath.lastIndexOf(FS);
+	        Tornado.this.saveImagePath = savePath.substring(0, index);
+        	saveImagePath = Tornado.this.saveImagePath;
+*/        	
         }
     }
 
+	private class RnamlFilter extends FileFilter implements FilenameFilter{
+		public boolean accept(File dir, String name) {
+	        String suffix = getExtension(name);
+	        if (suffix.equals("xml") ||
+	               suffix.equals("rnaml")) return true;
+	        else return false;
+		}
+		
+		public boolean accept(File f) {
+			if (f.isDirectory()) return true;
+	        String path = f.getPath();
+	        String FS = System.getProperty("file.separator");
+	        int index = path.lastIndexOf(FS);
+	        currentPath = path.substring(0, index);
+	        String name = path.substring(index+1);
+	        return accept(new File(currentPath), name);
+		}
+		
+		public String getDescription() {
+			return "rnaml (and other xml) files";
+		}
+		
+		private String getExtension(String path) {
+			String suffix = "";
+			int index = path.lastIndexOf(".");
+			if (index != -1) {
+				suffix = path.substring(index+1).toLowerCase();
+			}
+			return suffix;
+		}
+
+	}
+	
     class ComputeSecondaryStructureAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             for (Molecule molecule : Tornado.this.moleculeCollection.molecules()) {
@@ -694,7 +792,7 @@ implements ResidueHighlightListener
                 if (m instanceof NucleicAcid) haveNucleic = true;
 
             boolean foundRnaml = false;
-            if ( haveNucleic && (molecules.getPdbId() != null) )  {
+/*            if ( haveNucleic && (molecules.getPdbId() != null) )  {
                 String rnamlFileName = molecules.getPdbId()+".pdb.xml";
                 
                 // File curDir = new File(".");
@@ -721,7 +819,7 @@ implements ResidueHighlightListener
                     // System.out.println("directory listing includes "+dirList);
                 }
             }
-            
+*/            
             if (haveNucleic && !foundRnaml) {                    
                 // Compute secondary structure using Tornado methods
                 for (Molecule molecule : molecules.molecules()) {
