@@ -29,9 +29,9 @@ package org.simtk.molecularstructure;
 import java.util.*;
 
 public class SecondaryStructureClass implements SecondaryStructure {
-    private Collection<Residue> residues = null;
-    private Biopolymer molecule = null;
-    private String source = "";
+    protected Collection<Residue> residues = null;
+    protected Vector<Biopolymer> parentMolecules = new Vector<Biopolymer>();
+    protected String source = "";
     protected int resLimit;// -1 indicates no limit
 
     public SecondaryStructureClass(){
@@ -67,13 +67,24 @@ public class SecondaryStructureClass implements SecondaryStructure {
     public Collection<Residue> residues() {return residues;}
 
     public void addResidue(Residue residue) {
-        this.residues.add(residue);
+    	if (!residues.contains(residue)){
+    		this.residues.add(residue);
+    		residue.secondaryStructures().add(this);
+    	}
     }
 
     public void setMolecule(Biopolymer biopolymer) {
-        this.molecule = biopolymer;
+        //this.parentMolecules.set(0,biopolymer);
+    	addMolecule(biopolymer);
     }
-
+    
+    public boolean addMolecule(Biopolymer biopolymer){
+    	if (!parentMolecules.contains(biopolymer)){
+        	parentMolecules.add(biopolymer);
+    		return true;
+    	}
+    	return false;
+    }
 
     public String getSource() {
 		return source;

@@ -267,6 +267,7 @@ extends MolecularClass
 
         // Apply PDB secondary structures
         SS: for (SecondaryStructure structure : secondaryStructures) {
+        	structure.setSource("PDB");
             
             String startResidueString = (String) secondaryStructureStarts.get(structure);
             String chainID = startResidueString.substring(4, 5);
