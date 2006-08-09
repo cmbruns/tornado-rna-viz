@@ -153,6 +153,7 @@ public class RnamlDocument {
 
     private Residue getRes(int molID, int localPos){
     	NucleicAcid mol = rnamlIndexMolecules.get(molID);
+        if (mol == null) return null;
     	if (source.equals("rnaview")){
     		List<Integer> nTable = resNumTables.get(molID);
     		localPos = ((Integer)nTable.get(localPos));
