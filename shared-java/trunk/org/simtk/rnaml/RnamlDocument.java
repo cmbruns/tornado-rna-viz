@@ -42,6 +42,7 @@ public class RnamlDocument {
     Map<Integer, NucleicAcid> rnamlIndexMolecules = new HashMap<Integer, NucleicAcid>();
     org.jdom.Document rnamlDoc;
     Element rnamlEl = null;
+    String source = "";
     Map<Integer, List<Integer> > resNumTables = new HashMap<Integer, List<Integer> >();
 
     
@@ -61,6 +62,9 @@ public class RnamlDocument {
         	rnamlEl = (Element) docIt.next();
         }
         
+        source = determineSource();
+        System.out.println("rnaml source type = "+source);
+        
         // Find nucleic acid molecules from Tornado
         // and index them by the expected rnaml index
         int nucleicAcidIndex = 1;
@@ -71,125 +75,126 @@ public class RnamlDocument {
             nucleicAcidIndex ++;
         }
         
-        int nRNAViewRNAs = rnamlEl.getChildren("molecule").size();
-        if (nRNAViewRNAs < rnamlIndexMolecules.keySet().size()){
-            Map<Integer, NucleicAcid> newIndexMolecules = new HashMap<Integer, NucleicAcid>();
-            nucleicAcidIndex = 1;
-        	for (int index = 1; index <= rnamlIndexMolecules.keySet().size(); index++) {
-        		NucleicAcid rna = rnamlIndexMolecules.get(index);
-                if ( !isRNAMLMolecule(rna)) continue;
-                newIndexMolecules.put(nucleicAcidIndex, rna);
-                nucleicAcidIndex ++;
-        	}
-            if (nRNAViewRNAs != newIndexMolecules.keySet().size()){
-    			System.err.println("cannot reconcile with rnaml reporting of rna chains.");
-            }
-            else {
-            	rnamlIndexMolecules = newIndexMolecules;
-            }
+        if (source.equals("rnaview")) {
+        	checkRnaviewMols();
         }
-        else if (nRNAViewRNAs < rnamlIndexMolecules.keySet().size()){
-			System.err.println("rnaml reports too many rna chains.");
-		}
     }
         
-    /**
+    private void checkRnaviewMols() {
+    	int nRNAViewRNAs = rnamlEl.getChildren("molecule").size();
+    	if (nRNAViewRNAs < rnamlIndexMolecules.keySet().size()){
+    		Map<Integer, NucleicAcid> newIndexMolecules = new HashMap<Integer, NucleicAcid>();
+    		int nucleicAcidIndex = 1;
+    		for (int index = 1; index <= rnamlIndexMolecules.keySet().size(); index++) {
+    			NucleicAcid rna = rnamlIndexMolecules.get(index);
+    			if ( !isRnaviewNA(rna)) continue;
+    			newIndexMolecules.put(nucleicAcidIndex, rna);
+    			nucleicAcidIndex ++;
+    		}
+    		if (nRNAViewRNAs != newIndexMolecules.keySet().size()){
+    			System.err.println("cannot reconcile with rnview reporting of rna chains.");
+    		}
+    		else {
+    			rnamlIndexMolecules = newIndexMolecules;
+    		}
+    	}
+    	else if (nRNAViewRNAs < rnamlIndexMolecules.keySet().size()){
+    		System.err.println("rnaview reports too many rna chains.");
+    	}
+	}
+
+	/**
      * 
      */
     @SuppressWarnings("unchecked")
 	public void importSecondaryStructures() {
     	// Parse the xml file
+    	
+    	int molIndex = 0;
         for (Element rnamlMol: (List<Element>) rnamlEl.getChildren("molecule")){
-            int molID = Integer.parseInt(rnamlMol.getAttributeValue("id"));//assumes rnaview source
-            List<Element> sequences = rnamlMol.getChildren("sequence");
-            if (sequences.size()!=1) {
-                ;//should add some kind of error reporting
+        	molIndex++;
+            int molID = getID(molIndex, rnamlMol.getAttributeValue("id"));
+            
+            if (source.equals("rnaview")){
+            	Element sequence = rnamlMol.getChild("sequence");
+            	/* nTable is retrieved via getDescendants because the standard DTD requires that the numbering 
+            	 * table be a child of a numbering-system which in turn is a child of the sequence, although 
+            	 * rnaview for some reason creates the numbering table as a direct child of the sequence. 
+            	 */
+            	Element nTableEl = (Element) sequence.getDescendants( new ElementFilter("numbering-table")).next();
+            	String nTableString = nTableEl.getTextNormalize();
+            	List<Integer> nTable = new ArrayList<Integer>();
+            	Matcher toke = Pattern.compile("\\d+").matcher(nTableString);
+            	while (toke.find()) {
+            		nTable.add(Integer.parseInt(toke.group(0)));
+            	}
+            	resNumTables.put(molID, nTable);
             }
-            /* nTable is retrieved via getDescendants because the standard DTD requires that the numbering 
-             * table be a child of a numbering-system which in turn is a child of the sequence, although 
-             * rnaview for some reason creates the numbering table as a direct child of the sequence. 
-             */
-            Element nTableEl = (Element) sequences.get(0).getDescendants( new ElementFilter("numbering-table")).next();
-            String nTableString = nTableEl.getTextNormalize();
-            List<Integer> nTable = new ArrayList<Integer>();
-            Matcher toke = Pattern.compile("\\d+").matcher(nTableString);
-            while (toke.find()) {
-                nTable.add(Integer.parseInt(toke.group(0)));
-            }
-            resNumTables.put(molID, nTable);
             
             // Parse intramolecular helices
             for (Element struc : (List<Element>) rnamlMol.getChildren("structure")){ // only one is made by rnaview
-                for (Element modl : (List<Element>) struc.getChildren("model")){
-                    for (Element annot : (List<Element>) modl.getChildren("str-annotation")){
-                    	for (Element baseconf: (List<Element>) annot.getChildren("base-conformation")){
-                    		// TODO add support for rnaml secondary structure
-                    	} //end forloop baseconf 
-                    	for (Element basepair: (List<Element>) annot.getChildren("base-pair")){
-                    		addBasePair(basepair, molID);
-                    	} //end forloop basepair
-                    	for (Element basetriple: (List<Element>) annot.getChildren("base-triple")){
-                    		// TODO add support for rnaml secondary structure
-                    	} //end forloop basetriple                   	
-                    	for (Element basestack: (List<Element>) annot.getChildren("base-stack")){
-                    		// TODO add support for rnaml secondary structure
-                    	} //end forloop basestack
-                        for (Element helix : (List<Element>) annot.getChildren("helix")){
-                            addHelix(helix, molID);
-                        } //end forloop helix
-                    	for (Element pseudoknot: (List<Element>) annot.getChildren("pseudoknot")){
-                    		// TODO add support for rnaml secondary structure
-                    	} //end forloop pseudoknot
-                    	for (Element strand: (List<Element>) annot.getChildren("single-strand")){
-                    		// TODO add support for rnaml secondary structure
-                    	} //end forloop strand
-                    	for (Element dist_const: (List<Element>) annot.getChildren("distance-constraint")){
-                    		// TODO add support for rnaml secondary structure
-                    	} //end forloop dist_const
-                    	for (Element surface_const: (List<Element>) annot.getChildren("surface-constraint")){
-                    		// TODO add support for rnaml secondary structure
-                    	} //end forloop surface_const
-                    }
-                    
-                }
-                
+            	Element modl =  (Element) struc.getChild("model"); //UNAFold makes several, but we'll only use first
+            	parseAnnotations(modl, molID);            	
             }
+            
         }
 
         // Parse intermolecular secondary structure
-        for (Element intrx: (List<Element>) rnamlEl.getChildren("interactions")){
-            for (Element annot : (List<Element>) intrx.getChildren("str-annotation")){
-            	for (Element baseconf: (List<Element>) annot.getChildren("base-conformation")){
-            		// TODO add support for rnaml secondary structure
-            	} //end forloop baseconf 
-            	for (Element basepair: (List<Element>) annot.getChildren("base-pair")){
-            		addBasePair(basepair, -1);
-            	} //end forloop basepair
-            	for (Element basetriple: (List<Element>) annot.getChildren("base-triple")){
-            		// TODO add support for rnaml secondary structure
-            	} //end forloop basetriple                   	
-            	for (Element basestack: (List<Element>) annot.getChildren("base-stack")){
-            		// TODO add support for rnaml secondary structure
-            	} //end forloop basestack
-            	for (Element helix : (List<Element>) annot.getChildren("helix")){
-            		addHelix(helix, -1);
-            	} //end forloop helix
-            	for (Element pseudoknot: (List<Element>) annot.getChildren("pseudoknot")){
-            		// TODO add support for rnaml secondary structure
-            	} //end forloop pseudoknot
-            	for (Element strand: (List<Element>) annot.getChildren("single-strand")){
-            		// TODO add support for rnaml secondary structure
-            	} //end forloop strand
-            	for (Element dist_const: (List<Element>) annot.getChildren("distance-constraint")){
-            		// TODO add support for rnaml secondary structure
-            	} //end forloop dist_const
-            	for (Element surface_const: (List<Element>) annot.getChildren("surface-constraint")){
-            		// TODO add support for rnaml secondary structure
-            	} //end forloop surface_const
-            }
-        }        
+        Element intrx =  (Element) rnamlEl.getChild("interactions");
+    	parseAnnotations(intrx, -1);            	
     }
 
+    private int getID(int molIndex, String id){
+    	if (source.equals("rnaview")){ 
+    		return Integer.parseInt(id);
+    	}
+    	else return molIndex;
+    }
+
+    private Residue getRes(int molID, int localPos){
+    	NucleicAcid mol = rnamlIndexMolecules.get(molID);
+    	if (source.equals("rnaview")){
+    		List<Integer> nTable = resNumTables.get(molID);
+    		localPos = ((Integer)nTable.get(localPos));
+        	return mol.getResidueByNumber(localPos);
+    	}
+    	else return mol.getResidue(localPos);
+    }
+    
+    @SuppressWarnings({"unchecked", "unused"})
+	private void parseAnnotations(Element modl, int molID){
+    	if (modl == null) return;
+    	for (Element annot : (List<Element>) modl.getChildren("str-annotation")){
+    		for (Element baseconf: (List<Element>) annot.getChildren("base-conformation")){
+    			// TODO add support for rnaml secondary structure
+    		} //end forloop baseconf 
+    		for (Element basepair: (List<Element>) annot.getChildren("base-pair")){
+    			addBasePair(basepair, molID);
+    		} //end forloop basepair
+    		for (Element basetriple: (List<Element>) annot.getChildren("base-triple")){
+    			// TODO add support for rnaml secondary structure
+    		} //end forloop basetriple                   	
+    		for (Element basestack: (List<Element>) annot.getChildren("base-stack")){
+    			// TODO add support for rnaml secondary structure
+    		} //end forloop basestack
+    		for (Element helix : (List<Element>) annot.getChildren("helix")){
+    			addHelix(helix, molID);
+    		} //end forloop helix
+    		for (Element pseudoknot: (List<Element>) annot.getChildren("pseudoknot")){
+    			// TODO add support for rnaml secondary structure
+    		} //end forloop pseudoknot
+    		for (Element strand: (List<Element>) annot.getChildren("single-strand")){
+    			// TODO add support for rnaml secondary structure
+    		} //end forloop strand
+    		for (Element dist_const: (List<Element>) annot.getChildren("distance-constraint")){
+    			// TODO add support for rnaml secondary structure
+    		} //end forloop dist_const
+    		for (Element surface_const: (List<Element>) annot.getChildren("surface-constraint")){
+    			// TODO add support for rnaml secondary structure
+    		} //end forloop surface_const
+    	}
+    }
+        
     private void addBasePair(Element basepair, int molID) {
         int mol5i = molID;
         int mol3i = molID;
@@ -206,19 +211,14 @@ public class RnamlDocument {
     	NucleicAcid mol5 = rnamlIndexMolecules.get(mol5i);
     	NucleicAcid mol3 = rnamlIndexMolecules.get(mol3i);
     	
-    	List<Integer> nTable5 = resNumTables.get(mol5i);
-    	List<Integer> nTable3 = resNumTables.get(mol3i);
-
-    	int PDBpos5 = ((Integer)nTable5.get(pos5i-1));
-		int PDBpos3 = ((Integer)nTable3.get(pos3i-1));
-		Residue r5 = mol5.getResidueByNumber(PDBpos5);
-		Residue r3 = mol3.getResidueByNumber(PDBpos3);
+		Residue r5 = getRes(mol5i, pos5i-1);
+		Residue r3 = getRes(mol3i, pos3i-1);
         
 		// TODO throw errors here
         if (r5 == null) return;
         if (r3 == null) return;
 
-        BasePair thisBP = BasePair.makeBasePair(r5, r3, "rnaml");
+        BasePair thisBP = BasePair.makeBasePair(r5, r3, source);
         if (thisBP == null) return;
 
     	Element e5p = basepair.getChild("edge-5p"); //should be zero or one of these
@@ -229,7 +229,6 @@ public class RnamlDocument {
     		catch (IllegalArgumentException e) {
                 System.out.println("problem adding "+e5p.getTextTrim()+" edge to res "+r5+" in BP "+thisBP);
     		}
-    		
     	}
 
     	Element e3p = basepair.getChild("edge-3p"); //should be zero or one of these
@@ -268,7 +267,7 @@ public class RnamlDocument {
 		}
 		
 	}
-
+    
 	private void addHelix(Element helix, int molID ) {
 
         int mol5i = molID;
@@ -280,27 +279,22 @@ public class RnamlDocument {
         int hLen  = Integer.parseInt(helix.getChildText("length"));
 
         if (molID == -1) {
-        mol5i = Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
-        mol3i = Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
+        	mol5i = Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
+        	mol3i = Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
         }
         
     	NucleicAcid mol5 = rnamlIndexMolecules.get(mol5i);
     	NucleicAcid mol3 = rnamlIndexMolecules.get(mol3i);
-    	
-    	List<Integer> nTable5 = resNumTables.get(mol5i);
-    	List<Integer> nTable3 = resNumTables.get(mol3i);
     	Duplex dup = null;
     	
     	for (int idx=0; idx<hLen; idx++){
-    		int PDBpos5 = ((Integer)nTable5.get(pos5i+idx-1));
-    		int PDBpos3 = ((Integer)nTable3.get(pos3i-idx-1));
-    		Residue r5 = mol5.getResidueByNumber(PDBpos5);
-    		Residue r3 = mol3.getResidueByNumber(PDBpos3);
-    		BasePair thisBP = BasePair.makeBasePair(r5, r3, "rnaml");
+    		Residue r5 = getRes(mol5i, pos5i-1);
+    		Residue r3 = getRes(mol3i, pos3i-1);
+    		BasePair thisBP = BasePair.makeBasePair(r5, r3, source);
     		if (thisBP!=null) {
     			if (dup==null){
     				dup = new Duplex();
-    		    	dup.setSource("rnaml");
+    		    	dup.setSource(source);
     			}
     			dup.addBasePair(thisBP);
     		}
@@ -313,24 +307,30 @@ public class RnamlDocument {
     	}
     }
     
-	protected boolean isRnaviewRNAML(){
-		return true;
+	private String determineSource(){
+        Iterator modelIt = rnamlDoc.getDescendants(new ElementFilter("model"));
+        if (modelIt.hasNext()){
+        	Element firstModel = (Element) modelIt.next();
+        	if (firstModel.getAttributeValue("id").equals("?")) {
+        		return "rnaview";  //only rnaview is known to specify the invalid character "?" for model id
+        	}
+        }
+        
+        Iterator analysisIt = rnamlDoc.getDescendants(new ElementFilter("analysis"));
+        if (analysisIt.hasNext()){
+            Element firstAnalysis = (Element) analysisIt.next();
+            if (firstAnalysis.getAttributeValue("id").equals("mfold")) {
+            	return "mfold";
+            }
+            else if (firstAnalysis.getAttributeValue("id").equals("UNAFold")) {
+            	return "mfold";
+            }
+        }
+        
+		return "unknown";
 	}
-	
-	protected boolean isMfoldRNAML(){
-		return false;
-	}
-	
 
-	public boolean isRNAMLMolecule(Biopolymer mol){
-		if (isMfoldRNAML()) {
-			System.err.println("mfold rnaml document designations of nucleotide molecules are unreconcilable");
-			return false;
-		}
-		else if (!isRnaviewRNAML()){
-			System.err.println("rnaml document designations of nucleotide molecules are unreconcilable, and");
-			System.err.println("rnaml document does not appear to have a supported source method (rnaview [,mfold])");
-		}
+	public boolean isRnaviewNA(Biopolymer mol){
 		int nNucBases = 0;
 		for (Residue res: (mol.residues())){
 			if (!(res instanceof Residue)) return false;
@@ -349,7 +349,7 @@ public class RnamlDocument {
 	public boolean isDeemedNucleotide(Residue res, String source){
 		
 		if (!source.equalsIgnoreCase("rnaview")){
-			return true;
+			return (res instanceof Nucleotide);
 		}
 		/*	This routine is written to be consistent with the RNAVIEW resdue_ident function, found in 
 		 *  RNAVIEW file "fpair_sub.c".  For temporary reference, the text of that routine follows below in this comment
