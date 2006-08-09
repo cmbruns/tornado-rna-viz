@@ -42,15 +42,12 @@ import org.simtk.util.*;
  * 
  * Represents a base-pair interaction between two residues in a nucleic acid structure
  */
-public class BasePair 
-implements Iterable<Residue>, SecondaryStructure
+public class BasePair extends SecondaryStructureClass
+implements Iterable<Residue>
 {
     Residue residue1;
     Residue residue2;
-    protected String source;
-    protected Biopolymer parentMolecule;
-    protected EdgeType edge_1;
-    protected EdgeType edge_2;
+    protected HashMap<Residue,EdgeType> edges = new HashMap<Residue,EdgeType>(2);
     protected BondOrientation bond_orient;
     protected String strand_orient;
     
@@ -91,7 +88,6 @@ implements Iterable<Residue>, SecondaryStructure
         }
     };
 
-
     public static BasePair getBasePair(Residue r1, Residue r2, String source){
     	if ((r1!=null)&&(r2!=null)){
     		for (SecondaryStructure struc: r1.secondaryStructures()){
@@ -127,8 +123,9 @@ implements Iterable<Residue>, SecondaryStructure
         }
         return null;
     }
-    
+        
     public BasePair(Residue r1, Residue r2) {
+    	super(2);
         if (r1 == null) throw new NullPointerException();
         if (r2 == null) throw new NullPointerException();
         
@@ -156,55 +153,44 @@ implements Iterable<Residue>, SecondaryStructure
             residue1 = r1;
             residue2 = r2;
         }
+//<<<<<<< .mine
+        residues.add(residue1);
+        residues.add(residue2);
+//        r1.addSecondaryStructure(this);
+//        r2.addSecondaryStructure(this);
+//=======
         r1.secondaryStructures().add(this);
         r2.secondaryStructures().add(this);
+//>>>>>>> .r369
         return;            
     }
-    
-    public String getSource() {return this.source;}
-    public void setSource(String source) {this.source = source;}
+
     
     public BondOrientation getBond_orient() { return bond_orient; }
 	public void setBond_orient(BondOrientation bond_orient) { this.bond_orient = bond_orient; }
 	public void setBond_orient(String bond) { this.bond_orient = BondOrientation.getBondOrienation(bond); }
 
-	public EdgeType getEdge_1() { return edge_1; }
-	public EdgeType getEdge_2() { return edge_2; }
-	public void setEdge(Residue res, EdgeType edgeT) { 
-		if (res.equals(this.residue1)) {
-			this.edge_1 = edgeT; 
+	public EdgeType getEdge(Residue res) { 
+		if (residues().contains(res)) {
+			return edges.get(res); 
 		}
-		else if (res.equals(this.residue2)) {
-			this.edge_2 = edgeT; 
+		else throw new IllegalArgumentException();
+	}
+	public void setEdge(Residue res, EdgeType edgeT) { 
+		if (residues().contains(res)) {
+			edges.put(res, edgeT); 
 		}
 		else throw new IllegalArgumentException();
 	}
 	public void setEdge(Residue res, String edge) { setEdge(res, EdgeType.getEdgeType(edge)); }
 	
-//	public void setEdge_1(EdgeType edge_1) { this.edge_1 = edge_1; }
-//	public void setEdge_1(String edge) { this.edge_1 = EdgeType.getEdgeType(edge); }
-
-//	public void setEdge_2(EdgeType edge_2) { this.edge_2 = edge_2; }
-//	public void setEdge_2(String edge) { this.edge_2 = EdgeType.getEdgeType(edge); }
-
 	public String getStrand_orient() { return strand_orient; }
 	public void setStrand_orient(String strand_orient) { this.strand_orient = strand_orient; }
 
 	public void addResidue(Residue r) {
         throw new UnsupportedOperationException();
     }
-    public Iterator<Residue> getResidueIterator() {
-        return iterator();
-    }
-    public Collection<Residue> residues() {
-        Vector<Residue> answer = new Vector<Residue>();
-        answer.add(residue1);
-        answer.add(residue2);
-        return answer;
-    }
-    
-    public void setMolecule(Biopolymer molecule) {this.parentMolecule = molecule;}
-    
+   
     public Residue getResidue1() {return residue1;}
     public Residue getResidue2() {return residue2;}
 

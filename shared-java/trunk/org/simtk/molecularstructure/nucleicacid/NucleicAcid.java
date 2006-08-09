@@ -158,7 +158,7 @@ public class NucleicAcid extends BiopolymerClass {
                 }
                 if (minDistance > atomicDistance) continue; // No close atoms
                 
-                basePairs.add(new BasePair(residue, otherResidue));
+                basePairs.add(BasePair.makeBasePair(residue, otherResidue, "tornado"));
             }
         }
         // System.out.println("" + closePairCount + " close base pairs found");
@@ -276,6 +276,7 @@ public class NucleicAcid extends BiopolymerClass {
         }
         while (! unassignedPairs.isEmpty()) {
             Duplex hairpin = new Duplex();
+            hairpin.setSource("tornado");
             BasePair startPair = (BasePair) unassignedPairs.iterator().next();
 
             // Pairs whose nieghbor list has not been examined
