@@ -605,19 +605,22 @@ implements ResidueHighlightListener
                 NucleicAcid nucleicAcid = (NucleicAcid) molecule;
                 
                 // Remove preexisting secondary structures
+                // But don't remove while iterating...
+                Collection<SecondaryStructure> obsoleteStructures = new LinkedHashSet<SecondaryStructure>();
                 Collection<SecondaryStructure> structs = nucleicAcid.secondaryStructures();
                 for (SecondaryStructure structure : structs) {
-                    if (structure instanceof BasePair)
-                        structs.remove(structure);
-                    if (structure instanceof Duplex)
-                        structs.remove(structure);
+                    if (structure instanceof BasePair) obsoleteStructures.add(structure);
+                    else if (structure instanceof Duplex) obsoleteStructures.add(structure);
                 }
+                structs.removeAll(obsoleteStructures);
                 
                 for (BasePair basePair : nucleicAcid.identifyBasePairs())
                     structs.add(basePair);
                 
                 for (Duplex duplex : nucleicAcid.identifyHairpins())
                     structs.add(duplex);
+                
+                (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
             }
         }
     }
