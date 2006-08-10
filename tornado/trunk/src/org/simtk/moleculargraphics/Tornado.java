@@ -474,7 +474,7 @@ implements ResidueHighlightListener
         }
     }
 
-    // For me the programmer to use when creating new actions
+    // 
     class GranularityAction implements ActionListener {
         protected int increment; // how much to change the Granularity
         GranularityAction(int increment) {this.increment = increment;}
@@ -482,13 +482,13 @@ implements ResidueHighlightListener
             if (increment > 0) {
                 if (toonRange.hasCoarser()) {
                     toonRange.stepCoarser();
-                    (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+                    Tornado.this.redrawCartoon();
                 }
             }
             else if (increment < 0) {
                 if (toonRange.hasFiner()) {
                     toonRange.stepFiner();
-                    (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+                    Tornado.this.redrawCartoon();
                 }
             }
         }
@@ -543,7 +543,7 @@ implements ResidueHighlightListener
                 File rnamlFile = rnamlFileChooser.getSelectedFile();//new File(curDir, rnamlFileName);
                 RnamlDocument rnamlDoc = new RnamlDocument(rnamlFile, molecules);
                 rnamlDoc.importSecondaryStructures();
-                (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+                Tornado.this.redrawCartoon();
                 foundRnaml = true;
             } 
             catch (org.jdom.JDOMException exc) {
@@ -620,7 +620,7 @@ implements ResidueHighlightListener
                 for (Duplex duplex : nucleicAcid.identifyHairpins())
                     structs.add(duplex);
                 
-                (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+                Tornado.this.redrawCartoon();
             }
         }
     }
@@ -674,6 +674,10 @@ implements ResidueHighlightListener
         }
     }
 
+    void redrawCartoon(){
+    	(new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+    }
+    
     class RotateNoneAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             rotationThread.rotationStyle = RotationStyle.NONE;
@@ -874,7 +878,7 @@ implements ResidueHighlightListener
         updateTitleBar();
         
         // Create graphical representation of the molecule
-        (new CartoonAction(toonRange.currentToonType.toonClass)).actionPerformed(new ActionEvent(this, 0, ""));
+        Tornado.this.redrawCartoon();
 
         // Display sequence of first molecule that has a sequence
         residueHighlightBroadcaster.fireUnhighlightResidues();
