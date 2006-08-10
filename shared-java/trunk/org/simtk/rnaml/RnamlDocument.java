@@ -289,8 +289,8 @@ public class RnamlDocument {
     	Duplex dup = null;
     	
     	for (int idx=0; idx<hLen; idx++){
-    		Residue r5 = getRes(mol5i, pos5i-1);
-    		Residue r3 = getRes(mol3i, pos3i-1);
+    		Residue r5 = getRes(mol5i, pos5i-1+idx);
+    		Residue r3 = getRes(mol3i, pos3i-1-idx);
     		BasePair thisBP = BasePair.makeBasePair(r5, r3, source);
     		if (thisBP!=null) {
     			if (dup==null){
