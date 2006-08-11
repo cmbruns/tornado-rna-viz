@@ -69,6 +69,9 @@ public class DuplexCylinderCartoon extends MoleculeCartoonClass
         
         // Add duplexes (perhaps should restrict to source = rnaml only?
         for (SecondaryStructure structure : nucleicAcid.secondaryStructures()) {
+        	if ((nucleicAcid.getDisplaySourceTypes()!=null)&&!nucleicAcid.getDisplaySourceTypes().contains(structure.getSource())){
+        		continue;
+        	}
             if (structure instanceof Duplex)  {
             	Duplex dup = (Duplex) structure;
             	List<BasePair> dupBPs = dup.basePairs();

@@ -32,6 +32,7 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import org.simtk.util.*;
+import org.simtk.moleculargraphics.Tornado;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import java.util.*;
@@ -80,9 +81,12 @@ public class RopeAndCylinder extends CompositeCartoon {
         Set<Residue> allResidues = new LinkedHashSet<Residue>();
         for (Residue residue : molecule.residues())
             allResidues.add(residue);
-
+        
         Set<Residue> duplexResidues = new HashSet<Residue>();
         for (SecondaryStructure structure : molecule.secondaryStructures()) {
+        	if ((molecule.getDisplaySourceTypes()!=null)&&!molecule.getDisplaySourceTypes().contains(structure.getSource())){
+        		continue;
+        	}
             if (structure instanceof Duplex) {
                 Duplex duplex = (Duplex) structure;
                 for (Residue residue : duplex.residues()) {

@@ -38,6 +38,7 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 import java.net.*;
 import javax.jnlp.*;
 import org.simtk.moleculargraphics.cartoon.*;
@@ -88,7 +89,11 @@ implements ResidueHighlightListener
     private MoleculeCartoon currentCartoon;
     
     protected ToonRange toonRange = new ToonRange();
-    
+    protected List<SecondaryStructureClass.SourceType>  selectedSourceTypes = Arrays.asList(SecondaryStructureClass.SourceType.values());
+    public Collection<SecondaryStructureClass.SourceType> getSelectedSourceTypes(){
+    	if (selectedSourceTypes==null) return new ArrayList();
+    	else return selectedSourceTypes;
+    }
     Tornado() {
         super("SimTK ToRNAdo: (no structures currently loaded)");
         
@@ -429,10 +434,32 @@ implements ResidueHighlightListener
         menuItem.addActionListener(new LoadRnamlAction());
         menu.add(menuItem);
 //        
-        menuItem = new JMenuItem("Compute from structure");
+/*        menuItem = new JMenuItem("Compute from structure");
         menuItem.setEnabled(true);
         menuItem.addActionListener(new ComputeSecondaryStructureAction());
-        menu.add(menuItem);        
+        menu.add(menuItem);     
+*/        
+        menuItem = new JMenu("Secondary Structure Source");
+        menuItem.setEnabled(true);
+        menu.add(menuItem);     
+        
+        ButtonGroup sourceGroup = new ButtonGroup();
+    	JCheckBoxMenuItem sourceItem = new JCheckBoxMenuItem("All");        
+    	sourceItem.setEnabled(true);
+    	sourceItem.addActionListener(new SourceAction());
+    	sourceItem.setState(true);
+    	sourceGroup.add(sourceItem);
+    	menuItem.add(sourceItem);
+        menuItem.add(new JSeparator());
+        for (SecondaryStructureClass.SourceType source: SecondaryStructureClass.SourceType.values()) {                
+        	sourceItem = new JCheckBoxMenuItem(source.toString());
+        	sourceItem.setEnabled(true);
+        	sourceItem.addActionListener(new SourceAction(source));
+        	sourceItem.setState(false);
+        	sourceGroup.add(sourceItem);
+        	menuItem.add(sourceItem);
+        }
+
         
         menu = new JMenu("Help");
         menuBar.add(menu);
@@ -606,13 +633,13 @@ implements ResidueHighlightListener
                 
                 // Remove preexisting secondary structures
                 // But don't remove while iterating...
-                Collection<SecondaryStructure> obsoleteStructures = new LinkedHashSet<SecondaryStructure>();
+                //Collection<SecondaryStructure> obsoleteStructures = new LinkedHashSet<SecondaryStructure>();
                 Collection<SecondaryStructure> structs = nucleicAcid.secondaryStructures();
-                for (SecondaryStructure structure : structs) {
-                    if (structure instanceof BasePair) obsoleteStructures.add(structure);
-                    else if (structure instanceof Duplex) obsoleteStructures.add(structure);
-                }
-                structs.removeAll(obsoleteStructures);
+                //for (SecondaryStructure structure : structs) {
+                //    if (structure instanceof BasePair) obsoleteStructures.add(structure);
+                //    else if (structure instanceof Duplex) obsoleteStructures.add(structure);
+                //}
+                //structs.removeAll(obsoleteStructures);
                 
                 for (BasePair basePair : nucleicAcid.identifyBasePairs())
                     structs.add(basePair);
@@ -625,6 +652,21 @@ implements ResidueHighlightListener
         }
     }
 
+    class SourceAction implements ActionListener {
+        protected List<SecondaryStructureClass.SourceType> mySources; 
+        protected SourceAction() {mySources = Arrays.asList(SecondaryStructureClass.SourceType.values());}
+        protected SourceAction(SecondaryStructureClass.SourceType mySource) {mySources = Arrays.asList(mySource);}
+        public void actionPerformed(ActionEvent e) {
+        	Tornado.this.selectedSourceTypes = mySources;
+        	for (Molecule molecule : Tornado.this.moleculeCollection.molecules()){
+        		molecule.setDisplaySourceTypes(Tornado.this.getSelectedSourceTypes());
+        	}
+        	Tornado.this.redrawCartoon();
+        }
+    }
+
+    
+    
     class QuitAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             System.exit(0);  // terminate this program
@@ -876,6 +918,11 @@ implements ResidueHighlightListener
         moleculeCollection = molecules;
         
         updateTitleBar();
+
+        for (Molecule molecule : molecules.molecules()) {
+            molecule.setDisplaySourceTypes(Tornado.this.getSelectedSourceTypes());
+        }
+        
         
         // Create graphical representation of the molecule
         Tornado.this.redrawCartoon();
@@ -1249,5 +1296,5 @@ implements ResidueHighlightListener
         
         public java.util.List<RangedToonType> toons() {return toons;}
     }
-            
+    
 }
