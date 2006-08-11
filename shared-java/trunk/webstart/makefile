@@ -5,7 +5,7 @@ SRCS = $(SRC_DIR)/org/simtk/*/*.java $(SRC_DIR)/org/simtk/*/*/*.java $(SRC_DIR)/
 BUILD_DIR = build
 MANIFEST_FILE = simtkjava_manifest.tmp
 JAR_FILE = SimtkSharedJava.jar
-CLASSPATH = ".;s_jdom.jar"
+CLASSPATH = ".;s_jdom.jar;s_BrowserLauncher.jar"
 
 PROD_KEYSTORE = D:\simtkjava_signing\simtkjava.store
 
