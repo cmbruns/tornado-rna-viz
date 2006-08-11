@@ -33,6 +33,8 @@ package org.simtk.molecularstructure;
 
 import java.util.*;
 
+import org.simtk.molecularstructure.SecondaryStructureClass.SourceType;
+
 /**
  * Base class for alpha helices, beta strands, beta sheets, and RNA duplexes 
   * @author Christopher Bruns
@@ -43,7 +45,7 @@ public interface SecondaryStructure {
     public void addResidue(Residue residue);
     public void setMolecule(Biopolymer biopolymer);
     public void setSource(String string);
-    public String getSource();
+    public SourceType getSource();
     
     public Collection<Residue> residues();
 }

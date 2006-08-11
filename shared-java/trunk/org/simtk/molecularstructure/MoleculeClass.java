@@ -52,10 +52,20 @@ extends MolecularClass
 implements Molecule 
 {
     protected String chainId = null;
+    protected Collection<SecondaryStructureClass.SourceType> displaySourceTypes;// = Arrays.asList(SecondaryStructureClass.SourceType.values());
     
     public String getPdbChainId() {return chainId;}
     
-    protected void setPdbChainId(String c) {this.chainId = c;}
+    public Collection<SecondaryStructureClass.SourceType> getDisplaySourceTypes() {
+		return displaySourceTypes;
+	}
+
+	public void setDisplaySourceTypes(
+			Collection<SecondaryStructureClass.SourceType> displaySourceTypes) {
+		this.displaySourceTypes = displaySourceTypes;
+	}
+
+	protected void setPdbChainId(String c) {this.chainId = c;}
     
     public boolean isSolvent() {
 

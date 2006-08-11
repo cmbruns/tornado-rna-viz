@@ -93,7 +93,8 @@ implements Iterable<Residue>
     		for (SecondaryStructure struc: r1.secondaryStructures()){
     			if (struc instanceof BasePair){
     				BasePair strucBP = (BasePair) struc;
-    				if ((source=="*" || source==strucBP.getSource()) && (strucBP.isBetween(r1, r2))){
+    				if ((source=="*" || SecondaryStructureClass.SourceType.getSourceType(source)==strucBP.getSource()) 
+    						&& (strucBP.isBetween(r1, r2))){
     					return strucBP;
     				}
     			}

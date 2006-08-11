@@ -31,9 +31,29 @@ import java.util.*;
 public class SecondaryStructureClass implements SecondaryStructure {
     protected Collection<Residue> residues = null;
     protected Vector<Biopolymer> parentMolecules = new Vector<Biopolymer>();
-    protected String source = "";
+    protected SourceType sourceType = SourceType.UNKNOWN;
     protected int resLimit;// -1 indicates no limit
 
+    public enum SourceType {
+    	TORNADO(Arrays.asList("tornado")), 
+    	RNAVIEW(Arrays.asList("rnaview")),
+    	MFOLD_UNAFOLD(Arrays.asList("mfold", "unafold")),
+    	UNKNOWN(Arrays.asList("!"));
+    	
+    	public final List<String> designations;
+    	SourceType(List<String> des){ this.designations = des; }
+
+        public static SourceType getSourceType(String str){
+        	for (SourceType et: SourceType.values()){
+        		if (et.designations.contains(str.toLowerCase())){
+        			return et;
+        		}
+        	}
+        	return UNKNOWN;
+        }
+    };
+    
+    
     public SecondaryStructureClass(){
     	this(-1);
     }
@@ -86,12 +106,12 @@ public class SecondaryStructureClass implements SecondaryStructure {
     	return false;
     }
 
-    public String getSource() {
-		return source;
+    public SourceType getSource() {
+		return sourceType;
 	}
 
 	public void setSource(String source) {
-		this.source = source;
+		this.sourceType = SourceType.getSourceType(source);
 	}
 
 }

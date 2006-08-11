@@ -26,7 +26,11 @@
  */
 package org.simtk.molecularstructure;
 
+import java.util.Collection;
+
 public interface Molecule extends Molecular {
     boolean isSolvent();
     String getPdbChainId();
-}
+    public Collection<SecondaryStructureClass.SourceType> getDisplaySourceTypes();
+    public void setDisplaySourceTypes(Collection<SecondaryStructureClass.SourceType> sourceTypes);
+    }
