@@ -69,7 +69,7 @@ public class FineRibbonCartoon extends CompositeCartoon {
             backboneRibbon.addMolecule(nucleicAcid);
 
             Set<Residue> basePairResidues = new HashSet<Residue>();
-            for (SecondaryStructure structure : nucleicAcid.secondaryStructures())
+            for (SecondaryStructure structure : nucleicAcid.displayableStructures())
                 if (structure instanceof BasePair) {
                     BasePair basePair = (BasePair) structure;
 

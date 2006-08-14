@@ -26,14 +26,15 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.awt.Color;
-import java.util.*;
+import org.simtk.geometry3d.Vector3D;
+import org.simtk.geometry3d.Vector3DClass;
+import org.simtk.molecularstructure.Molecule;
+import org.simtk.molecularstructure.Residue;
+import org.simtk.molecularstructure.SecondaryStructure;
+import org.simtk.molecularstructure.nucleicacid.BasePair;
+import org.simtk.molecularstructure.nucleicacid.NucleicAcid;
 
-import org.simtk.geometry3d.*;
-import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.nucleicacid.*;
-
-import vtk.*;
+import vtk.vtkCylinderSource;
 
 public class BasePairConnectorStick extends TensorGlyphCartoon {
     public BasePairConnectorStick() {
@@ -56,7 +57,7 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
     }
 
     public void addNucleicAcid(NucleicAcid molecule) {
-        for (SecondaryStructure structure : molecule.secondaryStructures())
+        for (SecondaryStructure structure : molecule.displayableStructures())
             if (structure instanceof BasePair)
                 addBasePair((BasePair) structure);
     }
@@ -103,7 +104,7 @@ public class BasePairConnectorStick extends TensorGlyphCartoon {
                 direction2.x(), direction2.y(), direction2.z()
                 );
 
-        int glyphIndex = colorScalars.GetNumberOfTuples();
+        //int glyphIndex = colorScalars.GetNumberOfTuples();
         
         double colorScalar = getColorIndex(res);
 

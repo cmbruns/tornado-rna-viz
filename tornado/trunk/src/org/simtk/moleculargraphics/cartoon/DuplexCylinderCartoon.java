@@ -61,22 +61,14 @@ public class DuplexCylinderCartoon extends MoleculeCartoonClass
     }
 
     public void addNucleicAcid(NucleicAcid nucleicAcid) {
-//        Collection<Duplex> hairpins = nucleicAcid.identifyHairpins();
-//        for (Iterator iterHairpin = hairpins.iterator(); iterHairpin.hasNext(); ) {
-//            Duplex duplex = (Duplex) iterHairpin.next();
-//            addDuplex(duplex);
-//        }
         
-        // Add duplexes (perhaps should restrict to source = rnaml only?
-        for (SecondaryStructure structure : nucleicAcid.secondaryStructures()) {
-        	if ((nucleicAcid.getDisplaySourceTypes()!=null)&&!nucleicAcid.getDisplaySourceTypes().contains(structure.getSource())){
-        		continue;
-        	}
+        // Add duplexes 
+        for (SecondaryStructure structure : nucleicAcid.displayableStructures()) {
             if (structure instanceof Duplex)  {
             	Duplex dup = (Duplex) structure;
             	List<BasePair> dupBPs = dup.basePairs();
             	BasePair firstBP = dupBPs.get(0);
-            	BasePair lastBP = dupBPs.get(dupBPs.size()-1);
+            	//BasePair lastBP = dupBPs.get(dupBPs.size()-1);
                 
                 // Only create duplexes for the molecule in which the
                 // first residue appears.

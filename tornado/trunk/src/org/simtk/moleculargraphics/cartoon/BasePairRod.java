@@ -51,10 +51,10 @@ public class BasePairRod extends CylinderCartoon {
         if (molecule instanceof NucleicAcid) {
             NucleicAcid rna = (NucleicAcid) molecule;
             
-            // TODO move this base pair identification elsewhere
-            rna.secondaryStructures().addAll(rna.identifyBasePairs());            
+            // old to do-- move this base pair identification elsewhere; should now be handled in Tornado
+            //rna.secondaryStructures().addAll(rna.identifyBasePairs());            
             
-            for (SecondaryStructure structure : rna.secondaryStructures()) {
+            for (SecondaryStructure structure : rna.displayableStructures()) {
                 if (structure instanceof BasePair) {
                     BasePair basePair = (BasePair) structure;
                     try {addBasePair(basePair);}

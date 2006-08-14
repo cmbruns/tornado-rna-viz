@@ -35,7 +35,7 @@ import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 
-import java.awt.Color;
+//import java.awt.Color;
 import java.util.*;
 
 import vtk.*;
@@ -51,8 +51,10 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
     double wedgeThickness = 2.0;
     double wedgeRadius = 8.0;
 
-    private int baseColorIndex = 150;
-    private Hashtable colorIndices = new Hashtable();
+    @SuppressWarnings("unused")
+	private int baseColorIndex = 150;
+    @SuppressWarnings("unused")
+	private Hashtable colorIndices = new Hashtable();
 
     public DuplexResidueWedge() {
         this(8.0);
@@ -128,12 +130,17 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
         // orientByNormal(); // not supported for tensorGlyph
     }
 
-    public void addMolecule(Molecule molecule) {
+	public void addMolecule(Molecule molecule) {
         if (! (molecule instanceof NucleicAcid)) return;
         NucleicAcid nucleicAcid = (NucleicAcid) molecule;
-        Collection<Duplex> duplexen = nucleicAcid.identifyHairpins();
-        DUPLEX: for (Iterator iterDuplex = duplexen.iterator(); iterDuplex.hasNext(); ) {
-            Duplex duplex = (Duplex) iterDuplex.next();
+        Set<SecondaryStructure> structures = nucleicAcid.displayableStructures();
+        DUPLEX: for (Iterator<SecondaryStructure> iterStruct = structures.iterator(); iterStruct.hasNext(); ) {
+        	SecondaryStructure struct = iterStruct.next();
+        	if (!(struct instanceof Duplex)){
+        		continue;
+        	}
+        	
+            Duplex duplex = (Duplex) struct;
 
             Cylinder duplexCylinder;
             try {duplexCylinder = DuplexCylinderActor.doubleHelixCylinder(duplex);}
@@ -184,10 +191,10 @@ public class DuplexResidueWedge extends TensorGlyphCartoon {
                 for (int i = 0; i < 2; i++) {
                     Residue residue = residues[i];
                     
-                    Vector currentObjects = new Vector(); // assign molecular object on which to index this wedge
-                    currentObjects.add(molecule);
-                    currentObjects.add(duplex);
-                    currentObjects.add(residue);
+                    //Vector currentObjects = new Vector(); // assign molecular object on which to index this wedge
+                    //currentObjects.add(molecule);
+                    //currentObjects.add(duplex);
+                    //currentObjects.add(residue);
                     
                     double colorScalar = getColorIndex(residue);
     

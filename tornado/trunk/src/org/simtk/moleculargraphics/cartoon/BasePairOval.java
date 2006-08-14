@@ -101,7 +101,7 @@ public class BasePairOval extends TensorGlyphCartoon {
     }
     
     public void addNucleicAcid(NucleicAcid molecule) {
-        for (SecondaryStructure structure : molecule.secondaryStructures())
+        for (SecondaryStructure structure : molecule.displayableStructures())
             if (structure instanceof BasePair)
                 addBasePair((BasePair) structure);
     }
