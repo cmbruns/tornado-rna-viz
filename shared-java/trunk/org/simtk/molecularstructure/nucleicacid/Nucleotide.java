@@ -31,12 +31,11 @@
  */
 package org.simtk.molecularstructure.nucleicacid;
 
-import java.awt.Color;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.simtk.geometry3d.*;
-import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.atom.*;
+import org.simtk.molecularstructure.FunctionalGroup;
+import org.simtk.molecularstructure.ResidueTypeClass;
 
 /** 
  * @author Christopher Bruns
@@ -54,7 +53,16 @@ public class Nucleotide extends ResidueTypeClass {
     static public FunctionalGroup baseGroup = new FunctionalGroup(baseGroupAtomNames);
     static public FunctionalGroup sugarGroup = new FunctionalGroup(sugarGroupAtomNames);
     static public FunctionalGroup phosphateGroup = new FunctionalGroup(phosphateGroupAtomNames);
-    
+
+	private String pucker = "";
+	private String glycosyl = "";
+	
+	public String getGlycosyl() { return glycosyl; }
+	public void setGlycosyl(String glycosyl) { this.glycosyl = glycosyl; }
+
+	public String getPucker() { return pucker; }
+	public void setPucker(String pucker) { this.pucker = pucker; }
+        
     @Override
     public Set<String> getHydrogenBondDonorAtomNames() {
         Set<String> answer = new HashSet<String>();

@@ -44,6 +44,9 @@ public class RnamlDocument {
     Element rnamlEl = null;
     String source = "";
     Map<Integer, List<Integer> > resNumTables = new HashMap<Integer, List<Integer> >();
+    
+    @SuppressWarnings("unchecked") 
+    List<Integer> latestMolIDs = new ArrayList();
 
     
     public RnamlDocument(File rnamlFile, MoleculeCollection molecules) 
@@ -92,14 +95,14 @@ public class RnamlDocument {
     			nucleicAcidIndex ++;
     		}
     		if (nRNAViewRNAs != newIndexMolecules.keySet().size()){
-    			System.err.println("cannot reconcile with rnview reporting of rna chains.");
+    			System.err.println("cannot reconcile with rnview reporting of rna chains.");//hopefully never again
     		}
     		else {
     			rnamlIndexMolecules = newIndexMolecules;
     		}
     	}
     	else if (nRNAViewRNAs < rnamlIndexMolecules.keySet().size()){
-    		System.err.println("rnaview reports too many rna chains.");
+    		System.err.println("rnaview reports too many rna chains.");//hopefully never again
     	}
 	}
 
@@ -167,36 +170,39 @@ public class RnamlDocument {
     	if (modl == null) return;
     	for (Element annot : (List<Element>) modl.getChildren("str-annotation")){
     		for (Element baseconf: (List<Element>) annot.getChildren("base-conformation")){
-    			// TODO add support for rnaml secondary structure
-    		} //end forloop baseconf 
+    			// TODO add support for rnaml structural annotation
+    		}  
     		for (Element basepair: (List<Element>) annot.getChildren("base-pair")){
     			addBasePair(basepair, molID);
-    		} //end forloop basepair
+    		} 
     		for (Element basetriple: (List<Element>) annot.getChildren("base-triple")){
-    			// TODO add support for rnaml secondary structure
-    		} //end forloop basetriple                   	
+    			addBaseTriple(basetriple, molID);
+    		}
     		for (Element basestack: (List<Element>) annot.getChildren("base-stack")){
-    			// TODO add support for rnaml secondary structure
-    		} //end forloop basestack
+    			addBaseStack(basestack, molID);
+    		}
     		for (Element helix : (List<Element>) annot.getChildren("helix")){
     			addHelix(helix, molID);
-    		} //end forloop helix
+    		}
     		for (Element pseudoknot: (List<Element>) annot.getChildren("pseudoknot")){
-    			// TODO add support for rnaml secondary structure
-    		} //end forloop pseudoknot
+    			addPseudoknot(pseudoknot, molID);
+    		}
     		for (Element strand: (List<Element>) annot.getChildren("single-strand")){
     			// TODO add support for rnaml secondary structure
-    		} //end forloop strand
+    		}
     		for (Element dist_const: (List<Element>) annot.getChildren("distance-constraint")){
     			// TODO add support for rnaml secondary structure
-    		} //end forloop dist_const
+    		}
     		for (Element surface_const: (List<Element>) annot.getChildren("surface-constraint")){
     			// TODO add support for rnaml secondary structure
-    		} //end forloop surface_const
+    		}
     	}
     }
         
-    private void addBasePair(Element basepair, int molID) {
+    private BasePair addBasePair(Element basepair, int molID) {
+    	//caveat: if rnaml has two (or more) models with same source, and a given basepair betwteen two
+    	//given residues appears in both models, only a single basepair object will be created & used, 
+    	//even if the basepairs in the two models have different secondary chars. such as base conf.
         int mol5i = molID;
         int mol3i = molID;
     	Element base5 = basepair.getChild("base-id-5p").getChild("base-id");
@@ -208,6 +214,7 @@ public class RnamlDocument {
         mol5i = Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
         mol3i = Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
         }
+        latestMolIDs = Arrays.asList(mol5i, mol3i);
         
     	NucleicAcid mol5 = rnamlIndexMolecules.get(mol5i);
     	NucleicAcid mol3 = rnamlIndexMolecules.get(mol3i);
@@ -216,11 +223,11 @@ public class RnamlDocument {
 		Residue r3 = getRes(mol3i, pos3i-1);
         
 		// TODO throw errors here
-        if (r5 == null) return;
-        if (r3 == null) return;
+        if (r5 == null) return null;
+        if (r3 == null) return null;
 
         BasePair thisBP = BasePair.makeBasePair(r5, r3, source);
-        if (thisBP == null) return;
+        if (thisBP == null) return null;
 
     	Element e5p = basepair.getChild("edge-5p"); //should be zero or one of these
     	if (e5p!=null){
@@ -262,14 +269,85 @@ public class RnamlDocument {
     		}
     	}
     	
-		mol5.secondaryStructures().add(thisBP);
-		if (mol5i!=mol3i){
-			mol3.secondaryStructures().add(thisBP);
-		}
-		
+    	for (Biopolymer mol : Arrays.asList(mol5, mol3)){
+    		thisBP.addMolecule(mol);
+    		mol.secondaryStructures().add(thisBP);
+    	}
+		return thisBP;
 	}
     
-	private void addHelix(Element helix, int molID ) {
+    @SuppressWarnings("unchecked")
+	private void addBaseTriple(Element basetriple, int molID) {
+    	Set<Integer> parentMols = new LinkedHashSet<Integer>();
+    	List<BasePair> basepairs = new ArrayList<BasePair>(3);
+
+    	for (Element basepair: (List<Element>) basetriple.getChildren("base-pair")){
+			BasePair newBP = addBasePair(basepair, molID);
+			if (newBP!=null) {
+				basepairs.add(newBP);
+				parentMols.addAll(latestMolIDs);
+			}
+		} 
+    	for (Element basepairID: (List<Element>) basetriple.getChildren("base-pair-id")){
+    		String bpID = basepairID.getAttributeValue("ref");
+    		Element basepair = getElementByID(rnamlEl.getDescendants(new ElementFilter("base-pair")), bpID);
+			if (basepair != null) {
+				BasePair newBP =  addBasePair(basepair, molID);
+				if (newBP!=null) {
+					basepairs.add(newBP);
+					parentMols.addAll(latestMolIDs);
+				}
+			}
+		} 
+    	if ((basepairs.size()!=3)&&(basepairs.size()!=2)){
+    		//error
+    		System.err.println("Invalid basetriple specification in rnaml.");
+    		return;
+    	}
+    	
+    	BaseTriple thisBT = new BaseTriple(basepairs, source);
+    		
+    	for (Integer thisMolID : parentMols){
+        	NucleicAcid mol = rnamlIndexMolecules.get(thisMolID);
+        	thisBT.addMolecule(mol);
+        	mol.secondaryStructures().add(thisBT);
+    	}
+		
+	}
+
+    private void addBaseStack(Element basestack, int molID) {
+        int mol1ID = molID;
+        int mol2ID = molID;
+    	Element base1 = (Element) basestack.getChildren("base-id").get(0);
+    	Element base2 = (Element) basestack.getChildren("base-id").get(1);
+        int pos1  = Integer.parseInt(base1.getChildText("position"));
+        int pos2  = Integer.parseInt(base2.getChildText("position"));
+
+        if (molID == -1) {
+        mol1ID = Integer.parseInt(base1.getChild("molecule-id").getAttributeValue("ref"));
+        mol2ID = Integer.parseInt(base2.getChild("molecule-id").getAttributeValue("ref"));
+        }
+        
+    	NucleicAcid mol1 = rnamlIndexMolecules.get(molID);
+    	NucleicAcid mol2 = rnamlIndexMolecules.get(molID);
+    	
+		Residue r1 = getRes(mol1ID, pos1-1);
+		Residue r2 = getRes(mol2ID, pos2-1);
+        
+		// TODO throw errors here
+        if (r1 == null) return;
+        if (r2 == null) return;
+
+        BaseStack thisBS = new BaseStack(Arrays.asList(r1, r2), source);
+    	
+    	for (Biopolymer mol : Arrays.asList(mol1, mol2)){
+    		thisBS.addMolecule(mol);
+    		mol.secondaryStructures().add(thisBS);
+    	}
+		return;
+	}
+    
+	private Duplex addHelix(Element helix, int molID ) {
 
         int mol5i = molID;
         int mol3i = molID;
@@ -283,6 +361,7 @@ public class RnamlDocument {
         	mol5i = Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
         	mol3i = Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
         }
+        latestMolIDs = Arrays.asList(mol5i, mol3i);
         
     	NucleicAcid mol5 = rnamlIndexMolecules.get(mol5i);
     	NucleicAcid mol3 = rnamlIndexMolecules.get(mol3i);
@@ -301,13 +380,47 @@ public class RnamlDocument {
     		}
     	}
     	if (dup !=null){
-    		mol5.secondaryStructures().add(dup);
-    		if (mol5i!=mol3i){
-    			mol3.secondaryStructures().add(dup);
-    		}
+        	for (Biopolymer mol : Arrays.asList(mol5, mol3)){
+        		dup.addMolecule(mol);
+        		mol.secondaryStructures().add(dup);
+        	}
     	}
+
+    	return dup;
     }
-    
+
+    @SuppressWarnings("unchecked")
+	private void addPseudoknot(Element pseudoknot, int molID) {
+    	Set<Integer> parentMols = new LinkedHashSet<Integer>();
+    	List<Duplex> helices = new ArrayList<Duplex>(2);
+
+    	for (Element helixID: (List<Element>) pseudoknot.getChildren("helix-id")){
+    		String hID = helixID.getAttributeValue("ref");
+    		Element helix = getElementByID(rnamlEl.getDescendants(new ElementFilter("helix")), hID);
+			if (helix != null) {
+				Duplex dup =  addHelix(helix, molID);//TODO *usually* results in duplicate duplex, could fix as with BasePairs
+				if (dup!=null) {
+					helices.add(dup);
+					parentMols.addAll(latestMolIDs);
+				}
+			}
+		} 
+    	if ((helices.size()!=2)){
+    		//error
+    		System.err.println("Invalid pseudoknot specification in rnaml.");
+    		return;
+    	}
+    	
+    	Pseudoknot thisKnot = new Pseudoknot(helices.get(0), helices.get(1), source);
+    		
+    	for (Integer thisMolID : parentMols){
+        	NucleicAcid mol = rnamlIndexMolecules.get(thisMolID);
+        	thisKnot.addMolecule(mol);
+        	mol.secondaryStructures().add(thisKnot);
+    	}
+		
+	}
+	
 	private String determineSource(){
         Iterator modelIt = rnamlDoc.getDescendants(new ElementFilter("model"));
         if (modelIt.hasNext()){
@@ -431,4 +544,13 @@ public class RnamlDocument {
 		}
 		return result;
 	}
+
+	private Element getElementByID(Iterator elementIt, String id){
+        while (elementIt.hasNext()) {
+            Element element = (Element) elementIt.next();
+			if (element.getAttributeValue("id")==id) return element;
+		}
+		return null;
+	}
+
 }

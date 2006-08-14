@@ -117,6 +117,15 @@ implements Biopolymer
     // public Iterator secondaryStructures().iterator() {return this.secondaryStructure.iterator();}
 
     public Set<SecondaryStructure> secondaryStructures() {return this.secondaryStructure;}
+    public Set<SecondaryStructure> displayableStructures() {
+        Set<SecondaryStructure> answer = new LinkedHashSet<SecondaryStructure>();
+    	for (SecondaryStructure structure: this.secondaryStructure){
+    		if ((this.displaySourceTypes==null)||(this.displaySourceTypes.contains(structure.getSource()))){
+    			answer.add(structure);
+    		}
+    	}
+    	return answer;
+    }
     
     protected void addGenericResidueBond(String atom1, String atom2) {
         // Don't add bond in both directions; these bonds have a direction
@@ -135,7 +144,11 @@ implements Biopolymer
       * Container that maintains a mapping of residue number to residue
      */
     class NumberedResidues extends Vector<Residue> {
-        private Map<String, Residue> residueNumbers = new HashMap<String, Residue>();
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private Map<String, Residue> residueNumbers = new HashMap<String, Residue>();
         
         public Residue getResidueByNumber(String n) {return residueNumbers.get(n);}
         

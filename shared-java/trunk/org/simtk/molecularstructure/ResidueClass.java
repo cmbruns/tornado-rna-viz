@@ -31,16 +31,25 @@
  */
 package org.simtk.molecularstructure;
 
-import java.util.*;
-import java.awt.Color;
-import java.text.*;
-import javax.naming.OperationNotSupportedException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.simtk.molecularstructure.protein.*;
-import org.simtk.molecularstructure.atom.*;
-import org.simtk.molecularstructure.nucleicacid.*;
-import org.simtk.geometry3d.*;
-import org.simtk.util.*;
+import org.simtk.geometry3d.Hash3D;
+import org.simtk.geometry3d.Vector3D;
+import org.simtk.molecularstructure.atom.Atom;
+import org.simtk.molecularstructure.nucleicacid.Nucleotide;
+import org.simtk.molecularstructure.protein.AminoAcid;
+import org.simtk.molecularstructure.protein.BetaStrand;
+import org.simtk.molecularstructure.protein.Helix;
 
 /** 
  * @author Christopher Bruns
@@ -88,7 +97,7 @@ public class ResidueClass extends MolecularClass implements Residue {
     
     public boolean matchesPdbLine(String PdbLine) throws ParseException {
         if ((PdbLine.substring(0,6).equals("ATOM  ")) || (PdbLine.substring(0,6).equals("HETATM"))) {        
-            String residueName = PdbLine.substring(17,20);
+            //String residueName = PdbLine.substring(17,20);
             int residueNumber = new Integer(PdbLine.substring(22,26).trim()).intValue();
             char insertionCode = PdbLine.charAt(26);
             
@@ -431,6 +440,7 @@ public class ResidueClass extends MolecularClass implements Residue {
       * An atom container that keeps an index of atoms by name
      */
     class ResidueAtoms extends LinkedHashSet<Atom> {
+        static final long serialVersionUID = 1L;
         private Residue residue;
         private Map<String, Set<Atom> > nameAtoms = new HashMap<String, Set<Atom> >();
 

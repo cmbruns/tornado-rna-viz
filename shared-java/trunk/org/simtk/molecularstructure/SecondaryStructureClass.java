@@ -30,7 +30,7 @@ import java.util.*;
 
 public class SecondaryStructureClass implements SecondaryStructure {
     protected Collection<Residue> residues = null;
-    protected Vector<Biopolymer> parentMolecules = new Vector<Biopolymer>();
+    protected Set<Biopolymer> parentMolecules = new LinkedHashSet<Biopolymer>();
     protected SourceType sourceType = SourceType.UNKNOWN;
     protected int resLimit;// -1 indicates no limit
 
@@ -94,16 +94,11 @@ public class SecondaryStructureClass implements SecondaryStructure {
     }
 
     public void setMolecule(Biopolymer biopolymer) {
-        //this.parentMolecules.set(0,biopolymer);
-    	addMolecule(biopolymer);
+    	parentMolecules = new LinkedHashSet<Biopolymer>(Arrays.asList(biopolymer));
     }
     
     public boolean addMolecule(Biopolymer biopolymer){
-    	if (!parentMolecules.contains(biopolymer)){
-        	parentMolecules.add(biopolymer);
-    		return true;
-    	}
-    	return false;
+    	return parentMolecules.add(biopolymer);
     }
 
     public SourceType getSource() {

@@ -35,7 +35,6 @@ import java.util.*;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.*;
-import org.simtk.util.*;
 
 /** 
  * @author Christopher Bruns
@@ -154,15 +153,10 @@ implements Iterable<Residue>
             residue1 = r1;
             residue2 = r2;
         }
-//<<<<<<< .mine
         residues.add(residue1);
         residues.add(residue2);
-//        r1.addSecondaryStructure(this);
-//        r2.addSecondaryStructure(this);
-//=======
         r1.secondaryStructures().add(this);
         r2.secondaryStructures().add(this);
-//>>>>>>> .r369
         return;            
     }
 
