@@ -30,6 +30,7 @@ package org.simtk.toon.secstruct;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.*;
 import java.util.*;
+import java.io.*;
 
 public class SecondaryStructureDiagramModel {
     public void createDiagram(NucleicAcid rna) {
@@ -60,5 +61,9 @@ public class SecondaryStructureDiagramModel {
         }
         System.out.println(""+pseudoknotCount+" pseudoknots found.");
         System.out.println(""+nonKnotCount+" non knots found.");
+    }
+    
+    public void createDiagramFromCtFile(InputStream ctStream) {
+        
     }
 }

@@ -44,7 +44,7 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
 
 {
     protected ResidueHighlightBroadcaster residueHighlightBroadcaster;
-    protected Set<Base> bases = new HashSet<Base>();
+    protected Set<BasePosition> bases = new LinkedHashSet<BasePosition>();
     protected BoundingBox boundingBox = null;
     protected double heightScale = 100;  // image units per screen height
     protected double centerX = 50;
@@ -97,7 +97,9 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
                 int x = new Integer(result[3]);
                 int y = new Integer(result[4]);
                 
-                bases.add(new Base(baseChar, resNum, x, y));
+                Residue residue = new ResidueClass(ResidueTypeClass.getType(baseChar));
+                residue.setResidueNumber(resNum);
+                bases.add(new BasePosition(residue, x, y));
                 
                 double[] bounds = {x,x,y,y+20,0,0};
                 if (boundingBox == null) boundingBox = new BoundingBox(bounds);
@@ -163,9 +165,9 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
         }
         
         
-        for (Base base : bases) {
-            int x = (int)(screenCenterX + scale * (base.getPosX() - centerX));
-            int y = (int)(screenCenterY - scale * (base.getPosY() - centerY));
+        for (BasePosition base : bases) {
+            int x = (int)(screenCenterX + scale * (base.getX() - centerX));
+            int y = (int)(screenCenterY - scale * (base.getY() - centerY));
 
             if (x < -maxW) continue;
             if (y < -maxH) continue;
@@ -177,7 +179,7 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
                 if (spacing > 3) g.fillRect(x,y,2,2);
                 else g.fillRect(x,y,1,1);
             }
-            else g.drawString(base.getType(), x, y);
+            else g.drawString(""+base.getResidue().getOneLetterCode(), x, y);
         }
     }
     
@@ -242,28 +244,5 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
         
         oldMouseX = event.getX();
         oldMouseY = event.getY();
-    }
-}
-
-class Base {
-    protected String baseType;
-    protected int resNum;
-    protected double posX;
-    protected double posY;
-    
-    Base(String baseType, int resNum, double posX, double posY) {
-        this.baseType = baseType;
-        this.resNum = resNum;
-        this.posX = posX;
-        this.posY = posY;
-    }
-    
-    public String getType() {return baseType;}
-    public int getResNum() {return resNum;}
-    public double getPosX() {return posX;}
-    public double getPosY() {return posY;}
-    
-    public String toString() {
-        return ""+getType()+getResNum()+" ("+getPosX()+","+getPosY()+")";
     }
 }

@@ -62,5 +62,22 @@ public class TestSecondaryStructureCanvas extends TestCase {
         frame.setVisible(true);
 
     }
+    
+    public void testLoadCtFile() throws IOException {
+        SecondaryStructureCanvas canvas = new SecondaryStructureCanvas(null);
+        
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL url = classLoader.getResource("sstructs/stemloop.ct");
+        InputStream testStream = url.openConnection().getInputStream();
+        SecondaryStructureDiagramModel model = new SecondaryStructureDiagramModel();
+        model.createDiagramFromCtFile(testStream);
+
+        JFrame frame = new JFrame();
+        frame.getRootPane().setLayout(new BorderLayout());
+        frame.getRootPane().add(canvas, BorderLayout.CENTER);;
+        frame.pack();
+        frame.setSize(300, 300);
+        frame.setVisible(true);        
+    }
 
 }

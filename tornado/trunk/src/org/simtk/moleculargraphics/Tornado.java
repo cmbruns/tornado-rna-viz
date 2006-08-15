@@ -43,6 +43,7 @@ import java.net.*;
 import javax.jnlp.*;
 import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.SecondaryStructureClass;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.pdb.*;
 import org.simtk.rnaml.RnamlDocument;
