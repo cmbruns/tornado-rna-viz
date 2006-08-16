@@ -34,6 +34,7 @@ package org.simtk.molecularstructure.nucleicacid;
 import java.util.*;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.SecondaryStructureClass.SourceType;
 import org.simtk.molecularstructure.atom.*;
 
 /** 
@@ -92,9 +93,16 @@ implements Iterable<Residue>
     		for (SecondaryStructure struc: r1.secondaryStructures()){
     			if (struc instanceof BasePair){
     				BasePair strucBP = (BasePair) struc;
-    				if ((source=="*" || SecondaryStructureClass.SourceType.getSourceType(source)==strucBP.getSource()) 
-    						&& (strucBP.isBetween(r1, r2))){
-    					return strucBP;
+    				if (strucBP.isBetween(r1, r2)){
+    					SourceType newSource = SourceType.getSourceType(source);
+    					SourceType oldSource = strucBP.getSource();
+    					if (source.equals("*") || newSource == oldSource) {
+    						return strucBP;
+    					}
+    					else {
+    						//found a basepair between the right residues, but from the wrong source
+    						continue;
+    					}
     				}
     			}
     		}
@@ -300,13 +308,14 @@ implements Iterable<Residue>
         if (! (o instanceof BasePair)) return false;
         BasePair bp2 = (BasePair) o;
         
-        // Residues must be exactly the same objects in both base pairs
+        // Residues must be exactly the same objects in both base pairs and have same source
+        if (sourceType!=bp2.sourceType)return false;
         if ( (residue1.equals(bp2.residue1)) && (residue2.equals(bp2.residue2)) ) return true;
         if ( (residue2.equals(bp2.residue1)) && (residue1.equals(bp2.residue2)) ) return true;
         return false;
     }
     public int hashCode() {
-        return residue1.hashCode() + residue2.hashCode();
+        return residue1.hashCode() + residue2.hashCode() + sourceType.hashCode();
     }
 
     public Boolean isBetween(Residue r1, Residue r2){

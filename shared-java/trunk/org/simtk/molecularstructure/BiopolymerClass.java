@@ -46,7 +46,7 @@ implements Biopolymer
 {
     // maps atom names of bondable atoms that bond one residue to the next
     private Map<String, Set<String>> genericResidueBonds = new HashMap<String, Set<String>>(); 
-    private Set<SecondaryStructure> secondaryStructure = new LinkedHashSet<SecondaryStructure>();
+    private Set<SecondaryStructure> secondaryStructure = new HashSet<SecondaryStructure>();
     private NumberedResidues residues = new NumberedResidues();
     
     public List<Residue> residues() {return residues;}

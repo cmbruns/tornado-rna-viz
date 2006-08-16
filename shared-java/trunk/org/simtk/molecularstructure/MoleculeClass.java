@@ -151,6 +151,12 @@ implements Molecule
 				break FILE_LINE;
 			}
 
+			// Stop parsing after the END record
+            if (pdbLine.substring(0,3).equals("TER")) {
+            	reader.mark(200);
+                continue;
+            }
+
             // Stop parsing after the END record
             else if (pdbLine.substring(0,6).equals("ENDMDL")) {
                 reader.reset(); // Leave the END tag for the next guy

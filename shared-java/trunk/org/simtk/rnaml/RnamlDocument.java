@@ -18,11 +18,24 @@
  * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * NOTE:  for mfold/UNAFold rnaml files, there is no preexisting protocol relating the rnaml
+ * molecules to pdb molecules.  What is assumed here is that each of the n molecules in the rnaml
+ * file correspond to the first n nucleic acid molecules in the pdb file.  So output from mfold 
+ * (which only processes a single sequence at a time) will only work if it is for the first nucleic
+ * acid chain in the file.  For UNAFold input, a group of sequences may be provided together, separated 
+ * by semicolons; their secondary structures will then be reported in a single rnaml file.  If any of the
+ * nucleic acid chains are not of interest, a short (one residue) dummy sequence can be provided that will 
+ * be known to not generate any secondary structure, but which will serve to keep the molecules indexed
+ * properly in the resulting rnaml file.
+ * 
+ * Also, with respect to UNAFold/mfold files, it should be noted that the rnaml files may contain multiple 
+ * models of possible folding for each molecule, but tornado currently only uses the first such model. 
  */
 
 /*
  * Created on Jun 12, 2006
- * Original author: Christopher Bruns
+ * Original author: Christopher Bruns and Eric Willgohs
  */
 package org.simtk.rnaml;
 
@@ -33,13 +46,14 @@ import org.jdom.*;
 import org.jdom.filter.*;
 import org.jdom.input.SAXBuilder;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.SecondaryStructureClass.SourceType;
 import org.simtk.molecularstructure.atom.Atom;
 import org.simtk.molecularstructure.nucleicacid.*;
 
 import java.io.File;
 
 public class RnamlDocument {
-    Map<Integer, NucleicAcid> rnamlIndexMolecules = new HashMap<Integer, NucleicAcid>();
+    public Map<Integer, NucleicAcid> rnamlIndexMolecules = new HashMap<Integer, NucleicAcid>();
     org.jdom.Document rnamlDoc;
     Element rnamlEl = null;
     String source = "";
@@ -123,6 +137,10 @@ public class RnamlDocument {
             	/* nTable is retrieved via getDescendants because the standard DTD requires that the numbering 
             	 * table be a child of a numbering-system which in turn is a child of the sequence, although 
             	 * rnaview for some reason creates the numbering table as a direct child of the sequence. 
+            	 * 
+            	 * This routine currently does require that there be a numbering table, which is fine for the
+            	 * existing sources; if need be the code could be rewritten to assume 1..n numbering if no 
+            	 * numbering table is provided.
             	 */
             	Element nTableEl = (Element) sequence.getDescendants( new ElementFilter("numbering-table")).next();
             	String nTableString = nTableEl.getTextNormalize();
@@ -167,6 +185,9 @@ public class RnamlDocument {
     
     @SuppressWarnings({"unchecked", "unused"})
 	private void parseAnnotations(Element modl, int molID){
+    	boolean debug = false;
+    	int bpsFound = 0;
+    	
     	if (modl == null) return;
     	for (Element annot : (List<Element>) modl.getChildren("str-annotation")){
     		for (Element baseconf: (List<Element>) annot.getChildren("base-conformation")){
@@ -174,6 +195,7 @@ public class RnamlDocument {
     		}  
     		for (Element basepair: (List<Element>) annot.getChildren("base-pair")){
     			addBasePair(basepair, molID);
+    			bpsFound += 1;
     		} 
     		for (Element basetriple: (List<Element>) annot.getChildren("base-triple")){
     			addBaseTriple(basetriple, molID);
@@ -196,6 +218,9 @@ public class RnamlDocument {
     		for (Element surface_const: (List<Element>) annot.getChildren("surface-constraint")){
     			// TODO add support for rnaml secondary structure
     		}
+    	}
+    	if (debug){
+    		System.out.println(""+bpsFound+" basepairs in molecule # "+molID);
     	}
     }
         
@@ -223,11 +248,16 @@ public class RnamlDocument {
 		Residue r3 = getRes(mol3i, pos3i-1);
         
 		// TODO throw errors here
-        if (r5 == null) return null;
-        if (r3 == null) return null;
+        if (r5 == null) 
+        	return null;
+        if (r3 == null) 
+        	return null;
 
         BasePair thisBP = BasePair.makeBasePair(r5, r3, source);
-        if (thisBP == null) return null;
+        if ((thisBP == null) ||(SourceType.getSourceType(source)!=thisBP.getSource())){
+        	System.err.println("anomolous duplicate basepair "+thisBP+" in chain "+mol5.getPdbChainId());
+        	return null;
+        }
 
     	Element e5p = basepair.getChild("edge-5p"); //should be zero or one of these
     	if (e5p!=null){
@@ -268,7 +298,6 @@ public class RnamlDocument {
                 System.out.println("problem adding "+strandO.getTextTrim()+" strand orienation to BP "+thisBP);
     		}
     	}
-    	
     	for (Biopolymer mol : Arrays.asList(mol5, mol3)){
     		thisBP.addMolecule(mol);
     		mol.secondaryStructures().add(thisBP);
@@ -441,7 +470,7 @@ public class RnamlDocument {
             }
         }
         
-		return "unknown";
+		return "other";
 	}
 
 	public boolean isRnaviewNA(Biopolymer mol){
