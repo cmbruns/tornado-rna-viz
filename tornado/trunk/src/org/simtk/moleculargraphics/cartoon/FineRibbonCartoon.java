@@ -27,6 +27,7 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.util.*;
+
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.protein.*;
@@ -69,7 +70,8 @@ public class FineRibbonCartoon extends CompositeCartoon {
             backboneRibbon.addMolecule(nucleicAcid);
 
             Set<Residue> basePairResidues = new HashSet<Residue>();
-            for (SecondaryStructure structure : nucleicAcid.displayableStructures())
+            Set<SecondaryStructure> structs = nucleicAcid.displayableStructures();
+            for (SecondaryStructure structure : structs)
                 if (structure instanceof BasePair) {
                     BasePair basePair = (BasePair) structure;
 

@@ -47,7 +47,7 @@ import org.simtk.molecularstructure.SecondaryStructureClass;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.pdb.*;
 import org.simtk.rnaml.RnamlDocument;
-import org.simtk.util.*;
+//import org.simtk.util.*;
 import edu.stanford.ejalbert.BrowserLauncher;
 import vtk.*;
 import org.simtk.toon.secstruct.*;
@@ -92,7 +92,7 @@ implements ResidueHighlightListener
     protected ToonRange toonRange = new ToonRange();
     protected List<SecondaryStructureClass.SourceType>  selectedSourceTypes = Arrays.asList(SecondaryStructureClass.SourceType.values());
     public Collection<SecondaryStructureClass.SourceType> getSelectedSourceTypes(){
-    	if (selectedSourceTypes==null) return new ArrayList();
+    	if (selectedSourceTypes==null) return new ArrayList<SecondaryStructureClass.SourceType>();
     	else return selectedSourceTypes;
     }
     Tornado() {
@@ -430,12 +430,12 @@ implements ResidueHighlightListener
         menu = new JMenu("Secondary Structure");
         menuBar.add(menu);
         
-        menuItem = new JMenuItem("Load Seconday Structure File...");
+        menuItem = new JMenuItem("Load Secondary Structure File...");
         menuItem.setEnabled(true);
         menuItem.addActionListener(new LoadRnamlAction());
         menu.add(menuItem);
 //        
-/*        menuItem = new JMenuItem("Compute from structure");
+/*        menuItem = new JMenuItem("Compute Secondary Structure");
         menuItem.setEnabled(true);
         menuItem.addActionListener(new ComputeSecondaryStructureAction());
         menu.add(menuItem);     
@@ -556,10 +556,6 @@ implements ResidueHighlightListener
                 if (dirList.contains(rnamlFileName)){
                 	rnamlFileChooser.setSelectedFile(new File(rnamlFileName));
                 }
-                else {
-                    // System.out.println("can't find xml file "+rnamlFileName);
-                    // System.out.println("directory listing includes "+dirList);
-                }
             }
 
             
@@ -568,7 +564,7 @@ implements ResidueHighlightListener
 		    	return;//user canceled
 		    }
             try {
-                File rnamlFile = rnamlFileChooser.getSelectedFile();//new File(curDir, rnamlFileName);
+                File rnamlFile = rnamlFileChooser.getSelectedFile();
                 RnamlDocument rnamlDoc = new RnamlDocument(rnamlFile, molecules);
                 rnamlDoc.importSecondaryStructures();
                 Tornado.this.redrawCartoon();
@@ -584,12 +580,6 @@ implements ResidueHighlightListener
                 exc.printStackTrace();
             }
 
-/*    	    String savePath = rnamlFileChooser.getCurrentDirectory().getPath();
-            String FS = System.getProperty("file.separator");
-	        int index = savePath.lastIndexOf(FS);
-	        Tornado.this.saveImagePath = savePath.substring(0, index);
-        	saveImagePath = Tornado.this.saveImagePath;
-*/        	
         }
     }
 
@@ -632,24 +622,15 @@ implements ResidueHighlightListener
                 if (!(molecule instanceof NucleicAcid)) continue;
                 NucleicAcid nucleicAcid = (NucleicAcid) molecule;
                 
-                // Remove preexisting secondary structures
-                // But don't remove while iterating...
-                //Collection<SecondaryStructure> obsoleteStructures = new LinkedHashSet<SecondaryStructure>();
                 Collection<SecondaryStructure> structs = nucleicAcid.secondaryStructures();
-                //for (SecondaryStructure structure : structs) {
-                //    if (structure instanceof BasePair) obsoleteStructures.add(structure);
-                //    else if (structure instanceof Duplex) obsoleteStructures.add(structure);
-                //}
-                //structs.removeAll(obsoleteStructures);
                 
                 for (BasePair basePair : nucleicAcid.identifyBasePairs())
                     structs.add(basePair);
                 
                 for (Duplex duplex : nucleicAcid.identifyHairpins())
                     structs.add(duplex);
-                
-                Tornado.this.redrawCartoon();
             }
+            Tornado.this.redrawCartoon();
         }
     }
 
@@ -824,7 +805,12 @@ implements ResidueHighlightListener
     }
 
     class LoadStructureDialog extends MoleculeAcquisitionMethodDialog {
-        LoadStructureDialog(JFrame f) {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		LoadStructureDialog(JFrame f) {
             super(f, null, Tornado.this.currentPath);
             setLocationRelativeTo(Tornado.this);
             setDefaultPdbId("1GRZ");
@@ -841,49 +827,10 @@ implements ResidueHighlightListener
             for (Molecule m : molecules.molecules()) 
                 if (m instanceof NucleicAcid) haveNucleic = true;
 
-            boolean foundRnaml = false;
-/*            if ( haveNucleic && (molecules.getPdbId() != null) )  {
-                String rnamlFileName = molecules.getPdbId()+".pdb.xml";
-                
-                // File curDir = new File(".");
-                File curDir = new File(Tornado.this.currentPath);
-                java.util.List dirList = Arrays.asList(curDir.list());
-                if (dirList.contains(rnamlFileName)){
-                    // System.out.println("processing xml file");
-
-                    try {
-                        File rnamlFile = new File(curDir, rnamlFileName);
-                        RnamlDocument rnamlDoc = new RnamlDocument(rnamlFile, molecules);
-                        rnamlDoc.importSecondaryStructures();
-                        foundRnaml = true;
-                    } 
-                    catch (org.jdom.JDOMException exc) {
-                        exc.printStackTrace();
-                    }
-                    catch (IOException exc) {
-                        exc.printStackTrace();
-                    }
-                }
-                else {
-                    // System.out.println("can't find xml file "+rnamlFileName);
-                    // System.out.println("directory listing includes "+dirList);
-                }
-            }
-*/            
-            if (haveNucleic && !foundRnaml) {                    
+            if (haveNucleic) {                    
                 // Compute secondary structure using Tornado methods
-                for (Molecule molecule : molecules.molecules()) {
-                    if (!(molecule instanceof NucleicAcid)) continue;
-                    NucleicAcid nucleicAcid = (NucleicAcid) molecule;
-                    Collection<SecondaryStructure> structs = nucleicAcid.secondaryStructures();
-                    
-                    for (BasePair basePair : nucleicAcid.identifyBasePairs())
-                        structs.add(basePair);
-                    
-                    for (Duplex duplex : nucleicAcid.identifyHairpins())
-                        structs.add(duplex);
-                }
-            }
+            	new ComputeSecondaryStructureAction().actionPerformed(new ActionEvent(this, 0, ""));
+            	}
 
         }
         
