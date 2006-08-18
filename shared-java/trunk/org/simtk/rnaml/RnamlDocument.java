@@ -57,6 +57,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 public class RnamlDocument {
     public Map<Integer, NucleicAcid> rnamlIndexMolecules = new HashMap<Integer, NucleicAcid>();
@@ -598,8 +599,9 @@ public class RnamlDocument {
 		{
 			if (((publicId!=null)&&(publicId.contains("RNAML")))||((systemId!=null)&&(systemId.toLowerCase().contains("rnaml.dtd")))) {
 				// return a special input source
-				RnamlDTDReader reader = null;
-				try {reader = new RnamlDTDReader(getClass().getClassLoader().getResource("rnaml/rnaview_compatible_rnaml_1.0_1.1.dtd").toURI());}
+				FileReader reader = null;
+				URL localDTD = getClass().getClassLoader().getResource("rnaml/rnaview_compatible_rnaml_1.0_1.1.dtd");
+				try {reader = new FileReader(new File(localDTD.toURI()));}
 				catch (URISyntaxException e) { e.printStackTrace(); }  
 				catch (FileNotFoundException e) { e.printStackTrace(); }
 				return new InputSource(reader);
@@ -610,12 +612,5 @@ public class RnamlDocument {
 		}
 	}
 
-	private class RnamlDTDReader extends FileReader {
-		private RnamlDTDReader(URI uri) throws FileNotFoundException {
-//			super(RnamlDocument.this.myFile.getPath().substring(0, RnamlDocument.this.myFile.getPath().lastIndexOf(System.getProperty("file.separator")))+ System.getProperty("file.separator")+ "rnaml.dtd");
-			super(new File(uri));
-		}
-
-	}
 	
 }
