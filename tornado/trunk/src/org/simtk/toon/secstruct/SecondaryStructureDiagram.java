@@ -22,24 +22,16 @@
  */
 
 /*
- * Created on Aug 11, 2006
+ * Created on Aug 16, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.toon.secstruct;
 
-import org.simtk.molecularstructure.Residue;
-import org.simtk.geometry3d.*;
+import org.simtk.moleculargraphics.cartoon.BoundingBox;
 
-public class BasePosition {
-    private Residue residue;
-    Vector2D position;
-    
-    public BasePosition(Residue r, Vector2D pos) {
-        this.residue = r;
-        this.position = pos;
-    }
-    
-    public double getX() {return position.x();}
-    public double getY() {return position.y();}
-    public Residue getResidue() {return residue;}
+public interface SecondaryStructureDiagram {
+    public java.util.List<BasePosition> basePositions();
+    public java.util.List<BasePairPosition> basePairPositions();
+    public double getConsecutiveBaseDistance();
+    public BoundingBox getBoundingBox();
 }

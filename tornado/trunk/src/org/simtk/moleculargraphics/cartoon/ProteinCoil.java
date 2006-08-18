@@ -64,6 +64,8 @@ public class ProteinCoil extends ProteinRibbonSegment {
             Spline3D normalSpline)
     throws NoCartoonCreatedException
     {
+        if (positionSpline.getNumberOfInputPoints() < 2)
+            throw new NoCartoonCreatedException();
     
         List<Vector3D> positions = new Vector<Vector3D>();
         List<Vector3D> normals = new Vector<Vector3D>();

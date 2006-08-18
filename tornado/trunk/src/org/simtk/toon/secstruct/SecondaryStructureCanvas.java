@@ -29,10 +29,20 @@ package org.simtk.toon.secstruct;
 
 import org.simtk.moleculargraphics.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.geometry3d.*;
 import java.io.*;
-import org.simtk.util.Selectable;
 import java.util.*;
-import java.awt.*;
+
+import java.awt.Font;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Cursor;
+import java.awt.BasicStroke;
+import java.awt.geom.*;
+import java.awt.RenderingHints;
+
 import java.awt.event.*;
 import java.awt.font.*;
 import javax.swing.*;
@@ -40,22 +50,25 @@ import org.simtk.moleculargraphics.cartoon.BoundingBox;
 
 public class SecondaryStructureCanvas 
 extends JPanel
-implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, MouseListener
-
+implements ResidueHighlightListener, MouseWheelListener, 
+MouseMotionListener, MouseListener, ComponentListener
 {
     protected ResidueHighlightBroadcaster residueHighlightBroadcaster;
-    protected Set<BasePosition> bases = new LinkedHashSet<BasePosition>();
-    protected BoundingBox boundingBox = null;
-    protected double heightScale = 100;  // image units per screen height
-    protected double centerX = 50;
-    protected double centerY = 50;
+    // protected java.util.List<BasePosition> bases = new Vector<BasePosition>();
+    // protected double heightScale = 100;  // image units per screen height
+    // protected double centerX = 50;
+    // protected double centerY = 50;
+    protected double characterDensity = 1.0;
 
     protected java.util.List<Font> fonts = new Vector<Font>();
     // fontHeights is initialized in the paint() method
     protected java.util.Map<Font, Double> fontHeights = null;
     protected java.util.Map<Font, Double> fontWidths = null;
 
-    protected double baseSpacing = 4.0; // TODO - measure this
+    // protected double baseSpacing = 4.0; // TODO - measure this
+    
+    protected SecondaryStructureDiagram diagram = null;
+    protected Transform2D transform = null;
     
     public SecondaryStructureCanvas(ResidueHighlightBroadcaster r) {
         this.residueHighlightBroadcaster = r;
@@ -64,10 +77,13 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
         addMouseWheelListener(this);
         addMouseMotionListener(this);
         addMouseListener(this);
+        addComponentListener(this);
         
         int fontStyle = Font.BOLD;
         String fontType = "Courier";
         
+        fonts.add(new Font(fontType, fontStyle,  2));
+        fonts.add(new Font(fontType, fontStyle,  3));
         fonts.add(new Font(fontType, fontStyle,  5));
         fonts.add(new Font(fontType, fontStyle,  8));
         fonts.add(new Font(fontType, fontStyle,  12));
@@ -78,15 +94,71 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
         fonts.add(new Font(fontType, fontStyle,  72));
         fonts.add(new Font(fontType, fontStyle,  96));
         fonts.add(new Font(fontType, fontStyle,  120));
+        fonts.add(new Font(fontType, fontStyle,  200));
+        fonts.add(new Font(fontType, fontStyle,  300));
+        fonts.add(new Font(fontType, fontStyle,  500));
+        fonts.add(new Font(fontType, fontStyle,  800));
     }
     
+    public void componentHidden(ComponentEvent event) {}
+    public void componentShown(ComponentEvent event) {}
+    public void componentMoved(ComponentEvent event) {}
+
+    private double previousHeight = 0;
+    private boolean finiteHeightWasSeen = false;
+    public void componentResized(ComponentEvent event) {
+        double height = getHeight();
+        
+        // The first time a size is seen, scale diagram to the window
+        if ( (height > 0) && !finiteHeightWasSeen) {
+            finiteHeightWasSeen = true;
+            if (diagram != null) {
+                BoundingBox boundingBox = diagram.getBoundingBox();
+                transformToBoundingBox(boundingBox);
+                // repaint();
+            }
+        }
+        
+        if (height != previousHeight) {
+            if (previousHeight > 0) {
+                transform.zoom(height / previousHeight);
+                repaint();
+            }            
+            previousHeight = height;
+        }
+    }
+    
+    public void setDiagram(SecondaryStructureDiagram diagram) {
+        this.diagram = diagram;
+
+        BoundingBox boundingBox = diagram.getBoundingBox();
+        transformToBoundingBox(boundingBox);
+        repaint();
+    }
+    
+    protected void transformToBoundingBox(BoundingBox boundingBox) {
+        // Scale based on height
+        // image units per screen height
+        double heightScale = boundingBox.yMax - boundingBox.yMin + 1;
+        double scale = 200 / heightScale;
+        if (getHeight() > 0) {
+            scale = getHeight()/heightScale; 
+            System.out.println("Scale = "+scale);
+        }
+        
+        double centerX = boundingBox.xMin + 0.5 * (boundingBox.xMax - boundingBox.xMin);
+        double centerY = boundingBox.yMin + 0.5 * (boundingBox.yMax - boundingBox.yMin);
+
+        transform = new Transform2D(centerX, centerY, scale);        
+    }
+   
     protected void loadSStructViewFile(InputStream inputStream) 
     throws IOException 
     {
         LineNumberReader reader = 
             new LineNumberReader(new InputStreamReader(inputStream));
 
-        bases.clear();
+        diagram = new SecondaryStructureDiagramClass();
         String fileLine;
         FILE_LINE: while ((fileLine = reader.readLine()) != null) {
             String[] result = fileLine.split("\\s");
@@ -99,35 +171,30 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
                 
                 Residue residue = new ResidueClass(ResidueTypeClass.getType(baseChar));
                 residue.setResidueNumber(resNum);
-                bases.add(new BasePosition(residue, x, y));
-                
-                double[] bounds = {x,x,y,y+20,0,0};
-                if (boundingBox == null) boundingBox = new BoundingBox(bounds);
-                else boundingBox.add(new BoundingBox(bounds));
+                diagram.basePositions().add(new BasePosition(residue, new Vector2DClass(x,y)));
             }
-            
-            // Scale based on height
-            // image units per screen height
-            heightScale = boundingBox.yMax - boundingBox.yMin + 1;
-            centerX = 0.5 * (boundingBox.xMax - boundingBox.xMin);
-            centerY = 0.5 * (boundingBox.yMax - boundingBox.yMin);
         }
+        setDiagram(diagram);
     }
 
     public void paint(Graphics g) {
+        if (diagram == null) return;
+        if (transform == null) return;
+        
         Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
         
         g.setColor(getBackground());
         g.fillRect(0,0,getWidth(),getHeight());
-        g.setColor(getForeground());
         
         // Scale by zoom
         double height = getSize().height;
         double width = getSize().width;
-        double scale = height / heightScale;
+        // double scale = height / heightScale;
         double screenCenterX = width / 2.0;
         double screenCenterY = height / 2.0;
-        double spacing = baseSpacing * scale;
+        double spacing = diagram.getConsecutiveBaseDistance() * transform.scale;
         
         // Just-in-time creation of font size lookup
         // Compute font heights only the first time they are needed
@@ -152,34 +219,146 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
         // Choose a font based on scale
         else for (Font f : fonts) { 
             font = f;
-            if (fontHeights.get(f) > spacing * 1.0) break; // font is big enough
+            if (fontHeights.get(f) > spacing * characterDensity) break; // font is big enough
         }
         
-        int maxH = 20;
-        int maxW = 20;
+        // Maximum space occupied by basePosition, for clipping
+        double maxClipH = diagram.getConsecutiveBaseDistance() * transform.scale;
+        double maxClipW = diagram.getConsecutiveBaseDistance() * transform.scale;
         
+        // Letter size
+        int maxFontH = 20;
+        int maxFontW = 20;
         if (font != null) {
             g.setFont(font);
-            maxH = (int)(fontHeights.get(font) + 1);
-            maxW = (int)(fontWidths.get(font) + 1);
+            maxFontH = (int)(fontHeights.get(font) + 1);
+            maxFontW = (int)(fontWidths.get(font) + 1);
+        }
+
+        // 1) Draw polygon for RNA backbone
+        g.setColor(Color.lightGray);
+        
+        boolean doDrawLetters = true;
+        if (maxFontH < 1.5) doDrawLetters = false;
+        if (font == null) doDrawLetters = false;
+        
+        // line width
+        float lineWidth = (int)(1.0 + maxClipH * 0.1);
+        if ( (g instanceof Graphics2D) && (lineWidth > 1.5) )
+            ((Graphics2D)g).setStroke(new BasicStroke(lineWidth));
+        
+        // gap between line segments, to make room for characters
+        // Specify the gap length rather than the segment length, because
+        // there may be occasional consecutive bases with very large distances,
+        // where we want a long segment with a still short gap at the end.
+        double segmentGapLength = 0.4 * (maxFontW + maxFontH); 
+        if (! doDrawLetters) segmentGapLength = 0;
+        
+        BasePosition previousBase = null;
+        for (BasePosition base : diagram.basePositions()) {
+            double x = (int)(screenCenterX + transform.x(base.getX()));
+            double y = (int)(screenCenterY - transform.y(base.getY()));
+
+            // Clipping
+            boolean isOnScreen = true;
+            if (x < -maxClipW) isOnScreen = false;
+            if (y < -maxClipH) isOnScreen = false;
+            if (x > getSize().width + maxClipW) isOnScreen = false;
+            if (y > getSize().height + maxClipH) isOnScreen = false;
+            
+            if (isOnScreen) {
+                // Draw connector between consecutive bases
+                if (previousBase != null) {
+                    double prevX = (int)(screenCenterX + transform.x(previousBase.getX()));
+                    double prevY = (int)(screenCenterY - transform.y(previousBase.getY()));
+
+                    double deltaX = x - prevX;
+                    double deltaY = y - prevY;
+                    
+                    double length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    
+                    // Draw nothing if the segment is shorter than its end gaps
+                    if (segmentGapLength < length) {
+                        double gapX = 0.5 * segmentGapLength * deltaX / length;
+                        double gapY = 0.5 * segmentGapLength * deltaY / length;
+                        g.drawLine((int)(x - gapX), (int)(y - gapY), 
+                                (int)(prevX + gapX), (int)(prevY + gapY));                        
+                    }                    
+                }            
+            }            
+            previousBase = base;
+        }
+
+        // 2) Draw lines for base pair connections
+        g.setColor(Color.RED);
+
+        // line width
+        lineWidth = (int)(1.0 + maxClipH * 0.05);
+        if ( (g instanceof Graphics2D) && (lineWidth > 1.5) )
+            ((Graphics2D)g).setStroke(new BasicStroke(lineWidth));
+
+        for (BasePairPosition pair : diagram.basePairPositions()) {
+            
+            if (pair.straightLine) {
+            // if (true) {
+                double x1 = screenCenterX + transform.x(pair.position1.getX());
+                double y1 = screenCenterY - transform.y(pair.position1.getY());
+                double x2 = screenCenterX + transform.x(pair.position2.getX());
+                double y2 = screenCenterY - transform.y(pair.position2.getY());
+
+                g.drawLine((int)(x1), (int)(y1), 
+                        (int)(x2), (int)(y2));
+            }
+            else { // Arc
+                
+                double x = screenCenterX + transform.x(pair.arcX);
+                double y = screenCenterY - transform.y(pair.arcY);
+                double w = transform.scale * pair.arcWidth;
+                double h = transform.scale * pair.arcHeight;
+                double start = pair.arcStart;
+                double range = pair.arcRange;
+                
+                double radius = 0.5 * w;
+                double arcGap = 0.5 * (segmentGapLength / radius) * (180.0 / Math.PI);
+                
+                Arc2D arc = new Arc2D.Double(x, y, w, h, start - arcGap, range + 2 * arcGap, Arc2D.OPEN);
+                
+                g2.draw(arc);
+                // g.drawArc(x, y, w, h, start, range);
+                
+                // System.out.println(""+ x + "," + y + "," + w + "," + h + "," + start + "," + range);
+                // System.out.println("  "+ pair.arcX + "," + pair.arcY + "," + pair.arcWidth + "," + pair.arcHeight + "," + pair.arcStart + "," + pair.arcRange);
+            }
         }
         
+        // 3) Draw characters on top of polygon
+        // Font size
         
-        for (BasePosition base : bases) {
-            int x = (int)(screenCenterX + scale * (base.getX() - centerX));
-            int y = (int)(screenCenterY - scale * (base.getY() - centerY));
-
-            if (x < -maxW) continue;
-            if (y < -maxH) continue;
-            if (x > getSize().width + maxW) continue;
-            if (y > getSize().height + maxH) continue;
-            
-            // Draw a little square if the image is too zoomed out to draw characters
-            if (font == null) {
-                if (spacing > 3) g.fillRect(x,y,2,2);
-                else g.fillRect(x,y,1,1);
+        // No characters, only polygon, below a certain size
+        if (doDrawLetters) {
+    
+            g.setColor(getForeground());
+            for (BasePosition base : diagram.basePositions()) {
+                double x = screenCenterX + transform.x(base.getX());
+                double y = screenCenterY - transform.y(base.getY());
+    
+                // Clipping
+                if (x < -maxClipW) continue;
+                if (y < -maxClipH) continue;
+                if (x > getSize().width + maxClipW) continue;
+                if (y > getSize().height + maxClipH) continue;
+                
+                // Draw a little square if the image is too zoomed out to draw characters
+                if (font == null) {
+                    if (spacing > 2.5) g.fillRect((int)x,(int)y,2,2);
+                    else g.fillRect((int)x,(int)y,1,1);
+                }
+                else { // Draw a one letter code character
+                    // Center the character on the basePosition
+                    g.drawString(""+base.getResidue().getOneLetterCode(), 
+                            (int)(x - (maxFontW/2.0)), (int)(y + (maxFontH/4.5)));
+                }
             }
-            else g.drawString(""+base.getResidue().getOneLetterCode(), x, y);
         }
     }
     
@@ -204,14 +383,14 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
     public void setPreferredSize(Dimension d) {prefSize = d;}
     
     protected void zoom(double zoomFactor) {
-        heightScale = heightScale * zoomFactor;
+        if (transform == null) return;
+        transform.zoom(zoomFactor);
         repaint();
     }
     
     protected void translate(double transX, double transY) {
-        double scale = getSize().height / heightScale;
-        centerX -= transX / scale;
-        centerY -= transY / scale;
+        if (transform == null) return;
+        transform.translate(transX, transY);
         repaint();
     }
     
@@ -227,7 +406,14 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
         oldMouseY = event.getY();
     }
     public void mouseReleased(MouseEvent event) {}
-    public void mouseClicked(MouseEvent event) {}
+    public void mouseClicked(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            int screenCenterX = getWidth() / 2;
+            int screenCenterY = getHeight() / 2;
+            transform.translate(screenCenterX - event.getX(), event.getY() - screenCenterY);
+            repaint();
+        }
+    }
     
     // MouseWheelListener
     public void mouseWheelMoved(MouseWheelEvent event) {
@@ -244,5 +430,35 @@ implements ResidueHighlightListener, MouseWheelListener, MouseMotionListener, Mo
         
         oldMouseX = event.getX();
         oldMouseY = event.getY();
+    }
+
+    class Transform2D {
+        private double centerX = 0;
+        private double centerY = 0;
+        private double scale = 1.0;
+        
+        public Transform2D(double cenX, double cenY, double scale) {
+            this.centerX = cenX;
+            this.centerY = cenY;
+            this.scale = scale;
+        }
+        
+        public double x(double x) {
+            return scale * (x + centerX);
+        }
+        
+        public double y(double y) {
+            return scale * (y + centerY);
+        }
+        
+        public void zoom(double zoomFactor) {
+            scale = scale * zoomFactor;
+        }
+        
+        protected void translate(double transX, double transY) {
+            centerX += transX / scale;
+            centerY += transY / scale;
+        }
+
     }
 }

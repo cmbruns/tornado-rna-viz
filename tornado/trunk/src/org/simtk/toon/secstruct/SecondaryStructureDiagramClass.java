@@ -27,19 +27,34 @@
  */
 package org.simtk.toon.secstruct;
 
-import org.simtk.molecularstructure.Residue;
-import org.simtk.geometry3d.*;
+import java.util.*;
 
-public class BasePosition {
-    private Residue residue;
-    Vector2D position;
+import org.simtk.moleculargraphics.cartoon.BoundingBox;
+
+public class SecondaryStructureDiagramClass 
+implements SecondaryStructureDiagram
+{
+    private double consecutiveBaseDistance = 1.0;
+    private List<BasePosition> basePositions = new Vector<BasePosition>();
+    private List<BasePairPosition> basePairPositions = new Vector<BasePairPosition>();
     
-    public BasePosition(Residue r, Vector2D pos) {
-        this.residue = r;
-        this.position = pos;
+    public double getConsecutiveBaseDistance() {
+        return consecutiveBaseDistance;
     }
     
-    public double getX() {return position.x();}
-    public double getY() {return position.y();}
-    public Residue getResidue() {return residue;}
+    public List<BasePosition> basePositions() {return basePositions;}
+    public List<BasePairPosition> basePairPositions() {return basePairPositions;}
+
+    public BoundingBox getBoundingBox() {
+        BoundingBox boundingBox = null;
+        // Set transform
+        for (BasePosition pos : basePositions()) {
+            double x = pos.getX();
+            double y = pos.getY();
+            double[] bounds = {x-1,x+1,y-1,y+1,0,0};
+            if (boundingBox == null) boundingBox = new BoundingBox(bounds);
+            else boundingBox.add(new BoundingBox(bounds));
+        }
+        return boundingBox;
+    }
 }

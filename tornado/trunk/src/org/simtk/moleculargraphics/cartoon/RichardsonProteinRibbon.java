@@ -174,7 +174,7 @@ public class RichardsonProteinRibbon extends MoleculeCartoonClass {
             Spline3D positionSpline, 
             Spline3D normalSpline
             ) {
-        if (residues.size() < 1) return;
+        if (residues.size() < 2) return;
         
         if (type == ResType.STRAND) {
             try {

@@ -22,42 +22,36 @@
  */
 
 /*
- * Created on Aug 7, 2006
+ * Created on Aug 17, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.toon.secstruct;
 
-import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.nucleicacid.*;
-import junit.framework.TestCase;
+public class BasePairPosition {
+    public BasePosition position1;
+    public BasePosition position2;
+    public boolean straightLine = true;
 
-public class TestSecondaryStructureDiagram extends TestCase {
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(TestSecondaryStructureDiagram.class);
+    public double arcX, arcY, arcWidth, arcHeight, arcStart, arcRange;
+    
+    BasePairPosition(BasePosition pos1, BasePosition pos2) {
+        this.position1 = pos1;
+        this.position2 = pos2;
+        straightLine = true;
     }
+    
+    // TODO Store arc position as in Graphics.drawArc
+    BasePairPosition(BasePosition pos1, BasePosition pos2, double x, double y, double width, double height, double startAngle, double angle) {
+        this.position1 = pos1;
+        this.position2 = pos2;
 
-    /*
-     * Test method for 'org.simtk.toon.secstruct.SecondaryStructureDiagramModel.createDiagram(RNA)'
-     */
-    public void testCreateDiagram() {
-        SecondaryStructureDiagramModel diagram = new SecondaryStructureDiagramModel();
+        this.arcX = x;
+        this.arcY = y;
+        this.arcWidth = width;
+        this.arcHeight = height;
+        this.arcStart = startAngle;
+        this.arcRange = angle;
         
-        MoleculeCollection molecules = new MoleculeCollection();
-        try {
-            molecules.loadPDBFormat("resources/structures/1GRZ.pdb");
-        } 
-        catch (java.io.FileNotFoundException exc) {return;}
-        catch (java.io.IOException exc) {return;}
-        catch (InterruptedException exc) {return;}
-        
-        for (Molecule molecule : molecules.molecules()) {
-            if (! (molecule instanceof NucleicAcid)) continue;
-            NucleicAcid rna = (NucleicAcid) molecule;
-            for (BasePair basePair : rna.identifyBasePairs())
-                rna.secondaryStructures().add(basePair);
-            diagram.createDiagram(rna);
-        }
+        straightLine = false;
     }
-
 }

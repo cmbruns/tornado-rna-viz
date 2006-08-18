@@ -74,6 +74,9 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
             Spline3D positionSpline,
             Spline3D normalSpline) 
     throws NoCartoonCreatedException {
+        if (positionSpline.getNumberOfInputPoints() < 2) 
+            throw new NoCartoonCreatedException();
+        
         List<Vector3D> positions = new Vector<Vector3D>();
         List<Vector3D> normals = new Vector<Vector3D>();
         List<Chemical> aminoAcids = new Vector<Chemical>();
@@ -114,6 +117,9 @@ public class BetaStrandRibbon extends ProteinRibbonSegment {
             Spline3D positionSpline,
             Spline3D normalSpline) 
     throws NoCartoonCreatedException {
+        if (positionSpline.getNumberOfInputPoints() < 2)
+            throw new NoCartoonCreatedException();
+
         List<Vector3D> positions = new Vector<Vector3D>();
         List<Vector3D> normals = new Vector<Vector3D>();
         List<Chemical> aminoAcids = new Vector<Chemical>();

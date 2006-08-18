@@ -27,6 +27,7 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.util.*;
+import org.simtk.moleculargraphics.Spline3D;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.*;
@@ -775,29 +776,4 @@ public class ProteinRibbon extends MoleculeCartoonClass {
         
     }
     
-    class Spline3D {
-        // Set up one spline for each dimension
-        vtkCardinalSpline splineX = new vtkCardinalSpline();
-        vtkCardinalSpline splineY = new vtkCardinalSpline();
-        vtkCardinalSpline splineZ = new vtkCardinalSpline();
-        
-        public void addPoint(double parameter, Vector3D position) {
-            splineX.AddPoint(parameter, position.getX());
-            splineY.AddPoint(parameter, position.getY());
-            splineZ.AddPoint(parameter, position.getZ());            
-        }
-        
-        public void clear() {
-            splineX.RemoveAllPoints();
-            splineY.RemoveAllPoints();
-            splineZ.RemoveAllPoints();
-        }
-        
-        public Vector3D evaluate(double parameter) {
-            return new Vector3DClass(
-                    splineX.Evaluate(parameter),
-                    splineY.Evaluate(parameter),
-                    splineZ.Evaluate(parameter));                    
-        }
-    }
 }

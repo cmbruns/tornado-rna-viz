@@ -31,6 +31,12 @@ import junit.framework.TestCase;
 import java.net.URL;
 import java.io.*;
 import javax.swing.*;
+
+import org.simtk.molecularstructure.Molecule;
+import org.simtk.molecularstructure.MoleculeCollection;
+import org.simtk.molecularstructure.nucleicacid.BasePair;
+import org.simtk.molecularstructure.nucleicacid.NucleicAcid;
+
 import java.awt.*;
 
 public class TestSecondaryStructureCanvas extends TestCase {
@@ -38,9 +44,11 @@ public class TestSecondaryStructureCanvas extends TestCase {
     public static void main(String[] args) {
         // junit.textui.TestRunner.run(TestSecondaryStructureCanvas.class);
 
-        try {
-            (new TestSecondaryStructureCanvas()).testLoadSStructViewFile();
-        } catch (IOException exc) {}
+        // try {
+        //     (new TestSecondaryStructureCanvas()).testLoadSStructViewFile();
+        // } catch (IOException exc) {}
+        
+        testNussinovDiagram();
     }
 
     /*
@@ -60,24 +68,38 @@ public class TestSecondaryStructureCanvas extends TestCase {
         frame.pack();
         frame.setSize(300, 300);
         frame.setVisible(true);
-
     }
     
-    public void testLoadCtFile() throws IOException {
-        SecondaryStructureCanvas canvas = new SecondaryStructureCanvas(null);
+    public static void testNussinovDiagram() {
+        MoleculeCollection molecules = new MoleculeCollection();
+        try {
+            molecules.loadPDBFormat("resources/structures/1GRZ.pdb");
+        } 
+        catch (java.io.FileNotFoundException exc) {return;}
+        catch (java.io.IOException exc) {return;}
+        catch (InterruptedException exc) {return;}
         
-        ClassLoader classLoader = getClass().getClassLoader();
-        URL url = classLoader.getResource("sstructs/stemloop.ct");
-        InputStream testStream = url.openConnection().getInputStream();
-        SecondaryStructureDiagramModel model = new SecondaryStructureDiagramModel();
-        model.createDiagramFromCtFile(testStream);
+        NussinovDiagram diagram = null;
+        for (Molecule molecule : molecules.molecules()) {
+            if (! (molecule instanceof NucleicAcid)) continue;
+            NucleicAcid rna = (NucleicAcid) molecule;
+            for (BasePair basePair : rna.identifyBasePairs())
+                rna.secondaryStructures().add(basePair);
+            diagram = new NussinovDiagram(rna);
+            break;
+        }
+        
+        if (diagram != null) {
+            SecondaryStructureCanvas canvas = new SecondaryStructureCanvas(null);            
+            canvas.setDiagram(diagram);
 
-        JFrame frame = new JFrame();
-        frame.getRootPane().setLayout(new BorderLayout());
-        frame.getRootPane().add(canvas, BorderLayout.CENTER);;
-        frame.pack();
-        frame.setSize(300, 300);
-        frame.setVisible(true);        
+            JFrame frame = new JFrame();
+            frame.getRootPane().setLayout(new BorderLayout());
+            frame.getRootPane().add(canvas, BorderLayout.CENTER);;
+            frame.pack();
+            frame.setSize(300, 300);
+            frame.setVisible(true);
+        }
     }
-
+    
 }

@@ -41,6 +41,16 @@ public class Spline3D {
         splineZ.AddPoint(t, v.z());
     }
     
+    public int getNumberOfInputPoints() {
+        return splineX.GetNumberOfPoints();
+    }
+
+    public void clear() {
+        splineX.RemoveAllPoints();
+        splineY.RemoveAllPoints();
+        splineZ.RemoveAllPoints();
+    }
+    
     public Vector3D evaluate(double t) {
         return new Vector3DClass(
                 splineX.Evaluate(t),
