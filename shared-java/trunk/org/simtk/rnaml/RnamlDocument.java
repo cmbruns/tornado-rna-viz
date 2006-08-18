@@ -49,12 +49,19 @@ import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.SecondaryStructureClass.SourceType;
 import org.simtk.molecularstructure.atom.Atom;
 import org.simtk.molecularstructure.nucleicacid.*;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class RnamlDocument {
     public Map<Integer, NucleicAcid> rnamlIndexMolecules = new HashMap<Integer, NucleicAcid>();
     org.jdom.Document rnamlDoc;
+    File myFile;
     Element rnamlEl = null;
     String source = "";
     Map<Integer, List<Integer> > resNumTables = new HashMap<Integer, List<Integer> >();
@@ -66,8 +73,10 @@ public class RnamlDocument {
     public RnamlDocument(File rnamlFile, MoleculeCollection molecules) 
     throws JDOMException, java.io.IOException
     {        
+    	myFile = rnamlFile;
         // Read xml file
-        SAXBuilder builder = new SAXBuilder();
+        SAXBuilder builder = new SAXBuilder(true);
+        builder.setEntityResolver(new RnamlDTDResolver());
         rnamlDoc = builder.build(rnamlFile);
         
         Iterator docIt = rnamlDoc.getDescendants(new ElementFilter("rnaml"));
@@ -582,4 +591,31 @@ public class RnamlDocument {
 		return null;
 	}
 
+	
+	private class RnamlDTDResolver implements EntityResolver {
+	    @SuppressWarnings("unused")
+		public InputSource resolveEntity (String publicId, String systemId)
+		{
+			if (((publicId!=null)&&(publicId.contains("RNAML")))||((systemId!=null)&&(systemId.toLowerCase().contains("rnaml.dtd")))) {
+				// return a special input source
+				RnamlDTDReader reader = null;
+				try {reader = new RnamlDTDReader(getClass().getClassLoader().getResource("rnaml/rnaview_compatible_rnaml_1.0_1.1.dtd").toURI());}
+				catch (URISyntaxException e) { e.printStackTrace(); }  
+				catch (FileNotFoundException e) { e.printStackTrace(); }
+				return new InputSource(reader);
+			} else {
+				// use the default behaviour
+				return null;
+			}
+		}
+	}
+
+	private class RnamlDTDReader extends FileReader {
+		private RnamlDTDReader(URI uri) throws FileNotFoundException {
+//			super(RnamlDocument.this.myFile.getPath().substring(0, RnamlDocument.this.myFile.getPath().lastIndexOf(System.getProperty("file.separator")))+ System.getProperty("file.separator")+ "rnaml.dtd");
+			super(new File(uri));
+		}
+
+	}
+	
 }
