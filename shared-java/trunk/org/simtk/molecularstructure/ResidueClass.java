@@ -76,6 +76,17 @@ public class ResidueClass extends MolecularClass implements Residue {
     // Even if there is a break in the sequence, the next residue train should probably jump over the gap
     protected Residue nextResidue;
     protected Residue previousResidue;
+    
+	private String pucker = "";
+	private String glycosyl = "";
+	
+	public String getGlycosyl() { return glycosyl; }
+	public void setGlycosyl(String glycosyl) { this.glycosyl = glycosyl; }
+
+	public String getPucker() { return pucker; }
+	public void setPucker(String pucker) { this.pucker = pucker; }
+        
+
 
     public ResidueClass(ResidueType type) {
         this.residueType = type;

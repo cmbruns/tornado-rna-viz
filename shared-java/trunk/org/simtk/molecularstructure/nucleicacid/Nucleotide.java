@@ -54,15 +54,6 @@ public class Nucleotide extends ResidueTypeClass {
     static public FunctionalGroup sugarGroup = new FunctionalGroup(sugarGroupAtomNames);
     static public FunctionalGroup phosphateGroup = new FunctionalGroup(phosphateGroupAtomNames);
 
-	private String pucker = "";
-	private String glycosyl = "";
-	
-	public String getGlycosyl() { return glycosyl; }
-	public void setGlycosyl(String glycosyl) { this.glycosyl = glycosyl; }
-
-	public String getPucker() { return pucker; }
-	public void setPucker(String pucker) { this.pucker = pucker; }
-        
     @Override
     public Set<String> getHydrogenBondDonorAtomNames() {
         Set<String> answer = new HashSet<String>();
