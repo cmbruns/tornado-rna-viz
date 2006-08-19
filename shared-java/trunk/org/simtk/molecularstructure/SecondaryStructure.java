@@ -44,6 +44,8 @@ public interface SecondaryStructure {
     public Iterator<Residue> getResidueIterator();
     public void addResidue(Residue residue);
     public void setMolecule(Biopolymer biopolymer);
+    public boolean addMolecule(Biopolymer biopolymer);
+    public Collection<Biopolymer> getMolecules();
     public void setSource(String string);
     public SourceType getSource();
     

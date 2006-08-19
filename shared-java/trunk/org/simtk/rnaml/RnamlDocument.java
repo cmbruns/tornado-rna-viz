@@ -62,7 +62,6 @@ import java.net.URL;
 public class RnamlDocument {
     public Map<Integer, NucleicAcid> rnamlIndexMolecules = new HashMap<Integer, NucleicAcid>();
     org.jdom.Document rnamlDoc;
-    File myFile;
     Element rnamlEl = null;
     String source = "";
     Map<Integer, List<Integer> > resNumTables = new HashMap<Integer, List<Integer> >();
@@ -74,7 +73,6 @@ public class RnamlDocument {
     public RnamlDocument(File rnamlFile, MoleculeCollection molecules) 
     throws JDOMException, java.io.IOException
     {        
-    	myFile = rnamlFile;
         // Read xml file
         SAXBuilder builder = new SAXBuilder(true);
         builder.setEntityResolver(new RnamlDTDResolver());
@@ -185,12 +183,30 @@ public class RnamlDocument {
     private Residue getRes(int molID, int localPos){
     	NucleicAcid mol = rnamlIndexMolecules.get(molID);
         if (mol == null) return null;
-    	if (source.equals("rnaview")){
+    	if (source.equals("rnaview")){// for generality should do this anytime numbering tables are present
     		List<Integer> nTable = resNumTables.get(molID);
     		localPos = ((Integer)nTable.get(localPos));
         	return mol.getResidueByNumber(localPos);
     	}
     	else return mol.getResidue(localPos);
+    }
+    
+    private int getMolRef(Element base){
+    	String molIDStr = base.getChild("molecule-id").getAttributeValue("ref");
+    	if (source=="rnaview"){
+    		return Integer.parseInt(molIDStr);
+    	}
+    	else {
+    		Iterator molElemIt = rnamlEl.getDescendants(new ElementFilter("molecule"));
+    		for (int idx=1; molElemIt.hasNext(); idx++){
+    			Element molElem = (Element) molElemIt.next();
+    			if (molElem.getAttributeValue("id").equals(molIDStr)){
+    				return idx;
+    			}
+    		}
+    	}
+    	System.err.println("Cannot resolve molecule-id "+molIDStr+" --defaulting to first rnaml molecule.");
+    	return 1;
     }
     
     @SuppressWarnings({"unchecked", "unused"})
@@ -246,8 +262,8 @@ public class RnamlDocument {
         int pos3i  = Integer.parseInt(base3.getChildText("position"));
 
         if (molID == -1) {
-        mol5i = Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
-        mol3i = Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
+        mol5i = getMolRef(base5);//Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
+        mol3i = getMolRef(base3);//Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
         }
         latestMolIDs = Arrays.asList(mol5i, mol3i);
         
@@ -397,8 +413,8 @@ public class RnamlDocument {
         int hLen  = Integer.parseInt(helix.getChildText("length"));
 
         if (molID == -1) {
-        	mol5i = Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
-        	mol3i = Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
+            mol5i = getMolRef(base5);//Integer.parseInt(base5.getChild("molecule-id").getAttributeValue("ref"));
+            mol3i = getMolRef(base3);//Integer.parseInt(base3.getChild("molecule-id").getAttributeValue("ref"));
         }
         latestMolIDs = Arrays.asList(mol5i, mol3i);
         
@@ -465,7 +481,9 @@ public class RnamlDocument {
         if (modelIt.hasNext()){
         	Element firstModel = (Element) modelIt.next();
         	if (firstModel.getAttributeValue("id").equals("?")) {
-        		return "rnaview";  //only rnaview is known to specify the invalid character "?" for model id
+//				rnaview does not identify itself in its rnaml, BUT,         		
+//        		only rnaview is known to specify the invalid ID "?" for model id
+        		return "rnaview";  
         	}
         }
         
@@ -477,6 +495,9 @@ public class RnamlDocument {
             }
             else if (firstAnalysis.getAttributeValue("id").equals("UNAFold")) {
             	return "mfold";
+            }
+            else if (firstAnalysis.getAttributeValue("id").toLowerCase().contains("tornado")) {
+            	return "tornado";
             }
         }
         
@@ -600,7 +621,7 @@ public class RnamlDocument {
 			if (((publicId!=null)&&(publicId.contains("RNAML")))||((systemId!=null)&&(systemId.toLowerCase().contains("rnaml.dtd")))) {
 				// return a special input source
 				FileReader reader = null;
-				URL localDTD = getClass().getClassLoader().getResource("rnaml/rnaview_compatible_rnaml_1.0_1.1.dtd");
+				URL localDTD = getClass().getClassLoader().getResource("org/simtk/rnaml/rnaview_compatible_rnaml_1.0_1.1.dtd");
 				try {reader = new FileReader(new File(localDTD.toURI()));}
 				catch (URISyntaxException e) { e.printStackTrace(); }  
 				catch (FileNotFoundException e) { e.printStackTrace(); }

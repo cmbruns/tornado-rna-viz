@@ -97,6 +97,8 @@ public class SecondaryStructureClass implements SecondaryStructure {
     	parentMolecules = new LinkedHashSet<Biopolymer>(Arrays.asList(biopolymer));
     }
     
+    public Collection<Biopolymer> getMolecules() {return parentMolecules;}
+    
     public boolean addMolecule(Biopolymer biopolymer){
     	return parentMolecules.add(biopolymer);
     }
