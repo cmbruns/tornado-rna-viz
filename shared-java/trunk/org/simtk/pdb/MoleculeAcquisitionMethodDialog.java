@@ -159,10 +159,9 @@ public abstract class MoleculeAcquisitionMethodDialog extends JDialog implements
         docPanel.setLayout(new BoxLayout(docPanel, BoxLayout.Y_AXIS));
         docPanel.add(new JLabel("Option 2: "));
         docPanel.add(Box.createVerticalStrut(10));
-        docPanel.add(new JLabel("From Protein"));
-        docPanel.add(new JLabel("Data Bank (PDB)."));
         docPanel.add(new JLabel("Look up ID at "));
         docPanel.add(new PdbLinkLabel("PDB Web Site"));
+        docPanel.add(new JLabel("(Requires internet connection)"));
         
         webPDBPanel.add(docPanel);
         
