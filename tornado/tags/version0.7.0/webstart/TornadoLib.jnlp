@@ -1,5 +1,5 @@
 <jnlp spec="1.0+"
-  codebase="http://public.simtk.org/~cmbruns/tornado/webstart/"
+  codebase="http://public.simtk.org/~SIMTK%5ccmbruns/tornado/webstart/"
   href="TornadoLib.jnlp"
 >
   <information>
@@ -14,7 +14,7 @@
     <property name="apple.laf.useScreenMenuBar" value="true"/>
     <jar href="s_Tornado.jar"/>
     <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
-    <extension href="http://public.simtk.org/~cmbruns/vtk_binaries/vtk4_4/vtk44.jnlp" name="vtk4.4"/>
+    <extension href="http://public.simtk.org/~SIMTK%5ccmbruns/vtk_binaries/vtk4_4/vtk44.jnlp" name="vtk4.4"/>
   </resources>
   <security>
     <all-permissions/>

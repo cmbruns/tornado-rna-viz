@@ -15,9 +15,9 @@
     <jar href="s_Tornado.jar"/>
     <jar href="s_Jama.jar"/>
     <jar href="s_jdom.jar"/>
-    <extension href="http://public.simtk.org/~cmbruns/simtk_shared_java/webstart/SimtkSharedJava.jnlp" name="SimTK shared java classes"/>
+    <extension href="http://public.simtk.org/~SIMTK%5ccmbruns/simtk_shared_java/webstart/SimtkSharedJava.jnlp" name="SimTK shared java classes"/>
     <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
-    <extension href="http://public.simtk.org/~cmbruns/vtk_binaries/vtk500ribbonpatch/vtk500ribbonpatch.jnlp" name="vtk5.0.0 with patch to ribbonFilter.cxx"/>
+    <extension href="http://public.simtk.org/~SIMTK%5ccmbruns/vtk_binaries/vtk500ribbonpatch/vtk500ribbonpatch.jnlp" name="vtk5.0.0 with patch to ribbonFilter.cxx"/>
   </resources>
   <security>
     <all-permissions/>
