@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+"
-  codebase="http://public.simtk.org/~cmbruns/simtk_shared_java/webstart/"
+  codebase="http://public.simtk.org/distrib/shared_java_torn070/webstart/"
 >
 <information>
   <title>Shared SimTK Java classes</title>
