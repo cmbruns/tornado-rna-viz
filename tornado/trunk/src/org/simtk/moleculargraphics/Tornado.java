@@ -32,6 +32,7 @@
 package org.simtk.moleculargraphics;
 
 import javax.swing.*;
+import javax.swing.undo.*;
 import javax.swing.filechooser.FileFilter;
 
 import java.awt.*;
@@ -41,6 +42,8 @@ import java.util.*;
 import java.util.List;
 import java.net.*;
 import javax.jnlp.*;
+
+import org.simtk.gui.UndoRedoMechanism;
 import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
@@ -58,7 +61,7 @@ import org.simtk.toon.secstruct.*;
  * RNA manipulation application
  *
  */
-public class Tornado extends JFrame 
+public class Tornado extends MolApp 
 implements ResidueHighlightListener
 {
     // private ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
@@ -72,7 +75,6 @@ implements ResidueHighlightListener
     //
     
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
-    protected Tornado3DCanvas canvas;
     protected JPanel initialLoadStructurePanel;
     private String currentPath = ".";
     private String saveImagePath = ".";
@@ -95,22 +97,18 @@ implements ResidueHighlightListener
     	if (selectedSourceTypes==null) return new ArrayList<SecondaryStructureClass.SourceType>();
     	else return selectedSourceTypes;
     }
+    private UndoRedoMechanism undoRedoMechanism = new UndoRedoMechanism();
+    
     Tornado() {
-        super("SimTK ToRNAdo: (no structures currently loaded)");
+        setTitle("SimTK ToRNAdo: (no structures currently loaded)");
         
         // try {currentCartoon = (MoleculeCartoon) initialCartoonType.newInstance();} 
         // catch (InstantiationException exc) {System.err.println(exc);}
         // catch (IllegalAccessException exc) {System.err.println(exc);}
 
-        // Avoid upper left sucky Java window location
-        setLocationRelativeTo(null);
-        
         // loadNativeLibraries();
         
-        classLoader = getClass().getClassLoader();
-        
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        canvas = new Tornado3DCanvas(); // must create before menus
+        // canvas = new Tornado3DCanvas(); // must create before menus
 
         initializeCartoonTypes();
 
@@ -197,7 +195,7 @@ implements ResidueHighlightListener
         residueHighlightBroadcaster.addResidueHighlightListener(sequencePane);
         // residueHighlightBroadcaster.addSelectionListener(canvas);
         residueHighlightBroadcaster.addResidueHighlightListener(sequenceCartoonCanvas);
-        residueHighlightBroadcaster.addResidueHighlightListener(canvas);
+        residueHighlightBroadcaster.addResidueHighlightListener((Tornado3DCanvas)canvas);
         residueHighlightBroadcaster.addResidueHighlightListener(this);
         if (drawSecondaryStructure)
             residueHighlightBroadcaster.addResidueHighlightListener(canvas2D);
@@ -205,28 +203,18 @@ implements ResidueHighlightListener
         activeMoleculeBroadcaster.addActiveMoleculeListener(sequenceCartoonCanvas);
         activeMoleculeBroadcaster.addActiveMoleculeListener(sequencePane);
         
-        canvas.setResidueHighlightBroadcaster(residueHighlightBroadcaster);
-        canvas.setResidueCenterBroadcaster(residueCenterBroadcaster);
-        residueCenterBroadcaster.addResidueCenterListener(canvas);
+        ((Tornado3DCanvas)canvas).setResidueHighlightBroadcaster(residueHighlightBroadcaster);
+        ((Tornado3DCanvas)canvas).setResidueCenterBroadcaster(residueCenterBroadcaster);
+        residueCenterBroadcaster.addResidueCenterListener((Tornado3DCanvas)canvas);
         residueCenterBroadcaster.addResidueCenterListener(sequencePane);
-        
-        setBackgroundColor(Color.white);
     }
     
-    public static void main(String[] args) {
-
-        // Put the menu bar at the top of the screen on the mac
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-
-        VTKLibraries.load();
-
-        new Tornado();
+    public static void main(String [] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {new Tornado();}
+        });
     }
     
-    public void setBackgroundColor(Color c) {
-        canvas.setBackgroundColor(c);
-    }
-        
     // Show the user that some waiting time is needed
     public void setWait(String message) {
         setCursor(waitCursor);
@@ -315,7 +303,8 @@ implements ResidueHighlightListener
 
         menuItem = new JMenuItem("Save PNG Image...");
         menuItem.addActionListener(new SaveImageFileAction());
-        menu.add(menuItem);
+        // menuItem.addActionListener(new TestHighResOutputAction());
+              menu.add(menuItem);
 
         menu.add(new JSeparator());
 
@@ -326,11 +315,11 @@ implements ResidueHighlightListener
 
         menu = new JMenu("Edit");
         menuBar.add(menu);
-        menuItem = new JMenuItem("Undo");
+        menuItem = new JMenuItem(undoRedoMechanism.getUndoAction());
         menuItem.setEnabled(false);
         menu.add(menuItem);
 
-        menuItem = new JMenuItem("Redo");
+        menuItem = new JMenuItem(undoRedoMechanism.getRedoAction());
         menuItem.setEnabled(false);
         menu.add(menuItem);
 
@@ -392,7 +381,7 @@ implements ResidueHighlightListener
 
             checkItem = new JCheckBoxMenuItem(colorName);
             checkItem.setEnabled(true);
-            checkItem.addActionListener(new BackgroundColorAction(color));
+            checkItem.addActionListener(new BackgroundColorAction(color, colorName));
             checkItem.setState(color == initialBackgroundColor);
             backgroundGroup.add(checkItem);
             menu.add(checkItem);
@@ -419,6 +408,18 @@ implements ResidueHighlightListener
         checkItem = new JCheckBoxMenuItem("Interlaced shutter glasses");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new StereoInterlacedAction());
+        stereoscopicOptionsGroup.add(checkItem);
+        menu.add(checkItem);
+
+        checkItem = new JCheckBoxMenuItem("Left Eye");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new StereoLeftEyeAction());
+        stereoscopicOptionsGroup.add(checkItem);
+        menu.add(checkItem);
+
+        checkItem = new JCheckBoxMenuItem("Right Eye");
+        checkItem.setEnabled(true);
+        checkItem.addActionListener(new StereoRightEyeAction());
         stereoscopicOptionsGroup.add(checkItem);
         menu.add(checkItem);
 
@@ -497,6 +498,75 @@ implements ResidueHighlightListener
     // For me the programmer to use when creating new actions
     class TemplateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    class TestHighResOutputAction implements ActionListener {
+        JFileChooser saveImageFileChooser;
+        String saveImagePath = ".";
+
+        public void actionPerformed(ActionEvent e) {
+            if ((saveImageFileChooser == null)||(!saveImagePath.equals(Tornado.this.saveImagePath))){
+                saveImagePath = Tornado.this.saveImagePath;
+                saveImageFileChooser = new JFileChooser(Tornado.this.saveImagePath);            
+            }
+            int returnVal = saveImageFileChooser.showSaveDialog(Tornado.this);
+
+            String savePath = saveImageFileChooser.getCurrentDirectory().getPath();
+            String FS = System.getProperty("file.separator");
+            int index = savePath.lastIndexOf(FS);
+            Tornado.this.saveImagePath = savePath.substring(0, index);
+            saveImagePath = Tornado.this.saveImagePath;
+
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = saveImageFileChooser.getSelectedFile();
+                setWait("Saving image file...");
+                // Warn if file exists
+                if (file.exists()) {
+                    int response = JOptionPane.showConfirmDialog(null, "" + file + "\nFile exists.  Overwrite?");
+                    if ( (response == JOptionPane.CANCEL_OPTION) ||
+                         (response == JOptionPane.NO_OPTION)) {
+                        unSetWait("File not overwritten. (" + file.getName() + ")");
+                        return;
+                    }
+                }
+                vtkWindowToImageFilter wti = new vtkWindowToImageFilter();
+
+                vtkRenderWindow bigWindow = new vtkRenderWindow();
+                bigWindow.SetSize(10,10);
+                vtkRendererCollection renderers = canvas.GetRenderWindow().GetRenderers();
+                canvas.Lock();
+                renderers.InitTraversal();
+                for (int r = 0; r < renderers.GetNumberOfItems(); ++r) {
+                    vtkRenderer renderer = renderers.GetNextItem();
+                    bigWindow.AddRenderer(renderer);
+                }
+                wti.SetInput(bigWindow);
+                wti.Update();
+                renderers.InitTraversal();
+                for (int r = 0; r < renderers.GetNumberOfItems(); ++r) {
+                    vtkRenderer renderer = renderers.GetNextItem();
+                    bigWindow.AddRenderer(renderer);
+                }
+                canvas.UnLock();
+
+                vtkPNGWriter writer = new vtkPNGWriter();
+                try {
+                    writer.SetFileName(file.getCanonicalPath());
+                    writer.SetInput(wti.GetOutput());
+                    writer.Write();
+
+                    JOptionPane.showMessageDialog(null, "Image file save complete.", 
+                            "Image File Write Completed", JOptionPane.INFORMATION_MESSAGE);
+                    unSetWait("Wrote image to file " + file.getCanonicalPath());
+                }
+                catch (IOException exc) {
+                    JOptionPane.showMessageDialog(null, "ERROR! Unable to write to file " + file, 
+                            "Image File Write Error", JOptionPane.ERROR_MESSAGE);
+                    unSetWait("Error writing image file " + file.getName());
+                    return;
+                }
+            }
         }
     }
 
@@ -710,26 +780,56 @@ implements ResidueHighlightListener
         	Tornado.this.redrawCartoon();
         }
     }
-
     
-    
-    class QuitAction implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            System.exit(0);  // terminate this program
-        }
-    }
-
-    class TestFullScreenAction implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            canvas.testFullScreen();
-        }
-    }
-
-    class BackgroundColorAction implements ActionListener {
+    class BackgroundColorAction extends AbstractAction {
         Color color;
-        BackgroundColorAction(Color c) {color = c;}
+        String colorName;
+        BackgroundColorAction(Color c, String colorName) {
+            color = c;
+            this.colorName = colorName;
+        }
         public void actionPerformed(ActionEvent e) {
-            setBackgroundColor(color);
+            Color oldColor = getBackgroundColor();
+            Color newColor = color;
+            
+            if (oldColor.equals(newColor)) return;
+            
+            UndoableEdit edit = new BackgroundColorEdit(oldColor, newColor, colorName);
+            setBackgroundColor(newColor);
+            undoRedoMechanism.addEdit(edit);
+        }
+        
+        // Undoable actions need to create UndoableEdit objects
+        class BackgroundColorEdit extends AbstractUndoableEdit {
+            private Color startColor;
+            private Color endColor;
+            private String newColorName;
+            BackgroundColorEdit(Color startColor, Color endColor, String newColorName) {
+                this.startColor = startColor;
+                this.endColor = endColor;
+                this.newColorName = newColorName;
+            }
+            
+            public void redo() {
+                super.redo();
+                setBackgroundColor(endColor);
+            }
+            public void undo() {
+                super.undo();
+                setBackgroundColor(startColor);
+            }
+            public String getPresentationName() {
+                if (newColorName == null)
+                    return "Set background color";
+                else
+                    return "Set background to " + newColorName;
+            }
+            public String getRedoPresentationName() {
+                return "Redo " + getPresentationName();
+            }
+            public String getUndoPresentationName() {
+                return "Undo " + getPresentationName();
+            }
         }
     }
 
@@ -818,54 +918,16 @@ implements ResidueHighlightListener
         }
     }
 
-    class BrowserLaunchAction implements ActionListener {
-        String urlString;
-        BrowserLaunchAction(String u) {urlString = u;}
+    class StereoLeftEyeAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            
-            // Show information dialog, so the savvy user will be able to
-            // go to the url manually, in case the browser open fails.
-            JOptionPane.showConfirmDialog(
-                    null, 
-                    "Your browser will open to page " + urlString + " in a moment\n", 
-                    "Browse to SimTK.org",
-                    JOptionPane.DEFAULT_OPTION, 
-                    JOptionPane.INFORMATION_MESSAGE
-                    );
-
-            // New way
-            URL url;
-            try {url = new URL(urlString);}            
-            catch (MalformedURLException exc) {
-                launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc,
-                "Web URL error!");
-                return;
-            }
-            try {
-                // This only works when started in a web start application
-                BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService");
-                bs.showDocument(url);
-            } 
-            catch (UnavailableServiceException exc) {
-                // launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc,
-                // "JNLP Error!");
-                try {BrowserLauncher.openURL(urlString);}
-                catch (IOException exc2) {
-                    launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc2,
-                                             "Web URL error!");
-                }        
-            }
+            canvas.setStereoLeftEye();
         }
     }
-    
-    void launchErrorConfirmDialog(String msg, String title) {
-        String[] options = {"Bummer!"};
-        JOptionPane.showOptionDialog(
-                null, 
-                msg, 
-                "Web URL error!",
-                JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
-                null, options, options[0]);        
+
+    class StereoRightEyeAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            canvas.setStereoRightEye();
+        }
     }
 
     class LoadStructureDialog extends MoleculeAcquisitionMethodDialog {
@@ -1004,6 +1066,7 @@ implements ResidueHighlightListener
                 }
                 vtkWindowToImageFilter wti = new vtkWindowToImageFilter();
                 wti.SetInput(canvas.GetRenderWindow());
+                wti.SetMagnification(3);
                 canvas.Lock();
                 wti.Update();
                 canvas.UnLock();
@@ -1124,21 +1187,11 @@ implements ResidueHighlightListener
 
     public static final long serialVersionUID = 1L;
 
-    static {
-        VTKLibraries.load();
-        // loadNativeLibraries();
-        
-        // Keep vtk canvas from obscuring swing widgets
-        ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
-        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-    }
-    
     // private JMenu cartoonMenu = null;
     private JMenu viewMenu = null;
 
     private static String tornadoVersion = "0.90";
     
-    private ClassLoader classLoader;
     private SequencePane sequencePane;
     private SequenceCartoonCanvas sequenceCartoonCanvas;
     private Panel sequencePanel;

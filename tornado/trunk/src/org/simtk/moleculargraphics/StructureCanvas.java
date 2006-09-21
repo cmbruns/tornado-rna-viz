@@ -42,7 +42,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
     protected Map<vtkActor, ActorCartoon> actorCartoons = new HashMap<vtkActor, ActorCartoon>();
 
     protected boolean useScaleBar = true;
-    protected ScaleBar scaleBar;
+    public ScaleBar scaleBar = null;
 
     static {
         // Keep vtk canvas from obscuring swing widgets
@@ -98,7 +98,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
     
     protected void setUpLights() {
         // Remove or dim that darn initial headlight.
-        lgt.SetIntensity(0.1);
+        lgt.SetIntensity(0.25);
 
         vtkLightKit lightKit = new vtkLightKit();
         lightKit.MaintainLuminanceOn();
@@ -129,6 +129,11 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
             ren.SetBackground(r,g,b);
         }
         
+    }
+    
+    public Color getBackgroundColor() {
+        double[] col = ren.GetBackground();
+        return new Color((float)col[0], (float)col[1], (float)col[2]);
     }
 
     // public void setMolecules(MoleculeCollection molecules, MolecularCartoonClass.CartoonType cartoonType) {
@@ -277,7 +282,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         
         cam.SetClippingRange(frontClip, backClip);
 
-        if (useScaleBar)
+        if (scaleBar != null)
             scaleBar.updateScaleBar(cam);
     }
 
@@ -362,7 +367,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
     public void mouseWheelMoved(MouseWheelEvent event) {
         // System.out.println("wheel moved");
         int rotation = event.getWheelRotation();
-        zoomCamera(Math.pow(1.30,(rotation)));
+        zoomCamera(Math.pow(1.15,(rotation)));
         repaint();
     }
     
@@ -385,7 +390,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         GetRenderer().RemoveAllViewProps(); // vtk 5.0
         // massBody.clear();
         
-        if (useScaleBar)
+        if (scaleBar != null)
             for (vtkActor2D actor : scaleBar.getVtkActors())
                 GetRenderer().AddActor2D(actor);
     }
@@ -446,5 +451,57 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
 //        GetRenderer().GetActiveCamera().SetFocalPoint(centerOfMass.getX(), centerOfMass.getY(), centerOfMass.getZ());        
 //    }
     
-    static final long serialVersionUID = 01L;
+    // Make the lock/unlock methods public
+    public int Lock() {return super.Lock();}
+    public int UnLock() {return super.UnLock();}
+
+    public void setStereoRedBlue() {
+        // vtk later than version 4.4 is required for full color anaglyph
+        // try {rw.SetStereoTypeToAnaglyph();}
+        // catch (NoSuchMethodError exc) {rw.SetStereoTypeToRedBlue();}
+        
+        Lock();
+        
+        rw.SetStereoTypeToAnaglyph();
+
+        rw.StereoRenderOn();
+        
+        UnLock();
+        repaint();
+    }
+    public void setStereoInterlaced() {
+        Lock();        
+        rw.SetStereoTypeToInterlaced();
+        rw.StereoRenderOn();        
+        UnLock();
+        repaint();
+    }
+    public void setStereoLeftEye() {
+        Lock();        
+        rw.SetStereoTypeToLeft();
+        rw.StereoRenderOn();        
+        UnLock();
+        repaint();
+    }
+    public void setStereoRightEye() {
+        Lock();        
+        rw.SetStereoTypeToRight();
+        rw.StereoRenderOn();        
+        UnLock();
+        repaint();
+    }
+    public void setStereoOff() {
+        Lock();        
+        rw.StereoRenderOff();        
+        UnLock();
+        repaint();
+    }
+    public void setStereoCrossEye() {
+        // TODO - create cross-eye view using multiple viewports
+        Lock();
+        // TODO
+        UnLock();
+        repaint();
+    }
+        
 }

@@ -22,18 +22,16 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Aug 18, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.moleculargraphics;
 
-import org.simtk.moleculargraphics.cartoon.BoundingBox;
+import vtk.vtkPanel;
+import vtk.vtkRenderWindow;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+public class PublicNativeVtkPanel extends vtkPanel {
+    public int Lock() {return super.Lock();}
+    public int UnLock() {return super.UnLock();}
+    public int RenderCreate(vtkRenderWindow id0) {return super.RenderCreate(id0);}
 }

@@ -29,6 +29,8 @@ package org.simtk.toon.secstruct;
 
 import org.simtk.moleculargraphics.*;
 import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.nucleicacid.*;
+import org.simtk.molecularstructure.ResidueClass;
 import org.simtk.geometry3d.*;
 import java.io.*;
 import java.util.*;
@@ -69,6 +71,8 @@ MouseMotionListener, MouseListener, ComponentListener
     
     protected SecondaryStructureDiagram diagram = null;
     protected Transform2D transform = null;
+    
+    protected Set<BasePair> worstBasePairs;
     
     public SecondaryStructureCanvas(ResidueHighlightBroadcaster r) {
         this.residueHighlightBroadcaster = r;
@@ -133,6 +137,16 @@ MouseMotionListener, MouseListener, ComponentListener
 
         BoundingBox boundingBox = diagram.getBoundingBox();
         transformToBoundingBox(boundingBox);
+        
+        // TODO - worst base pairs are for testing only
+        Set<BasePair> allBasePairs = new HashSet<BasePair>();
+        for (BasePairPosition bpp : diagram.basePairPositions()) {
+            BasePair bp = 
+                new BasePair(bpp.position1.getResidue(), bpp.position2.getResidue());
+            allBasePairs.add(bp);
+        }
+        worstBasePairs = SecondaryStructureDiagramClass.findWorstPseudoknotBasePairs(allBasePairs);
+        
         repaint();
     }
     
@@ -143,7 +157,7 @@ MouseMotionListener, MouseListener, ComponentListener
         double scale = 200 / heightScale;
         if (getHeight() > 0) {
             scale = getHeight()/heightScale; 
-            System.out.println("Scale = "+scale);
+            // System.out.println("Scale = "+scale);
         }
         
         double centerX = boundingBox.xMin + 0.5 * (boundingBox.xMax - boundingBox.xMin);
@@ -192,8 +206,8 @@ MouseMotionListener, MouseListener, ComponentListener
         double height = getSize().height;
         double width = getSize().width;
         // double scale = height / heightScale;
-        double screenCenterX = width / 2.0;
-        double screenCenterY = height / 2.0;
+        double screenCenterX = width * 0.5;
+        double screenCenterY = height * 0.5;
         double spacing = diagram.getConsecutiveBaseDistance() * transform.scale;
         
         // Just-in-time creation of font size lookup
@@ -210,6 +224,9 @@ MouseMotionListener, MouseListener, ComponentListener
         
         // Choose a font
         Font font = null;
+        // Font majorTickFont = null;
+        // Font minorTickFont = null;
+
         // Is the smallest font too big?
         if (fontHeights.get(fonts.get(0)) > spacing) 
             font = null;
@@ -257,7 +274,7 @@ MouseMotionListener, MouseListener, ComponentListener
         BasePosition previousBase = null;
         for (BasePosition base : diagram.basePositions()) {
             double x = (int)(screenCenterX + transform.x(base.getX()));
-            double y = (int)(screenCenterY - transform.y(base.getY()));
+            double y = (int)(screenCenterY + transform.y(base.getY()));
 
             // Clipping
             boolean isOnScreen = true;
@@ -270,7 +287,7 @@ MouseMotionListener, MouseListener, ComponentListener
                 // Draw connector between consecutive bases
                 if (previousBase != null) {
                     double prevX = (int)(screenCenterX + transform.x(previousBase.getX()));
-                    double prevY = (int)(screenCenterY - transform.y(previousBase.getY()));
+                    double prevY = (int)(screenCenterY + transform.y(previousBase.getY()));
 
                     double deltaX = x - prevX;
                     double deltaY = y - prevY;
@@ -299,12 +316,18 @@ MouseMotionListener, MouseListener, ComponentListener
 
         for (BasePairPosition pair : diagram.basePairPositions()) {
             
+            BasePair basePair = new BasePair(pair.position1.getResidue(), pair.position2.getResidue());
+            if ( (worstBasePairs != null) && (worstBasePairs.contains(basePair)) )
+                g.setColor(Color.RED);
+            else 
+                g.setColor(Color.BLUE);
+            
             if (pair.straightLine) {
             // if (true) {
                 double x1 = screenCenterX + transform.x(pair.position1.getX());
-                double y1 = screenCenterY - transform.y(pair.position1.getY());
+                double y1 = screenCenterY + transform.y(pair.position1.getY());
                 double x2 = screenCenterX + transform.x(pair.position2.getX());
-                double y2 = screenCenterY - transform.y(pair.position2.getY());
+                double y2 = screenCenterY + transform.y(pair.position2.getY());
 
                 g.drawLine((int)(x1), (int)(y1), 
                         (int)(x2), (int)(y2));
@@ -312,7 +335,7 @@ MouseMotionListener, MouseListener, ComponentListener
             else { // Arc
                 
                 double x = screenCenterX + transform.x(pair.arcX);
-                double y = screenCenterY - transform.y(pair.arcY);
+                double y = screenCenterY + transform.y(pair.arcY);
                 double w = transform.scale * pair.arcWidth;
                 double h = transform.scale * pair.arcHeight;
                 double start = pair.arcStart;
@@ -331,7 +354,62 @@ MouseMotionListener, MouseListener, ComponentListener
             }
         }
         
-        // 3) Draw characters on top of polygon
+        // 3) Draw residue numbers
+        g.setColor(getForeground());
+        double gap = 0.5 * diagram.getConsecutiveBaseDistance();
+        FontRenderContext frc = g2.getFontRenderContext();
+        Vector2D screenCenter = new Vector2DClass(screenCenterX, screenCenterY);
+        
+        // Major ticks
+        for (NumberTick tick : diagram.majorTicks()) {
+            if (spacing < 0.1) break;
+            
+            Vector2D direction = tick.labelDirection;
+            
+            Vector2D tickStart = screenCenter.plus(
+                transform.transform(tick.basePosition.position.plus(direction.times(1.2 * gap))) );
+            Vector2D tickEnd = screenCenter.plus(
+                    transform.transform(tick.basePosition.position.plus(direction.times(2.2 * gap))) );
+            Vector2D labelStart = screenCenter.plus(
+                    transform.transform(tick.basePosition.position.plus(direction.times(3.2 * gap))) );
+
+            Line2D segment = new Line2D.Double(
+                    tickStart.x(), tickStart.y(),
+                    tickEnd.x(), tickEnd.y());
+            
+            g2.draw(segment);
+            
+            if (font == null) continue;
+
+            Vector2D labelPos = getLabelCorner(g2, tick.label, labelStart, direction);                        
+            g.drawString(tick.label, (int)labelPos.x(), (int)labelPos.y());
+        }
+        
+        // Minor ticks
+        for (NumberTick tick : diagram.minorTicks()) {
+            if (spacing < 1.0) break;
+
+            Vector2D direction = tick.labelDirection;
+            
+            Vector2D tickStart = screenCenter.plus(
+                transform.transform(tick.basePosition.position.plus(direction.times(1.2 * gap))) );
+            Vector2D tickEnd = screenCenter.plus(
+                    transform.transform(tick.basePosition.position.plus(direction.times(2.2 * gap))) );
+            Vector2D labelStart = screenCenter.plus(
+                    transform.transform(tick.basePosition.position.plus(direction.times(3.2 * gap))) );
+
+            Line2D segment = new Line2D.Double(
+                    tickStart.x(), tickStart.y(),
+                    tickEnd.x(), tickEnd.y());
+            
+            g2.draw(segment);
+
+            if (font == null) continue;
+            Vector2D labelPos = getLabelCorner(g2, tick.label, labelStart, direction);                        
+            g.drawString(tick.label, (int)labelPos.x(), (int)labelPos.y());
+        }
+        
+        // 4) Draw characters on top of polygon
         // Font size
         
         // No characters, only polygon, below a certain size
@@ -340,7 +418,7 @@ MouseMotionListener, MouseListener, ComponentListener
             g.setColor(getForeground());
             for (BasePosition base : diagram.basePositions()) {
                 double x = screenCenterX + transform.x(base.getX());
-                double y = screenCenterY - transform.y(base.getY());
+                double y = screenCenterY + transform.y(base.getY());
     
                 // Clipping
                 if (x < -maxClipW) continue;
@@ -360,6 +438,44 @@ MouseMotionListener, MouseListener, ComponentListener
                 }
             }
         }
+    }
+    
+    /**
+     * 
+     * @param g2 Graphics context
+     * @param label The text of the label
+     * @param position The known position of one edge of the label
+     * @param direction The general direction that the label should extend from the known edge
+     * @return position for lower left corner of label as used by Graphics.drawString()
+     */
+    protected Vector2D getLabelCorner(Graphics2D g2, String label, Vector2D position, Vector2D direction) {
+        FontRenderContext frc = g2.getFontRenderContext();
+
+        Rectangle2D labelBounds =  g2.getFont().getStringBounds(label, frc);
+        double labelHeight = labelBounds.getHeight();
+        double labelWidth = labelBounds.getWidth();
+        
+        double x, y;
+        
+        // Four cases of label placement
+        if (direction.x() > 0.707) { // label to right
+            x = position.x();
+            y = position.y() + labelHeight * 0.25;
+        }
+        else if (direction.x() < -0.707) { // label to left
+            x = position.x() - labelWidth;
+            y = position.y() + labelHeight * 0.25;
+        }
+        else if (direction.y() > 0.707) { // label above
+            x = position.x() - labelWidth * 0.5;
+            y = position.y();
+        }
+        else { // label below
+            x = position.x() - labelWidth * 0.5;
+            y = position.y() + labelHeight * 0.5;
+        }
+        
+        return new Vector2DClass(x, y);
     }
     
     public void highlightResidue(Residue r, Color c) {}
@@ -408,8 +524,8 @@ MouseMotionListener, MouseListener, ComponentListener
     public void mouseReleased(MouseEvent event) {}
     public void mouseClicked(MouseEvent event) {
         if (event.getClickCount() == 2) {
-            int screenCenterX = getWidth() / 2;
-            int screenCenterY = getHeight() / 2;
+            double screenCenterX = getWidth() * 0.5;
+            double screenCenterY = getHeight() * 0.5;
             transform.translate(screenCenterX - event.getX(), event.getY() - screenCenterY);
             repaint();
         }
@@ -417,7 +533,7 @@ MouseMotionListener, MouseListener, ComponentListener
     
     // MouseWheelListener
     public void mouseWheelMoved(MouseWheelEvent event) {
-        zoom(Math.pow(1.30, event.getWheelRotation()));
+        zoom(Math.pow(1.15, event.getWheelRotation()));
     }
     
     // MouseMotionListener
@@ -436,6 +552,7 @@ MouseMotionListener, MouseListener, ComponentListener
         private double centerX = 0;
         private double centerY = 0;
         private double scale = 1.0;
+        private boolean flipY = true;
         
         public Transform2D(double cenX, double cenY, double scale) {
             this.centerX = cenX;
@@ -448,7 +565,15 @@ MouseMotionListener, MouseListener, ComponentListener
         }
         
         public double y(double y) {
-            return scale * (y + centerY);
+            double answer = scale * (y + centerY);
+            if (flipY)
+                return -answer;
+            else
+                return answer;
+        }
+        
+        public Vector2D transform(Vector2D v) {
+            return new Vector2DClass(x(v.x()), y(v.y()));
         }
         
         public void zoom(double zoomFactor) {
@@ -457,7 +582,10 @@ MouseMotionListener, MouseListener, ComponentListener
         
         protected void translate(double transX, double transY) {
             centerX += transX / scale;
-            centerY += transY / scale;
+            if (false)
+                centerY -= transY / scale;
+            else
+                centerY += transY / scale;
         }
 
     }

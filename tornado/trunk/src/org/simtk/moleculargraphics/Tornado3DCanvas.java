@@ -78,7 +78,7 @@ public class Tornado3DCanvas extends StructureCanvas
     vtkRenderer overlayRenderer;
     vtkImageData logoImageData = null;
     vtkPNGReader logoReader;
-    vtkActor2D logoActor;
+    vtkActor2D logoActor = null;
     int logoWidth;
     int logoHeight;
 
@@ -177,7 +177,7 @@ public class Tornado3DCanvas extends StructureCanvas
     public void clear() {
         super.clear();
         
-        if ( (showLogo) && (logoActor != null) )
+        if (logoActor != null)
             GetRenderer().AddActor2D(logoActor);
     }
     
@@ -268,7 +268,7 @@ public class Tornado3DCanvas extends StructureCanvas
     {
         // System.err.println("resize");
         
-        if (showLogo) {
+        if (logoActor != null) {
             Lock();
             
             // int logoX = getWidth()/2 - logoWidth;
@@ -301,38 +301,6 @@ public class Tornado3DCanvas extends StructureCanvas
     public void componentHidden(ComponentEvent e) {}
     public void componentShown(ComponentEvent e) {}
 
-    public void setStereoRedBlue() {
-        // vtk later than version 4.4 is required for full color anaglyph
-        // try {rw.SetStereoTypeToAnaglyph();}
-        // catch (NoSuchMethodError exc) {rw.SetStereoTypeToRedBlue();}
-        
-        Lock();
-        
-        rw.SetStereoTypeToAnaglyph();
-
-        rw.StereoRenderOn();
-        
-        UnLock();
-    }
-    public void setStereoInterlaced() {
-        Lock();
-        
-        rw.SetStereoTypeToInterlaced();
-        rw.StereoRenderOn();
-        
-        UnLock();
-    }
-    public void setStereoOff() {
-        Lock();
-        
-        rw.StereoRenderOff();
-        
-        UnLock();
-    }
-    public void setStereoCrossEye() {
-        // TODO - create cross-eye view using multiple viewports
-    }
-        
     public void resetCameraClippingRange() {
         super.resetCameraClippingRange();
 
@@ -377,10 +345,6 @@ public class Tornado3DCanvas extends StructureCanvas
         
         // UnLock();
     }
-    
-    // Make the lock/unlock methods public
-    public int Lock() {return super.Lock();}
-    public int UnLock() {return super.UnLock();}
     
     boolean pickIsPending = false;
     vtkCellPicker picker = new vtkCellPicker();        

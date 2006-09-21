@@ -52,8 +52,8 @@ public class ResidueSphereActor extends GlyphCartoon {
         super();
 
         sphereSource.SetRadius(1.0);
-        sphereSource.SetThetaResolution(8);
-        sphereSource.SetPhiResolution(8);
+        sphereSource.SetThetaResolution(18);
+        sphereSource.SetPhiResolution(12);
         
         setGlyphSource(sphereSource.GetOutput());
         // lineGlyph.SetSource(sphereSource.GetOutput());

@@ -22,18 +22,21 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Aug 21, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.toon.secstruct;
 
-import org.simtk.moleculargraphics.cartoon.BoundingBox;
+import org.simtk.geometry3d.*;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+public class NumberTick {
+    // TODO - distinguish between major ticks and minor ticks
+    public BasePosition basePosition;
+    public Vector2D labelDirection;
+    public String label;
+    NumberTick(BasePosition position, Vector2D direction, String label) {
+        this.basePosition = position;
+        this.labelDirection = direction;
+        this.label = label;
+    }
 }

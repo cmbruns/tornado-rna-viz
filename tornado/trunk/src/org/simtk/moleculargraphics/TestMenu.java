@@ -22,18 +22,26 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Sep 7, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.moleculargraphics;
 
-import org.simtk.moleculargraphics.cartoon.BoundingBox;
+import javax.swing.*;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+public class TestMenu extends MolApp {
+    public static void main(String [] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {new TestMenu();}
+        });
+    }
+    
+    TestMenu() {
+        JMenuBar bar = new JMenuBar();
+        JMenu menu = new JMenu("File");
+        bar.add(menu);
+        setJMenuBar(bar);
+        setSize(200,200);
+        setVisible(true);
+    }
 }

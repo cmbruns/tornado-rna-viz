@@ -63,7 +63,7 @@ public class InertialRotationThread extends Thread {
     // Don't let multiple rotations pile up
     private volatile boolean eventPending = false;
     
-    private Tornado3DCanvas canvas;
+    private StructureCanvas canvas;
     private Tornado tornado;
     private vtkCamera cam;
     

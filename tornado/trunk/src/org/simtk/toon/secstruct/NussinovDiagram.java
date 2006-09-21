@@ -51,6 +51,7 @@ extends SecondaryStructureDiagramClass
         // 1) Store positions of residues
         double currentAngle = startAngle;
         Map<Residue, BasePosition> residuePositions = new HashMap<Residue, BasePosition>();
+        int residueCount = 0;
         for (Residue residue : molecule.residues()) {
             double x = radius * Math.cos(currentAngle);
             double y = radius * Math.sin(currentAngle);
@@ -59,7 +60,25 @@ extends SecondaryStructureDiagramClass
             basePositions().add(position);
             residuePositions.put(residue, position);
 
+            // Tick marks
+            Vector2D labelDirection = (new Vector2DClass(x, y)).unit();
+            int resNum = residue.getResidueNumber();
+            NumberTick tick = new NumberTick(position, labelDirection, ""+resNum);
+            int maxResCount = molecule.residues().size() - 1;
+            
+            if (residueCount == 0) // label first residue
+                majorTicks().add(tick);
+            else if (residueCount < 3); // Too close to beginning for label
+            else if (residueCount == maxResCount) // label last residue
+                majorTicks().add(tick);
+            else if (residueCount > (maxResCount - 3)); // too close to end                 
+            else if ((resNum % 100) == 0) // label every 100
+                majorTicks().add(tick);
+            else if ((resNum % 10) == 0) // minor label every 10
+                minorTicks().add(tick);
+            
             currentAngle += anglePerResidue;
+            residueCount ++;
         }
         
         // 2) Store base pair positions

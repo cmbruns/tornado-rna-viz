@@ -37,7 +37,7 @@ import java.text.DecimalFormat;
 public class ScaleBar 
 implements ComponentListener // Notice when window size changes
 {
-    vtkPanel window;
+    StructureCanvas window;
     vtkCamera camera = null;
     
     private double[] whiteColor = {1,1,1};
@@ -59,7 +59,7 @@ implements ComponentListener // Notice when window size changes
     private vtkActor2D backdropActor = new vtkActor2D();
     private int backdropBorder = 3;
 
-    public ScaleBar(vtkPanel window) {
+    public ScaleBar(StructureCanvas window) {
         this.window = window;
         
         this.window.addComponentListener(this);
@@ -93,7 +93,7 @@ implements ComponentListener // Notice when window size changes
         actors.add(lineActor);
         
         // Text label
-        textMapper.SetInput("3.7 furlongs"); // This will be overwritten
+        textMapper.SetInput(""); // This will be overwritten
         textMapper.GetTextProperty().SetColor(barColor);
         textMapper.GetTextProperty().SetOpacity(opacity);        
         textActor.SetMapper(textMapper);
@@ -152,7 +152,11 @@ implements ComponentListener // Notice when window size changes
         imageMapper.SetColorLevel(127.5);
         imageMapper.SetRenderToRectangle(1);
         // vtkActor2D backdropActor = new vtkActor2D();
-        backdropActor.SetMapper(imageMapper); 
+        backdropActor.SetMapper(imageMapper);
+        
+        backdropActor.SetPosition(5,5);
+        backdropActor.SetPosition2(0.01, 0.01);
+        
         return backdropActor;
     }
     

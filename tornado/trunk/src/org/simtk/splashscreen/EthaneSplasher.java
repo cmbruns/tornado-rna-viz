@@ -22,18 +22,15 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Sep 11, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.splashscreen;
 
-import org.simtk.moleculargraphics.cartoon.BoundingBox;
-
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+public class EthaneSplasher {
+    public static void main(String[] args) {
+        SplashWindow.splash(EthaneSplasher.class.getClassLoader().getResource("images/ethane_splash.png"));
+        SplashWindow.invokeMain("org.simtk.moleculargraphics.EthaneDemo", args);
+        SplashWindow.disposeSplash();
+    }
 }

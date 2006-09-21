@@ -32,11 +32,11 @@ import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.*;
 
 public class SequencingNucleotideColorScheme implements ColorScheme {
-    private static Color adenylateColor = new Color(200, 255, 200); // green
-    private static Color guanylateColor = new Color(255, 255, 200); // yellow or black
-    private static Color cytidylateColor = new Color(150, 220, 255); // blue or cyan
-    private static Color thymidylateColor = new Color(255, 200, 220); // red
-    private static Color uridylateColor = new Color(255, 200, 220); // red
+    private static Color adenylateColor = new Color(150, 255, 150); // green
+    private static Color guanylateColor = new Color(255, 255, 100); // yellow or black
+    private static Color cytidylateColor = new Color(120, 160, 255); // blue or cyan
+    private static Color thymidylateColor = new Color(255, 130, 160); // red
+    private static Color uridylateColor = new Color(255, 130, 160); // red
     
     public static SequencingNucleotideColorScheme
         SEQUENCING_NUCLEOTIDE_COLOR_SCHEME = new SequencingNucleotideColorScheme();
