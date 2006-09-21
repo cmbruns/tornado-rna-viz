@@ -89,6 +89,12 @@ public class AtomClass implements Atom {
         if (position == null) return null;
         return position.getCoordinates();
     }
+
+    public void setCoordinates(Vector3D v) {
+        if (position == null) position = new AtomPosition(v);
+        else position.setCoordinates(v);
+    }
+
     public double distance(Atom atom2) {return getCoordinates().distance(atom2.getCoordinates());}
 
     public Residue getResidue() {return residue;}

@@ -29,6 +29,33 @@ package org.simtk.geometry3d;
 public class Matrix3DClass extends MathMatrixClass implements MutableMatrix3D {
     static public Matrix3D identity = new Matrix3DClass(1,0,0, 0,1,0, 0,0,1);
 
+    public static Matrix3D axisAngle(Vector3D axis, double angle) {
+        // 1) Move axis to x axis
+        Vector3D v1 = axis;
+        Vector3D v0 = Vector3DClass.X_AXIS;
+        if (v1.unit().dot(v0) > 0.8) v0 = Vector3DClass.Y_AXIS;
+        Vector3D v2 = v0.cross(v1).unit();
+        Vector3D v3 = v1.cross(v2);
+        Matrix3D rot1 = new Matrix3DClass(
+                v1.x(), v1.y(), v1.z(),
+                v2.x(), v2.y(), v2.z(),
+                v3.x(), v3.y(), v3.z()
+                );
+
+        // 2) rotate about x axis
+        double c = Math.cos(angle);
+        double s = Math.sin(angle);
+        Matrix3D rot2 = new Matrix3DClass(
+                1, 0, 0,
+                0, c, -s,
+                0, s, c
+                );
+        
+        // 3) move back from x axis to original
+        
+        return rot1.transpose().times(rot2.times(rot1));
+    }
+    
     public Matrix3DClass() {super(3,3);}
 
     public Matrix3DClass(MathMatrix m) {

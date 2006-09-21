@@ -32,10 +32,12 @@ import java.text.ParseException;
 import org.simtk.geometry3d.*;
 
 public class AtomPosition {
-    private Vector3D coordinates;
-    private char pdbAltLoc;
-    private double temperatureFactor;
-    private double occupancy;
+    private Vector3D coordinates = null;
+    private char pdbAltLoc = ' ';
+    private double temperatureFactor = 0.0;
+    private double occupancy = 0.0;
+    
+    public AtomPosition(Vector3D coordinates) {setCoordinates(coordinates);}
     
     public AtomPosition(String pdbLine)
     throws ParseException
@@ -92,7 +94,7 @@ public class AtomPosition {
     public double getTemperatureFactor() {return this.temperatureFactor;}
     public char getPdbAltLoc() {return this.pdbAltLoc;}
     
-    private void setCoordinates(Vector3D v) {
+    public void setCoordinates(Vector3D v) {
         this.coordinates = v;
     }
     

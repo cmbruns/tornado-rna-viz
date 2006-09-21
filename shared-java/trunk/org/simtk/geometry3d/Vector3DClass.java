@@ -40,6 +40,10 @@ import java.util.*;
  */
 public class Vector3DClass extends MathVectorClass implements MutableVector3D {
 
+    public static final Vector3D X_AXIS = new Vector3DClass(1,0,0);
+    public static final Vector3D Y_AXIS = new Vector3DClass(0,1,0);
+    public static final Vector3D Z_AXIS = new Vector3DClass(0,0,1);
+    
     public Vector3DClass() {
         super(3);
         setX(0);
