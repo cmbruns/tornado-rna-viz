@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+"
+  codebase="https://simtk.org/svn/rna-viz-proto/shared-java/trunk/webstart/"
+>
+<information>
+  <title>Shared SimTK Java classes</title>
+  <vendor>Stanford University</vendor>
+  <homepage href="https://simtk.org/" />
+  <description>Supports SimTK applications</description>
+</information>
+<offline-allowed/>
+<security>
+  <all-permissions/>
+</security>
+<resources>
+  <j2se version="1.4+" />
+  <jar href="s_SimtkSharedJava.jar" />
+</resources>
+<component-desc />
+</jnlp>

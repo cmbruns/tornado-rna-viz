@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+"
-  codebase="http://public.simtk.org/distrib/simtk_shared_java/webstart/"
+  codebase="file://localhost/C:/Program Files/SimtkSharedJava/SimtkSharedJava"
 >
 <information>
   <title>Shared SimTK Java classes</title>
@@ -13,7 +13,7 @@
   <all-permissions/>
 </security>
 <resources>
-  <j2se version="1.4+" />
+  <j2se version="1.4+ 1.5+ 1.6+" />
   <jar href="s_SimtkSharedJava.jar" />
   <jar href="s_BrowserLauncher.jar" />
   <jar href="s_jdom.jar" />
