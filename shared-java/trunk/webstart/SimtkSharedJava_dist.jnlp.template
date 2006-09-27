@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+"
-  codebase="@WEB_START_BASE_URL@"
+  codebase="@WEB_START_DIST_BASE_URL@"
 >
 <information>
   <title>Shared SimTK Java classes</title>
