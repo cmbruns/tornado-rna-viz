@@ -8,15 +8,20 @@ IF($ENV{JAVA_HOME})
 ENDIF($ENV{JAVA_HOME})
 
 # Variables related to Java Web Start installation
-SET(INSTALL_SUBDIR ${PROJECT_NAME} CACHE PATH "RELATIVE directory name where files will be installed")
-SET(WEB_START_BASE_URL "file://localhost/${CMAKE_INSTALL_PREFIX}/${INSTALL_SUBDIR}" CACHE STRING "URL where Java Webstart files will be located")
-IF(WIN32)
-  STRING(REGEX REPLACE "C:" "C:" WEB_START_BASE_URL ${WEB_START_BASE_URL})
-ENDIF(WIN32)
+SET(SIMTK_SHARED_JAVA_VERSION "1.0.0rc1" CACHE STRING "Simtk shared Java version number for new build")
+SET(INSTALL_SUBDIR ${PROJECT_NAME}/${SIMTK_SHARED_JAVA_VERSION} CACHE PATH "RELATIVE directory name where files will be installed")
+# 1) One local installation for testing
+SET(WEB_START_TEST_BASE_URL "file://localhost/${CMAKE_INSTALL_PREFIX}/${INSTALL_SUBDIR}" CACHE STRING "URL where Java Webstart local test files will be located")
+# 2) One remote installation for distribution
+SET(WEB_START_DIST_BASE_URL "http://public.simtk.org/distrib/simtk_shared_java/${SIMTK_SHARED_JAVA_VERSION}" CACHE STRING "URL where Java Webstart distributed files will be located")
 
-SET(JNLP_TEMPLATE_FILE_NAME ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}.jnlp.template)
-SET(JNLP_OUTPUT_FILE_NAME ${JAR_OUTPUT_PATH}/${PROJECT_NAME}.jnlp)
-CONFIGURE_FILE(${JNLP_TEMPLATE_FILE_NAME} ${JNLP_OUTPUT_FILE_NAME} @ONLY)
+# Create two jnlp files with appropriately modified code base URLs
+SET(JNLP_TEST_TEMPLATE_FILE_NAME ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_test.jnlp.template)
+SET(JNLP_DIST_TEMPLATE_FILE_NAME ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_dist.jnlp.template)
+SET(JNLP_TEST_OUTPUT_FILE_NAME ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_test.jnlp)
+SET(JNLP_DIST_OUTPUT_FILE_NAME ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_dist.jnlp)
+CONFIGURE_FILE(${JNLP_TEST_TEMPLATE_FILE_NAME} ${JNLP_TEST_OUTPUT_FILE_NAME} @ONLY)
+CONFIGURE_FILE(${JNLP_DIST_TEMPLATE_FILE_NAME} ${JNLP_DIST_OUTPUT_FILE_NAME} @ONLY)
 
 # Variables related to private key signing of jar file
 # The private key must remain on CDs inserted only during signing
@@ -31,7 +36,7 @@ SET(
 )
 
 
-FILE(GLOB_RECURSE SOURCE_FILES org/*.java)
+FILE(GLOB_RECURSE SOURCE_FILES src/*.java)
 SET(JAR_FILE_NAME SimtkSharedJava.jar)
 
 SET(JAR_RESOURCE_PATH ${CMAKE_SOURCE_DIR})
@@ -48,6 +53,7 @@ INSTALL_FILES(
 	${JAR_OUTPUT_PATH}/s_${JAR_FILE_NAME}
 	${CMAKE_SOURCE_DIR}/webstart/s_BrowserLauncher.jar
 	${CMAKE_SOURCE_DIR}/webstart/s_jdom.jar
-        ${JNLP_OUTPUT_FILE_NAME}
+        ${JNLP_TEST_OUTPUT_FILE_NAME}
+        ${JNLP_DIST_OUTPUT_FILE_NAME}
 )
 
