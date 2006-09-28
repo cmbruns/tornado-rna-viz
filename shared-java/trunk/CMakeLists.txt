@@ -10,7 +10,7 @@ ELSE(DO_SIGN_JARS)
   SET(SIGNED_JAR_PREFIX "")
 ENDIF(DO_SIGN_JARS)
 
-# Decide whether to make test and/or distribution JNLP files
+# Decide whether to make local and/or distribution JNLP files
 SET(DO_BUILD_TEST ON CACHE BOOL "Create JNLP for local testing?")
 SET(DO_BUILD_DIST OFF CACHE BOOL "Create JNLP for distribution?")
 IF(DO_BUILD_DIST)
@@ -40,8 +40,8 @@ ENDIF(DO_SIGN_JARS)
 IF(DO_BUILD_TEST)
   # Create jnlp files with appropriately modified code base URLs
   SET(WEB_START_TEST_BASE_URL "file://localhost/${CMAKE_INSTALL_PREFIX}/${INSTALL_SUBDIR}" CACHE STRING "URL where Java Webstart local test files will be located")
-  SET(JNLP_TEST_TEMPLATE_FILE_NAME ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_test.jnlp.template)
-  SET(JNLP_TEST_OUTPUT_FILE_NAME ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_test.jnlp)
+  SET(JNLP_TEST_TEMPLATE_FILE_NAME ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_local.jnlp.template)
+  SET(JNLP_TEST_OUTPUT_FILE_NAME ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_local.jnlp)
   CONFIGURE_FILE(${JNLP_TEST_TEMPLATE_FILE_NAME} ${JNLP_TEST_OUTPUT_FILE_NAME} @ONLY)
 ENDIF(DO_BUILD_TEST)
 IF(DO_BUILD_DIST)
