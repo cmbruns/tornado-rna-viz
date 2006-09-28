@@ -1,5 +1,31 @@
 PROJECT(SimtkSharedJava Java)
 
+### Product version number: this should be different for each source change ###
+# Change of major version suggests significant change in features, scope, and/or API
+SET(PROJECT_MAJOR_VERSION "1" CACHE STRING "Major version number of ${PROJECT}")
+# Change of minor version suggests backwards compatible change in API and documentation
+SET(PROJECT_MINOR_VERSION "0" CACHE STRING "Major version number of ${PROJECT}")
+# Change of build version suggests a new build for bug fix, patch, or any other small reason
+# Get the subversion revision number if we can
+# It's possible that WIN32 installs use svnversion through cygwin.
+FIND_PROGRAM (SVNVERSION svnversion)
+IF (SVNVERSION-NOTFOUND)
+  MESSAGE (STATUS 
+    "Could not find svnversion executable. Suggest you install a
+Subversion client with svnversion in path."
+    )
+  SET (SVN_REVISION unknown) 
+ELSE (SVNVERSION-NOTFOUND)
+  EXEC_PROGRAM (${SVNVERSION}
+    ARGS "${PROJECT_SOURCE_DIR}"
+    OUTPUT_VARIABLE SVN_REVISION)
+ENDIF (SVNVERSION-NOTFOUND)
+# Remove colon from build version
+STRING(REGEX REPLACE ":" "_" SVN_REVISION ${SVN_REVISION})
+SET(PROJECT_BUILD_VERSION ${SVN_REVISION} CACHE STRING "Build version number of ${PROJECT}")
+# 
+SET(PROJECT_VERSION "${PROJECT_MAJOR_VERSION}.${PROJECT_MINOR_VERSION}.${PROJECT_BUILD_VERSION}")
+
 # Decide whether to sign the jar files
 SET(DO_SIGN_JARS ON CACHE BOOL "Sign the jar files?")
 IF (DO_SIGN_JARS)
@@ -20,10 +46,9 @@ ELSE(DO_BUILD_DIST)
 ENDIF(DO_BUILD_DIST)
 
 # Choose release version number and subdirectory name
-SET(SIMTK_SHARED_JAVA_VERSION "1.0.0rc1" CACHE STRING "Simtk shared Java version number for new build")
-SET(INSTALL_SUBDIR ${PROJECT_NAME}/${SIMTK_SHARED_JAVA_VERSION} CACHE PATH "RELATIVE directory name where files will be installed")
+SET(INSTALL_SUBDIR ${PROJECT_NAME}/${PROJECT_VERSION} CACHE PATH "RELATIVE directory name where files will be installed")
 
-SET(JAR_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/webstart CACHE PATH "jar dir")
+SET(JAR_OUTPUT_PATH ${CMAKE_BINARY_DIR}/jars CACHE PATH "jar dir")
 SET(CLASS_OUTPUT_PATH ${CMAKE_BINARY_DIR}/classes CACHE PATH "class dir")
 
 IF(DO_SIGN_JARS)
@@ -40,15 +65,15 @@ ENDIF(DO_SIGN_JARS)
 IF(DO_BUILD_TEST)
   # Create jnlp files with appropriately modified code base URLs
   SET(WEB_START_TEST_BASE_URL "file://localhost/${CMAKE_INSTALL_PREFIX}/${INSTALL_SUBDIR}" CACHE STRING "URL where Java Webstart local test files will be located")
-  SET(JNLP_TEST_TEMPLATE_FILE_NAME ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_local.jnlp.template)
-  SET(JNLP_TEST_OUTPUT_FILE_NAME ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_local.jnlp)
-  CONFIGURE_FILE(${JNLP_TEST_TEMPLATE_FILE_NAME} ${JNLP_TEST_OUTPUT_FILE_NAME} @ONLY)
+  SET(JNLP_TEST_TEMPLATE_FILE_PATH ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_local.jnlp.template)
+  SET(JNLP_TEST_OUTPUT_FILE_PATH ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_local.jnlp)
+  CONFIGURE_FILE(${JNLP_TEST_TEMPLATE_FILE_PATH} ${JNLP_TEST_OUTPUT_FILE_PATH} @ONLY)
 ENDIF(DO_BUILD_TEST)
 IF(DO_BUILD_DIST)
-  SET(WEB_START_DIST_BASE_URL "http://public.simtk.org/distrib/simtk_shared_java/${SIMTK_SHARED_JAVA_VERSION}" CACHE STRING "URL where Java Webstart distributed files will be located")
-  SET(JNLP_DIST_TEMPLATE_FILE_NAME ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_dist.jnlp.template)
-  SET(JNLP_DIST_OUTPUT_FILE_NAME ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_dist.jnlp)
-  CONFIGURE_FILE(${JNLP_DIST_TEMPLATE_FILE_NAME} ${JNLP_DIST_OUTPUT_FILE_NAME} @ONLY)
+  SET(WEB_START_DIST_BASE_URL "http://public.simtk.org/distrib/${PROJECT}/${PROJECT_VERSION}" CACHE STRING "URL where Java Webstart distributed files will be located")
+  SET(JNLP_DIST_TEMPLATE_FILE_PATH ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_dist.jnlp.template)
+  SET(JNLP_DIST_OUTPUT_FILE_PATH ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_dist.jnlp)
+  CONFIGURE_FILE(${JNLP_DIST_TEMPLATE_FILE_PATH} ${JNLP_DIST_OUTPUT_FILE_PATH} @ONLY)
   IF(DO_SIGN_JARS)
     IF(NOT WAS_BUILD_DIST)
       # For security, keystore is located on a removable CD
@@ -77,7 +102,7 @@ SET(
 )
 
 FILE(GLOB_RECURSE SOURCE_FILES src/*.java)
-SET(JAR_FILE_NAME SimtkSharedJava.jar)
+SET(JAR_FILE_NAME ${PROJECT}.jar)
 
 # Include certain non-class files ("resources") in the jar archive
 SET(JAR_RESOURCE_PATH ${CMAKE_SOURCE_DIR})
@@ -94,7 +119,7 @@ INSTALL_FILES(
 	${JAR_OUTPUT_PATH}/${SIGNED_JAR_PREFIX}${JAR_FILE_NAME}
 	${CMAKE_SOURCE_DIR}/webstart/${SIGNED_JAR_PREFIX}BrowserLauncher.jar
 	${CMAKE_SOURCE_DIR}/webstart/${SIGNED_JAR_PREFIX}jdom.jar
-    ${JNLP_TEST_OUTPUT_FILE_NAME}
-    ${JNLP_DIST_OUTPUT_FILE_NAME}
+    ${JNLP_TEST_OUTPUT_FILE_PATH}
+    ${JNLP_DIST_OUTPUT_FILE_PATH}
 )
 
