@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+"
+  codebase="file://localhost/C:/Program Files/SimtkSharedJava/SimtkSharedJava/1.0.431"
+>
+<information>
+  <title>Shared SimTK Java classes</title>
+  <vendor>Stanford University</vendor>
+  <homepage href="https://simtk.org/" />
+  <description>Supports SimTK applications</description>
+</information>
+<offline-allowed/>
+<security>
+  <all-permissions/>
+</security>
+<resources>
+  <j2se version="1.4+ 1.5+ 1.6+" />
+  <jar href="s_SimtkSharedJava.jar" />
+  <jar href="s_BrowserLauncher.jar" />
+  <jar href="s_jdom.jar" />
+</resources>
+<component-desc />
+</jnlp>
