@@ -129,6 +129,7 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
             ren.SetBackground(r,g,b);
         }
         
+        repaint();
     }
     
     public Color getBackgroundColor() {

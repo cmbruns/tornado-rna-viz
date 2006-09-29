@@ -315,13 +315,8 @@ implements ResidueHighlightListener
 
         menu = new JMenu("Edit");
         menuBar.add(menu);
-        menuItem = new JMenuItem(undoRedoMechanism.getUndoAction());
-        menuItem.setEnabled(false);
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem(undoRedoMechanism.getRedoAction());
-        menuItem.setEnabled(false);
-        menu.add(menuItem);
+        menu.add(new JMenuItem(undoRedoMechanism.getUndoAction()));
+        menu.add(new JMenuItem(undoRedoMechanism.getRedoAction()));
 
         menuItem = new JMenuItem("Delete");
         menuItem.setEnabled(false);
@@ -794,8 +789,10 @@ implements ResidueHighlightListener
             
             if (oldColor.equals(newColor)) return;
             
-            UndoableEdit edit = new BackgroundColorEdit(oldColor, newColor, colorName);
             setBackgroundColor(newColor);
+
+            // Permit "undo" of background color selection
+            UndoableEdit edit = new BackgroundColorEdit(oldColor, newColor, colorName);
             undoRedoMechanism.addEdit(edit);
         }
         

@@ -1,39 +1,46 @@
 PROJECT(Tornado Java)
 
-SET(JAR_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/webstart CACHE PATH "jar dir")
-SET(CLASS_OUTPUT_PATH ${CMAKE_BINARY_DIR}/classes CACHE PATH "class dir")
-SET(JAVA_TOOLS_PATH JAVA_TOOLS_PATH_UNKNOWN CACHE PATH "Directory containing java, jarsigner, and jar commands")
+### Product version number: this should be different for each source change ###
+# Change of major version suggests significant change in features, scope, and/or API
+SET(PROJECT_MAJOR_VERSION "1")
 
-# Variables related to private key signing of jar file
-# The private key must remain on CDs inserted only during signing
-SET(KEYSTORE_FILE_NAME "D:/simtkjava_signing/simtkjava.store" CACHE FILEPATH "What is the location of the Java keystore file containing your private key?")
-SET(KEYSTORE_USERNAME "simtkjava" CACHE STRING "What is the keystore username?")
-SET(KEYSTORE_PASSWORD PASSWORD_UNKNOWN CACHE STRING "What is the keystore password?")
+# Change of minor version suggests backwards compatible change in API and documentation
+SET(PROJECT_MINOR_VERSION "0")
 
+# File 
+SET(PRODUCT_VERSION_JAVA_TEMPLATE src/TornadoVersion.java.template)
+
+SET(SHARED_JAVA_PATH "C:/Program Files/SimtkSharedJava/SimtkSharedJava/1.0.432" CACHE FILEPATH "Directory containing local SimtkSharedJava jar files")
+SET(SHARED_JAVA_LOCAL_URL "file://localhost/${SHARED_JAVA_PATH}/SimtkSharedJava_local.jnlp" CACHE STRING "URL of local Simtk Shared Java jnlp file")
 SET(VTK_JAR ${CMAKE_SOURCE_DIR}/webstart/vtk500ribbonpatch.jar CACHE FILEPATH "Location of VTK jar file")
-SET(SIMTK_SHARED_JAVA_JAR "C:/Program Files/SimtkSharedJava/SimtkSharedJavaJar/s_SimtkSharedJava.jar" CACHE FILEPATH "Location of SimtkSharedJava jar file")
 
 SET(
   CLASSPATH
   ${CMAKE_SOURCE_DIR}/jnlp.jar
-  ${CMAKE_SOURCE_DIR}/webstart/jogl.jar
-  ${CMAKE_SOURCE_DIR}/webstart/s_BrowserLauncher.jar
+  ${SHARED_JAVA_PATH}/s_SimtkSharedJava.jar
+  ${SHARED_JAVA_PATH}/s_BrowserLauncher.jar
+  ${SHARED_JAVA_DIR}/s_jdom.jar
   ${CMAKE_SOURCE_DIR}/src
   ${VTK_JAR}
-  ${SIMTK_SHARED_JAVA_JAR}
+  ${CMAKE_SOURCE_DIR}/webstart/jogl.jar
 )
 
+FILE(GLOB_RECURSE SOURCE_FILES src/*.java)
+SET(JAR_FILE_NAME ${PROJECT_NAME}.jar)
 
-FILE(GLOB_RECURSE SOURCE_FILES src/org/*.java)
-SET(JAR_FILE_NAME Tornado.jar)
-
-SET(JAR_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/resources CACHE PATH "Directory containing resources for jar file")
-FILE(GLOB_RECURSE RESOURCE_FILES RELATIVE ${JAR_RESOURCE_PATH} resources/images/*)
-# Remove all contents of .svn directories
+# Include certain non-class files ("resources") in the jar archive
+SET(JAR_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/resources)
+FILE(GLOB_RECURSE RESOURCE_FILES RELATIVE ${JAR_RESOURCE_PATH} resources/*)
+# Do not use contents of .svn directories from the resource areas
 STRING(REGEX REPLACE "[^;]*\\.svn[^;]*" "" RESOURCE_FILES "${RESOURCE_FILES}")
 STRING(REGEX REPLACE ";+" ";" RESOURCE_FILES "${RESOURCE_FILES}")
 
 INCLUDE(${CMAKE_SOURCE_DIR}/JavaBuild.cmake)
 
-INSTALL_FILES(/TornadoJar FILES ${JAR_OUTPUT_PATH}/s_${JAR_FILE_NAME})
-
+INSTALL_FILES(
+	/${INSTALL_SUBDIR}
+	FILES 
+	${JAR_OUTPUT_PATH}/${SIGNED_JAR_PREFIX}${JAR_FILE_NAME}
+    ${JNLP_TEST_OUTPUT_FILE_PATH}
+    ${JNLP_DIST_OUTPUT_FILE_PATH}
+)
