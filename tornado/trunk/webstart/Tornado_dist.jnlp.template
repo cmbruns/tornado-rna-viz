@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+"
+  codebase="@WEB_START_DIST_BASE_URL@"
+>
+  <information>
+    <title>SimTK ToRNAdo</title>
+    <vendor>Stanford National Center for Biomedical Computation</vendor>
+    <homepage href="http://simtk.org/" />
+    <description>View RNA structures</description>
+  </information>
+  <offline-allowed/>
+  <resources>
+    <j2se version="1.5+ 1.6+" />
+    <property name="apple.laf.useScreenMenuBar" value="true"/>
+    <jar href="s_Tornado.jar"/>
+    <extension href="@SHARED_JAVA_DIST_URL@" name="SimTK shared java classes"/>
+    <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
+    <extension href="http://public.simtk.org/~SIMTK%5ccmbruns/vtk_binaries/vtk500ribbonpatch/vtk500ribbonpatch.jnlp" name="vtk5.0.0 with patch to ribbonFilter.cxx"/>
+  </resources>
+  <security>
+    <all-permissions/>
+  </security>
+<application-desc main-class="org.simtk.splashscreen.TornadoSplasher" />
+</jnlp>
