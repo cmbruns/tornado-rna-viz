@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+"
-  codebase="http://public.simtk.org/distrib/SimtkSharedJava/1.0.432"
+  codebase="file://localhost/C:/Program Files/SimtkSharedJava/SimtkSharedJava/0.2.443"
 >
 <information>
   <title>Shared SimTK Java classes</title>
