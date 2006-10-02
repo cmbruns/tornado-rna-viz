@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+"
-  codebase="file://localhost/C:/Program Files/Tornado/Tornado/1.0.435"
+  codebase="file://localhost/C:/Program Files/Tornado/Tornado/0.8.444"
 >
   <information>
     <title>SimTK ToRNAdo</title>
@@ -13,7 +13,7 @@
     <j2se version="1.5+ 1.6+" />
     <property name="apple.laf.useScreenMenuBar" value="true"/>
     <jar href="s_Tornado.jar"/>
-    <extension href="file://localhost/C:/Program Files/SimtkSharedJava/SimtkSharedJava/1.0.432/SimtkSharedJava_local.jnlp" name="SimTK shared java classes"/>
+    <extension href="file://localhost/C:/Program Files/SimtkSharedJava/SimtkSharedJava/0.2.443/SimtkSharedJava_local.jnlp" name="SimTK shared java classes"/>
     <extension href="https://jogl.dev.java.net/webstart/jogl.jnlp" name="jogl"/>
     <extension href="http://public.simtk.org/~SIMTK%5ccmbruns/vtk_binaries/vtk500ribbonpatch/vtk500ribbonpatch.jnlp" name="vtk5.0.0 with patch to ribbonFilter.cxx"/>
   </resources>
