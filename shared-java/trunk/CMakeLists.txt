@@ -2,10 +2,10 @@ PROJECT(SimtkSharedJava Java)
 
 ### Product version number: this should be different for each source change ###
 # Change of major version suggests significant change in features, scope, and/or API
-SET(PROJECT_MAJOR_VERSION "1")
+SET(PROJECT_MAJOR_VERSION "0")
 
 # Change of minor version suggests backwards compatible change in API and documentation
-SET(PROJECT_MINOR_VERSION "0")
+SET(PROJECT_MINOR_VERSION "2")
 
 # File 
 SET(PRODUCT_VERSION_JAVA_TEMPLATE src/version/SimtkSharedJavaVersion.java.template)
