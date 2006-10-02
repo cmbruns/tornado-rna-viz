@@ -8,7 +8,7 @@ SET(PROJECT_MAJOR_VERSION "1")
 SET(PROJECT_MINOR_VERSION "0")
 
 # File 
-SET(PRODUCT_VERSION_JAVA_TEMPLATE src/SimtkSharedJavaVersion.java.template)
+SET(PRODUCT_VERSION_JAVA_TEMPLATE src/version/SimtkSharedJavaVersion.java.template)
 
 SET(
   CLASSPATH
