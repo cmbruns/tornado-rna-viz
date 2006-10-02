@@ -2,17 +2,17 @@ PROJECT(Tornado Java)
 
 ### Product version number: this should be different for each source change ###
 # Change of major version suggests significant change in features, scope, and/or API
-SET(PROJECT_MAJOR_VERSION "1")
+SET(PROJECT_MAJOR_VERSION "0")
 
 # Change of minor version suggests backwards compatible change in API and documentation
-SET(PROJECT_MINOR_VERSION "0")
+SET(PROJECT_MINOR_VERSION "8")
 
 # File 
-SET(PRODUCT_VERSION_JAVA_TEMPLATE src/TornadoVersion.java.template)
+SET(PRODUCT_VERSION_JAVA_TEMPLATE src/version/TornadoVersion.java.template)
 
-SET(SHARED_JAVA_PATH "C:/Program Files/SimtkSharedJava/SimtkSharedJava/1.0.432" CACHE FILEPATH "Directory containing local SimtkSharedJava jar files")
+SET(SHARED_JAVA_PATH "C:/Program Files/SimtkSharedJava/SimtkSharedJava/0.2.440" CACHE FILEPATH "Directory containing local SimtkSharedJava jar files")
 SET(SHARED_JAVA_LOCAL_URL "file://localhost/${SHARED_JAVA_PATH}/SimtkSharedJava_local.jnlp" CACHE STRING "URL of local Simtk Shared Java jnlp file")
-SET(SHARED_JAVA_DIST_URL "http://public.simtk.org/distrib/SimtkSharedJava/1.0.432/SimtkSharedJava_dist.jnlp" CACHE STRING "URL of local Simtk Shared Java jnlp file")
+SET(SHARED_JAVA_DIST_URL "http://public.simtk.org/distrib/SimtkSharedJava/0.2.440/SimtkSharedJava_dist.jnlp" CACHE STRING "URL of web Simtk Shared Java jnlp file")
 SET(VTK_JAR ${CMAKE_SOURCE_DIR}/webstart/vtk500ribbonpatch.jar CACHE FILEPATH "Location of VTK jar file")
 
 SET(

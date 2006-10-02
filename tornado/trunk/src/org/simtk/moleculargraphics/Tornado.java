@@ -40,8 +40,6 @@ import java.io.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
-import java.net.*;
-import javax.jnlp.*;
 
 import org.simtk.gui.UndoRedoMechanism;
 import org.simtk.moleculargraphics.cartoon.*;
@@ -50,8 +48,6 @@ import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.pdb.*;
 import org.simtk.rnaml.RnamlDocument;
 import org.simtk.rnaml.RnamlExportDocument;
-//import org.simtk.util.*;
-import edu.stanford.ejalbert.BrowserLauncher;
 import vtk.*;
 import org.simtk.toon.secstruct.*;
 
@@ -101,6 +97,13 @@ implements ResidueHighlightListener
     
     Tornado() {
         setTitle("SimTK ToRNAdo: (no structures currently loaded)");
+        
+        // Test layered Pane
+        // Result - awt Canvas can occlude vtkPanel, but cannot be transparent
+        // java.awt.Canvas testPanel = new java.awt.Canvas();
+        // testPanel.setBackground(Color.blue);
+        // testPanel.setBounds(10,10,100,100);
+        // getLayeredPane().add(testPanel, new Integer(2), 0);
         
         // try {currentCartoon = (MoleculeCartoon) initialCartoonType.newInstance();} 
         // catch (InstantiationException exc) {System.err.println(exc);}
@@ -931,7 +934,6 @@ implements ResidueHighlightListener
         /**
 		 * 
 		 */
-		private static final long serialVersionUID = 1L;
 
 		LoadStructureDialog(JFrame f) {
             super(f, null, Tornado.this.currentPath);
@@ -1090,7 +1092,8 @@ implements ResidueHighlightListener
     
     class AboutTornadoAction implements ActionListener {
         String aboutString = 
-            " SimTK ToRNAdo version " + tornadoVersion + "\n"+
+             " SimTK ToRNAdo version " + version.TornadoVersion.VERSION + "\n"+
+             " (using SimTK shared Java version " + version.SimtkSharedJavaVersion.VERSION + ")\n"+
              " Copyright (c) 2005, Stanford University. All rights reserved. \n"+
              " Redistribution and use in source and binary forms, with or without \n"+
              " modification, are permitted provided that the following conditions\n"+
@@ -1182,12 +1185,10 @@ implements ResidueHighlightListener
         Tornado.this.repaint();
     }
 
-    public static final long serialVersionUID = 1L;
-
     // private JMenu cartoonMenu = null;
     private JMenu viewMenu = null;
 
-    private static String tornadoVersion = "0.90";
+    private static String tornadoVersion = version.TornadoVersion.VERSION;
     
     private SequencePane sequencePane;
     private SequenceCartoonCanvas sequenceCartoonCanvas;
