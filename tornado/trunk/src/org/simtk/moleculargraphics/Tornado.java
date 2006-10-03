@@ -1094,7 +1094,8 @@ implements ResidueHighlightListener
         String aboutString = 
              " SimTK ToRNAdo version " + version.TornadoVersion.VERSION + "\n"+
              " (using SimTK shared Java version " + version.SimtkSharedJavaVersion.VERSION + ")\n"+
-             " Copyright (c) 2005, Stanford University. All rights reserved. \n"+
+             " Copyright (c) 2005-2006, Christopher M. Bruns and Stanford University. \n"+
+             " All rights reserved. \n"+
              " Redistribution and use in source and binary forms, with or without \n"+
              " modification, are permitted provided that the following conditions\n"+
              " are met: \n"+
