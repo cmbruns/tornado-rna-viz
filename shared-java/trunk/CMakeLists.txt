@@ -1,5 +1,7 @@
 PROJECT(SimtkSharedJava Java)
 
+Include(Dart)
+
 ### Product version number: this should be different for each source change ###
 # Change of major version suggests significant change in features, scope, and/or API
 SET(PROJECT_MAJOR_VERSION "0")
