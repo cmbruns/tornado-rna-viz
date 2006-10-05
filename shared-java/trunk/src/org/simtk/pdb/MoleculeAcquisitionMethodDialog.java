@@ -450,7 +450,7 @@ class MoleculeFileChooser extends JFileChooser {
     }
 }
 
-class PdbLinkLabel extends JLinkLabel {
+@SuppressWarnings("serial") class PdbLinkLabel extends JLinkLabel {
     PdbLinkLabel(String text) {super(text);}
     
     @Override

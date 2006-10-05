@@ -34,9 +34,6 @@ package org.simtk.molecularstructure;
 import java.io.*;
 import java.util.*;
 import java.net.*;
-import org.simtk.rnaml.RnamlDocument;
-import org.simtk.molecularstructure.atom.*;
-import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.protein.*;
 
 import org.simtk.geometry3d.*;

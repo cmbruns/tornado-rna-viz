@@ -31,6 +31,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.JLabel;
 
+@SuppressWarnings("serial")
 public class JLinkLabel extends JLabel {
 
     final Color COLOR_NORMAL = Color.BLUE;

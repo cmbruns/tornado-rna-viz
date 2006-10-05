@@ -32,7 +32,6 @@ import java.util.*;
 import org.simtk.geometry3d.InsufficientPointsException;
 import org.simtk.geometry3d.MassBody;
 import org.simtk.geometry3d.Plane3D;
-import org.simtk.geometry3d.Vector3D;
 
 /** 
  *  

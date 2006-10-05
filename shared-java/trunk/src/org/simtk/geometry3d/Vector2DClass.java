@@ -168,7 +168,6 @@ public class Vector2DClass extends MathVectorClass implements MutableVector2D {
     }
     
     public Vector2D rotate(double angle) {
-        double cosAngle = Math.cos(angle);
         MutableVector2D answer = new Vector2DClass(this);
         
         double c = Math.cos(angle);

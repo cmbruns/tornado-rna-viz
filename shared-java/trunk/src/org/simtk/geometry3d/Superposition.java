@@ -106,7 +106,7 @@ public class Superposition {
         
         // Note order of eigenvalues from largest to smallest
         Integer[] eigenOrder = {new Integer(0),new Integer(1),new Integer(2)};
-        Comparator eigenComparator = new EigenComparator(eigenValues);
+        Comparator<Integer> eigenComparator = new EigenComparator(eigenValues);
         Arrays.sort(eigenOrder, eigenComparator);
         
         // a is the matrix of eigenvectors, in decreasing order
@@ -155,10 +155,10 @@ public class Superposition {
     }
 }
 
-class EigenComparator implements java.util.Comparator {
+class EigenComparator implements java.util.Comparator<Integer> {
     MathVector eigenvalues;
     EigenComparator(MathVector eigenvalues) {this.eigenvalues = eigenvalues;}
-    public int compare(Object o1, Object o2) {
+    public int compare(Integer o1, Integer o2) {
         int i1 = ((Integer)o1).intValue();
         int i2 = ((Integer)o2).intValue();
         if (eigenvalues.get(i1) < eigenvalues.get(i2)) return 1;

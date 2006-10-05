@@ -52,7 +52,7 @@ public class UndoRedoMechanism {
     }
 
     // The Undo action
-    class UndoAction extends AbstractAction {
+    @SuppressWarnings("serial") class UndoAction extends AbstractAction {
         public UndoAction() {
             super("Can't Undo");
             setEnabled(false);
@@ -84,6 +84,7 @@ public class UndoRedoMechanism {
     }
     
     // The Redo action
+    @SuppressWarnings("serial") 
     class RedoAction extends AbstractAction {
         public RedoAction() {
             super("Can't Redo");

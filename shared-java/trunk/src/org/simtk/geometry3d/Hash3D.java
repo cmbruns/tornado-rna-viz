@@ -81,6 +81,7 @@ import java.util.*;
   * the method by a factor of O((1/s)^3 * ln(1/s)).  This effect will kick in
   * more slowly than the "s too big" effect.
  */
+@SuppressWarnings("serial")
 public class Hash3D<V> extends HashMap<Vector3D, V>
 // implements Map<Vector3D, V> // Java 1.5 only...
 {
@@ -92,7 +93,7 @@ public class Hash3D<V> extends HashMap<Vector3D, V>
     // Store little cubes at canonical positions
     // The possible positions of these cubes are independent of the data.
     // Deciding which cubes are instantiated does depend upon the data.
-    private Hashtable cubelets = new Hashtable();
+    private Map<String, Cubelet> cubelets = new HashMap<String, Cubelet>();
 
 
     // Constructor
@@ -141,7 +142,7 @@ public class Hash3D<V> extends HashMap<Vector3D, V>
     // (deep copy of container and positions)
     // (shallow copy of contained objects)
     public Object clone() {
-        Hash3D answer = new Hash3D(cubeletSize);
+        Hash3D<V> answer = new Hash3D<V>(cubeletSize);
         Iterator i = keySet().iterator();
         while (i.hasNext()) {
             Vector3D v = (Vector3D) i.next();
@@ -199,11 +200,11 @@ public class Hash3D<V> extends HashMap<Vector3D, V>
      * @return
      */
     public Collection<V> neighborValues(Vector3D position, double radius) {
-        Vector neighbors = new Vector();
+        Vector<V> neighbors = new Vector<V>();
         Iterator i = neighborKeys(position, radius).iterator();
         while (i.hasNext()) {
             Vector3D v = (Vector3D) i.next();
-            Object object = get(v);
+            V object = get(v);
             if (object != null) neighbors.add(object);
         }
         return neighbors;
@@ -217,8 +218,8 @@ public class Hash3D<V> extends HashMap<Vector3D, V>
      * @param radius
      * @return
      */
-    public Collection neighborKeys(Vector3D position, double radius) {
-        Vector neighbors = new Vector();
+    public Collection<Vector3D> neighborKeys(Vector3D position, double radius) {
+        Vector<Vector3D> neighbors = new Vector<Vector3D>();
         double dSquared = radius * radius;
         
         // Figure out the set of nearby cubelets that we might need to search
@@ -276,12 +277,10 @@ public class Hash3D<V> extends HashMap<Vector3D, V>
         String key = hashKey(position);
         if ( !cubelets.containsKey(key) )
             cubelets.put( key, new Cubelet() );
-        return (Cubelet) cubelets.get(key);        
+        return cubelets.get(key);        
     }
 
-    private class Cubelet extends Hashtable {
+    private class Cubelet extends HashMap<Vector3D, V> {
         static final long serialVersionUID = 1L; // serialization tag
     }
-
-    public static final long serialVersionUID = 3L; // serialization tag
 }

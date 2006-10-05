@@ -39,5 +39,6 @@ import java.util.Vector;
  * Simple container for manipulating sets of PDBAtoms
  *
  */
+@SuppressWarnings("serial")
 public class AtomSet extends Vector<Atom> {
 }

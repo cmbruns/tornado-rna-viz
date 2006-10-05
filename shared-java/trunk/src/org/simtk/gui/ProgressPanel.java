@@ -87,7 +87,7 @@ public class ProgressPanel extends JPanel implements ProgressDialog, ActionListe
 
     private void initializeThrobber() {
         // Get images for throbber
-        Vector throbberIcons = new Vector();
+        Vector<Icon> throbberIcons = new Vector<Icon>();
         String[] throbberImageNames = {
                 "resources/images/throbber/ThrobberSmall000.png",
                 "resources/images/throbber/ThrobberSmall030.png",

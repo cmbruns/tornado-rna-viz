@@ -26,6 +26,7 @@
  */
 package org.simtk.molecularstructure;
 
+@SuppressWarnings("serial")
 public class InsufficientAtomsException extends Exception {
     public InsufficientAtomsException() {super();}
     public InsufficientAtomsException(String message) {super(message);}

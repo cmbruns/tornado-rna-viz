@@ -36,7 +36,7 @@ import java.util.*;
 import javax.swing.filechooser.FileFilter;
 
 public class MyJFileFilter extends FileFilter {
-    private Vector acceptableExtensions = new Vector();
+    private Vector<String> acceptableExtensions = new Vector<String>();
     private String m_description = "(no file description given)";
 
     public static String getExtension(File f) {

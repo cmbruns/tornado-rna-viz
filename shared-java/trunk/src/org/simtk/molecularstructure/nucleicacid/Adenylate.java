@@ -32,8 +32,6 @@
 package org.simtk.molecularstructure.nucleicacid;
 
 import java.util.*;
-import java.awt.*;
-import org.simtk.molecularstructure.atom.*;
 
 /** 
  * @author Christopher Bruns

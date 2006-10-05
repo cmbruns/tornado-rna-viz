@@ -26,6 +26,7 @@
  */
 package org.simtk.geometry3d;
 
+@SuppressWarnings("serial")
 public class InsufficientPointsException extends Exception {
     public InsufficientPointsException() {super();}
     public InsufficientPointsException(String message) {super(message);}

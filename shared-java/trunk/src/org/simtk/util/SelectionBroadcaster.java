@@ -41,8 +41,8 @@ import java.util.*;
   * to learn about the seletion through this object.
  */
 public class SelectionBroadcaster {
-    protected HashSet listeners = new HashSet();
-    protected HashSet selectedObjects = new HashSet();
+    protected Set<SelectionListener> listeners = new HashSet<SelectionListener>();
+    protected Set<Selectable> selectedObjects = new HashSet<Selectable>();
 
     public void addSelectionListener(SelectionListener l) {listeners.add(l);}
 

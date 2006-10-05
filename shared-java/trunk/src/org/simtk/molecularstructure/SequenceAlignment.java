@@ -42,7 +42,7 @@ public class SequenceAlignment {
     
     private Biopolymer molecule1 = null;
     private Biopolymer molecule2 = null;
-    private Vector alignedResidues = new Vector();    
+    private Vector<ResiduePair> alignedResidues = new Vector<ResiduePair>();    
 
     public SequenceAlignment(Biopolymer m1, Biopolymer m2) {
         this.molecule1 = m1;
@@ -81,8 +81,8 @@ public class SequenceAlignment {
      * Only works for residues that have atomic structures.
      */
     public HomogeneousTransform getSuperposition() {
-        Vector v1 = new Vector();
-        Vector v2 = new Vector();
+        Vector<Vector3D> v1 = new Vector<Vector3D>();
+        Vector<Vector3D> v2 = new Vector<Vector3D>();
         
         // Extract backbone positions of structural residues from the alignment
         for (Iterator i = this.iterator(); i.hasNext();) {

@@ -40,7 +40,6 @@ import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.atom.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.molecularstructure.protein.*;
-import org.simtk.mvc.*;
 
 /**
  * @author Christopher Bruns
@@ -131,8 +130,8 @@ implements Molecule
         
         char chainIdentifier = '\0';
         // String residueName;
-        char insertionCode = '\0';
-        int residueIndex = -1;
+        // char insertionCode = '\0';
+        // int residueIndex = -1;
         
 		String pdbLine;
 		reader.mark(200);
@@ -321,8 +320,8 @@ implements Molecule
                 
                 // Make sure it is in the same molecule or part
                 if ( (atom1 instanceof Atom) && (atom2 instanceof Atom) ) {
-                    Atom pdbAtom1 = (Atom) atom1;
-                    Atom pdbAtom2 = (Atom) atom2;
+                    // Atom pdbAtom1 = (Atom) atom1;
+                    // Atom pdbAtom2 = (Atom) atom2;
                     // Must be in the same chain
 //                    if (pdbAtom1.getChainIdentifier() != pdbAtom2.getChainIdentifier()) continue;
 //                    // Must be in the same alternate location group

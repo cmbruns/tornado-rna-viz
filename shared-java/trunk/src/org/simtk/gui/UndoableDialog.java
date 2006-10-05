@@ -48,7 +48,7 @@ implements ActionListener
     private ParameterSetModel currentParameterState = new ParameterSetModel();
     
     // Store previous choices in an array
-    private Vector parameterHistory = new Vector();
+    private Vector<Object> parameterHistory = new Vector<Object>();
     private int currentHistoryPosition = parameterHistory.size() - 1;
     // private Object latestAcceptedParameters;
 

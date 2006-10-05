@@ -34,7 +34,6 @@ package org.simtk.molecularstructure.nucleicacid;
 import java.util.*;
 import org.simtk.geometry3d.*;
 import org.simtk.molecularstructure.*;
-import org.simtk.molecularstructure.SecondaryStructureClass.SourceType;
 import org.simtk.molecularstructure.atom.*;
 
 /** 
