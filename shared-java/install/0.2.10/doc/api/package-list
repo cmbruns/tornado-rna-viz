@@ -1,0 +1,10 @@
+org.simtk.geometry3d
+org.simtk.gui
+org.simtk.molecularstructure
+org.simtk.molecularstructure.atom
+org.simtk.molecularstructure.nucleicacid
+org.simtk.molecularstructure.protein
+org.simtk.mvc
+org.simtk.pdb
+org.simtk.rnaml
+org.simtk.util
