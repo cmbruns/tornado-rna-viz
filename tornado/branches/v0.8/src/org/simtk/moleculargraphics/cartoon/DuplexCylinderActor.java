@@ -107,7 +107,7 @@ public class DuplexCylinderActor extends ActorCartoonClass {
                 helixDirection = helixDirection.plus(normal);
             
                 // Accumulate centroid
-                Vector3DClass helixCenter = bp.getHelixCenter();
+                Vector3D helixCenter = bp.getHelixCenter();
                 basePairCentroids.put(bp, helixCenter);
                 helixCentroid = helixCentroid.plus(helixCenter);
 

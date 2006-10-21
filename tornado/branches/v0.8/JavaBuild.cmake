@@ -63,9 +63,6 @@ ELSE(DO_BUILD_DIST)
   SET(DO_SIGN_JARS_DIST OFF)
 ENDIF(DO_BUILD_DIST)
 
-# Choose release version number and subdirectory name
-SET(INSTALL_SUBDIR ${PROJECT_NAME}/${PROJECT_VERSION} CACHE PATH "RELATIVE directory name where files will be installed")
-
 SET(JAR_OUTPUT_PATH ${CMAKE_BINARY_DIR}/jars CACHE PATH "jar dir")
 SET(CLASS_OUTPUT_PATH ${CMAKE_BINARY_DIR}/classes CACHE PATH "class dir")
 
@@ -82,7 +79,7 @@ ENDIF(DO_SIGN_JARS)
 # Otherwise, it's OK to use a lame test key for signing
 IF(DO_BUILD_TEST)
   # Create jnlp files with appropriately modified code base URLs
-  SET(WEB_START_TEST_BASE_URL "file://localhost/${CMAKE_INSTALL_PREFIX}/${INSTALL_SUBDIR}" CACHE STRING "URL where Java Webstart local test files will be located")
+  SET(WEB_START_TEST_BASE_URL "file://localhost/${CMAKE_INSTALL_PREFIX}/bin" CACHE STRING "URL where Java Webstart local test files will be located")
   SET(JNLP_TEST_TEMPLATE_FILE_PATH ${CMAKE_SOURCE_DIR}/webstart/${PROJECT_NAME}_local.jnlp.template)
   SET(JNLP_TEST_OUTPUT_FILE_PATH ${JAR_OUTPUT_PATH}/${PROJECT_NAME}_local.jnlp)
   CONFIGURE_FILE(${JNLP_TEST_TEMPLATE_FILE_PATH} ${JNLP_TEST_OUTPUT_FILE_PATH} @ONLY)
@@ -149,3 +146,35 @@ STRING(REPLACE ".template" "" VERSION_SOURCE_FILE_NAME ${VERSION_TEMPLATE_FILE_N
 CONFIGURE_FILE(${PRODUCT_VERSION_JAVA_TEMPLATE} ${AUTOGEN_SRC_DIR}/version/${VERSION_SOURCE_FILE_NAME})
 ADD_CUSTOM_TARGET(${JAR_FILE_NAME}-version ALL ${CMAKE_Java_COMPILER} -d ${CLASS_OUTPUT_PATH} ${AUTOGEN_SRC_DIR}/version/${VERSION_SOURCE_FILE_NAME})
 ADD_DEPENDENCIES(${JAR_FILE_NAME}-javac ${JAR_FILE_NAME}-version)
+
+# Generate API documentation
+SET(DOC_DIR ${CMAKE_BINARY_DIR}/doc)
+FILE(MAKE_DIRECTORY ${DOC_DIR})
+SET(API_DOC_DIR ${DOC_DIR}/javadoc)
+FILE(MAKE_DIRECTORY ${API_DOC_DIR})
+SET(JAVADOC_PACKAGES org)
+SET(JAVADOC_STRING "${PROJECT_NAME} API v${PROJECT_VERSION}")
+ADD_CUSTOM_TARGET(${JAR_FILE_NAME}-javadoc 
+	ALL 
+	${Java_JAVADOC}
+	-sourcepath ${CMAKE_SOURCE_DIR}/src
+	-classpath "${CLASSPATH_INTERNAL}"
+	-d ${API_DOC_DIR}
+	-subpackages ${JAVADOC_PACKAGES}
+	-doctitle "${JAVADOC_STRING}"
+	-windowtitle "${JAVADOC_STRING}"
+	-use
+	)
+
+# Kludge to install full directory structure of javadoc files
+CONFIGURE_FILE(
+	${CMAKE_CURRENT_SOURCE_DIR}/install_javadoc.cmake.in
+	${CMAKE_CURRENT_BINARY_DIR}/install_javadoc.cmake
+	@ONLY
+	)
+SET_TARGET_PROPERTIES(
+	${JAR_FILE_NAME}-javadoc
+	PROPERTIES
+	PRE_INSTALL_SCRIPT
+	"${CMAKE_CURRENT_BINARY_DIR}/install_javadoc.cmake"
+	)
