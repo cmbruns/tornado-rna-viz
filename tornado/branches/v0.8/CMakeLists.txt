@@ -12,11 +12,11 @@ SET(PROJECT_MINOR_VERSION "8")
 # File 
 SET(PRODUCT_VERSION_JAVA_TEMPLATE src/version/TornadoVersion.java.template)
 
-SET(SHARED_JAVA_DEFAULT_VERSION "0.2.443")
-SET(SHARED_JAVA_PATH "C:/Program Files/SimtkSharedJava/SimtkSharedJava/${SHARED_JAVA_DEFAULT_VERSION}" CACHE FILEPATH "Directory containing local SimtkSharedJava jar files")
+SET(SHARED_JAVA_DEFAULT_VERSION "0.2")
+SET(SHARED_JAVA_PATH "C:/Program Files/SimtkSharedJava/bin" CACHE FILEPATH "Directory containing local SimtkSharedJava jar files")
 SET(SHARED_JAVA_LOCAL_URL "file://localhost/${SHARED_JAVA_PATH}/SimtkSharedJava_local.jnlp" CACHE STRING "URL of local Simtk Shared Java jnlp file")
 SET(SHARED_JAVA_DIST_URL "http://public.simtk.org/distrib/SimtkSharedJava/${SHARED_JAVA_DEFAULT_VERSION}/SimtkSharedJava_dist.jnlp" CACHE STRING "URL of web Simtk Shared Java jnlp file")
-SET(VTK_JAR ${CMAKE_SOURCE_DIR}/webstart/vtk500ribbonpatch.jar CACHE FILEPATH "Location of VTK jar file")
+SET(VTK_JAR "C:/Program Files/VTK/bin/vtk.jar" CACHE FILEPATH "Location of VTK jar file")
 
 SET(
   CLASSPATH
