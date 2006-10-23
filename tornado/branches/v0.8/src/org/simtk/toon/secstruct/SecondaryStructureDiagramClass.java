@@ -67,7 +67,7 @@ implements SecondaryStructureDiagram
      * Identify a set of base pairs, which, if removed, leaves a set that 
      * has no pseudoknots and no bases with multiple base pairs.
      * @param basePairs
-     * @return
+     * @return a set of base pairs "most" responsible for pseudoknot conflicts
      */
     public static Set<BasePair> findWorstPseudoknotBasePairs(Set<BasePair> basePairs) {
         Set<BasePair> answer = new HashSet<BasePair>();

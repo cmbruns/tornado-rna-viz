@@ -51,7 +51,7 @@ public class ProteinRibbonSegment extends ActorCartoonClass {
      * 
      * @param residue
      * @param endFlag -1 for first residue, +1 for final residue, zero for others
-     * @return
+     * @return a unit vector perpendicular to the chain direction and the direction of main-chain hydrogen bonding.
      */
     protected static Vector3D hBondNormal(Residue residue, int endFlag) {
         Vector3D ca,c,n,o;

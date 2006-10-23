@@ -264,7 +264,7 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     
     /**
      * Get width of entire sequence, not just the visible canvas
-     * @return
+     * @return width of entire sequence in pixels
      */
     public int getTotalSequenceWidth() {
         return (int)(2 * characterSpacing + numberOfResidues * symbolWidth);

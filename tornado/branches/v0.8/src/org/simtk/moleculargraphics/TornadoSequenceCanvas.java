@@ -600,7 +600,7 @@ ResidueCenterListener
     }
     /**
      * What is the total width in pixels of the entire sequence?
-     * @return
+     * @return width of entire sequence in pixels
      */
     public int getSequenceWidth() {
         checkSize(getGraphics());
@@ -609,7 +609,7 @@ ResidueCenterListener
     
     /** 
      * 
-     * @return
+     * @return leftmost visible residue in the display, or null if no residues are visible.
      */
     public Residue getFirstVisibleResidue() {
         int leftPixel = (int) parent.getViewport().getViewRect().getMinX();        

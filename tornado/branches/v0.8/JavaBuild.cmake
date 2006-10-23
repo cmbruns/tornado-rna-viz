@@ -54,6 +54,8 @@ IF (DO_SIGN_JARS)
   FIND_PROGRAM(Java_JARSIGNER jarsigner DOC "Location of java jarsigner program")
 ENDIF(DO_SIGN_JARS)
 
+FIND_PROGRAM(Java_JAVADOC javadoc DOC "Location of javadoc java source code documentation program")
+
 # Decide whether to make local and/or distribution JNLP files
 SET(DO_BUILD_TEST ON CACHE BOOL "Create JNLP for local testing?")
 SET(DO_BUILD_DIST OFF CACHE BOOL "Create JNLP for distribution?")

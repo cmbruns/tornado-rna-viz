@@ -66,7 +66,6 @@ public class NewDuplexCylinderActor extends ActorCartoonClass {
      * 
      * One side effect of this routine is to populate the private residueWedges data structure.
      * 
-     * @param v a list of base pairs to be used to define the helix.
      * @return a cylinder that approximates the location of the base stack.
      */
     static public Cylinder doubleHelixCylinder(Duplex h) 
