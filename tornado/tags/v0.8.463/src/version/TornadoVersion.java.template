@@ -1,0 +1,7 @@
+package version;
+
+// This class is a template so CMake can insert the 
+// version number into the Java program
+public class TornadoVersion {
+    public static final String VERSION = "@PROJECT_VERSION@";
+}
