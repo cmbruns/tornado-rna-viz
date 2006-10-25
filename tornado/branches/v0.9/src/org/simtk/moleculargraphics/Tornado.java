@@ -58,7 +58,7 @@ import org.simtk.toon.secstruct.*;
  *
  */
 public class Tornado extends MolApp 
-implements ResidueHighlightListener
+// implements ResidueHighlightListener
 {
     // private ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
     protected ResidueHighlightBroadcaster residueHighlightBroadcaster = new ResidueHighlightBroadcaster();
@@ -199,7 +199,7 @@ implements ResidueHighlightListener
         // residueHighlightBroadcaster.addSelectionListener(canvas);
         residueHighlightBroadcaster.addResidueHighlightListener(sequenceCartoonCanvas);
         residueHighlightBroadcaster.addResidueHighlightListener((Tornado3DCanvas)canvas);
-        residueHighlightBroadcaster.addResidueHighlightListener(this);
+        // residueHighlightBroadcaster.addResidueHighlightListener(this);
         if (drawSecondaryStructure)
             residueHighlightBroadcaster.addResidueHighlightListener(canvas2D);
         
@@ -937,7 +937,7 @@ implements ResidueHighlightListener
 
 		LoadStructureDialog(JFrame f) {
             super(f, null, Tornado.this.currentPath);
-            setLocationRelativeTo(Tornado.this);
+            setLocationRelativeTo(f);
             setDefaultPdbId("1GRZ");
         }
 
