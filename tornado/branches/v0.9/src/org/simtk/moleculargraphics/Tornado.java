@@ -40,6 +40,7 @@ import java.io.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.util.regex.*;
 
 import org.simtk.gui.UndoRedoMechanism;
 import org.simtk.moleculargraphics.cartoon.*;
@@ -1037,56 +1038,72 @@ public class Tornado extends MolApp
     class SaveImageFileAction implements ActionListener {
         JFileChooser saveImageFileChooser;
         String saveImagePath = ".";
+        Pattern pngNamePattern = Pattern.compile("\\.png$", Pattern.CASE_INSENSITIVE);
 
         public void actionPerformed(ActionEvent e) {
             if ((saveImageFileChooser == null)||(!saveImagePath.equals(Tornado.this.saveImagePath))){
             	saveImagePath = Tornado.this.saveImagePath;
                 saveImageFileChooser = new JFileChooser(Tornado.this.saveImagePath);
                 saveImageFileChooser.addChoosableFileFilter(new PngFileFilter());
+                saveImageFileChooser.setSelectedFile(new File("tornado.png"));
             }
+            
+            // Examine the user's choice of file
             int returnVal = saveImageFileChooser.showSaveDialog(Tornado.this);
+            if (! (returnVal == JFileChooser.APPROVE_OPTION)) return;
 
+            // Remember where the user saved the image for next time
     	    String savePath = saveImageFileChooser.getCurrentDirectory().getPath();
             String FS = System.getProperty("file.separator");
 	        int index = savePath.lastIndexOf(FS);
 	        Tornado.this.saveImagePath = savePath.substring(0, index);
         	saveImagePath = Tornado.this.saveImagePath;
 
-            if(returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = saveImageFileChooser.getSelectedFile();
-                setWait("Saving image file...");
-                // Warn if file exists
-                if (file.exists()) {
-                    int response = JOptionPane.showConfirmDialog(null, "" + file + "\nFile exists.  Overwrite?");
-                    if ( (response == JOptionPane.CANCEL_OPTION) ||
-                         (response == JOptionPane.NO_OPTION)) {
-                        unSetWait("File not overwritten. (" + file.getName() + ")");
-                        return;
-                    }
-                }
-                vtkWindowToImageFilter wti = new vtkWindowToImageFilter();
-                wti.SetInput(canvas.GetRenderWindow());
-                wti.SetMagnification(3);
-                canvas.Lock();
-                wti.Update();
-                canvas.UnLock();
+            // Append ".png" to file name if it is not already present
+            File selectedFile = saveImageFileChooser.getSelectedFile();
+            Matcher pngFileMatcher = pngNamePattern.matcher(selectedFile.getName());
+            File imageFile = selectedFile;
+            if (! pngFileMatcher.find()) {
+                try {imageFile = new File(selectedFile.getCanonicalPath() + ".png");}
+                catch(IOException exc) {} // Ignore trouble renaming file
+            }
 
-                vtkPNGWriter writer = new vtkPNGWriter();
-                try {
-                    writer.SetFileName(file.getCanonicalPath());
-                    writer.SetInput(wti.GetOutput());
-                    writer.Write();
-
-                    JOptionPane.showMessageDialog(null, "Image file save complete.", 
-                            "Image File Write Completed", JOptionPane.INFORMATION_MESSAGE);
-                    unSetWait("Wrote image to file " + file.getCanonicalPath());
-                }
-                catch (IOException exc) {
-                    JOptionPane.showMessageDialog(null, "ERROR! Unable to write to file " + file, 
-                            "Image File Write Error", JOptionPane.ERROR_MESSAGE);
-                    unSetWait("Error writing image file " + file.getName());
+            setWait("Saving image file...");
+            // Warn if file exists
+            if (imageFile.exists()) {
+                int response = JOptionPane.showConfirmDialog(null, "" + imageFile + "\nFile exists.  Overwrite?");
+                if ( (response == JOptionPane.CANCEL_OPTION) ||
+                     (response == JOptionPane.NO_OPTION)) {
+                    unSetWait("File not overwritten. (" + imageFile.getName() + ")");
                     return;
                 }
+            }
+            
+            vtkWindowToImageFilter wti = new vtkWindowToImageFilter();
+            wti.SetInput(canvas.GetRenderWindow());
+
+            // Magnification on Actors2D is broken in VTK -- defer magnification for now
+            // wti.SetMagnification(3);
+            
+            canvas.Lock();
+            wti.Update();
+            canvas.UnLock();
+
+            vtkPNGWriter writer = new vtkPNGWriter();
+            try {
+                writer.SetFileName(imageFile.getCanonicalPath());
+                writer.SetInput(wti.GetOutput());
+                writer.Write();
+
+                JOptionPane.showMessageDialog(null, "Image file save complete.", 
+                        "Image File Write Completed", JOptionPane.INFORMATION_MESSAGE);
+                unSetWait("Wrote image to file " + imageFile.getCanonicalPath());
+            }
+            catch (IOException exc) {
+                JOptionPane.showMessageDialog(null, "ERROR! Unable to write to file " + imageFile, 
+                        "Image File Write Error", JOptionPane.ERROR_MESSAGE);
+                unSetWait("Error writing image file " + imageFile.getName());
+                return;
             }
         }
         
