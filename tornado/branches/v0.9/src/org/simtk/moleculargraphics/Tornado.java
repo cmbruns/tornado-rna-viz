@@ -1041,7 +1041,8 @@ public class Tornado extends MolApp
         public void actionPerformed(ActionEvent e) {
             if ((saveImageFileChooser == null)||(!saveImagePath.equals(Tornado.this.saveImagePath))){
             	saveImagePath = Tornado.this.saveImagePath;
-                saveImageFileChooser = new JFileChooser(Tornado.this.saveImagePath);            
+                saveImageFileChooser = new JFileChooser(Tornado.this.saveImagePath);
+                saveImageFileChooser.addChoosableFileFilter(new PngFileFilter());
             }
             int returnVal = saveImageFileChooser.showSaveDialog(Tornado.this);
 
@@ -1087,6 +1088,29 @@ public class Tornado extends MolApp
                     return;
                 }
             }
+        }
+        
+        class PngFileFilter extends FileFilter {
+            private String getExtension(File f) {
+                String ext = null;
+                String s = f.getName();
+                int i = s.lastIndexOf('.');
+
+                if (i > 0 &&  i < s.length() - 1) {
+                    ext = s.substring(i+1).toLowerCase();
+                }
+                return ext;
+            }
+            public boolean accept(File f) {
+                if (f.isDirectory()) return true;
+
+                String extension = getExtension(f);
+                if (extension == null) return false;
+                if (extension.equals("png")) return true;
+                
+                return false;
+            }
+            public String getDescription() {return "PNG Image files";}
         }
     }
     

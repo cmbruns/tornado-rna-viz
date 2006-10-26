@@ -39,7 +39,7 @@ import java.util.*;
 import vtk.*;
 
 import java.awt.event.*;
-import net.java.games.jogl.*;
+import javax.media.opengl.*;
 import org.simtk.util.*;
 import org.simtk.moleculargraphics.cartoon.ActorCartoon;
 import org.simtk.molecularstructure.*;
@@ -192,7 +192,7 @@ public class Tornado3DCanvas extends StructureCanvas
                     (float) (backgroundColor.getBlue()/255.0)
             };
             
-            gl.glFogfv(GL.GL_FOG_COLOR, fogColor);
+            gl.glFogfv(GL.GL_FOG_COLOR, fogColor, 0);
         }
     }
     
@@ -229,9 +229,7 @@ public class Tornado3DCanvas extends StructureCanvas
                 // This needs to follow a Render command?
                 GLCapabilities capabilities = new GLCapabilities();
                 capabilities.setHardwareAccelerated(true);
-                GLCanvas glCanvas = GLDrawableFactory.getFactory().
-                                      createGLCanvas(capabilities);
-                gl = glCanvas.getGL();
+                gl = GLDrawableFactory.getFactory().createExternalGLContext().getGL();
                 // Render();
         
                 if (fogLinear) { // Linear Fog
@@ -250,7 +248,7 @@ public class Tornado3DCanvas extends StructureCanvas
                         (float) (backgroundColor.getBlue()/255.0)
                 };
                 
-                gl.glFogfv(GL.GL_FOG_COLOR, fogColor);
+                gl.glFogfv(GL.GL_FOG_COLOR, fogColor, 0);
                 gl.glEnable(GL.GL_FOG);
                 gl.glFogf(GL.GL_FOG_DENSITY, (float)0.8);
             }
