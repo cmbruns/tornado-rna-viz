@@ -26,7 +26,7 @@ SET(
   ${SHARED_JAVA_DIR}/s_jdom.jar
   ${CMAKE_SOURCE_DIR}/src
   ${VTK_JAR}
-  ${CMAKE_SOURCE_DIR}/webstart/jogl.jar
+  ${CMAKE_SOURCE_DIR}/webstart/jogl-1_0_0-webstart/jogl.jar
 )
 
 FILE(GLOB_RECURSE SOURCE_FILES src/*.java)
