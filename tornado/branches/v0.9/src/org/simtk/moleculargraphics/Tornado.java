@@ -34,6 +34,7 @@ package org.simtk.moleculargraphics;
 import javax.swing.*;
 import javax.swing.undo.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.event.*;
 
 import java.awt.*;
 import java.io.*;
@@ -61,6 +62,8 @@ import org.simtk.toon.secstruct.*;
 public class Tornado extends MolApp 
 // implements ResidueHighlightListener
 {
+    private String applicationName = "SimTK ToRNADo";
+    
     // private ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
     protected ResidueHighlightBroadcaster residueHighlightBroadcaster = new ResidueHighlightBroadcaster();
     protected ResidueCenterBroadcaster residueCenterBroadcaster = new ResidueCenterBroadcaster();
@@ -97,7 +100,7 @@ public class Tornado extends MolApp
     private UndoRedoMechanism undoRedoMechanism = new UndoRedoMechanism();
     
     Tornado() {
-        setTitle("SimTK ToRNAdo: (no structures currently loaded)");
+        setTitle(applicationName + ": (no structures currently loaded)");
         
         // Test layered Pane
         // Result - awt Canvas can occlude vtkPanel, but cannot be transparent
@@ -312,7 +315,7 @@ public class Tornado extends MolApp
 
         menu.add(new JSeparator());
 
-        menuItem = new JMenuItem("Exit Tornado");
+        menuItem = new JMenuItem("Exit " + applicationName);
         menuItem.addActionListener(new QuitAction());
         menu.add(menuItem);
 
@@ -471,7 +474,7 @@ public class Tornado extends MolApp
         menu = new JMenu("Help");
         menuBar.add(menu);
 
-        menuItem = new JMenuItem("About Tornado");
+        menuItem = new JMenuItem("About " + applicationName);
         menuItem.setEnabled(true);
         menuItem.addActionListener(new AboutTornadoAction());
         menu.add(menuItem);
@@ -1035,19 +1038,12 @@ public class Tornado extends MolApp
         canvas.repaint();
     }
 
-    class SaveImageFileAction implements ActionListener {
-        JFileChooser saveImageFileChooser;
-        String saveImagePath = ".";
-        Pattern pngNamePattern = Pattern.compile("\\.png$", Pattern.CASE_INSENSITIVE);
+    class SaveImageFileAction implements ActionListener, ChangeListener {
+        JFileChooser saveImageFileChooser = new SaveImageFileChooser();
+        private final Pattern pngNamePattern = Pattern.compile("\\.png$", Pattern.CASE_INSENSITIVE);
+        private int magnificationFactor = 2;
 
         public void actionPerformed(ActionEvent e) {
-            if ((saveImageFileChooser == null)||(!saveImagePath.equals(Tornado.this.saveImagePath))){
-            	saveImagePath = Tornado.this.saveImagePath;
-                saveImageFileChooser = new JFileChooser(Tornado.this.saveImagePath);
-                saveImageFileChooser.addChoosableFileFilter(new PngFileFilter());
-                saveImageFileChooser.setSelectedFile(new File("tornado.png"));
-            }
-            
             // Examine the user's choice of file
             int returnVal = saveImageFileChooser.showSaveDialog(Tornado.this);
             if (! (returnVal == JFileChooser.APPROVE_OPTION)) return;
@@ -1071,28 +1067,54 @@ public class Tornado extends MolApp
             setWait("Saving image file...");
             // Warn if file exists
             if (imageFile.exists()) {
-                int response = JOptionPane.showConfirmDialog(null, "" + imageFile + "\nFile exists.  Overwrite?");
-                if ( (response == JOptionPane.CANCEL_OPTION) ||
-                     (response == JOptionPane.NO_OPTION)) {
+                int response = 
+                    JOptionPane.showConfirmDialog(
+                            saveImageFileChooser, 
+                            "" + imageFile + "\nFile exists.  Overwrite?",
+                            applicationName + ": Overwrite image file?",
+                            JOptionPane.YES_NO_OPTION
+                            );
+                if (response != JOptionPane.YES_OPTION) {
                     unSetWait("File not overwritten. (" + imageFile.getName() + ")");
                     return;
                 }
             }
             
-            vtkWindowToImageFilter wti = new vtkWindowToImageFilter();
-            wti.SetInput(canvas.GetRenderWindow());
-
-            // Magnification on Actors2D is broken in VTK -- defer magnification for now
-            // wti.SetMagnification(3);
+            // There are two ways of generating a large image in vtk
+            // Both are broken in vtk version 5.0.2
+            // vtkRenderLargeImage is the less broken of the two
             
-            canvas.Lock();
-            wti.Update();
-            canvas.UnLock();
-
+            boolean useRenderLargeImage = true;
             vtkPNGWriter writer = new vtkPNGWriter();
+            
+            if (useRenderLargeImage) {
+                vtkRenderLargeImage rli = new vtkRenderLargeImage();
+                rli.SetInput(canvas.GetRenderer());
+                rli.SetMagnification(magnificationFactor);
+
+                canvas.Lock();
+                rli.Update();
+                canvas.UnLock();
+
+                writer.SetInput(rli.GetOutput());
+            }
+            
+            else {
+                vtkWindowToImageFilter wti = new vtkWindowToImageFilter();
+                wti.SetInput(canvas.GetRenderWindow());
+
+                // Magnification on Actors2D is broken in VTK -- defer magnification for now
+                wti.SetMagnification(magnificationFactor);
+            
+                canvas.Lock();
+                wti.Update();
+                canvas.UnLock();
+
+                writer.SetInput(wti.GetOutput());
+            }
+
             try {
                 writer.SetFileName(imageFile.getCanonicalPath());
-                writer.SetInput(wti.GetOutput());
                 writer.Write();
 
                 JOptionPane.showMessageDialog(null, "Image file save complete.", 
@@ -1107,33 +1129,69 @@ public class Tornado extends MolApp
             }
         }
         
-        class PngFileFilter extends FileFilter {
-            private String getExtension(File f) {
-                String ext = null;
-                String s = f.getName();
-                int i = s.lastIndexOf('.');
-
-                if (i > 0 &&  i < s.length() - 1) {
-                    ext = s.substring(i+1).toLowerCase();
-                }
-                return ext;
+        // Intercept user changes to magnfication factor
+        public void stateChanged(ChangeEvent changeEvent) {
+            // Capture change in magnification value
+            if (changeEvent.getSource() instanceof JSpinner) {
+                JSpinner spinner = (JSpinner) changeEvent.getSource();
+                magnificationFactor = (Integer) spinner.getValue();
+                System.out.println("Magnification factor = " + magnificationFactor);
             }
-            public boolean accept(File f) {
-                if (f.isDirectory()) return true;
-
-                String extension = getExtension(f);
-                if (extension == null) return false;
-                if (extension.equals("png")) return true;
+        }
+        
+        class SaveImageFileChooser extends JFileChooser {
+            SaveImageFileChooser() {
+                addChoosableFileFilter(new PngFileFilter());
+                setSelectedFile(new File("tornado.png"));
+                setDialogTitle(applicationName + ": Save PNG Image of Structure");
                 
-                return false;
+                // Spinner to adjust the magnification
+                JSpinner magSpinner = new JSpinner(new SpinnerNumberModel(2,1,9,1));
+                magSpinner.addChangeListener(SaveImageFileAction.this);
+                magSpinner.setMaximumSize(magSpinner.getPreferredSize());
+                JPanel spinnerPanel = new JPanel();
+                spinnerPanel.add(magSpinner);
+
+                // One panel to hold the magnfication spinner
+                JPanel magnificationPanel = new JPanel();
+                magnificationPanel.setLayout(new BoxLayout(magnificationPanel, BoxLayout.Y_AXIS));
+                magnificationPanel.add(Box.createVerticalGlue());
+                magnificationPanel.add(new JLabel("Image"));
+                magnificationPanel.add(new JLabel("Magnification"));
+                magnificationPanel.add(new JLabel("Factor:"));
+                magnificationPanel.add(spinnerPanel);
+                magnificationPanel.add(Box.createVerticalGlue());
+                setAccessory(magnificationPanel);
             }
-            public String getDescription() {return "PNG Image files";}
+            
+            class PngFileFilter extends FileFilter {
+                private String getExtension(File f) {
+                    String ext = null;
+                    String s = f.getName();
+                    int i = s.lastIndexOf('.');
+
+                    if (i > 0 &&  i < s.length() - 1) {
+                        ext = s.substring(i+1).toLowerCase();
+                    }
+                    return ext;
+                }
+                public boolean accept(File f) {
+                    if (f.isDirectory()) return true;
+
+                    String extension = getExtension(f);
+                    if (extension == null) return false;
+                    if (extension.equals("png")) return true;
+                    
+                    return false;
+                }
+                public String getDescription() {return "PNG Image files";}
+            }
         }
     }
     
     class AboutTornadoAction implements ActionListener {
         String aboutString = 
-             " SimTK ToRNAdo version " + version.TornadoVersion.VERSION + "\n"+
+             " " + applicationName + " version " + version.TornadoVersion.VERSION + "\n"+
              " (using SimTK shared Java version " + version.SimtkSharedJavaVersion.VERSION + ")\n"+
              " Copyright (c) 2005-2006, Christopher M. Bruns and Stanford University. \n"+
              " All rights reserved. \n"+
@@ -1163,7 +1221,7 @@ public class Tornado extends MolApp
             
         
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(null, aboutString, "About SimTK ToRNAdo", 
+            JOptionPane.showMessageDialog(null, aboutString, "About " + applicationName, 
                     JOptionPane.INFORMATION_MESSAGE);
         }
     }
@@ -1218,12 +1276,12 @@ public class Tornado extends MolApp
             else pdbId = "("+pdbId+") ";
             
             if (moleculeCollection.getTitle().length() > 0)
-                Tornado.this.setTitle(titleBase + ": " + pdbId + moleculeCollection.getTitle());
+                Tornado.this.setTitle(applicationName + ": " + pdbId + moleculeCollection.getTitle());
             else
-                Tornado.this.setTitle(titleBase + ": " + pdbId + "(unknown molecule)");
+                Tornado.this.setTitle(applicationName + ": " + pdbId + "(unknown molecule)");
         }
         else 
-            Tornado.this.setTitle(titleBase + ": (no molecules currently loaded)");
+            Tornado.this.setTitle(applicationName + ": (no molecules currently loaded)");
         Tornado.this.repaint();
     }
 
