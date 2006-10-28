@@ -1039,12 +1039,13 @@ public class Tornado extends MolApp
     }
 
     class SaveImageFileAction implements ActionListener, ChangeListener {
-        JFileChooser saveImageFileChooser = new SaveImageFileChooser();
+        SaveImageFileChooser saveImageFileChooser = new SaveImageFileChooser();
         private final Pattern pngNamePattern = Pattern.compile("\\.png$", Pattern.CASE_INSENSITIVE);
         private int magnificationFactor = 2;
 
         public void actionPerformed(ActionEvent e) {
             // Examine the user's choice of file
+            saveImageFileChooser.updateResolution();
             int returnVal = saveImageFileChooser.showSaveDialog(Tornado.this);
             if (! (returnVal == JFileChooser.APPROVE_OPTION)) return;
 
@@ -1135,11 +1136,14 @@ public class Tornado extends MolApp
             if (changeEvent.getSource() instanceof JSpinner) {
                 JSpinner spinner = (JSpinner) changeEvent.getSource();
                 magnificationFactor = (Integer) spinner.getValue();
-                System.out.println("Magnification factor = " + magnificationFactor);
+                // System.out.println("Magnification factor = " + magnificationFactor);
+                saveImageFileChooser.updateResolution();
             }
         }
         
         class SaveImageFileChooser extends JFileChooser {
+            JLabel imageResolutionLabel = new JLabel("");
+            
             SaveImageFileChooser() {
                 addChoosableFileFilter(new PngFileFilter());
                 setSelectedFile(new File("tornado.png"));
@@ -1160,8 +1164,16 @@ public class Tornado extends MolApp
                 magnificationPanel.add(new JLabel("Magnification"));
                 magnificationPanel.add(new JLabel("Factor:"));
                 magnificationPanel.add(spinnerPanel);
+                magnificationPanel.add(imageResolutionLabel);
                 magnificationPanel.add(Box.createVerticalGlue());
                 setAccessory(magnificationPanel);
+            }
+
+            public void updateResolution() {
+                int width = canvas.getWidth();
+                int height = canvas.getHeight();
+                String resolutionString = "" + width * magnificationFactor + "x" + height * magnificationFactor;
+                imageResolutionLabel.setText(resolutionString);
             }
             
             class PngFileFilter extends FileFilter {
