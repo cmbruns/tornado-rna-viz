@@ -2,6 +2,9 @@ PROJECT(Tornado Java)
 
 Include(Dart)
 
+# Just make one configuration type for nightly builds
+SET(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING  "" FORCE)
+
 ### Product version number: this should be different for each source change ###
 # Change of major version suggests significant change in features, scope, and/or API
 SET(PROJECT_MAJOR_VERSION "0")
