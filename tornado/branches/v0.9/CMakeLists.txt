@@ -2,9 +2,6 @@ PROJECT(Tornado Java)
 
 Include(Dart)
 
-# Just make one configuration type for nightly builds
-SET(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING  "" FORCE)
-
 ### Product version number: this should be different for each source change ###
 # Change of major version suggests significant change in features, scope, and/or API
 SET(PROJECT_MAJOR_VERSION "0")
@@ -43,6 +40,9 @@ STRING(REGEX REPLACE "[^;]*\\.svn[^;]*" "" RESOURCE_FILES "${RESOURCE_FILES}")
 STRING(REGEX REPLACE ";+" ";" RESOURCE_FILES "${RESOURCE_FILES}")
 
 INCLUDE(${CMAKE_SOURCE_DIR}/JavaBuild.cmake)
+
+# Just make one configuration type for nightly builds
+SET(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING  "" FORCE)
 
 # Install jar files in bin directory
 INSTALL_FILES(
