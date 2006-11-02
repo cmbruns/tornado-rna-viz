@@ -29,7 +29,7 @@
  * Created on Apr 24, 2005
  *
  */
-package org.simtk.moleculargraphics;
+package org.simtk.tornado;
 
 import javax.swing.*;
 import javax.swing.undo.*;
@@ -44,16 +44,8 @@ import java.util.List;
 import java.util.regex.*;
 
 import org.simtk.gui.UndoRedoMechanism;
-import org.simtk.moleculargraphics.ActiveMoleculeBroadcaster;
-import org.simtk.moleculargraphics.InertialRotationThread;
-import org.simtk.moleculargraphics.MolApp;
-import org.simtk.moleculargraphics.ResidueCenterBroadcaster;
-import org.simtk.moleculargraphics.ResidueHighlightBroadcaster;
-import org.simtk.moleculargraphics.SequenceCartoonCanvas;
-import org.simtk.moleculargraphics.SequencePane;
-import org.simtk.moleculargraphics.Tornado3DCanvas;
-import org.simtk.moleculargraphics.MolApp.BrowserLaunchAction;
-import org.simtk.moleculargraphics.MolApp.QuitAction;
+import org.simtk.moleculargraphics.*;
+import org.simtk.tornado.command.*;
 import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
