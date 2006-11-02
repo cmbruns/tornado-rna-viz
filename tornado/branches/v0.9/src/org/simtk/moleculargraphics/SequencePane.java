@@ -36,6 +36,7 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+import org.simtk.tornado.Tornado;
 import org.simtk.util.*;
 import org.simtk.molecularstructure.*;
 
@@ -67,7 +68,7 @@ ResidueCenterListener
     ResidueCenterBroadcaster residueCenterBroadcaster;
     Panel contentPanel;
     
-    SequencePane(ResidueHighlightBroadcaster b, 
+    public SequencePane(ResidueHighlightBroadcaster b, 
             ResidueCenterBroadcaster c,
             Tornado parent) {
         residueHighlightBroadcaster = b;

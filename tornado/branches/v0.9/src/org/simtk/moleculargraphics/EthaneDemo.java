@@ -40,6 +40,8 @@ import org.simtk.molecularstructure.atom.*;
 import java.util.*;
 import org.simtk.geometry3d.*;
 
+import org.simtk.tornado.command.*;
+
 public class EthaneDemo
 extends MolApp 
 implements ChangeListener

@@ -34,8 +34,7 @@ package org.simtk.moleculargraphics;
 import javax.swing.SwingUtilities;
 import vtk.vtkCamera;
 import org.simtk.geometry3d.*;
-
-enum RotationStyle {NONE, NUTATE, ROCK, ROTATE};
+import org.simtk.tornado.Tornado;
 
 /** 
  * @author Christopher Bruns
@@ -43,8 +42,8 @@ enum RotationStyle {NONE, NUTATE, ROCK, ROTATE};
  * Thread to periodically rotate the view so it spins without user intervention
  */
 public class InertialRotationThread extends Thread {
-    volatile RotationStyle rotationStyle = RotationStyle.NONE;
-    volatile boolean pauseRotation = false;
+    public volatile RotationStyle rotationStyle = RotationStyle.NONE;
+    public volatile boolean pauseRotation = false;
 
     private double rockFactor = 1.0;
     

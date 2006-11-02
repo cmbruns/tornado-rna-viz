@@ -22,15 +22,9 @@
  */
 
 /*
- * Created on Sep 11, 2006
+ * Created on Nov 2, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.splashscreen;
+package org.simtk.moleculargraphics;
 
-public class TornadoSplasher {
-    public static void main(String[] args) {
-        SplashWindow.splash(TornadoSplasher.class.getClassLoader().getResource("images/tornado_splash.png"));
-        SplashWindow.invokeMain("org.simtk.tornado.Tornado", args);
-        SplashWindow.disposeSplash();
-    }
-}
+public enum RotationStyle {NONE, NUTATE, ROCK, ROTATE};

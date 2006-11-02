@@ -28,12 +28,7 @@
 package org.simtk.moleculargraphics;
 
 import java.awt.Color;
-import java.awt.event.*;
-import java.io.IOException;
-import java.net.*;
-import javax.jnlp.*;
 import javax.swing.*;
-import edu.stanford.ejalbert.BrowserLauncher;
 
 /**
  *  
@@ -86,62 +81,6 @@ public class MolApp extends JFrame {
     public Color getBackgroundColor() {
         if (canvas == null) return null;
         return canvas.getBackgroundColor();
-    }
-    
-    class QuitAction implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            System.exit(0);  // terminate this program
-        }
-    }
-
-    class BrowserLaunchAction implements ActionListener {
-        String urlString;
-        BrowserLaunchAction(String u) {urlString = u;}
-        public void actionPerformed(ActionEvent e) {
-            
-            // Show information dialog, so the savvy user will be able to
-            // go to the url manually, in case the browser open fails.
-            JOptionPane.showConfirmDialog(
-                    null, 
-                    "Your browser will open to page " + urlString + " in a moment\n", 
-                    "Browse to SimTK.org",
-                    JOptionPane.DEFAULT_OPTION, 
-                    JOptionPane.INFORMATION_MESSAGE
-                    );
-
-            // New way
-            URL url;
-            try {url = new URL(urlString);}            
-            catch (MalformedURLException exc) {
-                launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc,
-                "Web URL error!");
-                return;
-            }
-            try {
-                // This only works when started in a web start application
-                BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService");
-                bs.showDocument(url);
-            } 
-            catch (UnavailableServiceException exc) {
-                // launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc,
-                // "JNLP Error!");
-                try {BrowserLauncher.openURL(urlString);}
-                catch (IOException exc2) {
-                    launchErrorConfirmDialog("Problem opening browser to page " + urlString + "\n" + exc2,
-                                             "Web URL error!");
-                }        
-            }
-        }
-    }
-    
-    void launchErrorConfirmDialog(String msg, String title) {
-        String[] options = {"Bummer!"};
-        JOptionPane.showOptionDialog(
-                null, 
-                msg, 
-                "Web URL error!",
-                JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE,
-                null, options, options[0]);        
     }
 
 }

@@ -22,15 +22,16 @@
  */
 
 /*
- * Created on Sep 11, 2006
+ * Created on Nov 2, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.splashscreen;
+package org.simtk.tornado.command;
 
-public class TornadoSplasher {
-    public static void main(String[] args) {
-        SplashWindow.splash(TornadoSplasher.class.getClassLoader().getResource("images/tornado_splash.png"));
-        SplashWindow.invokeMain("org.simtk.tornado.Tornado", args);
-        SplashWindow.disposeSplash();
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class QuitAction implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+        System.exit(0);  // terminate this program
     }
 }
