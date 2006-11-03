@@ -66,6 +66,8 @@ public class Tornado extends MolApp
 {
     private String applicationName = "SimTK ToRNADo";
     
+    private TornadoBackground background;
+    
     // private ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
     protected ResidueHighlightBroadcaster residueHighlightBroadcaster = new ResidueHighlightBroadcaster();
     protected ResidueCenterBroadcaster residueCenterBroadcaster = new ResidueCenterBroadcaster();
@@ -103,6 +105,8 @@ public class Tornado extends MolApp
     
     Tornado() {
         setTitle(applicationName + ": (no structures currently loaded)");
+        
+        background = new TornadoBackground(this);
         
         // Test layered Pane
         // Result - awt Canvas can occlude vtkPanel, but cannot be transparent
@@ -385,7 +389,7 @@ public class Tornado extends MolApp
 
             checkItem = new JCheckBoxMenuItem(colorName);
             checkItem.setEnabled(true);
-            checkItem.addActionListener(new BackgroundColorAction(color, colorName));
+            checkItem.addActionListener(new BackgroundColorAction(color, colorName, background, undoRedoMechanism));
             checkItem.setState(color == initialBackgroundColor);
             backgroundGroup.add(checkItem);
             menu.add(checkItem);
@@ -784,61 +788,7 @@ public class Tornado extends MolApp
         	Tornado.this.redrawCartoon();
         }
     }
-    
-    class BackgroundColorAction extends AbstractAction {
-        Color color;
-        String colorName;
-        BackgroundColorAction(Color c, String colorName) {
-            color = c;
-            this.colorName = colorName;
-        }
-        public void actionPerformed(ActionEvent e) {
-            Color oldColor = getBackgroundColor();
-            Color newColor = color;
             
-            if (oldColor.equals(newColor)) return;
-            
-            setBackgroundColor(newColor);
-
-            // Permit "undo" of background color selection
-            UndoableEdit edit = new BackgroundColorEdit(oldColor, newColor, colorName);
-            undoRedoMechanism.addEdit(edit);
-        }
-        
-        // Undoable actions need to create UndoableEdit objects
-        class BackgroundColorEdit extends AbstractUndoableEdit {
-            private Color startColor;
-            private Color endColor;
-            private String newColorName;
-            BackgroundColorEdit(Color startColor, Color endColor, String newColorName) {
-                this.startColor = startColor;
-                this.endColor = endColor;
-                this.newColorName = newColorName;
-            }
-            
-            public void redo() {
-                super.redo();
-                setBackgroundColor(endColor);
-            }
-            public void undo() {
-                super.undo();
-                setBackgroundColor(startColor);
-            }
-            public String getPresentationName() {
-                if (newColorName == null)
-                    return "Set background color";
-                else
-                    return "Set background to " + newColorName;
-            }
-            public String getRedoPresentationName() {
-                return "Redo " + getPresentationName();
-            }
-            public String getUndoPresentationName() {
-                return "Undo " + getPresentationName();
-            }
-        }
-    }
-
     class CartoonAction implements ActionListener {
         Class cartoonClass = null;
 
@@ -1474,4 +1424,12 @@ public class Tornado extends MolApp
         public java.util.List<RangedToonType> toons() {return toons;}
     }
     
+    class TornadoBackground implements Colorable {
+        private MolApp molApp;
+        TornadoBackground(MolApp molApp) {
+            this.molApp = molApp;
+        }
+        public void setColor(Color color) {molApp.setBackgroundColor(color);}
+        public Color getColor() {return molApp.getBackgroundColor();}
+    }
 }
