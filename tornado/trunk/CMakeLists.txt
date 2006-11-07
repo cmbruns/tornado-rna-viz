@@ -7,7 +7,7 @@ Include(Dart)
 SET(PROJECT_MAJOR_VERSION "0")
 
 # Change of minor version suggests backwards compatible change in API and documentation
-SET(PROJECT_MINOR_VERSION "9")
+SET(PROJECT_MINOR_VERSION "10")
 
 # File 
 SET(PRODUCT_VERSION_JAVA_TEMPLATE src/version/TornadoVersion.java.template)
