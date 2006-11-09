@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.regex.*;
 
 import org.simtk.gui.UndoRedoMechanism;
+import org.simtk.mol.color.ColorScheme;
+import org.simtk.mol.color.Colorable;
+import org.simtk.mol.color.DefaultColorScheme;
 import org.simtk.moleculargraphics.*;
 import org.simtk.tornado.command.*;
 import org.simtk.moleculargraphics.cartoon.*;

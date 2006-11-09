@@ -34,7 +34,7 @@ import javax.swing.AbstractAction;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.UndoableEdit;
 
-import org.simtk.moleculargraphics.Colorable;
+import org.simtk.mol.color.Colorable;
 import org.simtk.gui.UndoRedoMechanism;
 
 public class BackgroundColorAction extends AbstractAction {

@@ -35,14 +35,10 @@ import vtk.*;
 public class BaseConnectorTubeActor extends ActorCartoonClass {
     private double tubeRadius = 0.5;
 
+    protected BaseConnectorTubeActor() {}
+    
     public BaseConnectorTubeActor(Residue residue) 
-    throws NoCartoonCreatedException
-    {
-        int colorScalar = getColorIndex(residue);
-        vtkFloatArray colorScalars = new vtkFloatArray();
-        colorScalars.SetNumberOfComponents(1);
-        
-        vtkPoints linePoints = new vtkPoints();
+    throws NoCartoonCreatedException {
 
         Atom p = residue.getAtom("P");
         Atom o5 = residue.getAtom("O5*");
@@ -52,6 +48,19 @@ public class BaseConnectorTubeActor extends ActorCartoonClass {
             n = residue.getAtom("N1");
         
         Atom[] atoms = {p,o5,c1,n};
+
+        setResidue(residue, atoms);
+    }
+
+    protected void setResidue(Residue residue, Atom[] atoms) 
+    throws NoCartoonCreatedException
+    {
+        int colorScalar = getColorIndex(residue);
+        vtkFloatArray colorScalars = new vtkFloatArray();
+        colorScalars.SetNumberOfComponents(1);
+        
+        vtkPoints linePoints = new vtkPoints();
+
         for (Atom atom : atoms) {
             if (atom == null) continue;
             linePoints.InsertNextPoint(atom.getCoordinates().toArray());
@@ -91,8 +100,6 @@ public class BaseConnectorTubeActor extends ActorCartoonClass {
                 
         mapper.SetInput(tubeFilter.GetOutput());
         actor.SetMapper(mapper);
-        
-        
         
         isPopulated = true;
     }    

@@ -35,6 +35,9 @@ import java.awt.Color;
 import java.util.*;
 
 import org.simtk.geometry3d.*;
+import org.simtk.mol.color.ColorScheme;
+import org.simtk.mol.color.ConstantColor;
+import org.simtk.mol.color.UnknownObjectColorException;
 import org.simtk.molecularstructure.*;
 
 import vtk.*;

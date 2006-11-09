@@ -42,7 +42,7 @@ import org.simtk.molecularstructure.atom.Atom;
  * 
  * Draw a space-filling van der Waals sphere around each atom in the structure
  */
-public class NewBackboneCurveActor extends ActorCartoonClass {
+public class BackboneCurveActor extends ActorCartoonClass {
     double ribbonThickness = 1.00;
     double ribbonWidth = 1.50;
     double lengthResolution = 1.00; // (Angstroms) for smoothing
@@ -54,7 +54,7 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
      */
     static double splineFactor = 5.0;
     
-    public NewBackboneCurveActor(
+    public BackboneCurveActor(
             double width, 
             double thickness,
             Molecule molecule)
@@ -103,7 +103,7 @@ public class NewBackboneCurveActor extends ActorCartoonClass {
                 sideChainPosition = residue.getSideChainPosition();
             } catch (InsufficientAtomsException exc) {}
 
-            colorScalar = getColorIndex(residue);
+            colorScalar = getColorIndex(residue.getBackbone());
             
             if (backbonePosition == null) continue RESIDUE;
             

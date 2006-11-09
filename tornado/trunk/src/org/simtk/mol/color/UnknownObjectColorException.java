@@ -22,27 +22,10 @@
  */
 
 /*
- * Created on Jul 18, 2006
+ * Created on Jun 28, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.mol.color;
 
-import org.simtk.molecularstructure.Molecule;
-
-public class BackboneCurve extends MoleculeCartoonClass {
-    // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
-
-    BackboneCurve() {
-    }
-    
-    public void addMolecule(Molecule molecule) {
-        try {
-            BackboneCurveActor actorToon = 
-                new BackboneCurveActor(4.0, 1.0, molecule);
-            if (actorToon.isPopulated()) {
-                subToons.add(actorToon);
-                actorSet.add(actorToon);
-            }
-        } catch (NoCartoonCreatedException exc) {}
-    }
+public class UnknownObjectColorException extends Exception {
 }

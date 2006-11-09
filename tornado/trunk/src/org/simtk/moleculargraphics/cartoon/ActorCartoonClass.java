@@ -33,6 +33,8 @@ package org.simtk.moleculargraphics.cartoon;
 
 import vtk.*;
 
+import org.simtk.mol.color.ColorScheme;
+import org.simtk.mol.color.ConstantColor;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.*;
 import org.simtk.moleculargraphics.*;

@@ -26,6 +26,9 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import org.simtk.mol.color.ColorScheme;
+import org.simtk.mol.color.SequencingNucleotideColorScheme;
+import org.simtk.mol.color.UnknownObjectColorException;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.geometry3d.Vector3D;

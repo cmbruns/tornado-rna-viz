@@ -24,9 +24,10 @@
  * Created on Jun 26, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.mol.color;
 
 import java.awt.Color;
+
 
 public class ConstantColor implements ColorScheme {
     protected Color color;

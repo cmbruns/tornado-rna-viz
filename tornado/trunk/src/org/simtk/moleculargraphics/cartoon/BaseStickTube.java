@@ -27,22 +27,28 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import org.simtk.molecularstructure.Molecule;
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.nucleicacid.*;
 
-public class BackboneCurve extends MoleculeCartoonClass {
-    // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
-
-    BackboneCurve() {
-    }
+public class BaseStickTube extends MoleculeCartoonClass {
     
     public void addMolecule(Molecule molecule) {
+        if (! (molecule instanceof NucleicAcid)) return;
+        NucleicAcid nucleicAcid = (NucleicAcid) molecule;
+        for (Residue residue : nucleicAcid.residues()) {
+            if (! (residue.getResidueType() instanceof Nucleotide)) return;
+            addNucleotide((Residue)residue);
+        }
+    }
+    
+    public void addNucleotide(Residue residue) {
         try {
-            BackboneCurveActor actorToon = 
-                new BackboneCurveActor(4.0, 1.0, molecule);
+            BaseStickTubeActor actorToon = 
+                new BaseStickTubeActor(residue);
             if (actorToon.isPopulated()) {
                 subToons.add(actorToon);
                 actorSet.add(actorToon);
             }
-        } catch (NoCartoonCreatedException exc) {}
+        } catch (NoCartoonCreatedException exc) {}        
     }
 }

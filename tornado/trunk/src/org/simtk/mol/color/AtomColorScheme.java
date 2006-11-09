@@ -24,15 +24,16 @@
  * Created on Apr 20, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.mol.color;
 
 import java.awt.*;
 
 import java.util.*;
+
 import org.simtk.molecularstructure.atom.Atom;
 
 public class AtomColorScheme implements ColorScheme {
-    private static Color lightGray = new Color(235, 235, 235);
+    private static Color lightGray = new Color(200, 200, 200);
     private static Color darkGray = new Color(80, 80, 80);
     private static Color paleBlue = new Color(140, 150, 255);
     private static Color softRed = new Color(255, 65, 70);

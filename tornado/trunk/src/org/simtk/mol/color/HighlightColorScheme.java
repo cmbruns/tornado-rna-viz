@@ -1,4 +1,4 @@
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.mol.color;
 /* Portions copyright (c) 2006 Stanford University and Christopher Bruns
  * Contributors:
  *
@@ -24,6 +24,7 @@ package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.Color;
 import java.util.*;
+
 
 /*
  * Created on Jul 20, 2006

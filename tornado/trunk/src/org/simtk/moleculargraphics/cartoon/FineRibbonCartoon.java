@@ -35,7 +35,7 @@ import org.simtk.molecularstructure.protein.*;
 public class FineRibbonCartoon extends CompositeCartoon {
     private BasePairOval ovalToon = new BasePairOval();
     private BasePairBrick brickToon = new BasePairBrick();
-    private NucleotideStickCartoon nucStick = new NucleotideStickCartoon();
+    private BaseStickTube nucStick = new BaseStickTube();
     private BallAndStickCartoon stickToon = new BallAndStickCartoon();
     private BackboneCurve backboneRibbon = new BackboneCurve();
     private BackboneStick backboneStick = new BackboneStick();

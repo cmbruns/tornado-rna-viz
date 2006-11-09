@@ -22,43 +22,50 @@
  */
 
 /*
- * Created on Jun 28, 2006
+ * Created on Nov 8, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.mol.color;
 
 import java.awt.Color;
-import org.simtk.molecularstructure.nucleicacid.*;
-import org.simtk.molecularstructure.*;
 
-public class SequencingNucleotideColorScheme implements ColorScheme {
-    private static Color adenylateColor = new Color(150, 255, 150); // green
-    private static Color guanylateColor = new Color(255, 255, 100); // yellow or black
-    private static Color cytidylateColor = new Color(120, 160, 255); // blue or cyan
-    private static Color thymidylateColor = new Color(255, 130, 160); // red
-    private static Color uridylateColor = new Color(255, 130, 160); // red
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.nucleicacid.*;
+
+/**
+ * 
+  * @author Christopher Bruns
+  * 
+  * Color scheme for base pairs in secondary structure diagrams
+  * as shown in publications from the Block laboratory, such
+  * as Woodside et al (2006) PNAS 103(16) 6190-6195.
+  * 
+  * AT base pairs are red, GC pairs are blue
+  * A and G are darker and more saturated
+ */
+public class BlockComplementaryBaseColorScheme implements ColorScheme {
+    private static final Color darkRed = new Color(190, 20, 20);
+    private static final Color rose = new Color(255, 80, 110);
+    private static final Color ceruleanBlue = new Color(30,120,230);
+    private static final Color darkBlue = new Color(55, 0, 200);
     
-    public static SequencingNucleotideColorScheme
-        SEQUENCING_NUCLEOTIDE_COLOR_SCHEME = new SequencingNucleotideColorScheme();
+    public static final BlockComplementaryBaseColorScheme SCHEME = new BlockComplementaryBaseColorScheme();
     
     public Color colorOf(Object colorable) throws UnknownObjectColorException {
         if (! (colorable instanceof Residue))
             throw new UnknownObjectColorException();
-
-        Residue residue = (Residue) colorable;
         
-        if (residue.getResidueType() instanceof Adenylate) 
-            return adenylateColor;
-        else if (residue.getResidueType() instanceof Guanylate) 
-            return guanylateColor;
-        else if (residue.getResidueType() instanceof Cytidylate) 
-            return cytidylateColor;
-        else if (residue.getResidueType() instanceof Thymidylate) 
-            return thymidylateColor;
-        else if (residue.getResidueType() instanceof Uridylate) 
-            return uridylateColor;
+        ResidueType residueType = ((Residue) colorable).getResidueType();
 
-        else throw new UnknownObjectColorException();
+        if (residueType instanceof Adenylate) return darkBlue;
+        
+        if (residueType instanceof Thymidylate) return ceruleanBlue;
+        if (residueType instanceof Uridylate) return ceruleanBlue;
+        
+        if (residueType instanceof Guanylate) return darkRed;
+        
+        if (residueType instanceof Cytidylate) return rose;
+        
+        throw new UnknownObjectColorException();
     }
-
 }

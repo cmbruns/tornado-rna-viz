@@ -41,7 +41,7 @@ import org.simtk.molecularstructure.atom.*;
 import vtk.*;
 
 public class NucleotideStickCartoon extends GlyphCartoon {
-    double stickLength = 4.0;
+    double stickLength = 9.0;
     double stickRadius = 0.50;
     double sphereFudge = 1.05; // spheres aren't quit flush with cylinder for some reason
     int cylinderResolution = 7;

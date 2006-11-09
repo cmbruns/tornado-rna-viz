@@ -28,19 +28,8 @@
 package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.Color;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.simtk.geometry3d.Cylinder;
-import org.simtk.geometry3d.InsufficientPointsException;
-import org.simtk.geometry3d.Line3D;
-import org.simtk.geometry3d.MutableVector3D;
-import org.simtk.geometry3d.Plane3D;
-import org.simtk.geometry3d.Vector3D;
-import org.simtk.geometry3d.Vector3DClass;
+import java.util.*;
+import org.simtk.geometry3d.*;
 import org.simtk.moleculargraphics.GraphicsCylinder;
 import org.simtk.molecularstructure.InsufficientAtomsException;
 import org.simtk.molecularstructure.atom.Atom;
@@ -53,7 +42,7 @@ public class DuplexCylinderActor extends ActorCartoonClass {
 
     // Size of the cylinders surrounding the double helices
     static double defaultbarrelRadius = 8.0; // 11.5 to consume most atoms
-    Color defaultCylinderColor = new Color(0, 255, 255, 255);
+    Color defaultCylinderColor = new Color(0, 100, 200, 255);
     int defaultCylinderResolution = 10;
     double defaultCylinderOpacity = 1.0;
 

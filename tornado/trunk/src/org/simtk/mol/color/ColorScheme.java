@@ -25,9 +25,10 @@
  * Created on Jun 26, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.mol.color;
 
 import java.awt.Color;
+
 
 public interface ColorScheme {
     public Color colorOf(Object colorable) throws UnknownObjectColorException;

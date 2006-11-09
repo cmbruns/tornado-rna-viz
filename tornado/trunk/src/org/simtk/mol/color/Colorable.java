@@ -25,7 +25,7 @@
  * Created on Nov 2, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics;
+package org.simtk.mol.color;
 
 import java.awt.Color;
 

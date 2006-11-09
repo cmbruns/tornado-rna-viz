@@ -31,6 +31,7 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import org.simtk.mol.color.ColorScheme;
 import org.simtk.molecularstructure.*;
 import java.util.*;
 import vtk.*;

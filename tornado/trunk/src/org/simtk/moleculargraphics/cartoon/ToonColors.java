@@ -29,6 +29,9 @@ package org.simtk.moleculargraphics.cartoon;
 
 import java.awt.Color;
 import java.util.*;
+
+import org.simtk.mol.color.ColorScheme;
+import org.simtk.mol.color.UnknownObjectColorException;
 import org.simtk.molecularstructure.Chemical;
 import vtk.vtkLookupTable;
 import vtk.vtkPolyDataMapper;

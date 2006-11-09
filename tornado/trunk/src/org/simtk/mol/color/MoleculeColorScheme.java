@@ -24,9 +24,10 @@
  * Created on Apr 20, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.moleculargraphics.cartoon;
+package org.simtk.mol.color;
 
 import java.awt.*;
+
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.protein.*;
 import org.simtk.molecularstructure.nucleicacid.*;
@@ -35,7 +36,7 @@ public class MoleculeColorScheme implements ColorScheme {
     private static Color paleAqua = new Color(200,255,255);
     private static Color paleBlue = new Color(200,230,255);
     private static Color paleOrangeYellow = new Color(255,240,200);
-    private static Color palePink = new Color(255,225,240);
+    private static Color palePink = new Color(255,225,200);
     
     static MoleculeColorScheme MOLECULE_COLORS = new MoleculeColorScheme();
     

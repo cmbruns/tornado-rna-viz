@@ -22,35 +22,43 @@
  */
 
 /*
- * Created on Jul 11, 2006
+ * Created on Nov 8, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.moleculargraphics.cartoon;
 
-import java.awt.Color;
+import org.simtk.molecularstructure.Residue;
 import org.simtk.molecularstructure.atom.Atom;
-import org.simtk.molecularstructure.*;
 
-public class DefaultColorScheme implements ColorScheme {
-    public static ColorScheme DEFAULT_COLOR_SCHEME = new DefaultColorScheme();
-    
-    private ColorScheme defaultColorScheme = new ConstantColor(Color.white);
-    
-    public Color colorOf(Object colorable) throws UnknownObjectColorException {
+/** 
+ * 
+  * @author Christopher Bruns
+  * 
+  * Molecule representation of one jointed stick to represent an
+  * entire nucleotide.  The desired effect is for nucleotides that
+  * are canonically base paired to point directly at one another
+ */
+public class BaseStickTubeActor extends BaseConnectorTubeActor {
+
+    public BaseStickTubeActor(Residue residue) 
+    throws NoCartoonCreatedException {
+
+        // Backbone
+        Atom p = residue.getAtom("P");
+        Atom o5 = residue.getAtom("O5*");
+        Atom c1 = residue.getAtom("C1*");
         
-        if (colorable instanceof Atom) try {
-            return AtomColorScheme.PALE_CPK_COLORS.colorOf(colorable);
-        } catch (UnknownObjectColorException exc) {}
+        // Where base attaches to ribose
+        Atom n = residue.getAtom("N9");
+        Atom wc = residue.getAtom("N1");
+        if (n == null) {
+            n = residue.getAtom("N1");
+            wc = residue.getAtom("N3");
+        }
         
-        if (colorable instanceof Residue) try {
-            return SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME.colorOf(colorable);
-        } catch (UnknownObjectColorException exc) {}
         
-        if (colorable instanceof Molecule) try {
-            return MoleculeColorScheme.MOLECULE_COLORS.colorOf(colorable);            
-        } catch (UnknownObjectColorException exc) {}
-        
-        return defaultColorScheme.colorOf(colorable);
+        Atom[] atoms = {p,o5,c1,n,wc};
+
+        setResidue(residue, atoms);
     }
-
 }

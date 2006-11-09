@@ -27,6 +27,8 @@
  */
 package org.simtk.moleculargraphics.cartoon;
 
+import org.simtk.mol.color.ColorScheme;
+
 public interface BaseCartoon {
     public void colorToon(Object chemical, ColorScheme colorScheme);
     public void colorToon(ColorScheme colorScheme);
