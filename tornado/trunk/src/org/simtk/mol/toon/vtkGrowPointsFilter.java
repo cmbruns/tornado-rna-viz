@@ -22,18 +22,45 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Jul 12, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import vtk.*;
+import org.simtk.geometry3d.*;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * Move points along normal direction
+ */
+public class vtkGrowPointsFilter extends vtkProgrammableFilter {
+    protected double distance = 1.0;
+    
+    public vtkGrowPointsFilter() {
+        SetExecuteMethod(this, "Execute");
+    }
+
+    public void SetDistance(double d) {
+        this.distance = d;
+    }
+    
+    public void Execute() {
+        vtkPolyData input = GetPolyDataInput();
+
+        vtkPolyData output = GetPolyDataOutput();
+        output.DeepCopy(input);
+        
+        vtkPoints points = output.GetPoints();
+        vtkDataArray normals = output.GetPointData().GetNormals();
+        if (normals == null) return;
+        for (int i = 0; i < normals.GetNumberOfTuples(); ++i) {
+            Vector3D point = new Vector3DClass(points.GetPoint(i));
+            Vector3D normal = new Vector3DClass(normals.GetTuple3(i));
+            Vector3D newPoint = point.plus(normal.times(distance));
+            points.SetPoint(i, newPoint.toArray());
+        }
+    }
 }

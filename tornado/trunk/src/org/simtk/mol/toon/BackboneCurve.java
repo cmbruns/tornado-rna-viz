@@ -22,18 +22,27 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Jul 18, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import org.simtk.molecularstructure.Molecule;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+public class BackboneCurve extends MoleculeCartoonClass {
+    // NewBackboneCurveActor actorToon = new NewBackboneCurveActor(4.0, 1.0);
+
+    BackboneCurve() {
+    }
+    
+    public void addMolecule(Molecule molecule) {
+        try {
+            BackboneCurveActor actorToon = 
+                new BackboneCurveActor(4.0, 1.0, molecule);
+            if (actorToon.isPopulated()) {
+                subToons.add(actorToon);
+                actorSet.add(actorToon);
+            }
+        } catch (NoCartoonCreatedException exc) {}
+    }
 }

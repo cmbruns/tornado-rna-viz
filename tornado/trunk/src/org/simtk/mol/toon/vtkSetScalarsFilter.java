@@ -22,18 +22,38 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Jul 12, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import org.simtk.geometry3d.*;
+import vtk.*;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * Set scalar values on a polyline to make an arrow with vtkRibbonFilter
+ */
+public class vtkSetScalarsFilter extends vtkProgrammableFilter {
+    protected String scalarsName = null;
+    
+    public vtkSetScalarsFilter() {
+        SetExecuteMethod(this, "Execute");
+    }
+
+    public void SetScalars(String name) {
+        this.scalarsName = name;
+    }
+    
+    public void Execute() {
+        vtkPolyData input = GetPolyDataInput();
+
+        vtkPolyData output = GetPolyDataOutput();
+        output.ShallowCopy(input);
+        
+        if (scalarsName != null)
+            output.GetPointData().SetActiveScalars(scalarsName);
+    }
 }

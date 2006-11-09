@@ -51,20 +51,26 @@ public class BlockComplementaryBaseColorScheme implements ColorScheme {
     
     public static final BlockComplementaryBaseColorScheme SCHEME = new BlockComplementaryBaseColorScheme();
     
+    /**
+     * Takes either Residue or ResidueType as an argument
+     */
     public Color colorOf(Object colorable) throws UnknownObjectColorException {
-        if (! (colorable instanceof Residue))
-            throw new UnknownObjectColorException();
-        
-        ResidueType residueType = ((Residue) colorable).getResidueType();
+        if (colorable instanceof ResidueType) {
+            ResidueType residueType = ((Residue) colorable).getResidueType();
 
-        if (residueType instanceof Adenylate) return darkBlue;
+            if (residueType instanceof Adenylate) return darkBlue;
+            
+            if (residueType instanceof Thymidylate) return ceruleanBlue;
+            if (residueType instanceof Uridylate) return ceruleanBlue;
+            
+            if (residueType instanceof Guanylate) return darkRed;
+            
+            if (residueType instanceof Cytidylate) return rose;
+
+            throw new UnknownObjectColorException();            
+        }
         
-        if (residueType instanceof Thymidylate) return ceruleanBlue;
-        if (residueType instanceof Uridylate) return ceruleanBlue;
-        
-        if (residueType instanceof Guanylate) return darkRed;
-        
-        if (residueType instanceof Cytidylate) return rose;
+        else if (colorable instanceof Residue) return colorOf(((Residue)colorable).getResidueType());
         
         throw new UnknownObjectColorException();
     }

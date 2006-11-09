@@ -22,18 +22,46 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Jul 12, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import org.simtk.geometry3d.*;
+import vtk.*;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * Set scalar values on a polyline to make an arrow with vtkRibbonFilter
+ */
+public class vtkPreExtrusionCenteringFilter extends vtkProgrammableFilter {
+    protected double thickness = 1.0;
+    
+    public vtkPreExtrusionCenteringFilter() {
+        SetExecuteMethod(this, "Execute");
+    }
+
+    public void SetThickness(double thickness) {
+        this.thickness = thickness;
+    }
+    
+    public double GetThickness() {return thickness;}
+    
+    public void Execute() {
+        vtkPolyData input = GetPolyDataInput();
+
+        vtkPolyData output = GetPolyDataOutput();
+        output.DeepCopy(input);
+
+        int numPoints = input.GetNumberOfPoints();
+        for (int i = 0; i < numPoints; ++i) {
+            Vector3D point = new Vector3DClass(input.GetPoint(i));
+            Vector3D normal = new Vector3DClass(input.GetPointData().GetNormals().GetTuple3(i)).unit();
+            Vector3D newPoint = point.minus(normal.times(0.5 * thickness));
+
+            output.GetPoints().SetPoint(i, newPoint.toArray());
+        }
+    }
 }

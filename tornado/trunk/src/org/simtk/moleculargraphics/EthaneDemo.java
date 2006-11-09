@@ -36,7 +36,7 @@ import java.net.URL;
 import vtk.vtkActor2D;
 
 import org.simtk.mol.color.DefaultColorScheme;
-import org.simtk.moleculargraphics.cartoon.*;
+import org.simtk.mol.toon.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.*;
 import java.util.*;

@@ -62,7 +62,7 @@ ResidueCenterListener
     // SequenceTextPane textPane;
     TornadoSequenceCanvas sequenceCanvas;
     // NumberPane numberPane;
-    Color backgroundColor = Color.white;
+    // Color backgroundColor = Color.white;
     Tornado tornado;
     ResidueHighlightBroadcaster residueHighlightBroadcaster;
     ResidueCenterBroadcaster residueCenterBroadcaster;
@@ -79,7 +79,7 @@ ResidueCenterListener
         setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-        getViewport().setBackground(backgroundColor); // for when text panel does not fill viewport
+        // getViewport().setBackground(backgroundColor); // for when text panel does not fill viewport
         getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
         
         sequenceCanvas = new TornadoSequenceCanvas(
@@ -136,6 +136,14 @@ ResidueCenterListener
             }
             repaint();
         }
+    }
+    
+    @Override
+    public void setBackground(Color c) {
+        super.setBackground(c);
+        getViewport().setBackground(c);
+        if (sequenceCanvas != null) sequenceCanvas.setBackground(c);
+        if (contentPanel != null) contentPanel.setBackground(c);
     }
     
     public void lubricateUserInteraction() {tornado.lubricateUserInteraction();}

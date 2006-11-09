@@ -29,7 +29,7 @@ package org.simtk.toon.secstruct;
 
 import java.util.*;
 
-import org.simtk.moleculargraphics.cartoon.BoundingBox;
+import org.simtk.mol.toon.BoundingBox;
 import org.simtk.molecularstructure.nucleicacid.BasePair;
 
 public class SecondaryStructureDiagramClass 

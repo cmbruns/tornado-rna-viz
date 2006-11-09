@@ -22,18 +22,14 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Jul 17, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import org.simtk.mol.color.ColorScheme;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+public interface BaseCartoon {
+    public void colorToon(Object chemical, ColorScheme colorScheme);
+    public void colorToon(ColorScheme colorScheme);
 }

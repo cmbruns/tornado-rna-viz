@@ -27,6 +27,7 @@
  */
 package org.simtk.toon.secstruct;
 
+import org.simtk.mol.toon.BoundingBox;
 import org.simtk.moleculargraphics.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
@@ -48,7 +49,6 @@ import java.awt.RenderingHints;
 import java.awt.event.*;
 import java.awt.font.*;
 import javax.swing.*;
-import org.simtk.moleculargraphics.cartoon.BoundingBox;
 
 public class SecondaryStructureCanvas 
 extends JPanel

@@ -22,18 +22,33 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Jul 18, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.nucleicacid.*;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+public class BaseStickTube extends MoleculeCartoonClass {
+    
+    public void addMolecule(Molecule molecule) {
+        if (! (molecule instanceof NucleicAcid)) return;
+        NucleicAcid nucleicAcid = (NucleicAcid) molecule;
+        for (Residue residue : nucleicAcid.residues()) {
+            if (! (residue.getResidueType() instanceof Nucleotide)) return;
+            addNucleotide((Residue)residue);
+        }
+    }
+    
+    public void addNucleotide(Residue residue) {
+        try {
+            BaseStickTubeActor actorToon = 
+                new BaseStickTubeActor(residue);
+            if (actorToon.isPopulated()) {
+                subToons.add(actorToon);
+                actorSet.add(actorToon);
+            }
+        } catch (NoCartoonCreatedException exc) {}        
+    }
 }

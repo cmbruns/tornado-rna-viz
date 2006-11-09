@@ -26,47 +26,44 @@
  */
 
 /*
- * Created on Jun 7, 2005
+ * Created on Apr 28, 2005
  *
  */
-package org.simtk.moleculargraphics;
+package org.simtk.mol.toon;
 
-import org.simtk.molecularstructure.Residue;
-import java.util.*;
-import java.awt.Color;
+import org.simtk.molecularstructure.*;
 
-public class ResidueHighlightBroadcaster {
-    protected Set<ResidueHighlightListener> listeners = 
-        new LinkedHashSet<ResidueHighlightListener>();
-    // protected Color color = new Color(100, 120, 255);
-    protected Color color = new Color(100, 255, 100);
+/** 
+ * @author Christopher Bruns
+ * 
+ * Tubes connecting backbone, plus rods for nucleotides
+ */
+public class TubeAndStickTrace extends CompositeCartoon {
+    double backboneRadius = 1.50;
+    double rodRadius = 0.50;
 
-    public void addResidueHighlightListener(ResidueHighlightListener l) {
-        listeners.add(l);
+    int stickResolution = 5;
+
+    BackboneStick tubes;
+    NucleotideStickCartoon rods;
+    
+    public TubeAndStickTrace() {
+        this(1.50, 0.5);
+    }
+
+    public TubeAndStickTrace(double r1, double r2) {
+        backboneRadius = r1;
+        rodRadius = r2;
+
+        tubes = new BackboneStick(backboneRadius);
+        rods = new NucleotideStickCartoon(rodRadius);
+        
+        addSubToon(tubes);
+        addSubToon(rods);
     }
     
-    public void removeResidueHighlightListener(ResidueHighlightListener l) {
-        listeners.remove(l);
+    public void addMolecule(Molecule m) {
+        tubes.addMolecule(m);
+        rods.addMolecule(m);
     }
-    
-    public void fireHighlight(Residue r) {
-        for (ResidueHighlightListener listener : listeners)
-            listener.highlightResidue(r, color);
-    }
-
-    public void fireUnhighlightResidue(Residue r) {
-        for (ResidueHighlightListener listener : listeners)
-            listener.unhighlightResidue(r);
-    }
-    
-    public void fireUnhighlightResidues() {
-        for (ResidueHighlightListener listener : listeners)
-            listener.unhighlightResidues();
-    }    
-
-    public void setHighlightColor(Color color) {
-        this.color = color;
-    }
-
-    public Color getHighlightColor() {return color;}
 }

@@ -29,6 +29,8 @@ package org.simtk.moleculargraphics;
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
+
+import org.simtk.mol.color.BlockComplementaryBaseColorScheme;
 import org.simtk.molecularstructure.*;
 
 /**
@@ -42,8 +44,6 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
     int minHeight = 10;
     int minWidth = 100;
     
-    private Color sequenceColor = null;
-
     protected Graphics myGraphics = null; // Notice when Graphics object is available
     JComponent parentContainer = null;
 
@@ -75,8 +75,15 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
         // setSize(minWidth, minHeight); // This is needed to make the container exist...
     }
     
-    public void setSequenceColor(Color c) {
-        this.sequenceColor = c;
+    private double luminosity(Color c) {
+        return 1.0/255.0 * (0.30 * c.getRed() + 0.59 *  c.getGreen() + 0.11 * c.getBlue());
+    }
+    
+    @Override
+    public void setBackground(Color c) {
+        super.setBackground(c);
+        if (luminosity(c) < 0.5) setForeground(Color.white);
+        else setForeground(Color.black);
     }
     
     public void setParentContainer(JComponent parent) {
@@ -178,12 +185,17 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
             // Draw sequence
             g.setFont(font);
 
-            if (sequenceColor == null)
-                g.setColor(getForeground());
-            else
-                g.setColor(sequenceColor);
-            
             for (int r = leftPosition; r <= rightPosition; r++) {
+                
+                // Set residue color 
+                try {
+                    Residue res = positionResidues.get(r);
+                    Color resColor = BlockComplementaryBaseColorScheme.SCHEME.colorOf(res);
+                    g.setColor(resColor);
+                } catch (org.simtk.mol.color.UnknownObjectColorException exc) {
+                    g.setColor(getForeground());
+                }
+                
                 g.drawString((String) residueSymbols.get(r), positionPixel(r), baseLine);
             }
             

@@ -22,18 +22,39 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Jun 28, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import org.simtk.geometry3d.*;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+public class BoundingBox {
+    public double xMin, xMax, yMin, yMax, zMin, zMax;
+    
+    public BoundingBox(double[] bounds) {
+        this.xMin = bounds[0];
+        this.xMax = bounds[1];
+        this.yMin = bounds[2];
+        this.yMax = bounds[3];
+        this.zMin = bounds[4];
+        this.zMax = bounds[5];
+    }
+    
+    public void add(BoundingBox otherBox) {
+        this.xMin = Math.min(this.xMin, otherBox.xMin);
+        this.yMin = Math.min(this.yMin, otherBox.yMin);
+        this.zMin = Math.min(this.zMin, otherBox.zMin);
+        
+        this.xMax = Math.max(this.xMax, otherBox.xMax);
+        this.yMax = Math.max(this.yMax, otherBox.yMax);
+        this.zMax = Math.max(this.zMax, otherBox.zMax);
+    }
+    
+    public Vector3D center() {
+        return new Vector3DClass(
+                0.5 * (xMin + xMax),
+                0.5 * (yMin + yMax),
+                0.5 * (zMin + zMax));
+    }
 }

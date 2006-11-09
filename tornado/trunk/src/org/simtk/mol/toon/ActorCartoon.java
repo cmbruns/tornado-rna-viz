@@ -22,18 +22,27 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Jul 17, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import vtk.*;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+import org.simtk.molecularstructure.*;
+
+/**
+ *  
+  * @author Christopher Bruns
+  * 
+  * Cartoon with exactly one vtkActor
+  * Unlike MoleculeCartoon, does not need to correspond to an entire
+  * molecule.  For example, a single Beta strand could be and ActorCartoon.
+ */
+public interface ActorCartoon extends BaseCartoon {
+    public vtkActor getActor();
+    public vtkPolyDataMapper getMapper();
+    public boolean isPopulated();
+    public Chemical getChemicalFromScalar(int scalar);
+    public vtkActor getHighlightActor();
 }

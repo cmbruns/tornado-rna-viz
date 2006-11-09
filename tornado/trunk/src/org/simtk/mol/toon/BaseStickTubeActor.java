@@ -22,18 +22,43 @@
  */
 
 /*
- * Created on Aug 16, 2006
+ * Created on Nov 8, 2006
  * Original author: Christopher Bruns
  */
-package org.simtk.toon.secstruct;
+package org.simtk.mol.toon;
 
-import org.simtk.mol.toon.BoundingBox;
+import org.simtk.molecularstructure.Residue;
+import org.simtk.molecularstructure.atom.Atom;
 
-public interface SecondaryStructureDiagram {
-    public java.util.List<BasePosition> basePositions();
-    public java.util.List<BasePairPosition> basePairPositions();
-    public java.util.List<NumberTick> majorTicks();
-    public java.util.List<NumberTick> minorTicks();
-    public double getConsecutiveBaseDistance();
-    public BoundingBox getBoundingBox();
+/** 
+ * 
+  * @author Christopher Bruns
+  * 
+  * Molecule representation of one jointed stick to represent an
+  * entire nucleotide.  The desired effect is for nucleotides that
+  * are canonically base paired to point directly at one another
+ */
+public class BaseStickTubeActor extends BaseConnectorTubeActor {
+
+    public BaseStickTubeActor(Residue residue) 
+    throws NoCartoonCreatedException {
+
+        // Backbone
+        Atom p = residue.getAtom("P");
+        Atom o5 = residue.getAtom("O5*");
+        Atom c1 = residue.getAtom("C1*");
+        
+        // Where base attaches to ribose
+        Atom n = residue.getAtom("N9");
+        Atom wc = residue.getAtom("N1");
+        if (n == null) {
+            n = residue.getAtom("N1");
+            wc = residue.getAtom("N3");
+        }
+        
+        
+        Atom[] atoms = {p,o5,c1,n,wc};
+
+        setResidue(residue, atoms);
+    }
 }

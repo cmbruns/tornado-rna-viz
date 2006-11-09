@@ -26,47 +26,45 @@
  */
 
 /*
- * Created on Jun 7, 2005
+ * Created on Apr 28, 2005
  *
  */
-package org.simtk.moleculargraphics;
+package org.simtk.mol.toon;
 
-import org.simtk.molecularstructure.Residue;
-import java.util.*;
-import java.awt.Color;
+import org.simtk.molecularstructure.*;
+import org.simtk.molecularstructure.atom.*;
 
-public class ResidueHighlightBroadcaster {
-    protected Set<ResidueHighlightListener> listeners = 
-        new LinkedHashSet<ResidueHighlightListener>();
-    // protected Color color = new Color(100, 120, 255);
-    protected Color color = new Color(100, 255, 100);
+/** 
+ * @author Christopher Bruns
+ * 
+ * Small spheres on each atom with cylinders connecting bonded atoms
+ */
+public class BallAndStickCartoon extends CompositeCartoon {
 
-    public void addResidueHighlightListener(ResidueHighlightListener l) {
-        listeners.add(l);
+    BondStickCartoon sticks = new BondStickCartoon(0.15);
+    AtomSphereActor balls = new AtomSphereActor(0.25);
+    // Lone metal atoms should be large
+    AtomSphereActor largeBalls = new AtomSphereActor(0.80);
+
+    public BallAndStickCartoon() {
+        // Make spheres be caps for sticks
+        // balls.setScale(0.15);
+        // balls.scaleByAtom = false;
+        
+        addSubToon(sticks);
+        addSubToon(balls);
+        addSubToon(largeBalls);
     }
     
-    public void removeResidueHighlightListener(ResidueHighlightListener l) {
-        listeners.remove(l);
-    }
-    
-    public void fireHighlight(Residue r) {
-        for (ResidueHighlightListener listener : listeners)
-            listener.highlightResidue(r, color);
-    }
+    public void addMolecule(Molecule m) {
+        sticks.addMolecule(m);
 
-    public void fireUnhighlightResidue(Residue r) {
-        for (ResidueHighlightListener listener : listeners)
-            listener.unhighlightResidue(r);
+        // Make lone atoms other than oxygen large
+        for (Atom atom : m.atoms()) {
+            if ( (atom.bonds().size() == 0) && (! atom.getElementSymbol().equals("O")) )
+                largeBalls.addAtom(atom);
+            else 
+                balls.addAtom(atom);
+        }
     }
-    
-    public void fireUnhighlightResidues() {
-        for (ResidueHighlightListener listener : listeners)
-            listener.unhighlightResidues();
-    }    
-
-    public void setHighlightColor(Color color) {
-        this.color = color;
-    }
-
-    public Color getHighlightColor() {return color;}
 }

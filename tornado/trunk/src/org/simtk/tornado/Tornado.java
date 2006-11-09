@@ -47,9 +47,9 @@ import org.simtk.gui.UndoRedoMechanism;
 import org.simtk.mol.color.ColorScheme;
 import org.simtk.mol.color.Colorable;
 import org.simtk.mol.color.DefaultColorScheme;
+import org.simtk.mol.toon.*;
 import org.simtk.moleculargraphics.*;
 import org.simtk.tornado.command.*;
-import org.simtk.moleculargraphics.cartoon.*;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.nucleicacid.*;
 import org.simtk.pdb.*;
@@ -69,7 +69,9 @@ public class Tornado extends MolApp
 {
     private String applicationName = "SimTK ToRNADo";
     
-    private TornadoBackground background;
+    private TornadoBackground background = new TornadoBackground();
+    private SecondaryStructureCanvas canvas2D = null;
+    private JPanel initialLoadStructurePanel = new JPanel();
     
     // private ResidueActionBroadcaster residueActionBroadcaster = new ResidueActionBroadcaster();
     protected ResidueHighlightBroadcaster residueHighlightBroadcaster = new ResidueHighlightBroadcaster();
@@ -82,7 +84,6 @@ public class Tornado extends MolApp
     //
     
     public Color highlightColor = new Color(255, 240, 50); // Pale orange
-    protected JPanel initialLoadStructurePanel;
     private String currentPath = ".";
     private String saveImagePath = ".";
     private LoadStructureDialog loadStructureDialog = new LoadStructureDialog(this);
@@ -108,8 +109,6 @@ public class Tornado extends MolApp
     
     Tornado() {
         setTitle(applicationName + ": (no structures currently loaded)");
-        
-        background = new TornadoBackground(this);
         
         // Test layered Pane
         // Result - awt Canvas can occlude vtkPanel, but cannot be transparent
@@ -138,7 +137,6 @@ public class Tornado extends MolApp
         // 3D molecule canvas - must be created before menus are
 
         // Secondary structure canvas
-        SecondaryStructureCanvas canvas2D = null;
         if (drawSecondaryStructure) {
             canvas2D = new SecondaryStructureCanvas(residueHighlightBroadcaster);
             residueHighlightBroadcaster.addResidueHighlightListener(canvas2D);
@@ -159,7 +157,6 @@ public class Tornado extends MolApp
         
         // For the initial start up, Prompt the user to Load a structure 
         // from the main panel
-        initialLoadStructurePanel = new JPanel();
         initialLoadStructurePanel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
         initialLoadStructurePanel.setLayout(new BoxLayout(initialLoadStructurePanel, BoxLayout.Y_AXIS));
         initialLoadStructurePanel.add(new JLabel("Click button below to choose a molecule structure:"));
@@ -223,6 +220,9 @@ public class Tornado extends MolApp
         ((Tornado3DCanvas)canvas).setResidueCenterBroadcaster(residueCenterBroadcaster);
         residueCenterBroadcaster.addResidueCenterListener((Tornado3DCanvas)canvas);
         residueCenterBroadcaster.addResidueCenterListener(sequencePane);
+
+        // Now that all components are instantiated, set the background color
+        background.setColor(initialBackgroundColor);        
     }
     
     public static void main(String [] args) {
@@ -1427,12 +1427,17 @@ public class Tornado extends MolApp
         public java.util.List<RangedToonType> toons() {return toons;}
     }
     
-    class TornadoBackground implements Colorable {
-        private MolApp molApp;
-        TornadoBackground(MolApp molApp) {
-            this.molApp = molApp;
+    private class TornadoBackground implements Colorable {
+        TornadoBackground() {}
+        public void setColor(Color color) {
+            Tornado.this.setBackground(color);
+            if (canvas2D != null) canvas2D.setBackground(color);
+            if (initialLoadStructurePanel != null) initialLoadStructurePanel.setBackground(color);
+            if (canvas != null) canvas.setBackground(color);
+            if (sequenceCartoonCanvas != null) sequenceCartoonCanvas.setBackground(color);
+            if (sequencePane != null) sequencePane.setBackground(color);
+            if (messageArea != null) messageArea.setBackground(color); 
         }
-        public void setColor(Color color) {molApp.setBackgroundColor(color);}
-        public Color getColor() {return molApp.getBackgroundColor();}
+        public Color getColor() {return getBackground();}
     }
 }

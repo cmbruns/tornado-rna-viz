@@ -32,7 +32,7 @@ import java.util.*;
 
 import javax.swing.*;
 import org.simtk.geometry3d.*;
-import org.simtk.moleculargraphics.cartoon.*;
+import org.simtk.mol.toon.*;
 // import org.simtk.molecularstructure.*;
 import vtk.*;
 
@@ -118,7 +118,10 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         lightKit.AddLightsToRenderer(ren);
     }
     
-    public void setBackgroundColor(Color c) {
+    @Override
+    public void setBackground(Color c) {
+        super.setBackground(c);
+
         backgroundColor = c;
 
         double r = backgroundColor.getRed()/255.0;
@@ -132,7 +135,8 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         repaint();
     }
     
-    public Color getBackgroundColor() {
+    public Color getBackground() {
+        if (ren == null) return super.getBackground();
         double[] col = ren.GetBackground();
         return new Color((float)col[0], (float)col[1], (float)col[2]);
     }

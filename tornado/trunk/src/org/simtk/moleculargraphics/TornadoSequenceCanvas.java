@@ -35,6 +35,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.JScrollBar;
+
+import org.simtk.mol.color.BlockComplementaryBaseColorScheme;
 import org.simtk.molecularstructure.*;
 import org.simtk.util.*;
 
@@ -115,6 +117,10 @@ ResidueCenterListener
         graphics.fillRect(leftX, topY, (rightX - leftX + 1), (bottomY - topY + 1));        
     }
     
+    private double luminosity(Color c) {
+        return 1.0/255.0 * (0.30 * c.getRed() + 0.59 *  c.getGreen() + 0.11 * c.getBlue());
+    }
+
     public void paint(Graphics onScreenGraphics) {
         checkOffScreen();
         if (offScreenImage == null) return;
@@ -145,42 +151,43 @@ ResidueCenterListener
         g.setFont(font);
         g.setColor(getForeground());
         for (int r = leftPosition; r <= rightPosition; r++) {
-            // Is it selected?
+            // Begin by assuming default color scheme
+            Color textColor = getForeground();
+            Color bgColor = getBackground();
+
             Residue residue = (Residue) positionResidues.get(new Integer(r));
 
-            // Previously highlighted residues:
-            if ( highlightResidues.containsKey(residue) ) {                
-                Color c = highlightResidues.get(residue);
-                highlightPosition(g, r, c);
-                                
-                // Inverse text if selection color is dark
-                double luminosity = 
-                    0.2 * c.getRed() / 255.0 +
-                    0.7 * c.getGreen() / 255.0 +
-                    0.1 * c.getBlue() / 255.0;
-                if (luminosity < 0.5)
-                    g.setColor(getBackground()); // Inverse text color for selected residues
-                else 
-                    g.setColor(getForeground()); // Normal text color for selected residues
+            // Highlight residue background, if applicable
+            if ( highlightResidues.containsKey(residue) ||
+                 temporarilySelectedResidues.contains(residue) ) 
+            {
+                bgColor = highlightResidues.get(residue);
+                if (bgColor == null) bgColor = residueHighlightBroadcaster.getHighlightColor();
+                
+                highlightPosition(g, r, bgColor);
+
+                // If highlight inverts background, invert text color
+                if ( 
+                        ((luminosity(bgColor) > 0.5) && (luminosity(getBackground()) < 0.5)) ||
+                        ((luminosity(bgColor) < 0.5) && (luminosity(getBackground()) > 0.5)) )
+                    textColor = getBackground();
             }
             
-            // Color residues temporarily selected during dragging
-            else if ( temporarilySelectedResidues.contains(residue) ) {
-                Color c = residueHighlightBroadcaster.getHighlightColor();
-                highlightPosition(g, r, c);
-                                
-                // Inverse text if selection color is dark
-                double luminosity = 
-                    0.2 * c.getRed() / 255.0 +
-                    0.7 * c.getGreen() / 255.0 +
-                    0.1 * c.getBlue() / 255.0;
-                if (luminosity < 0.5)
-                    g.setColor(getBackground()); // Inverse text color for selected residues
-                else 
-                    g.setColor(getForeground()); // Normal text color for selected residues                
-            }
+            // Color by residue type, if possible
+            try {
+                textColor = BlockComplementaryBaseColorScheme.SCHEME.colorOf(residue);
+
+                // Adjust color to contrast background
+                if ((luminosity(textColor) < 0.5) && (luminosity(bgColor) < 0.5))
+                    textColor = textColor.brighter();
+                if ((luminosity(textColor) > 0.5) && (luminosity(bgColor) > 0.5))
+                    textColor = textColor.darker();
+
+            } catch (org.simtk.mol.color.UnknownObjectColorException exc) {}
+
+            // Adjust color depending on background luminosity
             
-            else g.setColor(getForeground()); // Normal text
+            g.setColor(textColor);
             
             g.drawString((String) residueSymbols.get(r), (int)(characterSpacing + r * symbolWidth), baseLine);
         }

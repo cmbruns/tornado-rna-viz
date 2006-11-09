@@ -101,7 +101,7 @@ implements ComponentListener // Notice when window size changes
 
     }
     
-    public void setBackgroundColor(Color color) {
+    public void setBackground(Color color) {
 
         // White text for dark background, Black text for light
         double luminosity = 0.2 * color.getRed()/255.0 + 0.7 * color.getGreen()/255.0 + 0.1 * color.getBlue()/255.0;

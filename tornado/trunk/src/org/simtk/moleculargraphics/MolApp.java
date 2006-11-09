@@ -70,17 +70,19 @@ public class MolApp extends JFrame {
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setBackgroundColor(Color.white);
+        setBackground(Color.white);
     }
 
-    public void setBackgroundColor(Color c) {
+    @Override
+    public void setBackground(Color c) {
+        super.setBackground(c);
         if (canvas == null) return;
-        canvas.setBackgroundColor(c);
+        canvas.setBackground(c);
     }        
 
-    public Color getBackgroundColor() {
+    public Color getBackground() {
         if (canvas == null) return null;
-        return canvas.getBackgroundColor();
+        return canvas.getBackground();
     }
 
 }

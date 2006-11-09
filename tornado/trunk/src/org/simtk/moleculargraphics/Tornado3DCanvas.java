@@ -41,7 +41,7 @@ import vtk.*;
 import java.awt.event.*;
 import javax.media.opengl.*;
 import org.simtk.util.*;
-import org.simtk.moleculargraphics.cartoon.ActorCartoon;
+import org.simtk.mol.toon.ActorCartoon;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.Atom;
 import org.simtk.geometry3d.*;
@@ -99,7 +99,7 @@ public class Tornado3DCanvas extends StructureCanvas
         
         // setUpLights();
         
-        setBackgroundColor(backgroundColor);
+        setBackground(backgroundColor);
         
         addComponentListener(this); // Capture keyboard events
         
@@ -181,10 +181,11 @@ public class Tornado3DCanvas extends StructureCanvas
             GetRenderer().AddActor2D(logoActor);
     }
     
-    public void setBackgroundColor(Color c) {
-        super.setBackgroundColor(c);
+    @Override
+    public void setBackground(Color c) {
+        super.setBackground(c);
         if (scaleBar != null)
-            scaleBar.setBackgroundColor(c);
+            scaleBar.setBackground(c);
         if (gl != null) {
             float[] fogColor = new float[] {
                     (float) (backgroundColor.getRed()/255.0),
