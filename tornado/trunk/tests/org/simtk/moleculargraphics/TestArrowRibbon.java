@@ -30,7 +30,8 @@ package org.simtk.moleculargraphics;
 import junit.framework.TestCase;
 import vtk.*;
 import javax.swing.JFrame;
-import org.simtk.moleculargraphics.cartoon.vtkArrowWidthFilter;
+
+import org.simtk.mol.toon.vtkArrowWidthFilter;
 
 public class TestArrowRibbon extends TestCase {
     static {org.simtk.moleculargraphics.VTKLibraries.load();}

@@ -73,7 +73,7 @@ public class TestSecondaryStructureCanvas extends TestCase {
     public static void testNussinovDiagram() {
         MoleculeCollection molecules = new MoleculeCollection();
         try {
-            molecules.loadPDBFormat("resources/structures/1GRZ.pdb");
+            molecules.loadPDBFormat("structures/1GRZ.pdb");
         } 
         catch (java.io.FileNotFoundException exc) {return;}
         catch (java.io.IOException exc) {return;}
