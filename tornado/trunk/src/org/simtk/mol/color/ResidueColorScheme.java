@@ -22,37 +22,20 @@
  */
 
 /*
- * Created on Jul 11, 2006
+ * Created on Nov 17, 2006
  * Original author: Christopher Bruns
  */
 package org.simtk.mol.color;
 
 import java.awt.Color;
 
-import org.simtk.molecularstructure.atom.Atom;
-import org.simtk.molecularstructure.*;
+public class ResidueColorScheme implements ColorScheme {
+    public static final ColorScheme SCHEME = new ResidueColorScheme();
 
-public class DefaultColorScheme implements ColorScheme {
-    public static ColorScheme DEFAULT_COLOR_SCHEME = new DefaultColorScheme();
-    
-    private ColorScheme defaultColorScheme = new ConstantColor(Color.white);
-    
     public Color colorOf(Object colorable) throws UnknownObjectColorException {
-        
-        if (colorable instanceof Atom) try {
-            return AtomColorScheme.PALE_CPK_COLORS.colorOf(colorable);
-        } catch (UnknownObjectColorException exc) {}
-        
-        if (colorable instanceof Residue) try {
-            return ResidueColorScheme.SCHEME.colorOf(colorable);
-            // return SequencingNucleotideColorScheme.SEQUENCING_NUCLEOTIDE_COLOR_SCHEME.colorOf(colorable);
-        } catch (UnknownObjectColorException exc) {}
-        
-        if (colorable instanceof Molecule) try {
-            return MoleculeColorScheme.MOLECULE_COLORS.colorOf(colorable);            
-        } catch (UnknownObjectColorException exc) {}
-        
-        return defaultColorScheme.colorOf(colorable);
+        try {return BlockComplementaryBaseColorScheme.SCHEME.colorOf(colorable);}
+        catch(UnknownObjectColorException exc) {}
+        return TornadoAminoAcidColorScheme.SCHEME.colorOf(colorable);
     }
 
 }

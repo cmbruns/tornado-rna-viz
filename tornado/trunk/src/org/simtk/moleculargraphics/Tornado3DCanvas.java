@@ -42,6 +42,7 @@ import java.awt.event.*;
 import javax.media.opengl.*;
 import org.simtk.util.*;
 import org.simtk.mol.toon.ActorCartoon;
+import org.simtk.mol.toon.MoleculeCartoon;
 import org.simtk.molecularstructure.*;
 import org.simtk.molecularstructure.atom.Atom;
 import org.simtk.geometry3d.*;
@@ -545,7 +546,8 @@ public class Tornado3DCanvas extends StructureCanvas
     }
 
     // Preserve highlights when a new cartoon is used
-    public void add(ActorCartoon cartoon) {
+    @Override
+    public void add(MoleculeCartoon cartoon) {
         super.add(cartoon);
         for (Residue residue : highlightResidues.keySet()) {
             highlightResidue(residue, highlightResidues.get(residue));

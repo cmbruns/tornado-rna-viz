@@ -36,7 +36,7 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.JScrollBar;
 
-import org.simtk.mol.color.BlockComplementaryBaseColorScheme;
+import org.simtk.mol.color.ResidueColorScheme;
 import org.simtk.molecularstructure.*;
 import org.simtk.util.*;
 
@@ -175,7 +175,7 @@ ResidueCenterListener
             
             // Color by residue type, if possible
             try {
-                textColor = BlockComplementaryBaseColorScheme.SCHEME.colorOf(residue);
+                textColor = ResidueColorScheme.SCHEME.colorOf(residue);
 
                 // Adjust color to contrast background
                 if ((luminosity(textColor) < 0.5) && (luminosity(bgColor) < 0.5))

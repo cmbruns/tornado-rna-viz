@@ -110,21 +110,6 @@ public class Tornado extends MolApp
     Tornado() {
         setTitle(applicationName + ": (no structures currently loaded)");
         
-        // Test layered Pane
-        // Result - awt Canvas can occlude vtkPanel, but cannot be transparent
-        // java.awt.Canvas testPanel = new java.awt.Canvas();
-        // testPanel.setBackground(Color.blue);
-        // testPanel.setBounds(10,10,100,100);
-        // getLayeredPane().add(testPanel, new Integer(2), 0);
-        
-        // try {currentCartoon = (MoleculeCartoon) initialCartoonType.newInstance();} 
-        // catch (InstantiationException exc) {System.err.println(exc);}
-        // catch (IllegalAccessException exc) {System.err.println(exc);}
-
-        // loadNativeLibraries();
-        
-        // canvas = new Tornado3DCanvas(); // must create before menus
-
         initializeCartoonTypes();
 
         createMenuBar();

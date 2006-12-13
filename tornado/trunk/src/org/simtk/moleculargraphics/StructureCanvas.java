@@ -147,21 +147,32 @@ implements MouseMotionListener, MouseListener, MouseWheelListener, Observer //, 
         if (cartoon.vtkActors().size() < 1) return;
         
         Lock();
-        for (ActorCartoon actor : cartoon.vtkActors()) {
-            add(actor);
+        // Add regular actors first
+        for (ActorCartoon actorCartoon : cartoon.vtkActors()) {
+            add(actorCartoon.getActor(), actorCartoon);
+        }
+        // Add highlight actors last, to minimize transparency artifacts
+        for (ActorCartoon actorCartoon : cartoon.vtkActors()) {
+            add(actorCartoon.getHighlightActor(), actorCartoon);
         }
         UnLock();
         repaint();
     }
     
+    /**
+     * Warning: use of this routine might lead to 
+     * highlighting arifacts.  Use add(MoleculeCartoon)
+     * instead.
+     * @param cartoon
+     */
     public void add(ActorCartoon cartoon) {
-        GetRenderer().AddViewProp(cartoon.getActor()); // vtk 5.0
-        actorCartoons.put(cartoon.getActor(), cartoon);
-        
-        // Use cage selection
-        vtkActor highlightActor = cartoon.getHighlightActor();
-        GetRenderer().AddViewProp(highlightActor); // vtk 5.0
-        actorCartoons.put(highlightActor, cartoon);
+        add(cartoon.getActor(), cartoon);
+        add(cartoon.getHighlightActor(), cartoon);
+    }
+    
+    protected void add(vtkActor actor, ActorCartoon cartoon) {
+        GetRenderer().AddViewProp(actor); // vtk 5.0
+        actorCartoons.put(actor, cartoon);
     }
     
     public void update(Observable observable, Object object) {

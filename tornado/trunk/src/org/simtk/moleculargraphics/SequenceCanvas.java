@@ -30,7 +30,7 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 
-import org.simtk.mol.color.BlockComplementaryBaseColorScheme;
+import org.simtk.mol.color.ResidueColorScheme;
 import org.simtk.molecularstructure.*;
 
 /**
@@ -190,7 +190,7 @@ public class SequenceCanvas extends BufferedCanvas implements Observer {
                 // Set residue color 
                 try {
                     Residue res = positionResidues.get(r);
-                    Color resColor = BlockComplementaryBaseColorScheme.SCHEME.colorOf(res);
+                    Color resColor = ResidueColorScheme.SCHEME.colorOf(res);
                     g.setColor(resColor);
                 } catch (org.simtk.mol.color.UnknownObjectColorException exc) {
                     g.setColor(getForeground());

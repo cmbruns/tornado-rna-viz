@@ -45,7 +45,7 @@ import org.simtk.molecularstructure.nucleicacid.*;
  */
 public class BlockComplementaryBaseColorScheme implements ColorScheme {
     private static final Color darkRed = new Color(190, 20, 20);
-    private static final Color rose = new Color(255, 80, 110);
+    private static final Color rose = new Color(255, 100, 130);
     private static final Color ceruleanBlue = new Color(30,120,230);
     private static final Color darkBlue = new Color(55, 0, 200);
     
