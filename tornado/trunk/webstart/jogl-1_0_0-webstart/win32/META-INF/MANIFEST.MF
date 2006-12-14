@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Created-By: 1.4.2_09-b05 (Sun Microsystems Inc.)
+Ant-Version: Apache Ant 1.6.5
+
+Name: jogl_cg.dll
+SHA1-Digest: iLhwQaX6eXvRerLLHF5ZPTqyV9A=
+
+Name: jogl.dll
+SHA1-Digest: 2J6xJucJrUpfB4BjkeeaXivwSZQ=
+
+Name: jogl_awt.dll
+SHA1-Digest: epaEn+pswIhdVg1H4xYiOdM7BvQ=
+
