@@ -438,7 +438,7 @@ public class Tornado extends MolApp
         menu.add(menuItem);
         
         //        
-        menuItem = new JMenuItem("Compute Secondary Structure");
+        menuItem = new JMenuItem("Compute Tornado Secondary Structure");
         menuItem.setEnabled(true);
         menuItem.addActionListener(new ComputeSecondaryStructureAction());
         menu.add(menuItem);     
@@ -639,16 +639,16 @@ public class Tornado extends MolApp
                 rnamlDoc.importSecondaryStructures();
                 Tornado.this.redrawCartoon();
             } 
-            catch (org.jdom.JDOMException exc) {
+            catch (Exception exc) {
                 exc.printStackTrace();
+                JTextArea txt = new JTextArea("Failed to load RNAML file.\n  "+exc);
+                txt.setLineWrap(true);
+                JOptionPane.showMessageDialog(
+                        Tornado.this, 
+                        new JScrollPane(txt), 
+                        "ERROR!: RNAML Load failed"+" ("+applicationName+")", 
+                        JOptionPane.ERROR_MESSAGE);
             }
-            catch (IOException exc) {
-                exc.printStackTrace();
-            }
-            catch (NullPointerException exc) {
-                exc.printStackTrace();
-            }
-
         }
     }
 

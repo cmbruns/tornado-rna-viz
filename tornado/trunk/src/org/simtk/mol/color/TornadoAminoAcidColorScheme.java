@@ -50,10 +50,10 @@ public class TornadoAminoAcidColorScheme implements ColorScheme {
     private static final Color darkGrey = new Color(120, 120, 120);
     private static final Color purpleGrey = new Color(150,120,150);
     
-    private static final Color blue = new Color(50, 50, 255);
-    private static final Color softBlue = new Color(100, 100, 255);
-    private static final Color red = new Color(255, 100, 100);
-    private static final Color softMagenta = new Color(240, 150, 255);
+    private static final Color blue = new Color(110, 120, 255);
+    private static final Color softBlue = new Color(170, 180, 255);
+    private static final Color red = new Color(255, 70, 100);
+    private static final Color softMagenta = new Color(240, 130, 255);
     private static final Color yellow = Color.yellow;
     private static final Color softYellow = new Color(180, 180, 100);
     
