@@ -156,8 +156,15 @@ public class NewDuplexCylinderActor extends ActorCartoonClass {
                 basePairEndAlphas.put(previousBasePair, new Double(startAlpha));
             
             // Create cylinder slicing plane using vector between residue atoms
+            // Make sure the residues have C1* atoms
             Atom atom1 = basePair.getResidue1().getAtom(" C1*");
+            if (atom1 == null) atom1 = basePair.getResidue1().getAtom(" C1'");
+            if (atom1 == null) continue;
+
             Atom atom2 = basePair.getResidue2().getAtom(" C1*");
+            if (atom2 == null) atom2 = basePair.getResidue2().getAtom(" C1'");
+            if (atom2 == null) continue;
+            
             Vector3D direction = atom2.getCoordinates().minus(atom1.getCoordinates()).unit();
             // Make sure direction is perpendicular to the helix axis
             direction = direction.minus(helixDirection.times(helixDirection.dot(direction))).unit();
