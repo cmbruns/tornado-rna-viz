@@ -438,10 +438,10 @@ public class Tornado extends MolApp
         menu.add(menuItem);
         
         //        
-        menuItem = new JMenuItem("Compute Tornado Secondary Structure");
-        menuItem.setEnabled(true);
-        menuItem.addActionListener(new ComputeSecondaryStructureAction());
-        menu.add(menuItem);     
+        // menuItem = new JMenuItem("Compute Tornado Secondary Structure");
+        // menuItem.setEnabled(true);
+        // menuItem.addActionListener(new ComputeSecondaryStructureAction());
+        // menu.add(menuItem);     
         
         menuItem = new JMenu("Secondary Structure Source");
         menuItem.setEnabled(true);
@@ -763,6 +763,9 @@ public class Tornado extends MolApp
             Tornado.this.redrawCartoon();
         }
     }
+    void computeSecondaryStructure(){
+        (new ComputeSecondaryStructureAction()).actionPerformed(new ActionEvent(this, 0, ""));
+    }
 
     class SourceAction implements ActionListener {
         protected List<SecondaryStructureClass.SourceType> mySources; 
@@ -940,6 +943,8 @@ public class Tornado extends MolApp
             molecule.setDisplaySourceTypes(Tornado.this.getSelectedSourceTypes());
         }
         
+        // Compute tornado secondary structure
+        computeSecondaryStructure();
         
         // Create graphical representation of the molecule
         Tornado.this.redrawCartoon();
