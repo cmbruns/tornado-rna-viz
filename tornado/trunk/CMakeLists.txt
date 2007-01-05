@@ -5,6 +5,7 @@ Include(Dart)
 # Fork cmake's incomplete Java methods
 INCLUDE(MyFindJava.cmake)
 
+# TODO - this does not work
 IF(SimTK_SDK)
 	# For simtk installations, install in simtk/Tornado
 	IF(CMAKE_INSTALL_PREFIX MATCHES "${SimTK_SDK}")
@@ -17,6 +18,7 @@ FIND_PATH(
 	SHARED_JAVA_PATH
 	s_SimtkSharedJava.jar
 	"${SimTK_SDK}/SimtkSharedJava/bin"
+	"${SimTK_SDK}/bin"
 	"C:/Program Files/SimtkSharedJava/bin"
 	)
 
