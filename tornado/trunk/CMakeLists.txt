@@ -5,12 +5,11 @@ Include(Dart)
 # Fork cmake's incomplete Java methods
 INCLUDE(MyFindJava.cmake)
 
-# TODO - this does not work
+# TODO 
 IF(SimTK_SDK)
-	# For simtk installations, install in simtk/Tornado
-	IF(CMAKE_INSTALL_PREFIX MATCHES "${SimTK_SDK}")
-		SET(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME})
-	ENDIF(CMAKE_INSTALL_PREFIX MATCHES "${SimTK_SDK}")
+	SET(MY_INSTALL_PREFIX "/${PROJECT_NAME}")
+ELSE(SimTK_SDK)
+	SET(MY_INSTALL_PREFIX "")
 ENDIF(SimTK_SDK)
 
 SET(SHARED_JAVA_DIST_VERSION "0.5")
@@ -144,7 +143,7 @@ SET(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING  "" FORCE)
 
 # Install jar files in bin directory
 INSTALL_FILES(
-	/bin
+	${MY_INSTALL_PREFIX}/bin
 	FILES 
     ${JNLP_TEST_OUTPUT_FILE_PATH}
     ${JNLP_DIST_OUTPUT_FILE_PATH}

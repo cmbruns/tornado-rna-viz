@@ -82,7 +82,7 @@ IF(DO_SIGN_JARS)
 	INCLUDE(${CMAKE_SOURCE_DIR}/SignJar.cmake)
 	
 	# Install the signed jar file
-	INSTALL_FILES(/bin
+	INSTALL_FILES(${MY_INSTALL_PREFIX}/bin
 		FILES
 		"${SIGNED_JAR_PATH}"
 		)
@@ -90,7 +90,7 @@ IF(DO_SIGN_JARS)
 ELSE(DO_SIGN_JARS)
 
 	# Only install the regular unsignedjar file if there is no signed jar file
-	INSTALL_FILES(/bin
+	INSTALL_FILES(${MY_INSTALL_PREFIX}/bin
 		FILES
 		"${JAR_FILE_PATH}"
 		)

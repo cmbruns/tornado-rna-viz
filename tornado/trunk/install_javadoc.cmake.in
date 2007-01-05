@@ -4,7 +4,7 @@
 #   INSTALL_SUBDIR - the root of this install tree
 
 MESSAGE (STATUS "Installing Javadoc API documentation")
-SET(CARGS "-E copy_directory \"@API_DOC_DIR@\" \"@CMAKE_INSTALL_PREFIX@/doc/javadoc\"")
+SET(CARGS "-E copy_directory \"@API_DOC_DIR@\" \"@CMAKE_INSTALL_PREFIX@@MY_INSTALL_PREFIX@/doc/javadoc\"")
 EXEC_PROGRAM(
 	"@CMAKE_COMMAND@" 
 	ARGS ${CARGS}
