@@ -1,3 +1,9 @@
+Version 1.0
+October 16, 2007
+* Added menu option to create Renderman Input files
+* Reverted backbone ribbbon style to be colored by residue type
+* Increased maximum magnification factor for PNG image output from 9 to 25
+
 Version 0.9
 October 26, 2006
 

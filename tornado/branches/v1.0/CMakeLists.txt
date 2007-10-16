@@ -13,7 +13,7 @@ ELSE(SimTK_SDK)
 	SET(MY_INSTALL_PREFIX "")
 ENDIF(SimTK_SDK)
 
-SET(SHARED_JAVA_DIST_VERSION "0.6")
+SET(SHARED_JAVA_DIST_VERSION "0.7")
 FIND_PATH(
 	SHARED_JAVA_PATH
 	s_SimtkSharedJava.jar
@@ -25,9 +25,9 @@ MESSAGE(STATUS "SHARED_JAVA_PATH is set to ${SHARED_JAVA_PATH}")
 
 ### Product version number: this should be different for each source change ###
 # Change of major version suggests significant change in features, scope, and/or API
-SET(PROJECT_MAJOR_VERSION "0")
+SET(PROJECT_MAJOR_VERSION "1")
 # Change of minor version suggests backwards compatible change in API and documentation
-SET(PROJECT_MINOR_VERSION "11")
+SET(PROJECT_MINOR_VERSION "0")
 
 INCLUDE(${CMAKE_SOURCE_DIR}/SvnRevision.cmake)
 SET(PRODUCT_VERSION "${PROJECT_MAJOR_VERSION}.${PROJECT_MINOR_VERSION}.${SVN_REVISION}")
