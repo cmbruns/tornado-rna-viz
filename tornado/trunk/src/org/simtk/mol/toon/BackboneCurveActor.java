@@ -105,7 +105,8 @@ public class BackboneCurveActor extends ActorCartoonClass {
                 sideChainPosition = residue.getSideChainPosition();
             } catch (InsufficientAtomsException exc) {}
 
-            colorScalar = getColorIndex(residue.getBackbone());
+            // colorScalar = getColorIndex(residue.getBackbone());
+            colorScalar = getColorIndex(residue);
             
             if (backbonePosition == null) continue RESIDUE;
             

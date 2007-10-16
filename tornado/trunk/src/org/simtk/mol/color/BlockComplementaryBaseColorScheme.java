@@ -71,7 +71,7 @@ public class BlockComplementaryBaseColorScheme implements ColorScheme {
         }
         
         else if (colorable instanceof Residue) return colorOf(((Residue)colorable).getResidueType());
-        
+                
         throw new UnknownObjectColorException();
     }
 }

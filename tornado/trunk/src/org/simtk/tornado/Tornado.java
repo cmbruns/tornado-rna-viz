@@ -145,7 +145,7 @@ public class Tornado extends MolApp
         initialLoadStructurePanel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
         initialLoadStructurePanel.setLayout(new BoxLayout(initialLoadStructurePanel, BoxLayout.Y_AXIS));
         initialLoadStructurePanel.add(new JLabel("Click button below to choose a molecule structure:"));
-        JButton loadButton = new JButton("Choose Molecule...");
+        JButton loadButton = new JButton("Find a Molecule...");
         loadButton.addActionListener(new InitialLoadMoleculeAction());
         initialLoadStructurePanel.add(loadButton);
         initialLoadStructurePanel.setPreferredSize(new Dimension(500, 500));
@@ -283,19 +283,25 @@ public class Tornado extends MolApp
         toonRange.setCurrentType(ResidueSpheres.class);
     }
     
-    void createMenuBar() {
-        
-        // Prevent the vtkPanel from obscuring the JMenus
-        // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-        
+    protected void createMenuBar() 
+    {
         JMenuBar menuBar = new JMenuBar();
-        JMenu menu;
+
+        menuBar.add( createFileMenu() );
+        menuBar.add( createEditMenu() );
+        menuBar.add( createViewMenu() );
+        menuBar.add( createSecondaryStructureMenu() );
+        // menuBar.add( createMoleculeMenu() );
+
+        menuBar.add( createHelpMenu() );
+
+        setJMenuBar( menuBar );
+    }
+    
+    protected JMenu createFileMenu() {
+        JMenu menu = new JMenu("File");
+
         JMenuItem menuItem;
-        JCheckBoxMenuItem checkItem;
-
-        menu = new JMenu("File");
-        menuBar.add(menu);
-
         menuItem = new JMenuItem("Load PDB Molecule...");
         menuItem.addActionListener(new LoadPDBAction());
         menu.add(menuItem);
@@ -307,65 +313,85 @@ public class Tornado extends MolApp
         // menuItem.addActionListener(new TestHighResOutputAction());
               menu.add(menuItem);
 
+        menu.add( new JMenuItem(new SaveRenderManFileAction(canvas, this)) );
+
         menu.add(new JSeparator());
 
         menuItem = new JMenuItem("Exit " + applicationName);
         menuItem.addActionListener(new QuitAction());
         menu.add(menuItem);
-
-
-        menu = new JMenu("Edit");
-        menuBar.add(menu);
+        
+        return menu;
+    }
+   
+    protected JMenu createEditMenu() {
+        JMenu menu = new JMenu("Edit");
         menu.add(new JMenuItem(undoRedoMechanism.getUndoAction()));
         menu.add(new JMenuItem(undoRedoMechanism.getRedoAction()));
 
-        menuItem = new JMenuItem("Delete");
+        JMenuItem menuItem = new JMenuItem("Delete");
         menuItem.setEnabled(false);
         menu.add(menuItem);
-
-        viewMenu = new JMenu("View");
-        menuBar.add(viewMenu);
+        
+        return menu;
+    }
+    
+    protected JMenu createViewMenu() {
+        JMenu menu = new JMenu("View");
         
         JMenu cartoonMenu = new JMenu("Molecule Style");
-        viewMenu.add(cartoonMenu);
+        menu.add(cartoonMenu);
+
+        // Dialog for setting the exact 3D window size
+//        JMenuItem sizeMenu = new JMenuItem("3D Window Size...");
+//        sizeMenu.addActionListener( new ActionListener() { // anonymous inner class
+//            public void actionPerformed( ActionEvent event ) {
+//                JOptionPane.showInputDialog(
+//                        Tornado.this,
+//                        "Type desired 3D window size (e.g. '640x480') :",
+//                        applicationName + ": Set 3D window size"
+//                        );
+//            }
+//        });
+//        menu.add(sizeMenu);
 
         toonRange.createCartoonMenu(cartoonMenu);
         
-        menu = new JMenu("Rotation");
-        viewMenu.add(menu);
+        JMenu rotationMenu = new JMenu("Rotation");
+        menu.add(rotationMenu);
 
         ButtonGroup rotationGroup = new ButtonGroup();
         
-        checkItem = new JCheckBoxMenuItem("Sit still (Stop)");
+        JCheckBoxMenuItem checkItem = new JCheckBoxMenuItem("Sit still (Stop)");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateNoneAction());
         checkItem.setState((rotationThread == null) || (rotationThread.rotationStyle == RotationStyle.NONE));
         rotationGroup.add(checkItem);
-        menu.add(checkItem);
+        rotationMenu.add(checkItem);
 
         checkItem = new JCheckBoxMenuItem("Gyrate (Wiggle)");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateNutateAction());
         checkItem.setState((rotationThread != null) && (rotationThread.rotationStyle == RotationStyle.NUTATE));
         rotationGroup.add(checkItem);
-        menu.add(checkItem);
+        rotationMenu.add(checkItem);
         
         checkItem = new JCheckBoxMenuItem("Oscillate (Wag)");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateRockAction());
         checkItem.setState((rotationThread != null) && (rotationThread.rotationStyle == RotationStyle.ROCK));
         rotationGroup.add(checkItem);
-        menu.add(checkItem);
+        rotationMenu.add(checkItem);
         
         checkItem = new JCheckBoxMenuItem("Rotate (Spin)");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new RotateSpinAction());
         checkItem.setState((rotationThread != null) && (rotationThread.rotationStyle == RotationStyle.ROTATE));
         rotationGroup.add(checkItem);
-        menu.add(checkItem);
+        rotationMenu.add(checkItem);
         
-        menu = new JMenu("Background Color");
-        viewMenu.add(menu);
+        JMenu backgroundMenu = new JMenu("Background Color");
+        menu.add(backgroundMenu);
         ButtonGroup backgroundGroup = new ButtonGroup();
 
         Map<Color, String> bgColorNames = new LinkedHashMap<Color, String>();
@@ -380,11 +406,11 @@ public class Tornado extends MolApp
             checkItem.addActionListener(new BackgroundColorAction(color, colorName, background, undoRedoMechanism));
             checkItem.setState(color == initialBackgroundColor);
             backgroundGroup.add(checkItem);
-            menu.add(checkItem);
+            backgroundMenu.add(checkItem);
         }
 
-        menu = new JMenu("Stereoscopic 3D");
-        viewMenu.add(menu);
+        JMenu stereoMenu = new JMenu("Stereoscopic 3D");
+        menu.add(stereoMenu);
 
         ButtonGroup stereoscopicOptionsGroup = new ButtonGroup();
         
@@ -393,41 +419,44 @@ public class Tornado extends MolApp
         checkItem.addActionListener(new StereoOffAction());
         checkItem.setState(true);
         stereoscopicOptionsGroup.add(checkItem);
-        menu.add(checkItem);
+        stereoMenu.add(checkItem);
 
         checkItem = new JCheckBoxMenuItem("Red/Blue glasses", new ImageIcon(classLoader.getResource("images/rbglasses.png")));
         checkItem.setEnabled(true);
         checkItem.addActionListener(new StereoRedBlueAction());
         stereoscopicOptionsGroup.add(checkItem);
-        menu.add(checkItem);
+        stereoMenu.add(checkItem);
 
         checkItem = new JCheckBoxMenuItem("Interlaced shutter glasses");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new StereoInterlacedAction());
         stereoscopicOptionsGroup.add(checkItem);
-        menu.add(checkItem);
+        stereoMenu.add(checkItem);
 
         checkItem = new JCheckBoxMenuItem("Left Eye");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new StereoLeftEyeAction());
         stereoscopicOptionsGroup.add(checkItem);
-        menu.add(checkItem);
+        stereoMenu.add(checkItem);
 
         checkItem = new JCheckBoxMenuItem("Right Eye");
         checkItem.setEnabled(true);
         checkItem.addActionListener(new StereoRightEyeAction());
         stereoscopicOptionsGroup.add(checkItem);
-        menu.add(checkItem);
+        stereoMenu.add(checkItem);
 
         checkItem = new JCheckBoxMenuItem("Scan doubled shutter glasses");
         checkItem.setEnabled(false);
         stereoscopicOptionsGroup.add(checkItem);
-        menu.add(checkItem);
-
-        menu = new JMenu("Secondary Structure");
-        menuBar.add(menu);
+        stereoMenu.add(checkItem);
         
-        menuItem = new JMenuItem("Load Secondary Structure File...");
+        return menu;
+    }
+    
+    protected JMenu createSecondaryStructureMenu() {
+        JMenu menu = new JMenu("Secondary Structure");
+        
+        JMenuItem menuItem = new JMenuItem("Load Secondary Structure File...");
         menuItem.setEnabled(true);
         menuItem.addActionListener(new LoadRnamlAction());
         menu.add(menuItem);
@@ -448,27 +477,38 @@ public class Tornado extends MolApp
         menu.add(menuItem);     
         
         ButtonGroup sourceGroup = new ButtonGroup();
-    	JCheckBoxMenuItem sourceItem = new JCheckBoxMenuItem("All");        
-    	sourceItem.setEnabled(true);
-    	sourceItem.addActionListener(new SourceAction());
-    	sourceItem.setState(true);
-    	sourceGroup.add(sourceItem);
-    	menuItem.add(sourceItem);
+        JCheckBoxMenuItem sourceItem = new JCheckBoxMenuItem("All");        
+        sourceItem.setEnabled(true);
+        sourceItem.addActionListener(new SourceAction());
+        sourceItem.setState(true);
+        sourceGroup.add(sourceItem);
+        menuItem.add(sourceItem);
         menuItem.add(new JSeparator());
         for (SecondaryStructureClass.SourceType source: SecondaryStructureClass.SourceType.values()) {                
-        	sourceItem = new JCheckBoxMenuItem(source.toString());
-        	sourceItem.setEnabled(true);
-        	sourceItem.addActionListener(new SourceAction(source));
-        	sourceItem.setState(false);
-        	sourceGroup.add(sourceItem);
-        	menuItem.add(sourceItem);
+            sourceItem = new JCheckBoxMenuItem(source.toString());
+            sourceItem.setEnabled(true);
+            sourceItem.addActionListener(new SourceAction(source));
+            sourceItem.setState(false);
+            sourceGroup.add(sourceItem);
+            menuItem.add(sourceItem);
         }
 
         
-        menu = new JMenu("Help");
-        menuBar.add(menu);
+        return menu;
+    }
+    
 
-        menuItem = new JMenuItem("About " + applicationName);
+    protected JMenu createMoleculeMenu() {
+        JMenu menu = new JMenu("Molecule");
+        menu.add(new JMenuItem(new CenterOnMoleculeAction()));
+        
+        return menu;
+    }
+    
+    protected JMenu createHelpMenu() {
+        JMenu menu = new JMenu("Help");
+
+        JMenuItem menuItem = new JMenuItem("About " + applicationName);
         menuItem.setEnabled(true);
         menuItem.addActionListener(new AboutTornadoAction());
         menu.add(menuItem);
@@ -488,12 +528,31 @@ public class Tornado extends MolApp
                 ("https://simtk.org/tracker/?func=add&group_id=12&atid=132"));
         menu.add(menuItem);
 
-        setJMenuBar(menuBar);
+        return menu;
     }
+
     
     // For me the programmer to use when creating new actions
     class TemplateAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    // For me the programmer to use when creating new actions
+    class CenterOnMoleculeAction extends AbstractAction {
+        CenterOnMoleculeDialog dialog = new CenterOnMoleculeDialog(Tornado.this);
+ 
+        public CenterOnMoleculeAction() {
+            super("Center molecule...");
+            // setEnabled(false);
+            putValue(MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
+            // putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+            // putValue(SMALL_ICON, new ImageIcon(getClass().getClassLoader().getResource("images/redo16.png")));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            dialog.updateMoleculeList(moleculeCollection);
+            dialog.setVisible(true);
         }
     }
 
@@ -877,6 +936,7 @@ public class Tornado extends MolApp
         }
     }
 
+
     class LoadStructureDialog extends MoleculeAcquisitionMethodDialog {
         /**
 		 * 
@@ -1095,7 +1155,7 @@ public class Tornado extends MolApp
                 setDialogTitle(applicationName + ": Save PNG Image of Structure");
                 
                 // Spinner to adjust the magnification
-                JSpinner magSpinner = new JSpinner(new SpinnerNumberModel(2,1,9,1));
+                JSpinner magSpinner = new JSpinner(new SpinnerNumberModel(2,1,25,1));
                 magSpinner.addChangeListener(SaveImageFileAction.this);
                 magSpinner.setMaximumSize(magSpinner.getPreferredSize());
                 JPanel spinnerPanel = new JPanel();
@@ -1243,7 +1303,7 @@ public class Tornado extends MolApp
     }
 
     // private JMenu cartoonMenu = null;
-    private JMenu viewMenu = null;
+    // private JMenu viewMenu = null;
 
     private static String tornadoVersion = version.TornadoVersion.VERSION;
     
