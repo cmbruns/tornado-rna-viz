@@ -74,11 +74,11 @@ ENDIF(DO_SIGN_JARS)
 # TODO - vtk.jar should eventually become s_vtk.jar, a signed jar file
 FIND_PATH(
 	VTK_PATH
-	vtk.jar
+	s_vtk.jar
 	"${SimTK_SDK}/vtk/bin"
 	"C:/Program Files/VTK/bin"
 	)
-SET(VTK_JAR "${VTK_PATH}/vtk.jar" CACHE FILEPATH "Location of VTK jar file")
+SET(VTK_JAR "${VTK_PATH}/s_vtk.jar" CACHE FILEPATH "Location of VTK jar file")
 
 SET(
   CLASSPATH
