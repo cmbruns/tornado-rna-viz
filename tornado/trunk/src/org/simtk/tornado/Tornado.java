@@ -314,6 +314,8 @@ public class Tornado extends MolApp
               menu.add(menuItem);
 
         menu.add( new JMenuItem(new SaveRenderManFileAction(canvas, this)) );
+        menu.add( new JMenuItem(new SaveVRMLFileAction(canvas, this)) );
+        menu.add( new JMenuItem(new SaveWavefrontObjFileAction(canvas, this)) );
 
         menu.add(new JSeparator());
 

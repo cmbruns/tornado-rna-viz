@@ -13,7 +13,7 @@ ELSE(SimTK_SDK)
 	SET(MY_INSTALL_PREFIX "")
 ENDIF(SimTK_SDK)
 
-SET(SHARED_JAVA_DIST_VERSION "0.6")
+SET(SHARED_JAVA_DIST_VERSION "0.7")
 FIND_PATH(
 	SHARED_JAVA_PATH
 	s_SimtkSharedJava.jar
@@ -25,9 +25,9 @@ MESSAGE(STATUS "SHARED_JAVA_PATH is set to ${SHARED_JAVA_PATH}")
 
 ### Product version number: this should be different for each source change ###
 # Change of major version suggests significant change in features, scope, and/or API
-SET(PROJECT_MAJOR_VERSION "0")
+SET(PROJECT_MAJOR_VERSION "1")
 # Change of minor version suggests backwards compatible change in API and documentation
-SET(PROJECT_MINOR_VERSION "11")
+SET(PROJECT_MINOR_VERSION "0")
 
 INCLUDE(${CMAKE_SOURCE_DIR}/SvnRevision.cmake)
 SET(PRODUCT_VERSION "${PROJECT_MAJOR_VERSION}.${PROJECT_MINOR_VERSION}.${SVN_REVISION}")
@@ -74,11 +74,11 @@ ENDIF(DO_SIGN_JARS)
 # TODO - vtk.jar should eventually become s_vtk.jar, a signed jar file
 FIND_PATH(
 	VTK_PATH
-	vtk.jar
+	s_vtk.jar
 	"${SimTK_SDK}/vtk/bin"
 	"C:/Program Files/VTK/bin"
 	)
-SET(VTK_JAR "${VTK_PATH}/vtk.jar" CACHE FILEPATH "Location of VTK jar file")
+SET(VTK_JAR "${VTK_PATH}/s_vtk.jar" CACHE FILEPATH "Location of VTK jar file")
 
 SET(
   CLASSPATH
