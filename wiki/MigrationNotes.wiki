@@ -1,0 +1,39 @@
+summary How I copied the simtk ToRNADo repository to google code.
+
+= Introduction =
+
+I am trying to migrate the ToRNADo source code from simtk to google code.
+
+
+= Details =
+
+First click "reset repository" to set the repository to version zero (instead of version one) before syncing to the original repository.
+
+  1 {{{svnsync init --username <myusername> https://tornado-rna-viz.googlecode.com/svn https://simtk.org/svn/rna-viz-proto}}}
+  2 {{{svnsync sync --username <myusername> https://tornado-rna-viz.googlecode.com/svn}}}
+  3 (repeat number 2 until it completes)
+
+But it does not complete.
+
+The first error:
+
+{{{
+$ svnsync sync --username <myusername> https://tornado-rna-viz.googlecode.com/svn                           Transmitting file data .............................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+Committed revision 1.
+Copied properties for revision 1.
+Transmitting file data .............................................................................................svnsync: At least one property change failed; repository is unchanged
+svnsync: Server sent unexpected return value (502 Bad Gateway) in response to PROPPATCH request for '/svn/!svn/wrk/ecce9344-7e7b-11df-9ab3-11add49acce1/vtkjava/bin/Jama/doc/deprecated-list.html'
+}}}
+
+was fixed by just repeating the "svnsync sync ..." command.
+
+But a later error:
+
+{{{
+$ svnsync sync --username <myusername> https://tornado-rna-viz.googlecode.com/svn
+Transmitting file data ..............svnsync: REPORT of 'https://simtk.org/svn/rna-viz-proto': Could not read response body: Secure connection truncated (https://simtk.org)
+}}}
+
+consistently fails.  I think this has to do with a large file being committed in revision number 47.
+
+So I logged onto a different computer and invoked the "svnsync sync" command with a newer svnsync version (1.6.5 vs 1.6.3) and now it seems to work.  At least it got past the troublesome revision 47.
