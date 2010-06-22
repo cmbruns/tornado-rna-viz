@@ -9,7 +9,9 @@ I am trying to migrate the ToRNADo source code from simtk to google code.
 First click "reset repository" to set the repository to version zero (instead of version one) before syncing to the original repository.
 
   1 {{{svnsync init --username <myusername> https://tornado-rna-viz.googlecode.com/svn https://simtk.org/svn/rna-viz-proto}}}
+
   2 {{{svnsync sync --username <myusername> https://tornado-rna-viz.googlecode.com/svn}}}
+
   3 (repeat number 2 until it completes)
 
 But it does not complete.
@@ -17,7 +19,8 @@ But it does not complete.
 The first error:
 
 {{{
-$ svnsync sync --username <myusername> https://tornado-rna-viz.googlecode.com/svn                           Transmitting file data .............................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+$ svnsync sync --username <myusername> https://tornado-rna-viz.googlecode.com/svn                           
+Transmitting file data .............................................................................................................................................................................................................................................................................................................................................................................................................................................................................
 Committed revision 1.
 Copied properties for revision 1.
 Transmitting file data .............................................................................................svnsync: At least one property change failed; repository is unchanged
