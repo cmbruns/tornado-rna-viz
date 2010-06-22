@@ -1,9 +1,8 @@
-summary How I copied the simtk ToRNADo repository to google code.
+How I copied the simtk ToRNADo repository to google code.
 
 = Introduction =
 
 I am trying to migrate the ToRNADo source code from simtk to google code.
-
 
 = Details =
 
