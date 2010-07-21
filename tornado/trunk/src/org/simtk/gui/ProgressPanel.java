@@ -1,0 +1,159 @@
+/* Copyright (c) 2005 Stanford University and Christopher Bruns
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including 
+ * without limitation the rights to use, copy, modify, merge, publish, 
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included 
+ * in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
+ * Created on Nov 28, 2005
+ * Original author: Christopher Bruns
+ */
+package org.simtk.gui;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.net.*;
+import java.util.*;
+import javax.swing.*;
+
+public class ProgressPanel extends JPanel implements ProgressDialog, ActionListener {
+    Throbber throbber;
+    Date startTime = new Date();
+    JLabel timeLabel = new JLabel();
+    JButton cancelButton = new JButton("Cancel");
+    boolean m_isCancelled = false;
+    
+    public ProgressPanel(String description) {
+        setStartTime(new Date());
+        
+        initializeThrobber();
+
+        Container parentPanel = this;
+        parentPanel.setLayout(new BoxLayout(parentPanel, BoxLayout.Y_AXIS));
+
+        int spacing = 5;
+
+        // Top panel - description and throbber
+        JPanel descriptionPanel = new JPanel();
+        descriptionPanel.setLayout(new BoxLayout(descriptionPanel, BoxLayout.X_AXIS));
+        descriptionPanel.add(Box.createHorizontalStrut(spacing));
+        descriptionPanel.add(new JLabel(description));
+        descriptionPanel.add(Box.createHorizontalStrut(spacing));
+        descriptionPanel.add(throbber);
+        descriptionPanel.add(Box.createHorizontalStrut(spacing));
+
+        // Elapsed time panel
+        JPanel timePanel = new JPanel();
+        timePanel.setLayout(new BoxLayout(timePanel, BoxLayout.X_AXIS));
+        timePanel.add(Box.createHorizontalStrut(spacing));
+        timePanel.add(new JLabel("Elapsed time: "));
+        timePanel.add(timeLabel);
+        timePanel.add(Box.createHorizontalGlue());
+        
+        // Button panel
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(Box.createHorizontalGlue()); // Move buttons to right edge
+        buttonPanel.add(cancelButton);
+        cancelButton.addActionListener(this);
+        
+        parentPanel.add(descriptionPanel);
+        parentPanel.add(timePanel);
+        parentPanel.add(buttonPanel);
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+    
+    public void setCancelled(boolean isCancelled) {
+        m_isCancelled = isCancelled;
+    }
+
+    private void initializeThrobber() {
+        // Get images for throbber
+        Vector<Icon> throbberIcons = new Vector<Icon>();
+        String[] throbberImageNames = {
+                "images/throbber/ThrobberSmall000.png",
+                "images/throbber/ThrobberSmall030.png",
+                "images/throbber/ThrobberSmall060.png",
+                "images/throbber/ThrobberSmall090.png",
+                "images/throbber/ThrobberSmall120.png",
+                "images/throbber/ThrobberSmall150.png",
+                "images/throbber/ThrobberSmall180.png",
+                "images/throbber/ThrobberSmall210.png",
+                "images/throbber/ThrobberSmall240.png",
+                "images/throbber/ThrobberSmall270.png",
+                "images/throbber/ThrobberSmall300.png",
+                "images/throbber/ThrobberSmall330.png"
+        };
+        for (int i = 0; i < throbberImageNames.length; i++) {
+            String fileName = throbberImageNames[i];
+            URL imageURL = getClass().getClassLoader().getResource(fileName);
+            if (imageURL != null) {
+                Icon icon = new ImageIcon(imageURL);
+                if (icon != null) throbberIcons.add(icon);
+            }
+        }
+        if (throbberIcons.size() > 0) {
+            Icon[] throbberArray = new Icon[0];
+            throbber = new Throbber((Icon[]) throbberIcons.toArray(throbberArray));
+        }
+        else throbber = new Throbber(null);
+    }
+    
+    private void updateTimeLabel() {
+        long milliseconds = (new Date()).getTime() - startTime.getTime();
+        int seconds = (int)(milliseconds / 1000);
+        int minutes = seconds/60;
+        int hours = minutes/60;
+        
+        seconds = seconds - (60 * minutes);
+        minutes = minutes - (60 * hours);
+
+        String timeString = "";
+        if (hours < 10) timeString += "0";
+        timeString += hours + ":";
+        if (minutes < 10) timeString += "0";
+        timeString += minutes + ":";
+        if (seconds < 10) timeString += "0";
+        timeString += seconds;
+        
+        timeLabel.setText(timeString);
+        timeLabel.repaint();
+    }
+    
+    public void updateState() {
+        // increment throbber
+        throbber.increment();
+        // increment time
+        updateTimeLabel();
+    }
+
+    public boolean isCancelled() {
+        return m_isCancelled;
+    }
+
+    public void actionPerformed(ActionEvent event) {
+        if (event.getSource() == cancelButton) {
+            m_isCancelled = true;
+        }
+    }        
+    
+    static final long serialVersionUID = 01L;
+}

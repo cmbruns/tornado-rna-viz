@@ -57,7 +57,7 @@ public class VTKLibraries {
         loadOneNativeLibrary("vtkCommon"); 
         loadOneNativeLibrary("vtkFiltering"); 
         loadOneNativeLibrary("vtkDICOMParser"); 
-        loadOneNativeLibrary("vtkMPEG2Encode"); 
+        // loadOneNativeLibrary("vtkMPEG2Encode");
         loadOneNativeLibrary("vtkIO"); 
         loadOneNativeLibrary("vtkImaging"); 
         loadOneNativeLibrary("vtkGraphics"); 
@@ -75,9 +75,10 @@ public class VTKLibraries {
         loadOneNativeLibrary("vtkFilteringJava"); 
         loadOneNativeLibrary("vtkIOJava"); 
         loadOneNativeLibrary("vtkImagingJava"); 
-        loadOneNativeLibrary("vtkGraphicsJava"); 
-        loadOneNativeLibrary("vtkRenderingJava"); 
-        loadOneNativeLibrary("vtkHybridJava");
+        loadOneNativeLibrary("vtkGraphicsJava");
+        loadOneNativeLibrary("jawt");
+        loadOneNativeLibrary("vtkRenderingJava");
+        // loadOneNativeLibrary("vtkHybridJava");
     }
     
     private static void loadOneNativeLibrary(String libName) {

@@ -137,11 +137,18 @@ public class BasePairOval extends TensorGlyphCartoon {
 
         // July 19, 2006: base position upon extension of glycosidic bond
         Atom c11 = res1.getAtom("C1*");
+        if (c11 == null) c11 = res1.getAtom("C1'");
         Atom c12 = res2.getAtom("C1*");
+        if (c12 == null) c12 = res2.getAtom("C1'");
         Atom n1 = res1.getAtom("N9");
         if (n1 == null) n1 = res1.getAtom("N1");
         Atom n2 = res2.getAtom("N9");
         if (n2 == null) n2 = res2.getAtom("N1");
+
+        if ((n1 == null) || (n2 == null) || (c11 == null) || (c12 == null)) {
+            return;
+        }
+
         // Glycosidic bond direction:
         Vector3D glyc1 = n1.getCoordinates().minus(c11.getCoordinates()).unit();
         Vector3D glyc2 = n2.getCoordinates().minus(c12.getCoordinates()).unit();
